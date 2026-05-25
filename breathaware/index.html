@@ -561,7 +561,7 @@ let currentSide=null; // 'inhale'|'exhale'|null
 let phaseStart=0,holdStart=0;
 let breaths=[],wavePoints=[];
 let sessionActive=false,sessionStart=0;
-let timerInterval=null,holdInterval=null;
+let timerInterval=null,holdInterval=null,activePhaseInterval=null;
 let pendingInhale=null; // {inhaleMs, exhaleMs, holdAfterExhale}
 
 const waveCanvas=document.getElementById('waveform');
@@ -593,6 +593,7 @@ function startHoldTracking(){
   },150);
 }
 function stopHoldTracking(){ clearInterval(holdInterval);holdInterval=null; }
+function stopActivePhase(){ clearInterval(activePhaseInterval);activePhaseInterval=null; }
 
 function handleInhaleStart(){
   if(!sessionActive) beginSession();
@@ -604,8 +605,10 @@ function handleInhaleStart(){
     if(breaths.length>2) updateLiveStats(); // 前兩次暖機不列入分析
   }
   stopHoldTracking();
+  stopActivePhase();
   currentSide='inhale';phaseStart=Date.now();
   wavePoints.push({t:Date.now()-sessionStart,phase:1});
+  activePhaseInterval=setInterval(()=>{if(sessionActive)wavePoints.push({t:Date.now()-sessionStart,phase:1})},120);
   if(!waveRAF)drawWave();
   setOrbPhase('吸氣中');
   animateOrbColor('inhale');
@@ -619,8 +622,10 @@ function handleExhaleStart(){
     if(inhaleMs>=300) pendingInhale={inhaleMs,exhaleMs:0,holdAfterExhale:null};
   }
   stopHoldTracking();
+  stopActivePhase();
   currentSide='exhale';phaseStart=Date.now();
   wavePoints.push({t:Date.now()-sessionStart,phase:0});
+  activePhaseInterval=setInterval(()=>{if(sessionActive)wavePoints.push({t:Date.now()-sessionStart,phase:0})},120);
   if(!waveRAF)drawWave();
   setOrbPhase('吐氣中');
   animateOrbColor('exhale');
@@ -637,6 +642,7 @@ function handleRelease(){
     const exhaleMs=now-phaseStart;
     if(exhaleMs>=200){pendingInhale.exhaleMs=exhaleMs;pendingInhale.holdAfterExhale=now;}
   }
+  stopActivePhase();
   currentSide=null;
   wavePoints.push({t:now-sessionStart,phase:0.5});
   startHoldTracking();
@@ -893,7 +899,7 @@ function saveSession(){
     const jteAll=JSON.parse(localStorage.getItem('jte_daily_v1')||'{}');
     const jteRec=jteAll[todayKey]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
     if(!jteRec.linked) jteRec.linked=[];
-    jteRec.linked=jteRec.linked.filter(l=>l.source!=='BreathAware');
+    // 疊加模式：同一天允許多筆 BreathAware 紀錄
     jteRec.linked.push({
       source:'BreathAware',
       recordId:record.id,
