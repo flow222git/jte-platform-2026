@@ -354,7 +354,55 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 </div>
 <div class="toast" id="toast-el"></div>
 
-<script>
+<script type="module">
+
+// ── FIREBASE INIT ──
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+  authDomain: "jointoenjoy.firebaseapp.com",
+  projectId: "jointoenjoy",
+  storageBucket: "jointoenjoy.firebasestorage.app",
+  messagingSenderId: "978242729427",
+  appId: "1:978242729427:web:ab31364f21c67c2ab56b26"
+};
+
+const _fbApp = initializeApp(firebaseConfig);
+const _db = getFirestore(_fbApp);
+
+// 寫入 Firestore
+async function fsSaveDailyCheck(email, dateKey, data){
+  try {
+    const ref = doc(_db, 'users', email, 'daily', dateKey);
+    await setDoc(ref, data, {merge: true});
+    console.log('Firestore saved:', dateKey);
+  } catch(e){ console.warn('Firestore write failed:', e); }
+}
+
+// 讀取單日
+async function fsGetDailyCheck(email, dateKey){
+  try {
+    const ref = doc(_db, 'users', email, 'daily', dateKey);
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : null;
+  } catch(e){ console.warn('Firestore read failed:', e); return null; }
+}
+
+// 同步 localStorage 到 Firestore（登入後呼叫）
+async function fsSyncLocalToCloud(email){
+  try {
+    const all = JSON.parse(localStorage.getItem(JTE_KEY)||'{}');
+    const keys = Object.keys(all);
+    if(!keys.length) return;
+    for(const k of keys){
+      await fsSaveDailyCheck(email, k, all[k]);
+    }
+    console.log('Synced', keys.length, 'days to Firestore');
+  } catch(e){ console.warn('Sync failed:', e); }
+}
+
 // ── GOOGLE LOGIN ──
 var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 var JTE_USER=null;
@@ -387,6 +435,8 @@ function applyUser(email,name,picture){
   if(name) localStorage.setItem('jte_user_name',name);
   if(picture) localStorage.setItem('jte_user_picture',picture);
   renderUserArea();
+  // 登入後同步本機資料到 Firestore
+  setTimeout(function(){ fsSyncLocalToCloud(email); }, 500);
 }
 
 function renderUserArea(){
@@ -502,7 +552,11 @@ function saveDC(){
   var existing=JTE.get(k)||{};
   var moods=[];document.querySelectorAll('.mood-btn.sel').forEach(function(b){moods.push(b.textContent.trim())});
   var tags=[];document.querySelectorAll('.tag.sel').forEach(function(t){tags.push(t.textContent.trim())});
-  JTE.set(k,{moods:moods,energy:eVal,note:document.getElementById('dc-note').value,tags:tags,linked:existing.linked||[],createdAt:existing.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()});
+  var _dcData={moods:moods,energy:eVal,note:document.getElementById('dc-note').value,tags:tags,linked:existing.linked||[],createdAt:existing.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  JTE.set(k,_dcData);
+  // Firestore 雙寫
+  var _email=localStorage.getItem('jte_user_email');
+  if(_email) fsSaveDailyCheck(_email, k, _dcData);
   toast('今日紀錄已儲存 ✓');
   setTimeout(function(){show('cal')},1200);
 }
