@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>練息場 HRV 歷史匯入工具</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F2F4F7;color:#1A1A2E;padding:24px;max-width:600px;margin:0 auto}
+h1{font-size:18px;font-weight:700;color:#003D7C;margin-bottom:4px}
+.sub{font-size:12px;color:#6B7A8D;margin-bottom:24px}
+.card{background:white;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,61,124,0.08);margin-bottom:16px}
+.card-title{font-size:12px;font-weight:600;color:#003D7C;margin-bottom:12px;letter-spacing:0.08em}
+.btn{background:#FF8A00;color:white;border:none;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:'Inter',sans-serif;transition:all 0.2s}
+.btn:hover{background:#e07a00}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.btn-ghost{background:transparent;color:#003D7C;border:1.5px solid #003D7C;border-radius:999px;padding:10px 20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;margin-top:8px;width:100%}
+.log{background:#F2F4F7;border-radius:10px;padding:12px;font-size:11px;font-family:monospace;height:200px;overflow-y:auto;line-height:1.8;margin-top:12px}
+.log .ok{color:#4CAF19}
+.log .err{color:#e03a3a}
+.log .info{color:#003D7C}
+.progress{background:#EEF3F9;border-radius:999px;height:8px;margin-top:12px;overflow:hidden}
+.progress-bar{background:#4CAF19;height:100%;border-radius:999px;width:0%;transition:width 0.3s}
+.stat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.stat-item{background:#F2F4F7;border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;color:#FF8A00}
+.stat-lbl{font-size:9px;color:#6B7A8D;margin-top:2px}
+.user-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.user-item{display:flex;align-items:center;justify-content:space-between;background:#F2F4F7;border-radius:8px;padding:8px 12px;font-size:11px}
+.user-email{color:#003D7C;font-weight:500}
+.user-count{color:#6B7A8D}
+.badge{background:#E6F4EA;color:#4CAF19;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:600}
+.badge-warn{background:#FFF3E0;color:#FF8A00}
+</style>
+</head>
+<body>
+
+<h1>練息場 HRV 歷史匯入工具</h1>
+<p class="sub">將 HRV Sheet 歷史資料一次性匯入 Firestore，包含個人資料與每日量測紀錄</p>
+
+<div class="card">
+  <div class="card-title">匯入概覽</div>
+  <div class="user-list">
+    <div class="user-item"><span class="user-email">dabo@jointoenjoy.com</span><span><span class="badge">大寶</span> <span class="user-count">6 筆</span></span></div>
+    <div class="user-item"><span class="user-email">simon@medialand.tw</span><span><span class="badge">Simon</span> <span class="user-count">5 筆</span></span></div>
+    <div class="user-item"><span class="user-email">meiko79105@gmail.com</span><span><span class="badge">立希</span> <span class="user-count">2 筆</span></span></div>
+    <div class="user-item"><span class="user-email">alan@medialand.tw</span><span><span class="badge">Alan</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">Ray@medialand.tw</span><span><span class="badge badge-warn">Ray</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">Tim@medialand.tw</span><span><span class="badge">Tim</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">Kiki@medialand.tw</span><span><span class="badge">kiki</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">Amber.liao@pilotpr.com.tw</span><span><span class="badge">Amber</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">yehjames0720@gmail.com</span><span><span class="badge badge-warn">—</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">jenny@medialand.tw</span><span><span class="badge badge-warn">—</span> <span class="user-count">1 筆</span></span></div>
+    <div class="user-item"><span class="user-email">jasmine@medialan.tw</span><span><span class="badge badge-warn">—</span> <span class="user-count">1 筆</span></span></div>
+  </div>
+  <div class="stat">
+    <div class="stat-item"><div class="stat-val">11</div><div class="stat-lbl">用戶</div></div>
+    <div class="stat-item"><div class="stat-val">21</div><div class="stat-lbl">HRV 紀錄</div></div>
+    <div class="stat-item"><div class="stat-val">7</div><div class="stat-lbl">有個人資料</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">執行匯入</div>
+  <button class="btn" id="importBtn" onclick="startImport()">開始匯入到 Firestore</button>
+  <div class="progress" id="progressWrap" style="display:none">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="log" id="log" style="display:none"></div>
+</div>
+
+<script>
+// ── FIREBASE INIT ──
+var _db;
+window.addEventListener('load', function(){
+  try {
+    firebase.initializeApp({
+      apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+      authDomain:"jointoenjoy.firebaseapp.com",
+      projectId:"jointoenjoy",
+      storageBucket:"jointoenjoy.firebasestorage.app",
+      messagingSenderId:"978242729427",
+      appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+    });
+    _db = firebase.firestore();
+    log('info', 'Firebase 連線成功 ✓');
+  } catch(e){ log('err', 'Firebase 連線失敗: '+e.message); }
+});
+
+function log(type, msg){
+  var el = document.getElementById('log');
+  el.style.display='block';
+  var line = document.createElement('div');
+  line.className = type;
+  line.textContent = (new Date().toLocaleTimeString('zh-TW'))+' '+msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct){
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('progressBar').style.width = pct+'%';
+}
+
+// ── HRV 資料（從 Sheet 整理）──
+var PROFILES = {
+  'dabo@jointoenjoy.com':     {name:'大寶', birthDate:'1981-08-05', gender:'女性'},
+  'simon@medialand.tw':       {name:'Simon', birthDate:'1973-06-02', gender:'男性'},
+  'meiko79105@gmail.com':     {name:'立希', birthDate:'1990-10-05', gender:'女性'},
+  'alan@medialand.tw':        {name:'Alan', birthDate:'1982-08-13', gender:'男性'},
+  'Ray@medialand.tw':         {name:'Ray', birthDate:'1976-01-04', gender:''},
+  'Tim@medialand.tw':         {name:'Tim', birthDate:'1966-05-02', gender:'男性'},
+  'Kiki@medialand.tw':        {name:'kiki', birthDate:'', gender:'女性'},
+  'Amber.liao@pilotpr.com.tw':{name:'Amber', birthDate:'1971-12-04', gender:'女性'},
+};
+
+var HRV_RECORDS = [
+  // dabo@jointoenjoy.com
+  {recordId:'migrated-2',email:'dabo@jointoenjoy.com',measureDate:'2026-05-08',stressIndex:176,emotionalFlexibility:35,relaxationIndex:40,vitalityIndex:1851,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'migrated-4',email:'dabo@jointoenjoy.com',measureDate:'2026-05-07',stressIndex:210,emotionalFlexibility:24,relaxationIndex:20,vitalityIndex:515,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'1778338788843-i26nd8tksh',email:'dabo@jointoenjoy.com',measureDate:'2026-05-09',stressIndex:170,emotionalFlexibility:27,relaxationIndex:16,vitalityIndex:748,averageHeartRate:79,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  {recordId:'1778338843794-d2i0g1eqrx8',email:'dabo@jointoenjoy.com',measureDate:'2026-05-09',stressIndex:170,emotionalFlexibility:27,relaxationIndex:16,vitalityIndex:748,averageHeartRate:79,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:'剛做完銅鑼浴 散步回家 其實身體感覺蠻鬆的欸'},
+  {recordId:'1778339002482-h5pk6a0yzqf',email:'dabo@jointoenjoy.com',measureDate:'2026-05-09',stressIndex:166,emotionalFlexibility:36,relaxationIndex:23,vitalityIndex:1359,averageHeartRate:78,assessmentTitle:'煞車失靈',assessmentLevel:'高能耗損型',assessmentObservation:'壓力油門偏強、放鬆煞車偏弱，神經系統可能不容易關機。',assessmentRecommendation:'做 5 到 10 分鐘慢呼吸，優先嘗試約每分鐘 6 次、吐氣略長於吸氣；睡前降低螢幕、工作訊息與刺激性內容。',note:'先做3分鐘諧振呼吸後 再測'},
+  {recordId:'1778579400943-99pzbpguwf',email:'dabo@jointoenjoy.com',measureDate:'2026-05-12',stressIndex:166,emotionalFlexibility:28,relaxationIndex:24,vitalityIndex:656,averageHeartRate:88,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:'準備下班的測試'},
+  {recordId:'1778659178485-ee7jgvphdvn',email:'dabo@jointoenjoy.com',measureDate:'2026-05-13',stressIndex:130,emotionalFlexibility:46,relaxationIndex:26,vitalityIndex:2496,averageHeartRate:98,assessmentTitle:'穩定可用',assessmentLevel:'一般狀態',assessmentObservation:'四項核心指標未出現明顯警訊，整體狀態可支撐一般日常活動。',assessmentRecommendation:'維持規律作息，並累積至少 7 天個人基準線；若主觀感受與數據不一致，以身體感受與趨勢為優先。',note:''},
+  // simon@medialand.tw
+  {recordId:'migrated-5',email:'simon@medialand.tw',measureDate:'2026-05-07',stressIndex:79,emotionalFlexibility:58,relaxationIndex:34,vitalityIndex:3232,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'1778323925587-uje9ha53maj',email:'simon@medialand.tw',measureDate:'2026-05-09',stressIndex:66,emotionalFlexibility:49,relaxationIndex:34,vitalityIndex:2417,averageHeartRate:58,assessmentTitle:'穩定可用',assessmentLevel:'一般狀態',assessmentObservation:'四項核心指標未出現明顯警訊，整體狀態可支撐一般日常活動。',assessmentRecommendation:'維持規律作息，並累積至少 7 天個人基準線；若主觀感受與數據不一致，以身體感受與趨勢為優先。',note:''},
+  {recordId:'1778382549443-89wxhu8i29s',email:'simon@medialand.tw',measureDate:'2026-05-10',stressIndex:59,emotionalFlexibility:62,relaxationIndex:21,vitalityIndex:3579,averageHeartRate:65,assessmentTitle:'黃金狀態',assessmentLevel:'高能韌性型',assessmentObservation:'生理能量、情緒調節與壓力負荷組合良好，身心彈性佳。',assessmentRecommendation:'適合安排重要決策、創造性工作或品質較高的訓練；仍保留收操與睡眠，避免因狀態好而過度透支。',note:''},
+  {recordId:'1778391861789-gmzlgok2yj5',email:'simon@medialand.tw',measureDate:'2026-05-10',stressIndex:53,emotionalFlexibility:54,relaxationIndex:31,vitalityIndex:2878,averageHeartRate:65,assessmentTitle:'黃金狀態',assessmentLevel:'高能韌性型',assessmentObservation:'生理能量、情緒調節與壓力負荷組合良好，身心彈性佳。',assessmentRecommendation:'適合安排重要決策、創造性工作或品質較高的訓練；仍保留收操與睡眠，避免因狀態好而過度透支。',note:''},
+  // meiko79105@gmail.com
+  {recordId:'migrated-3',email:'meiko79105@gmail.com',measureDate:'2026-05-07',stressIndex:140,emotionalFlexibility:47,relaxationIndex:25,vitalityIndex:2185,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'1778492635833-re1uoqiovk',email:'meiko79105@gmail.com',measureDate:'2026-05-11',stressIndex:437,emotionalFlexibility:18,relaxationIndex:13,vitalityIndex:326,averageHeartRate:98,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  // others
+  {recordId:'migrated-6',email:'jenny@medialand.tw',measureDate:'2026-05-08',stressIndex:89,emotionalFlexibility:48,relaxationIndex:35,vitalityIndex:2250,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'migrated-7',email:'jasmine@medialan.tw',measureDate:'2026-05-08',stressIndex:100,emotionalFlexibility:52,relaxationIndex:33,vitalityIndex:2914,averageHeartRate:null,assessmentTitle:'',assessmentLevel:'',note:''},
+  {recordId:'1778659716811-8aazh7vlm3l',email:'alan@medialand.tw',measureDate:'2026-05-13',stressIndex:132,emotionalFlexibility:39,relaxationIndex:30,vitalityIndex:1414,averageHeartRate:74,assessmentTitle:'穩定可用',assessmentLevel:'一般狀態',assessmentObservation:'四項核心指標未出現明顯警訊，整體狀態可支撐一般日常活動。',assessmentRecommendation:'維持規律作息，並累積至少 7 天個人基準線；若主觀感受與數據不一致，以身體感受與趨勢為優先。',note:''},
+  {recordId:'1778659898420-pi56414ftnb',email:'Ray@medialand.tw',measureDate:'2026-05-13',stressIndex:266,emotionalFlexibility:21,relaxationIndex:13,vitalityIndex:409,averageHeartRate:81,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  {recordId:'1778660299419-2xeqbz10s9n',email:'Tim@medialand.tw',measureDate:'2026-05-13',stressIndex:364,emotionalFlexibility:18,relaxationIndex:20,vitalityIndex:291,averageHeartRate:81,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  {recordId:'1778660601615-b5givaw6sf',email:'Kiki@medialand.tw',measureDate:'2026-05-13',stressIndex:237,emotionalFlexibility:28,relaxationIndex:18,vitalityIndex:822,averageHeartRate:86,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  {recordId:'1778815256480-oxmdmdjen8',email:'Amber.liao@pilotpr.com.tw',measureDate:'2026-05-15',stressIndex:192,emotionalFlexibility:28,relaxationIndex:24,vitalityIndex:773,averageHeartRate:80,assessmentTitle:'紅色警戒',assessmentLevel:'能量枯竭型',assessmentObservation:'身體可能處於低能量但高緊繃的負債運轉狀態。',assessmentRecommendation:'今天優先停止加壓，避免再用咖啡因硬撐；安排 20 分鐘以上安靜躺休或提早睡眠。',note:''},
+  {recordId:'1778816047604-zi4tz3xc9a',email:'yehjames0720@gmail.com',measureDate:'2026-05-15',stressIndex:132,emotionalFlexibility:40,relaxationIndex:21,vitalityIndex:1545,averageHeartRate:77,assessmentTitle:'煞車失靈',assessmentLevel:'高能耗損型',assessmentObservation:'壓力油門偏強、放鬆煞車偏弱，神經系統可能不容易關機。',assessmentRecommendation:'做 5 到 10 分鐘慢呼吸，優先嘗試約每分鐘 6 次、吐氣略長於吸氣；睡前降低螢幕、工作訊息與刺激性內容。',note:''},
+];
+
+async function startImport(){
+  if(!_db){log('err','Firebase 未連線，請重新整理頁面');return;}
+  var btn=document.getElementById('importBtn');
+  btn.disabled=true;btn.textContent='匯入中...';
+
+  var total=HRV_RECORDS.length;
+  var done=0,ok=0,fail=0;
+
+  // 1. 寫入個人資料
+  log('info','── 開始寫入個人資料 ──');
+  var emails=Object.keys(PROFILES);
+  for(var i=0;i<emails.length;i++){
+    var email=emails[i];
+    var profile=PROFILES[email];
+    try {
+      await _db.collection('users').doc(email).set({
+        email:email,
+        name:profile.name,
+        birthDate:profile.birthDate,
+        gender:profile.gender,
+        importedAt:new Date().toISOString(),
+        source:'hrv_sheet_import'
+      },{merge:true});
+      log('ok','✓ 個人資料：'+email+' ('+profile.name+')');
+    } catch(e){
+      log('err','✗ 個人資料失敗：'+email+' — '+e.message);
+    }
+  }
+
+  // 2. 寫入 HRV 紀錄（按 email + measureDate 分組寫進 daily）
+  log('info','── 開始寫入 HRV 紀錄 ──');
+  for(var j=0;j<HRV_RECORDS.length;j++){
+    var r=HRV_RECORDS[j];
+    var cleanEmail=r.email.toLowerCase().trim();
+    try {
+      // 寫到 daily/{measureDate}/linked 陣列的方式：
+      // 先讀取現有的，再 merge
+      var docRef=_db.collection('users').doc(cleanEmail).collection('daily').doc(r.measureDate);
+      var snap=await docRef.get();
+      var existing=snap.exists?snap.data():{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:r.measureDate+'T00:00:00'};
+      if(!existing.linked)existing.linked=[];
+      // 避免重複
+      var alreadyIn=existing.linked.some(function(l){return l.recordId===r.recordId;});
+      if(!alreadyIn){
+        existing.linked.push({
+          source:'HRVRecord',
+          recordId:r.recordId,
+          measureDate:r.measureDate,
+          stressIndex:r.stressIndex,
+          emotionalFlexibility:r.emotionalFlexibility,
+          relaxationIndex:r.relaxationIndex,
+          vitalityIndex:r.vitalityIndex,
+          averageHeartRate:r.averageHeartRate||null,
+          assessmentTitle:r.assessmentTitle||'',
+          assessmentLevel:r.assessmentLevel||'',
+          assessmentObservation:r.assessmentObservation||'',
+          assessmentRecommendation:r.assessmentRecommendation||'',
+          note:r.note||'',
+          importedFrom:'hrv_sheet'
+        });
+        existing.updatedAt=new Date().toISOString();
+        await docRef.set(existing,{merge:true});
+        log('ok','✓ HRV ['+r.measureDate+'] '+cleanEmail+' — '+( r.assessmentTitle||'舊資料'));
+        ok++;
+      } else {
+        log('info','↷ 已存在跳過：'+r.recordId);
+      }
+    } catch(e){
+      log('err','✗ 失敗：'+r.recordId+' — '+e.message);
+      fail++;
+    }
+    done++;
+    setProgress(Math.round(done/total*100));
+    await new Promise(function(res){setTimeout(res,200);});
+  }
+
+  log('info','── 完成 ──');
+  log('ok','成功：'+ok+' 筆 HRV 紀錄，'+(emails.length)+' 筆個人資料');
+  if(fail>0)log('err','失敗：'+fail+' 筆');
+  btn.textContent='匯入完成 ✓';
+  btn.style.background='#4CAF19';
+}
+</script>
+</body>
+</html>
