@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -20,30 +23,22 @@
   --rc:16px;--rp:999px;
 }
 html,body{height:100%;font-family:'Inter','Noto Serif TC',sans-serif;background:var(--pp);color:var(--t);font-size:14px;line-height:1.6}
-body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height:100vh;position:relative;box-shadow:0 0 40px rgba(0,61,124,0.08)}
-
-/* NAV */
-.nav{background:rgba(242,244,247,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,61,124,0.1);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height:100vh;box-shadow:0 0 40px rgba(0,61,124,0.08)}
+.nav{background:rgba(242,244,247,0.95);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,61,124,0.1);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .nav-brand{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--p);letter-spacing:0.08em}
 .nav-sub{font-size:9px;color:var(--m);letter-spacing:0.12em;display:block;margin-top:1px}
 .nav-links{display:flex;gap:2px}
 .nav-btn{background:none;border:none;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:var(--rp);color:var(--m);transition:all 0.2s;font-family:'Inter',sans-serif}
 .nav-btn:hover,.nav-btn.active{background:var(--st);color:var(--p);font-weight:500}
-.nav-cta{background:var(--o);color:white;border:none;padding:7px 14px;border-radius:var(--rp);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:all 0.2s;font-family:'Inter',sans-serif}
-.nav-cta:hover{background:#e07a00;transform:scale(1.03)}
-
-/* SCROLL */
+.nav-cta{background:var(--o);color:white;border:none;padding:7px 14px;border-radius:var(--rp);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
+.nav-cta:hover{background:#e07a00}
 .scroll-area{flex:1;overflow-y:auto;padding-bottom:58px}
-
-/* PAGE */
 .page{display:none;animation:fadeIn 0.28s ease}
 .page.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* HERO */
 .hero{background:linear-gradient(155deg,#003D7C 0%,#1a5fa0 65%,#2478c0 100%);padding:48px 20px 36px;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-40px;right:-60px;width:180px;height:180px;background:rgba(168,201,238,0.12);border-radius:50%;pointer-events:none}
-.hero::after{content:'';position:absolute;bottom:-30px;left:-40px;width:130px;height:130px;background:rgba(76,175,25,0.1);border-radius:50%;pointer-events:none}
+.hero::before{content:'';position:absolute;top:-40px;right:-60px;width:180px;height:180px;background:rgba(168,201,238,0.12);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-30px;left:-40px;width:130px;height:130px;background:rgba(76,175,25,0.1);border-radius:50%}
 .hero-eyebrow{font-size:9px;letter-spacing:0.2em;color:var(--pl);text-transform:uppercase;margin-bottom:10px}
 .hero-title{font-family:'Noto Serif TC',serif;font-size:clamp(1.5rem,5vw,2.2rem);font-weight:700;color:white;letter-spacing:0.08em;line-height:1.3;margin-bottom:10px}
 .hero-sub{font-size:12px;color:rgba(168,201,238,0.9);margin-bottom:22px;max-width:300px;margin-left:auto;margin-right:auto;line-height:1.7}
@@ -51,77 +46,56 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 .btn-p{background:var(--o);color:white;border:none;padding:10px 22px;border-radius:var(--rp);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
 .btn-p:hover{transform:scale(1.04)}
 .btn-g{background:transparent;color:white;border:1.5px solid rgba(255,255,255,0.35);padding:10px 22px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
-.btn-g:hover{border-color:white;background:rgba(255,255,255,0.06)}
-
-/* SECTIONS */
+.btn-g:hover{border-color:white}
 .section{padding:24px 16px}
 .sec-lbl{display:flex;align-items:baseline;gap:6px;margin-bottom:14px}
 .sec-num{font-size:10px;font-weight:700;color:var(--p);font-family:'Inter',sans-serif;letter-spacing:0.15em}
 .sec-title{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;color:var(--p);letter-spacing:0.1em}
 .sec-en{font-size:8px;color:var(--pl);letter-spacing:0.2em;font-family:'Inter',sans-serif}
-
-/* TOOL CARDS */
 .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tool-card{background:var(--s);border-radius:var(--rc);padding:14px;box-shadow:var(--sc);cursor:pointer;transition:all 0.25s;border:1.5px solid transparent}
 .tool-card:hover{box-shadow:var(--sh);transform:translateY(-2px);border-color:var(--pl)}
 .tool-icon{font-size:20px;margin-bottom:7px}
-.tool-name{font-size:11px;font-weight:600;color:var(--p);margin-bottom:3px;letter-spacing:0.05em}
+.tool-name{font-size:11px;font-weight:600;color:var(--p);margin-bottom:3px}
 .tool-desc{font-size:10px;color:var(--m);line-height:1.5}
 .tool-tag{display:inline-block;background:var(--gp);color:var(--g);font-size:8px;padding:2px 8px;border-radius:var(--rp);margin-top:7px;font-weight:500}
-
-/* FLOW */
-.flow{display:flex;gap:0;overflow-x:auto;padding:3px 0 10px;scrollbar-width:none}
+.flow{display:flex;overflow-x:auto;padding:3px 0 10px;scrollbar-width:none}
 .flow::-webkit-scrollbar{display:none}
 .flow-node{background:var(--s);border:1.5px solid var(--pl);border-radius:20px;padding:5px 11px;font-size:10px;color:var(--p);font-weight:500;white-space:nowrap;flex-shrink:0}
 .flow-arrow{color:var(--pl);font-size:11px;margin:0 3px;flex-shrink:0;align-self:center}
-
-/* CARD */
 .card{background:var(--s);border-radius:var(--rc);padding:14px;box-shadow:var(--sc)}
 .card-title{font-size:10px;font-weight:600;color:var(--p);letter-spacing:0.1em;margin-bottom:10px;display:flex;align-items:center;gap:5px}
-.card-title i{font-size:14px}
-
-/* DAILY CHECK */
 .dc-hdr{background:var(--p);padding:18px 16px 14px;color:white}
 .dc-date{font-size:10px;color:var(--pl);letter-spacing:0.1em;margin-bottom:3px}
 .dc-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;letter-spacing:0.08em}
 .dc-body{padding:16px;display:flex;flex-direction:column;gap:12px}
-
 .mood-grid{display:flex;gap:6px;flex-wrap:wrap}
 .mood-btn{background:var(--st);border:1.5px solid transparent;border-radius:var(--rp);padding:5px 13px;font-size:11px;color:var(--m);cursor:pointer;transition:all 0.18s;font-family:'Inter',sans-serif}
-.mood-btn:hover,.mood-btn.sel{background:var(--pp);border-color:var(--p);color:var(--p);font-weight:500}
-
+.mood-btn.sel{background:var(--pp);border-color:var(--p);color:var(--p);font-weight:500}
 .energy-row{display:flex;gap:5px;flex-wrap:wrap}
-.e-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--pl);cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--m);font-weight:500}
+.e-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--pl);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--m);font-weight:500;transition:all 0.18s}
 .e-dot.on{background:var(--o);border-color:var(--o);color:white}
-
 .dc-ta{width:100%;border:1.5px solid var(--pl);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t);resize:none;font-family:'Inter',sans-serif;background:var(--pp);outline:none;transition:border 0.18s;line-height:1.7}
 .dc-ta:focus{border-color:var(--p)}
 .dc-ta::placeholder{color:var(--m)}
-
 .tags-row{display:flex;gap:6px;flex-wrap:wrap}
 .tag{background:var(--gp);color:var(--g);padding:4px 10px;border-radius:var(--rp);font-size:10px;cursor:pointer;transition:all 0.18s;border:1.5px solid transparent}
-.tag:hover,.tag.sel{background:var(--g);color:white}
+.tag.sel{background:var(--g);color:white}
 .tag-b{background:var(--st);color:var(--p)}
-.tag-b:hover,.tag-b.sel{background:var(--p);color:white}
-
-/* HRV */
+.tag-b.sel{background:var(--p);color:white}
 .hrv-card{background:var(--gp);border-radius:var(--rc);padding:12px;border:1.5px solid var(--gl)}
 .hrv-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .hrv-stat{background:white;border-radius:10px;padding:8px 10px}
 .hrv-val{font-size:18px;font-weight:700;color:var(--o)}
 .hrv-lbl{font-size:9px;color:var(--m);margin-top:1px}
 .hrv-badge{display:inline-block;background:var(--p);color:white;font-size:9px;padding:3px 9px;border-radius:var(--rp);margin-bottom:6px;font-weight:600}
-.hrv-mock-btn{background:var(--p);color:white;border:none;border-radius:var(--rp);padding:8px 16px;font-size:11px;font-weight:500;cursor:pointer;width:100%;margin-top:8px;font-family:'Inter',sans-serif;transition:all 0.2s;letter-spacing:0.03em}
+.hrv-mock-btn{background:var(--p);color:white;border:none;border-radius:var(--rp);padding:8px 16px;font-size:11px;font-weight:500;cursor:pointer;width:100%;margin-top:8px;font-family:'Inter',sans-serif;transition:all 0.2s}
 .hrv-mock-btn:hover{background:#005bb5}
-
-.dc-submit{background:var(--o);color:white;border:none;border-radius:var(--rp);padding:12px 24px;font-size:13px;font-weight:600;cursor:pointer;width:100%;letter-spacing:0.04em;font-family:'Inter',sans-serif;transition:all 0.2s}
-.dc-submit:hover{background:#e07a00;transform:scale(1.02)}
-.export-btn{background:transparent;color:var(--p);border:1.5px solid var(--p);border-radius:var(--rp);padding:11px 16px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap}
-.export-btn:hover{background:var(--st)}
-
-/* CALENDAR */
+.dc-submit{background:var(--o);color:white;border:none;border-radius:var(--rp);padding:12px 24px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:'Inter',sans-serif;transition:all 0.2s}
+.dc-submit:hover{background:#e07a00}
+.export-btn{background:transparent;color:var(--p);border:1.5px solid var(--p);border-radius:var(--rp);padding:11px 16px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
 .cal-hdr{background:var(--p);padding:14px 16px;color:white;display:flex;align-items:center;justify-content:space-between}
-.cal-nav-btn{background:none;border:none;color:white;cursor:pointer;font-size:18px;padding:4px 10px;border-radius:8px;transition:background 0.15s;line-height:1}
+.cal-nav-btn{background:none;border:none;color:white;cursor:pointer;font-size:18px;padding:4px 10px;border-radius:8px}
 .cal-nav-btn:hover{background:rgba(255,255,255,0.12)}
 .cal-month{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;letter-spacing:0.08em}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
@@ -140,39 +114,20 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 .stat-card{background:var(--s);border-radius:var(--rc);padding:12px;box-shadow:var(--sc);text-align:center}
 .stat-val{font-size:22px;font-weight:700}
 .stat-lbl{font-size:9px;color:var(--m);margin-top:2px}
-
-/* DAY DETAIL */
 .detail-sec{padding:0 16px 24px}
 .linked-item{background:var(--gp);border-radius:10px;padding:10px 12px;margin-top:6px;border-left:3px solid var(--g)}
-.linked-title{font-size:10px;font-weight:600;color:var(--p);margin-bottom:4px}
-.linked-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
-.linked-kv{font-size:9px;color:var(--m)}
-.linked-kv span{color:var(--t);font-weight:500}
-
-/* BOTTOM NAV */
-.bnav{background:rgba(242,244,247,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(0,61,124,0.1);display:flex;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:100}
+.bnav{background:rgba(242,244,247,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(0,61,124,0.1);display:flex;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:100}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px 6px;cursor:pointer;border:none;background:none;color:var(--m);font-size:9px;gap:2px;font-family:'Inter',sans-serif;transition:color 0.18s}
 .bnav-btn i{font-size:18px}
 .bnav-btn.active{color:var(--p);font-weight:600}
-
-/* TOAST */
 .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--p);color:white;padding:8px 20px;border-radius:var(--rp);font-size:11px;font-weight:500;opacity:0;transition:all 0.25s;pointer-events:none;z-index:300;white-space:nowrap;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-@media(max-width:380px){
-  .tools-grid{grid-template-columns:1fr 1fr}
-  .hero-title{font-size:1.4rem}
-}
+#settings-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center}
 </style>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-
 <nav class="nav">
-  <div>
-    <span class="nav-brand">練息場</span>
-    <span class="nav-sub">JOIN TO ENJOY</span>
-  </div>
+  <div><span class="nav-brand">練息場</span><span class="nav-sub">JOIN TO ENJOY</span></div>
   <div class="nav-links">
     <button class="nav-btn active" onclick="show('landing')">首頁</button>
     <button class="nav-btn" onclick="show('daily')">今日</button>
@@ -196,19 +151,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
       <button class="btn-g" onclick="show('cal')">查看我的紀錄</button>
     </div>
   </div>
-
   <div class="section">
-    <div class="sec-lbl">
-      <span class="sec-num">01</span>
-      <span class="sec-title">工具入口</span>
-      <span class="sec-en">TOOLS</span>
-    </div>
+    <div class="sec-lbl"><span class="sec-num">01</span><span class="sec-title">工具入口</span><span class="sec-en">TOOLS</span></div>
     <div class="tools-grid">
       <div class="tool-card" onclick="location.href='breathaware/'">
         <div class="tool-icon"><i class="ti ti-wind" style="color:#003D7C"></i></div>
         <div class="tool-name">BreathAware</div>
         <div class="tool-desc">呼吸覺察紀錄<br>BPM · 吸吐比 · 感受</div>
-        <span class="tool-tag">Phase 2 整合中</span>
+        <span class="tool-tag">Phase 2</span>
       </div>
       <div class="tool-card" onclick="location.href='xiaoqi/'">
         <div class="tool-icon"><i class="ti ti-leaf" style="color:#4CAF19"></i></div>
@@ -230,13 +180,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
       </div>
     </div>
   </div>
-
   <div class="section" style="padding-top:0">
-    <div class="sec-lbl">
-      <span class="sec-num">02</span>
-      <span class="sec-title">核心循環</span>
-      <span class="sec-en">CORE LOOP</span>
-    </div>
+    <div class="sec-lbl"><span class="sec-num">02</span><span class="sec-title">核心循環</span><span class="sec-en">CORE LOOP</span></div>
     <div class="flow">
       <div class="flow-node">Daily Check</div><span class="flow-arrow">›</span>
       <div class="flow-node">量測</div><span class="flow-arrow">›</span>
@@ -247,7 +192,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
       <div class="flow-node">趨勢洞察</div>
     </div>
   </div>
-
   <div style="padding:0 16px 32px">
     <div class="card" style="background:var(--p);color:white">
       <div style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;letter-spacing:0.08em;margin-bottom:7px">科學，讓療癒更有據。</div>
@@ -267,31 +211,31 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <div class="card">
       <div class="card-title"><i class="ti ti-mood-smile"></i>今日狀態</div>
       <div class="mood-grid">
-        <button class="mood-btn" onclick="toggleMood(this)">😌 平靜</button>
-        <button class="mood-btn" onclick="toggleMood(this)">⚡ 有活力</button>
-        <button class="mood-btn" onclick="toggleMood(this)">😤 有壓力</button>
-        <button class="mood-btn" onclick="toggleMood(this)">😞 低落</button>
-        <button class="mood-btn" onclick="toggleMood(this)">🌀 焦慮</button>
-        <button class="mood-btn" onclick="toggleMood(this)">🧘 放鬆</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">😌 平靜</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">⚡ 有活力</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">😤 有壓力</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">😞 低落</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">🌀 焦慮</button>
+        <button class="mood-btn" onclick="this.classList.toggle('sel')">🧘 放鬆</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-bolt"></i>能量指數 <span id="e-val" style="color:var(--o);font-size:11px;margin-left:auto">5 / 10</span></div>
+      <div class="card-title"><i class="ti ti-bolt"></i>能量指數 <span id="e-val" style="color:var(--o);font-size:11px;margin-left:auto">5/10</span></div>
       <div class="energy-row" id="e-row"></div>
     </div>
     <div class="card">
       <div class="card-title"><i class="ti ti-note"></i>今日註記</div>
-      <textarea class="dc-ta" rows="3" placeholder="今天想記錄什麼？可以是感受、事件、身體狀況…" id="dc-note"></textarea>
+      <textarea class="dc-ta" rows="3" placeholder="今天想記錄什麼？" id="dc-note"></textarea>
     </div>
     <div class="card">
       <div class="card-title"><i class="ti ti-tag"></i>感受標籤</div>
       <div class="tags-row">
-        <span class="tag" onclick="toggleTag(this)">身體疲勞</span>
-        <span class="tag" onclick="toggleTag(this)">頭腦清醒</span>
-        <span class="tag" onclick="toggleTag(this)">心情平穩</span>
-        <span class="tag tag-b" onclick="toggleTag(this)">工作專注</span>
-        <span class="tag tag-b" onclick="toggleTag(this)">睡眠良好</span>
-        <span class="tag tag-b" onclick="toggleTag(this)">社交消耗</span>
+        <span class="tag" onclick="this.classList.toggle('sel')">身體疲勞</span>
+        <span class="tag" onclick="this.classList.toggle('sel')">頭腦清醒</span>
+        <span class="tag" onclick="this.classList.toggle('sel')">心情平穩</span>
+        <span class="tag tag-b" onclick="this.classList.toggle('sel')">工作專注</span>
+        <span class="tag tag-b" onclick="this.classList.toggle('sel')">睡眠良好</span>
+        <span class="tag tag-b" onclick="this.classList.toggle('sel')">社交消耗</span>
       </div>
     </div>
     <div class="card">
@@ -316,9 +260,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <button class="cal-nav-btn" onclick="chMonth(1)">›</button>
   </div>
   <div style="padding:10px 14px 0">
-    <div class="cal-dow">
-      <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-    </div>
+    <div class="cal-dow"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="cal-days" id="cal-days"></div>
   </div>
   <div class="legend">
@@ -334,66 +276,344 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
   <div id="cal-detail" class="detail-sec"></div>
 </div>
 
-</div><!-- scroll-area -->
+</div>
 
-<nav class="bnav">
-  <button class="bnav-btn active" id="bnav-landing" onclick="show('landing')"><i class="ti ti-home"></i>首頁</button>
-  <button class="bnav-btn" id="bnav-daily" onclick="show('daily')"><i class="ti ti-circle-check"></i>今日</button>
-  <button class="bnav-btn" id="bnav-cal" onclick="show('cal')"><i class="ti ti-calendar"></i>日曆</button>
-  <button class="bnav-btn" onclick="toast('紀錄中心 Phase 2 開放')"><i class="ti ti-files"></i>紀錄</button>
-  <button class="bnav-btn" onclick="showSettings()"><i class="ti ti-settings"></i>設定</button>
-</nav>
-
-<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center">
-  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,0.12)">
-    <div style="font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--p);margin-bottom:16px;letter-spacing:0.08em">設定</div>
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div style="background:white;border-radius:20px;padding:28px 24px 32px;width:88%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.2)">
+    <div style="font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--p);margin-bottom:16px">設定</div>
     <div id="settings-user-info" style="background:var(--st);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--p)">尚未登入</div>
     <div id="settings-login-btn" style="margin-bottom:12px"></div>
     <button onclick="closeSettings()" style="width:100%;background:var(--pp);border:none;border-radius:var(--rp);padding:10px;font-size:12px;color:var(--m);cursor:pointer;font-family:'Inter',sans-serif">關閉</button>
   </div>
 </div>
+
+<nav class="bnav">
+  <button class="bnav-btn active" id="bnav-landing" onclick="show('landing')"><i class="ti ti-home"></i>首頁</button>
+  <button class="bnav-btn" id="bnav-daily" onclick="show('daily')"><i class="ti ti-circle-check"></i>今日</button>
+  <button class="bnav-btn" id="bnav-cal" onclick="show('cal')"><i class="ti ti-calendar"></i>日曆</button>
+  <button class="bnav-btn" onclick="toast('紀錄中心即將開放')"><i class="ti ti-files"></i>紀錄</button>
+  <button class="bnav-btn" id="bnav-settings" onclick="showSettings()"><i class="ti ti-settings"></i>設定</button>
+</nav>
+
 <div class="toast" id="toast-el"></div>
 
-<script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore-compat.js"></script>
 <script>
-// ── FIREBASE INIT ──
-const firebaseConfig = {
-  apiKey: "AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
-  authDomain: "jointoenjoy.firebaseapp.com",
-  projectId: "jointoenjoy",
-  storageBucket: "jointoenjoy.firebasestorage.app",
-  messagingSenderId: "978242729427",
-  appId: "1:978242729427:web:ab31364f21c67c2ab56b26"
-};
-firebase.initializeApp(firebaseConfig);
-const _db = firebase.firestore();
-
-async function fsSaveDailyCheck(email, dateKey, data){
+// ── FIREBASE ──
+var _db=null;
+function initFirebase(){
+  if(typeof firebase==='undefined'){
+    setTimeout(initFirebase,200);return;
+  }
   try {
-    await _db.collection('users').doc(email).collection('daily').doc(dateKey).set(data, {merge:true});
-    console.log('Firestore saved:', dateKey);
-  } catch(e){ console.warn('Firestore write failed:', e); }
-}
-
-async function fsGetDailyCheck(email, dateKey){
-  try {
-    const snap = await _db.collection('users').doc(email).collection('daily').doc(dateKey).get();
-    return snap.exists ? snap.data() : null;
-  } catch(e){ console.warn('Firestore read failed:', e); return null; }
-}
-
-async function fsSyncLocalToCloud(email){
-  try {
-    const all = JSON.parse(localStorage.getItem(JTE_KEY)||'{}');
-    const keys = Object.keys(all);
-    if(!keys.length) return;
-    for(const k of keys){
-      await fsSaveDailyCheck(email, k, all[k]);
+    if(firebase.apps.length===0){
+      firebase.initializeApp({
+        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+        authDomain:"jointoenjoy.firebaseapp.com",
+        projectId:"jointoenjoy",
+        storageBucket:"jointoenjoy.firebasestorage.app",
+        messagingSenderId:"978242729427",
+        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+      });
     }
-    console.log('Synced', keys.length, 'days to Firestore');
-  } catch(e){ console.warn('Sync failed:', e); }
+    _db=firebase.firestore();
+    console.log('Firebase ready');
+  } catch(e){ console.warn('Firebase init failed',e); }
 }
+
+function fsSave(email,dateKey,data){
+  if(!_db||!email) return;
+  _db.collection('users').doc(email).collection('daily').doc(dateKey).set(data,{merge:true})
+    .then(function(){console.log('Firestore saved:',dateKey);})
+    .catch(function(e){console.warn('Firestore write failed:',e);});
+}
+function fsSync(email){
+  if(!_db||!email) return;
+  var all=JTE.getAll();
+  Object.keys(all).forEach(function(k){ fsSave(email,k,all[k]); });
+}
+
+// ── STORAGE ──
+var JTE_KEY='jte_daily_v1';
+var JTE={
+  getAll:function(){try{return JSON.parse(localStorage.getItem(JTE_KEY)||'{}')}catch(e){return{}}},
+  get:function(d){return this.getAll()[d]||null},
+  set:function(d,data){var all=this.getAll();all[d]=Object.assign(all[d]||{},data);localStorage.setItem(JTE_KEY,JSON.stringify(all))},
+  todayKey:function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},
+  writeback:function(source,data){
+    var k=this.todayKey();
+    var rec=this.get(k)||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
+    if(!rec.linked)rec.linked=[];
+    rec.linked=rec.linked.filter(function(l){return l.source!==source;});
+    rec.linked.push(Object.assign({source:source},data));
+    rec.updatedAt=new Date().toISOString();
+    var all=this.getAll();all[k]=rec;localStorage.setItem(JTE_KEY,JSON.stringify(all));
+  }
+};
+
+// ── GOOGLE LOGIN ──
+var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+var JTE_USER=null;
+
+function handleCredential(resp){
+  var p=JSON.parse(atob(resp.credential.split('.')[1]));
+  applyUser(p.email,p.name,p.picture);
+}
+
+function applyUser(email,name,picture){
+  JTE_USER={email:email,name:name||email,picture:picture||''};
+  JTE_KEY='jte_daily_'+email.replace(/[^a-zA-Z0-9]/g,'_');
+  localStorage.setItem('jte_user_email',email);
+  if(name)localStorage.setItem('jte_user_name',name);
+  if(picture)localStorage.setItem('jte_user_picture',picture);
+  renderUserArea();
+  setTimeout(function(){fsSync(email);},800);
+}
+
+function renderUserArea(){
+  var area=document.getElementById('nav-user-area');
+  if(!area)return;
+  var email=JTE_USER?JTE_USER.email:localStorage.getItem('jte_user_email')||'';
+  var name=JTE_USER?JTE_USER.name:(localStorage.getItem('jte_user_name')||email);
+  var pic=JTE_USER?JTE_USER.picture:(localStorage.getItem('jte_user_picture')||'');
+  var short=name.split('@')[0];
+  area.innerHTML='';
+  if(pic){var img=document.createElement('img');img.src=pic;img.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--pl);cursor:pointer';img.onclick=function(){show('daily')};area.appendChild(img);}
+  var sp=document.createElement('span');sp.textContent=short;sp.style.cssText='font-size:11px;color:var(--p);font-weight:600;cursor:pointer;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';sp.onclick=function(){show('daily')};area.appendChild(sp);
+  var btn=document.createElement('button');btn.className='nav-cta';btn.style.cssText='font-size:10px;padding:5px 10px';btn.textContent='今日 Check';btn.onclick=function(){show('daily')};area.appendChild(btn);
+}
+
+function signOut(){
+  if(window.google&&google.accounts)google.accounts.id.disableAutoSelect();
+  localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');
+  JTE_USER=null;JTE_KEY='jte_daily_v1';
+  var area=document.getElementById('nav-user-area');
+  if(area){area.innerHTML='';var btn=document.createElement('button');btn.className='nav-cta';btn.textContent='今日 Check';btn.onclick=function(){show('daily')};area.appendChild(btn);}
+  toast('已登出');
+}
+
+window.addEventListener('load',function(){
+  initFirebase();
+  var saved=localStorage.getItem('jte_user_email');
+  if(saved){applyUser(saved,localStorage.getItem('jte_user_name')||'',localStorage.getItem('jte_user_picture')||'');}
+  var t=setInterval(function(){
+    if(window.google&&google.accounts){
+      clearInterval(t);
+      google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredential,auto_select:false});
+      if(!localStorage.getItem('jte_user_email'))google.accounts.id.prompt();
+    }
+  },300);
+});
+
+// ── HRV MOCK ──
+var mockHRV={recordId:'1778382549443',measureDate:'2026-05-10',stressIndex:59,emotionalFlexibility:62,relaxationIndex:21,vitalityIndex:3579,averageHeartRate:65,assessmentTitle:'黃金狀態',assessmentLevel:'高能韌性型',note:''};
+
+function writebackHRV(){
+  JTE.writeback('HRVRecord',mockHRV);
+  renderHRVCard(mockHRV);
+  toast('HRV 紀錄已掛載 ✓');
+}
+
+function renderHRVCard(hrv){
+  var colors={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
+  var c=colors[hrv.assessmentTitle]||'#003D7C';
+  var el=document.getElementById('hrv-display');
+  el.innerHTML='<div class="hrv-card"><span class="hrv-badge" style="background:'+c+'">'+hrv.assessmentTitle+'</span><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+hrv.assessmentLevel+' · '+hrv.measureDate+'</div><div class="hrv-row"><div class="hrv-stat"><div class="hrv-val">'+hrv.stressIndex+'</div><div class="hrv-lbl">壓力指數</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--g)">'+hrv.emotionalFlexibility+'</div><div class="hrv-lbl">情緒靈活度</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--p)">'+hrv.relaxationIndex+'</div><div class="hrv-lbl">放鬆指數</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--p)">'+hrv.vitalityIndex+'</div><div class="hrv-lbl">活力指數</div></div></div><button class="hrv-mock-btn" style="background:#e03a3a" onclick="removeHRV()">✕ 移除掛載</button></div>';
+}
+
+function removeHRV(){
+  var k=JTE.todayKey();var rec=JTE.get(k);
+  if(rec){rec.linked=(rec.linked||[]).filter(function(l){return l.source!=='HRVRecord';});JTE.set(k,rec);}
+  document.getElementById('hrv-display').innerHTML='<div style="font-size:10px;color:var(--m);margin-bottom:8px">將 HRV 量測結果掛載到今日紀錄：</div><button class="hrv-mock-btn" onclick="writebackHRV()"><i class="ti ti-download"></i> 掛載今日 HRV 紀錄（示範）</button>';
+  toast('已移除 HRV 掛載');
+}
+
+// ── DAILY CHECK ──
+var eVal=5;
+
+function saveDC(){
+  var k=JTE.todayKey();
+  var existing=JTE.get(k)||{};
+  var moods=[];document.querySelectorAll('.mood-btn.sel').forEach(function(b){moods.push(b.textContent.trim());});
+  var tags=[];document.querySelectorAll('.tag.sel').forEach(function(t){tags.push(t.textContent.trim());});
+  var data={moods:moods,energy:eVal,note:document.getElementById('dc-note').value,tags:tags,linked:existing.linked||[],createdAt:existing.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+  JTE.set(k,data);
+  var email=localStorage.getItem('jte_user_email');
+  if(email)fsSave(email,k,data);
+  toast('今日紀錄已儲存 ✓');
+  setTimeout(function(){show('cal');},1200);
+}
+
+function loadDC(){
+  var k=JTE.todayKey();var rec=JTE.get(k);if(!rec)return;
+  document.querySelectorAll('.mood-btn').forEach(function(b){b.classList.toggle('sel',!!(rec.moods&&rec.moods.indexOf(b.textContent.trim())>-1));});
+  if(rec.energy){eVal=rec.energy;document.querySelectorAll('.e-dot').forEach(function(d,i){d.className='e-dot'+(i<eVal?' on':'');});document.getElementById('e-val').textContent=eVal+'/10';}
+  if(rec.note)document.getElementById('dc-note').value=rec.note;
+  document.querySelectorAll('.tag').forEach(function(t){t.classList.toggle('sel',!!(rec.tags&&rec.tags.indexOf(t.textContent.trim())>-1));});
+  var hrv=rec.linked&&rec.linked.find(function(l){return l.source==='HRVRecord';});
+  if(hrv)renderHRVCard(hrv);
+}
+
+function exportJSON(){
+  var k=JTE.todayKey();var rec=JTE.get(k);
+  if(!rec){toast('請先儲存今日紀錄');return;}
+  var blob=new Blob([JSON.stringify(rec,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');
+  a.href=url;a.download='jte-'+k+'.json';a.click();URL.revokeObjectURL(url);
+  toast('已匯出 '+k+'.json');
+}
+
+// ── CALENDAR ──
+var curMonth=new Date();
+
+function chMonth(d){curMonth=new Date(curMonth.getFullYear(),curMonth.getMonth()+d,1);renderCal();}
+
+function renderCal(){
+  var y=curMonth.getFullYear(),m=curMonth.getMonth();
+  var mn=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  document.getElementById('cal-lbl').textContent=y+'年 '+mn[m];
+  var fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),today=new Date();
+  var all=JTE.getAll(),c=document.getElementById('cal-days');c.innerHTML='';
+  var checkins=0,hrvCount=0;
+  for(var i=0;i<fd;i++){var el=document.createElement('div');el.className='cal-day other';el.textContent=new Date(y,m,0-fd+i+2).getDate();c.appendChild(el);}
+  for(var d=1;d<=dim;d++){
+    var key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var el=document.createElement('div');el.className='cal-day';
+    var isToday=y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
+    var rec=all[key];
+    if(isToday)el.classList.add('today');
+    if(rec){el.classList.add('has-rec');checkins++;}
+    if(rec&&rec.linked&&rec.linked.find(function(l){return l.source==='HRVRecord';}))hrvCount++;
+    el.textContent=d;
+    el.onclick=(function(k2,r){return function(){showDayDetail(k2,r);};})(key,rec);
+    c.appendChild(el);
+  }
+  var rem=(fd+dim)%7===0?0:7-((fd+dim)%7);
+  for(var k=1;k<=rem;k++){var el=document.createElement('div');el.className='cal-day other';el.textContent=k;c.appendChild(el);}
+  var s=0,cur=new Date(today);
+  while(s<365){var sk=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');if(all[sk]){s++;cur.setDate(cur.getDate()-1);}else break;}
+  document.getElementById('s-checkin').textContent=checkins;
+  document.getElementById('s-hrv').textContent=hrvCount;
+  document.getElementById('s-streak').textContent=s;
+}
+
+function jteDeleteLinked(btn){
+  var dateKey=btn.getAttribute('data-dkey');
+  var recordId=btn.getAttribute('data-rid');
+  if(!confirm('確定刪除這筆紀錄？'))return;
+  var all=JTE.getAll();
+  if(all[dateKey]&&all[dateKey].linked){
+    all[dateKey].linked=all[dateKey].linked.filter(function(l){return l.recordId!==recordId;});
+    localStorage.setItem(JTE_KEY,JSON.stringify(all));
+    toast('已刪除 ✓');
+    showDayDetail(dateKey,all[dateKey]);
+    renderCal();
+  }
+}
+
+function showDayDetail(k,rec){
+  var el=document.getElementById('cal-detail');
+  if(!rec){el.innerHTML='<div style="font-size:11px;color:var(--m);padding:4px 0">'+k+' — 尚無紀錄</div>';return;}
+  function cardStyle(color){return 'background:white;border-radius:12px;padding:12px 14px;margin-top:8px;border-left:4px solid '+color+';position:relative;box-shadow:0 2px 8px rgba(0,61,124,0.06)';}
+  function delBtn(dk,rid){return '<button data-dkey="'+dk+'" data-rid="'+rid+'" onclick="jteDeleteLinked(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;color:#aaa;padding:2px 4px" title="刪除">🗑</button>';}
+  var html='<div style="font-size:11px;font-weight:600;color:var(--p);margin-bottom:8px">'+k+'</div>';
+  if(rec.moods&&rec.moods.length)html+='<div style="font-size:11px;color:var(--m);margin-bottom:4px">狀態：<span style="color:var(--t)">'+rec.moods.join(' · ')+'</span></div>';
+  if(rec.energy)html+='<div style="font-size:11px;color:var(--m);margin-bottom:8px">能量：<span style="color:var(--o);font-weight:600">'+rec.energy+'/10</span></div>';
+  if(rec.note)html+='<div style="font-size:11px;color:var(--m);margin-bottom:8px;padding:8px 10px;background:var(--pp);border-radius:8px">'+rec.note+'</div>';
+  if(rec.linked&&rec.linked.length){
+    var counts={};rec.linked.forEach(function(l){counts[l.source]=(counts[l.source]||0)+1;});
+    var srcIdx={};
+    rec.linked.forEach(function(l,i){
+      srcIdx[l.source]=(srcIdx[l.source]||0)+1;
+      var nth=counts[l.source]>1?' 第'+srcIdx[l.source]+'次':'';
+      var rid=l.recordId||('rec-'+i);
+      if(l.source==='BreathAware'){
+        var sc={'deep':'#4CAF19','calm':'#4CAF19','neutral':'#003D7C','tense':'#FF8A00','anxiety':'#e03a3a','fatigue':'#888'};
+        var cc=sc[l.stateKey]||'#003D7C';
+        var mins=l.durationSec?Math.floor(l.durationSec/60)+'分'+String(l.durationSec%60).padStart(2,'0')+'秒':'—';
+        html+='<div style="'+cardStyle(cc)+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:'+cc+';margin-bottom:6px">🌬 BreathAware'+nth+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px"><div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:16px;font-weight:700;color:var(--o)">'+(l.bpm||'—')+'</div><div style="font-size:9px;color:var(--m)">BPM</div></div><div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.ieRatio||l.ie||'—')+'</div><div style="font-size:9px;color:var(--m)">吸：吐</div></div><div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.breathCount||'—')+'</div><div style="font-size:9px;color:var(--m)">次數</div></div></div>'+(l.stateLabel?'<div style="font-size:10px;color:'+cc+';font-weight:500;margin-bottom:4px">'+l.stateLabel+'</div>':'')+'<div style="font-size:10px;color:var(--m)">時長 '+mins+'</div>'+(l.feelings&&l.feelings.length?'<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+l.feelings.map(function(f){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+f+'</span>';}).join('')+'</div>':'')+'</div>';
+      } else if(l.source==='XiaoQi'){
+        var mins2=l.durationSec?Math.floor(l.durationSec/60)+'分'+String(l.durationSec%60).padStart(2,'0')+'秒':'—';
+        html+='<div style="'+cardStyle('#4CAF19')+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:#4CAF19;margin-bottom:6px">🌿 小憩·練息'+nth+'</div><div style="font-size:14px;font-weight:600;color:var(--p);margin-bottom:4px">'+(l.modeName||l.modeKey||'—')+'</div><div style="font-size:10px;color:var(--m);margin-bottom:6px">時長 '+mins2+'</div>'+(l.feelings&&l.feelings.length?'<div style="display:flex;gap:4px;flex-wrap:wrap">'+l.feelings.map(function(f){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+f+'</span>';}).join('')+'</div>':'')+'</div>';
+      } else if(l.source==='HRVRecord'){
+        var hc={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
+        var hcc=hc[l.assessmentTitle]||'#003D7C';
+        html+='<div style="'+cardStyle(hcc)+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:'+hcc+';margin-bottom:6px">💓 HRVRecord'+nth+'</div><div style="font-size:12px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.assessmentTitle||'')+'</div><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+(l.assessmentLevel||'')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.stressIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">壓力指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.emotionalFlexibility||'—')+'</div><div style="font-size:9px;color:var(--m)">情緒靈活度</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.relaxationIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">放鬆指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.vitalityIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">活力指數</div></div></div>'+(l.note?'<div style="font-size:10px;color:var(--m);margin-top:6px;font-style:italic">'+l.note+'</div>':'')+'</div>';
+      }
+    });
+  }
+  el.innerHTML='<div class="card">'+html+'</div>';
+}
+
+// ── SETTINGS ──
+function showSettings(){
+  var modal=document.getElementById('settings-modal');
+  modal.style.display='flex';
+  var email=localStorage.getItem('jte_user_email');
+  var name=localStorage.getItem('jte_user_name')||email||'';
+  var info=document.getElementById('settings-user-info');
+  var loginBtn=document.getElementById('settings-login-btn');
+  if(email){
+    info.innerHTML='<div style="font-weight:600">'+name+'</div><div style="color:var(--m);font-size:10px;margin-top:2px">'+email+'</div>';
+    loginBtn.innerHTML='';
+    var btn=document.createElement('button');
+    btn.textContent='登出';
+    btn.style.cssText='width:100%;background:var(--pp);border:1.5px solid var(--p);border-radius:var(--rp);padding:9px;font-size:11px;color:var(--p);cursor:pointer;font-family:Inter,sans-serif;font-weight:500';
+    btn.onclick=function(){signOut();closeSettings();};
+    loginBtn.appendChild(btn);
+  } else {
+    info.innerHTML='<div style="color:var(--m)">尚未登入 Google 帳號</div>';
+    loginBtn.innerHTML='<div id="g_signin_btn"></div>';
+    setTimeout(function(){
+      if(window.google&&google.accounts){
+        google.accounts.id.renderButton(document.getElementById('g_signin_btn'),{theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'});
+      }
+    },100);
+  }
+}
+
+function closeSettings(){
+  document.getElementById('settings-modal').style.display='none';
+}
+
+// ── UI ──
+function show(p){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-btn,.bnav-btn').forEach(function(el){el.classList.remove('active');});
+  var nm={'landing':0,'daily':1,'cal':2};
+  if(nm[p]!==undefined)document.querySelectorAll('.nav-btn')[nm[p]].classList.add('active');
+  var nb=document.getElementById('bnav-'+p);if(nb)nb.classList.add('active');
+  if(p==='cal')renderCal();
+  if(p==='daily'){setDCDate();loadDC();}
+}
+
+function setDCDate(){
+  var d=new Date(),wd=['日','一','二','三','四','五','六'];
+  document.getElementById('dc-date-lbl').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 (星期'+wd[d.getDay()]+')';
+}
+
+function toast(msg){
+  var t=document.getElementById('toast-el');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2200);
+}
+
+// ── ENERGY INIT ──
+(function(){
+  var row=document.getElementById('e-row');
+  for(var i=1;i<=10;i++){
+    (function(n){
+      var d=document.createElement('div');
+      d.className='e-dot'+(n<=eVal?' on':'');
+      d.textContent=n;
+      d.onclick=function(){eVal=n;document.querySelectorAll('.e-dot').forEach(function(dot,idx){dot.className='e-dot'+(idx<n?' on':'');});document.getElementById('e-val').textContent=n+'/10';};
+      row.appendChild(d);
+    })(i);
+  }
+})();
+
+setDCDate();
+renderCal();
 </script>
 </body>
 </html>
