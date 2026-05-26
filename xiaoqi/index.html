@@ -3720,6 +3720,7 @@ function endSession() {
   // 記錄這次練習(模式 + 實際秒數)
   const elapsedSec = Math.round((performance.now() - state.startTime) / 1000);
   // 至少要 10 秒才算一次有效練習(避免誤觸結束按鈕)
+  jteCheckLoginThenSave(function(){
   if (elapsedSec >= 10) {
     recordSession(state.mode, elapsedSec);
     // ── JTE WRITEBACK Phase 1：練習基本資料 ──
@@ -3748,6 +3749,7 @@ function endSession() {
       localStorage.setItem('jte_xiaoqi_lastRecordId','xq-'+Date.now());
     } catch(e){ console.warn('JTE writeback failed',e); }
   }
+  });
 
   // 結束音效
   playEndingChime();
@@ -4031,6 +4033,51 @@ function playPhaseTransition() {
     }
   },300);
 })();
+
+// ── JTE LOGIN MODAL ──
+var _jtePendingSave=null;
+function jteCheckLoginThenSave(saveFn){
+  if(localStorage.getItem('jte_user_email')){
+    saveFn();
+  } else {
+    _jtePendingSave=saveFn;
+    var modal=document.getElementById('jte-login-modal');
+    modal.style.display='flex';
+    setTimeout(function(){
+      if(window.google&&google.accounts){
+        google.accounts.id.renderButton(
+          document.getElementById('jte-gsi-btn'),
+          {theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'}
+        );
+        google.accounts.id.initialize({
+          client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
+          callback:function(resp){
+            var p=JSON.parse(atob(resp.credential.split('.')[1]));
+            localStorage.setItem('jte_user_email',p.email);
+            localStorage.setItem('jte_user_name',p.name||p.email);
+            localStorage.setItem('jte_user_picture',p.picture||'');
+            document.getElementById('jte-login-modal').style.display='none';
+            if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+          }
+        });
+      }
+    },100);
+  }
+}
+function jteSkipLogin(){
+  document.getElementById('jte-login-modal').style.display='none';
+  if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
 </script>
+
+<!-- JTE Google Login Modal -->
+<div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px">
+    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif">儲存並同步紀錄</div>
+    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
+    <div id="jte-gsi-btn" style="margin-bottom:10px"></div>
+    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif">略過，只在本機儲存</button>
+  </div>
+</div>
 </body>
 </html>
