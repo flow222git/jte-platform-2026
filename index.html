@@ -730,6 +730,15 @@ function toast(msg){
 setDCDate();
 renderCal();
 loadTWCTBadge();
+
+// 從其他頁面回來時自動重新整理
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='visible'){
+    renderCal();
+    loadTWCTBadge();
+    if(document.getElementById('page-daily').classList.contains('active')) loadDC();
+  }
+});
 </script>
 </body>
 </html>
