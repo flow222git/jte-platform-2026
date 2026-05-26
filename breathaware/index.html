@@ -897,7 +897,9 @@ function saveSession(){
   // ── JTE WRITEBACK ── 回寫到主平台 Daily Check
   try {
     const todayKey=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
-    const jteAll=JSON.parse(localStorage.getItem('jte_daily_v1')||'{}');
+    const _em=localStorage.getItem('jte_user_email');
+      const _jteKey=_em?'jte_daily_'+_em.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';
+      const jteAll=JSON.parse(localStorage.getItem(_jteKey)||'{}');
     const jteRec=jteAll[todayKey]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
     if(!jteRec.linked) jteRec.linked=[];
     // 疊加模式：同一天允許多筆 BreathAware 紀錄
@@ -917,7 +919,7 @@ function saveSession(){
     });
     jteRec.updatedAt=new Date().toISOString();
     jteAll[todayKey]=jteRec;
-    localStorage.setItem('jte_daily_v1',JSON.stringify(jteAll));
+    localStorage.setItem(_jteKey,JSON.stringify(jteAll));
   } catch(e){ console.warn('JTE writeback failed',e); }
   closeModal();resetSession();showPage('history');
 }
