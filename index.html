@@ -366,11 +366,13 @@ function initGoogleLogin(){
     callback:handleCredential,
     auto_select:true
   });
-  // 嘗試靜默登入
-  google.accounts.id.prompt();
-  // 檢查是否已有儲存的登入狀態
+  // 只有尚未登入才嘗試靜默登入
   var saved=localStorage.getItem('jte_user_email');
-  if(saved) applyUser(saved);
+  if(saved){
+    applyUser(saved);
+  } else {
+    google.accounts.id.prompt();
+  }
 }
 
 function handleCredential(response){
