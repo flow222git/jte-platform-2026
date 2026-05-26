@@ -1472,6 +1472,7 @@
     letter-spacing: 1px;
   }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -3725,7 +3726,9 @@ function endSession() {
     try {
       const _modeNames={three:'正念三口呼吸',sigh:'生理嘆氣',box:'箱式呼吸',baseline:'諧振呼吸',count:'數息法',nadi:'鼻孔交替呼吸',bhastrika:'風箱呼吸',lion:'獅子吼',wimhof:'冰人呼吸法',478:'4-7-8呼吸',coherent:'心律諧振',tummo:'拙火呼吸',rebirth:'深度重生呼吸',morning:'晨間充電呼吸',sleep:'入眠舒緩呼吸'};
       const _todayKey=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
-      const _jteAll=JSON.parse(localStorage.getItem('jte_daily_v1')||'{}');
+      const _email=localStorage.getItem('jte_user_email');
+      const _jteKey=_email?'jte_daily_'+_email.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';
+      const _jteAll=JSON.parse(localStorage.getItem(_jteKey)||'{}');
       const _jteRec=_jteAll[_todayKey]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
       if(!_jteRec.linked) _jteRec.linked=[];
       // 疊加模式：每次練習都加一筆
@@ -3741,7 +3744,7 @@ function endSession() {
       });
       _jteRec.updatedAt=new Date().toISOString();
       _jteAll[_todayKey]=_jteRec;
-      localStorage.setItem('jte_daily_v1',JSON.stringify(_jteAll));
+      localStorage.setItem(_jteKey,JSON.stringify(_jteAll));
       localStorage.setItem('jte_xiaoqi_lastRecordId','xq-'+Date.now());
     } catch(e){ console.warn('JTE writeback failed',e); }
   }
@@ -3779,13 +3782,15 @@ function endSession() {
         // ── JTE WRITEBACK Phase 2：更新感受標籤 ──
         try {
           const _tk=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
-          const _all=JSON.parse(localStorage.getItem('jte_daily_v1')||'{}');
+          const _em=localStorage.getItem('jte_user_email');
+          const _tagKey=_em?'jte_daily_'+_em.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';
+          const _all=JSON.parse(localStorage.getItem(_tagKey)||'{}');
           if(_all[_tk]&&_all[_tk].linked){
             // 找最後一筆 XiaoQi 紀錄
             const _last=[..._all[_tk].linked].reverse().find(l=>l.source==='XiaoQi');
             if(_last&&!_last.feelings.includes(tag)) _last.feelings.push(tag);
             _all[_tk].updatedAt=new Date().toISOString();
-            localStorage.setItem('jte_daily_v1',JSON.stringify(_all));
+            localStorage.setItem(_tagKey,JSON.stringify(_all));
           }
         } catch(e){}
       }
@@ -4003,6 +4008,29 @@ function playPhaseTransition() {
   });
 }
 
+
+// ── JTE GOOGLE LOGIN SYNC ──
+(function(){
+  var email=localStorage.getItem('jte_user_email');
+  if(email) window.JTE_USER_EMAIL=email;
+  var t=setInterval(function(){
+    if(window.google&&google.accounts){
+      clearInterval(t);
+      google.accounts.id.initialize({
+        client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
+        callback:function(resp){
+          var p=JSON.parse(atob(resp.credential.split('.')[1]));
+          localStorage.setItem('jte_user_email',p.email);
+          localStorage.setItem('jte_user_name',p.name||p.email);
+          localStorage.setItem('jte_user_picture',p.picture||'');
+          window.JTE_USER_EMAIL=p.email;
+        },
+        auto_select:true
+      });
+      google.accounts.id.prompt();
+    }
+  },300);
+})();
 </script>
 </body>
 </html>
