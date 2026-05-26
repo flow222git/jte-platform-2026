@@ -171,6 +171,7 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
 .empty-state{text-align:center;padding:60px 20px;color:var(--ink3)}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -1336,6 +1337,29 @@ function makeImpulse(ctx, duration, decay) {
 const FREQ_G4 = 196.00;  // G3（降八度）
 const FREQ_C4 = 130.81;  // C3（降八度）
 const FREQ_E4 = 164.81;  // E3（G3 和 C3 中間）
+
+// ── JTE GOOGLE LOGIN SYNC ──
+(function(){
+  var email=localStorage.getItem('jte_user_email');
+  if(email) window.JTE_USER_EMAIL=email;
+  var t=setInterval(function(){
+    if(window.google&&google.accounts){
+      clearInterval(t);
+      google.accounts.id.initialize({
+        client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
+        callback:function(resp){
+          var p=JSON.parse(atob(resp.credential.split('.')[1]));
+          localStorage.setItem('jte_user_email',p.email);
+          localStorage.setItem('jte_user_name',p.name||p.email);
+          localStorage.setItem('jte_user_picture',p.picture||'');
+          window.JTE_USER_EMAIL=p.email;
+        },
+        auto_select:true
+      });
+      google.accounts.id.prompt();
+    }
+  },300);
+})();
 </script>
 </body>
 </html>
