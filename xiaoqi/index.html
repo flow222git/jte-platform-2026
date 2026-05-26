@@ -4025,11 +4025,15 @@ function playPhaseTransition() {
           localStorage.setItem('jte_user_email',p.email);
           localStorage.setItem('jte_user_name',p.name||p.email);
           localStorage.setItem('jte_user_picture',p.picture||'');
+          google.accounts.id.disableAutoSelect();
           window.JTE_USER_EMAIL=p.email;
         },
-        auto_select:true
+        auto_select:false
       });
-      google.accounts.id.prompt();
+      // 已登入不再 prompt
+      if(!localStorage.getItem('jte_user_email')){
+        google.accounts.id.prompt();
+      }
     }
   },300);
 })();
@@ -4056,10 +4060,15 @@ function jteCheckLoginThenSave(saveFn){
             localStorage.setItem('jte_user_email',p.email);
             localStorage.setItem('jte_user_name',p.name||p.email);
             localStorage.setItem('jte_user_picture',p.picture||'');
+            google.accounts.id.disableAutoSelect();
             document.getElementById('jte-login-modal').style.display='none';
             if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
           }
         });
+        // 已登入就不再 prompt
+        if(!localStorage.getItem('jte_user_email')){
+          google.accounts.id.prompt();
+        }
       }
     },100);
   }
