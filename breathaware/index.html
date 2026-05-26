@@ -298,7 +298,7 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
       <div class="feeling-opt" onclick="toggleFeeling(this)">頭腦清晰</div>
     </div>
     <textarea class="feeling-note" id="feelingNote" rows="3" placeholder="還有什麼想記錄的？（選填）"></textarea>
-    <button class="save-btn" onclick="saveSession()">儲存這次練習</button>
+    <button class="save-btn" onclick="jteCheckLoginThenSave(saveSession)">儲存這次練習</button>
   </div>
 </div>
 
@@ -1352,14 +1352,68 @@ const FREQ_E4 = 164.81;  // E3（G3 和 C3 中間）
           localStorage.setItem('jte_user_email',p.email);
           localStorage.setItem('jte_user_name',p.name||p.email);
           localStorage.setItem('jte_user_picture',p.picture||'');
+          google.accounts.id.disableAutoSelect();
           window.JTE_USER_EMAIL=p.email;
         },
-        auto_select:true
+        auto_select:false
       });
-      google.accounts.id.prompt();
+      // 已登入不再 prompt
+      if(!localStorage.getItem('jte_user_email')){
+        google.accounts.id.prompt();
+      }
     }
   },300);
 })();
+
+// ── JTE LOGIN MODAL ──
+var _jtePendingSave=null;
+function jteCheckLoginThenSave(saveFn){
+  if(localStorage.getItem('jte_user_email')){
+    saveFn();
+  } else {
+    _jtePendingSave=saveFn;
+    var modal=document.getElementById('jte-login-modal');
+    modal.style.display='flex';
+    setTimeout(function(){
+      if(window.google&&google.accounts){
+        google.accounts.id.renderButton(
+          document.getElementById('jte-gsi-btn'),
+          {theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'}
+        );
+        google.accounts.id.initialize({
+          client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
+          callback:function(resp){
+            var p=JSON.parse(atob(resp.credential.split('.')[1]));
+            localStorage.setItem('jte_user_email',p.email);
+            localStorage.setItem('jte_user_name',p.name||p.email);
+            localStorage.setItem('jte_user_picture',p.picture||'');
+            google.accounts.id.disableAutoSelect();
+            document.getElementById('jte-login-modal').style.display='none';
+            if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+          }
+        });
+        // 已登入就不再 prompt
+        if(!localStorage.getItem('jte_user_email')){
+          google.accounts.id.prompt();
+        }
+      }
+    },100);
+  }
+}
+function jteSkipLogin(){
+  document.getElementById('jte-login-modal').style.display='none';
+  if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
 </script>
+
+<!-- JTE Google Login Modal -->
+<div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px">
+    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif">儲存並同步紀錄</div>
+    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
+    <div id="jte-gsi-btn" style="margin-bottom:10px"></div>
+    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif">略過，只在本機儲存</button>
+  </div>
+</div>
 </body>
 </html>
