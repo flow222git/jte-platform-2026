@@ -333,6 +333,53 @@ function fsSync(email){
   Object.keys(all).forEach(function(k){ fsSave(email,k,all[k]); });
 }
 
+// 登入後從 Firestore 載入用戶資料 + HRV 歷史
+function fsLoadUserData(email){
+  if(!_db||!email) return;
+  var cleanEmail=email.toLowerCase().trim();
+
+  // 載入個人資料
+  _db.collection('users').doc(cleanEmail).get().then(function(snap){
+    if(snap.exists){
+      var p=snap.data();
+      if(p.name) localStorage.setItem('jte_user_name',p.name);
+      if(p.birthDate) localStorage.setItem('jte_user_birthdate',p.birthDate);
+      if(p.gender) localStorage.setItem('jte_user_gender',p.gender);
+      console.log('Profile loaded:',p.name);
+    }
+  }).catch(function(e){console.warn('Profile load failed:',e);});
+
+  // 載入 daily 紀錄（含 HRV 歷史）
+  _db.collection('users').doc(cleanEmail).collection('daily').get().then(function(snap){
+    if(snap.empty) return;
+    var all=JTE.getAll();
+    var count=0;
+    snap.forEach(function(doc){
+      var dateKey=doc.id;
+      var data=doc.data();
+      // 合併：Firestore 資料優先，本機 linked 也保留
+      if(!all[dateKey]){
+        all[dateKey]=data;
+        count++;
+      } else {
+        // 合併 linked 陣列，去重
+        var localLinked=all[dateKey].linked||[];
+        var remoteLinked=data.linked||[];
+        var merged=localLinked.slice();
+        remoteLinked.forEach(function(r){
+          var exists=merged.some(function(l){return l.recordId===r.recordId;});
+          if(!exists) merged.push(r);
+        });
+        all[dateKey].linked=merged;
+      }
+    });
+    localStorage.setItem(JTE_KEY,JSON.stringify(all));
+    console.log('Loaded',count,'days from Firestore');
+    renderCal(); // 重新渲染日曆
+    toast('已同步 '+snap.size+' 天紀錄 ✓');
+  }).catch(function(e){console.warn('Daily load failed:',e);});
+}
+
 // ── STORAGE ──
 var JTE_KEY='jte_daily_v1';
 var JTE={
@@ -367,7 +414,10 @@ function applyUser(email,name,picture){
   if(name)localStorage.setItem('jte_user_name',name);
   if(picture)localStorage.setItem('jte_user_picture',picture);
   renderUserArea();
-  setTimeout(function(){fsSync(email);},800);
+  setTimeout(function(){
+    fsSync(email);
+    fsLoadUserData(email);
+  },800);
 }
 
 function renderUserArea(){
@@ -551,14 +601,28 @@ function showSettings(){
   modal.style.display='flex';
   var email=localStorage.getItem('jte_user_email');
   var name=localStorage.getItem('jte_user_name')||email||'';
+  var birthDate=localStorage.getItem('jte_user_birthdate')||'';
+  var gender=localStorage.getItem('jte_user_gender')||'';
   var info=document.getElementById('settings-user-info');
   var loginBtn=document.getElementById('settings-login-btn');
   if(email){
-    info.innerHTML='<div style="font-weight:600">'+name+'</div><div style="color:var(--m);font-size:10px;margin-top:2px">'+email+'</div>';
+    info.innerHTML=
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+      (localStorage.getItem('jte_user_picture')?'<img src="'+localStorage.getItem('jte_user_picture')+'" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--pl)">':'')+
+      '<div><div style="font-weight:700;font-size:13px">'+name+'</div><div style="color:var(--m);font-size:10px;margin-top:2px">'+email+'</div></div></div>'+
+      '<div style="border-top:1px solid var(--pp);padding-top:12px;margin-top:4px">'+
+      '<div style="font-size:10px;font-weight:600;color:var(--p);letter-spacing:0.08em;margin-bottom:10px">個人資料</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+      '<div><div style="font-size:9px;color:var(--m);margin-bottom:3px">姓名</div><input id="set-name" value="'+name+'" style="width:100%;border:1.5px solid var(--pl);border-radius:8px;padding:6px 8px;font-size:11px;outline:none;font-family:Inter,sans-serif;background:var(--pp)"></div>'+
+      '<div><div style="font-size:9px;color:var(--m);margin-bottom:3px">性別</div><select id="set-gender" style="width:100%;border:1.5px solid var(--pl);border-radius:8px;padding:6px 8px;font-size:11px;outline:none;font-family:Inter,sans-serif;background:var(--pp)"><option value="">未設定</option><option value="男性"'+(gender==='男性'?' selected':'')+'>男性</option><option value="女性"'+(gender==='女性'?' selected':'')+'>女性</option><option value="其他"'+(gender==='其他'?' selected':'')+'>其他</option></select></div>'+
+      '<div style="grid-column:1/-1"><div style="font-size:9px;color:var(--m);margin-bottom:3px">生日</div><input id="set-birth" type="date" value="'+birthDate+'" style="width:100%;border:1.5px solid var(--pl);border-radius:8px;padding:6px 8px;font-size:11px;outline:none;font-family:Inter,sans-serif;background:var(--pp)"></div>'+
+      '</div>'+
+      '<button onclick="saveProfile()" style="width:100%;background:var(--p);color:white;border:none;border-radius:var(--rp);padding:9px;font-size:11px;font-weight:600;cursor:pointer;margin-top:10px;font-family:Inter,sans-serif">儲存個人資料</button>'+
+      '</div>';
     loginBtn.innerHTML='';
     var btn=document.createElement('button');
     btn.textContent='登出';
-    btn.style.cssText='width:100%;background:var(--pp);border:1.5px solid var(--p);border-radius:var(--rp);padding:9px;font-size:11px;color:var(--p);cursor:pointer;font-family:Inter,sans-serif;font-weight:500';
+    btn.style.cssText='width:100%;background:var(--pp);border:1.5px solid var(--p);border-radius:var(--rp);padding:9px;font-size:11px;color:var(--p);cursor:pointer;font-family:Inter,sans-serif;font-weight:500;margin-top:8px';
     btn.onclick=function(){signOut();closeSettings();};
     loginBtn.appendChild(btn);
   } else {
@@ -569,6 +633,26 @@ function showSettings(){
         google.accounts.id.renderButton(document.getElementById('g_signin_btn'),{theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'});
       }
     },100);
+  }
+}
+
+function saveProfile(){
+  var email=localStorage.getItem('jte_user_email');
+  if(!email) return;
+  var name=document.getElementById('set-name').value.trim();
+  var gender=document.getElementById('set-gender').value;
+  var birth=document.getElementById('set-birth').value;
+  localStorage.setItem('jte_user_name',name);
+  localStorage.setItem('jte_user_gender',gender);
+  localStorage.setItem('jte_user_birthdate',birth);
+  // 同步到 Firestore
+  if(_db){
+    _db.collection('users').doc(email.toLowerCase()).set({name:name,gender:gender,birthDate:birth,updatedAt:new Date().toISOString()},{merge:true})
+      .then(function(){toast('個人資料已儲存 ✓');closeSettings();renderUserArea();})
+      .catch(function(e){toast('儲存失敗：'+e.message);});
+  } else {
+    toast('個人資料已儲存（本機）');
+    closeSettings();
   }
 }
 
