@@ -389,8 +389,8 @@ function fsLoadUserData(email){
     });
     localStorage.setItem(JTE_KEY,JSON.stringify(all));
     console.log('Loaded',count,'days from Firestore');
-    renderCal(); // 重新渲染日曆
-    toast('已同步 '+snap.size+' 天紀錄 ✓');
+    renderCal();
+    if(snap.size>0) toast('已同步 '+snap.size+' 天紀錄 ✓');
   }).catch(function(e){console.warn('Daily load failed:',e);});
 }
 
@@ -559,6 +559,12 @@ function renderCal(){
   document.getElementById('s-checkin').textContent=checkins;
   document.getElementById('s-hrv').textContent=hrvCount;
   document.getElementById('s-streak').textContent=s;
+
+  // 自動顯示今天詳情
+  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  if(y===today.getFullYear()&&m===today.getMonth()){
+    showDayDetail(todayStr, all[todayStr]||null);
+  }
 }
 
 function jteDeleteLinked(btn){
@@ -734,7 +740,9 @@ loadTWCTBadge();
 // 從其他頁面回來時自動重新整理
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState==='visible'){
-    renderCal();
+    var email=localStorage.getItem('jte_user_email');
+    if(email&&_db) fsLoadUserData(email);
+    else renderCal();
     loadTWCTBadge();
     if(document.getElementById('page-daily').classList.contains('active')) loadDC();
   }
