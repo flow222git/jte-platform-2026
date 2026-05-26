@@ -164,6 +164,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
   .hero-title{font-size:1.4rem}
 }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -177,7 +178,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <button class="nav-btn" onclick="show('daily')">今日</button>
     <button class="nav-btn" onclick="show('cal')">日曆</button>
   </div>
-  <button class="nav-cta" onclick="show('daily')">今日 Check</button>
+  <div id="nav-user-area">
+    <button class="nav-cta" onclick="show('daily')">今日 Check</button>
+  </div>
 </nav>
 
 <div class="scroll-area">
@@ -338,13 +341,101 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
   <button class="bnav-btn" id="bnav-daily" onclick="show('daily')"><i class="ti ti-circle-check"></i>今日</button>
   <button class="bnav-btn" id="bnav-cal" onclick="show('cal')"><i class="ti ti-calendar"></i>日曆</button>
   <button class="bnav-btn" onclick="toast('紀錄中心 Phase 2 開放')"><i class="ti ti-files"></i>紀錄</button>
-  <button class="bnav-btn" onclick="toast('設定頁即將上線')"><i class="ti ti-settings"></i>設定</button>
+  <button class="bnav-btn" onclick="showSettings()"><i class="ti ti-settings"></i>設定</button>
 </nav>
 
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,0.12)">
+    <div style="font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--p);margin-bottom:16px;letter-spacing:0.08em">設定</div>
+    <div id="settings-user-info" style="background:var(--st);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--p)">尚未登入</div>
+    <div id="settings-login-btn" style="margin-bottom:12px"></div>
+    <button onclick="closeSettings()" style="width:100%;background:var(--pp);border:none;border-radius:var(--rp);padding:10px;font-size:12px;color:var(--m);cursor:pointer;font-family:'Inter',sans-serif">關閉</button>
+  </div>
+</div>
 <div class="toast" id="toast-el"></div>
 
 <script>
-var JTE_KEY='jte_daily_v1';
+// ── GOOGLE LOGIN ──
+var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+var JTE_USER=null;
+var JTE_KEY='jte_daily_v1'; // 登入後會更新為 jte_daily_[email]
+
+function initGoogleLogin(){
+  google.accounts.id.initialize({
+    client_id:CLIENT_ID,
+    callback:handleCredential,
+    auto_select:true
+  });
+  // 嘗試靜默登入
+  google.accounts.id.prompt();
+  // 檢查是否已有儲存的登入狀態
+  var saved=localStorage.getItem('jte_user_email');
+  if(saved) applyUser(saved);
+}
+
+function handleCredential(response){
+  var payload=JSON.parse(atob(response.credential.split('.')[1]));
+  applyUser(payload.email,payload.name,payload.picture);
+}
+
+function applyUser(email,name,picture){
+  JTE_USER={email:email,name:name||email,picture:picture||''};
+  JTE_KEY='jte_daily_'+email.replace(/[^a-zA-Z0-9]/g,'_');
+  localStorage.setItem('jte_user_email',email);
+  if(name) localStorage.setItem('jte_user_name',name);
+  if(picture) localStorage.setItem('jte_user_picture',picture);
+  renderUserArea();
+}
+
+function renderUserArea(){
+  var area=document.getElementById('nav-user-area');
+  if(!area) return;
+  var n=JTE_USER&&JTE_USER.name?JTE_USER.name:localStorage.getItem('jte_user_name')||'';
+  var p=JTE_USER&&JTE_USER.picture?JTE_USER.picture:localStorage.getItem('jte_user_picture')||'';
+  var short=n?n.split('@')[0]:(localStorage.getItem('jte_user_email')||'').split('@')[0];
+  var picHtml=p?('<img src="'+p+'" style="width:26px;height:26px;border-radius:50%;border:2px solid var(--pl)" alt="">'):' ';
+  area.innerHTML='';
+  var _wrap=document.createElement('div');
+  _wrap.style.cssText='display:flex;align-items:center;gap:6px;cursor:pointer';
+  _wrap.onclick=function(){show('daily')};
+  _wrap.innerHTML=picHtml+'<span style="font-size:11px;color:var(--p);font-weight:600">'+short+'</span>';
+  var _btn=document.createElement('button');
+  _btn.className='nav-cta';
+  _btn.style.cssText='font-size:10px;padding:5px 10px';
+  _btn.textContent='今日 Check';
+  _btn.onclick=function(){show('daily')};
+  area.appendChild(_wrap);
+  area.appendChild(_btn);
+}
+
+function signOut(){
+  google.accounts.id.disableAutoSelect();
+  localStorage.removeItem('jte_user_email');
+  localStorage.removeItem('jte_user_name');
+  localStorage.removeItem('jte_user_picture');
+  JTE_USER=null;
+  JTE_KEY='jte_daily_v1';
+  var area=document.getElementById('nav-user-area');
+  if(area){var btn=document.createElement('button');btn.className='nav-cta';btn.textContent='今日 Check';btn.onclick=function(){show('daily')};area.innerHTML='';area.appendChild(btn);}
+  toast('已登出');
+}
+
+window.addEventListener('load',function(){
+  // 先套用已儲存的登入
+  var saved=localStorage.getItem('jte_user_email');
+  if(saved){
+    var name=localStorage.getItem('jte_user_name')||saved;
+    var pic=localStorage.getItem('jte_user_picture')||'';
+    applyUser(saved,name,pic);
+  }
+  // 等 Google SDK 載入後初始化
+  var t=setInterval(function(){
+    if(window.google&&google.accounts){
+      clearInterval(t);
+      initGoogleLogin();
+    }
+  },300);
+});
 var eVal=5;
 var curMonth=new Date();
 
@@ -520,6 +611,30 @@ function toggleTag(el){el.classList.toggle('sel')}
     })(i);
   }
 })();
+
+function showSettings(){
+  var modal=document.getElementById('settings-modal');
+  modal.style.display='flex';
+  var info=document.getElementById('settings-user-info');
+  var loginBtn=document.getElementById('settings-login-btn');
+  if(JTE_USER||localStorage.getItem('jte_user_email')){
+    var email=JTE_USER?JTE_USER.email:localStorage.getItem('jte_user_email');
+    var name=JTE_USER?JTE_USER.name:localStorage.getItem('jte_user_name')||email;
+    info.innerHTML='<div style="font-weight:600">'+name+'</div><div style="color:var(--m);font-size:10px;margin-top:2px">'+email+'</div>';
+    loginBtn.innerHTML='<button onclick="signOut();closeSettings();" style="width:100%;background:var(--pp);border:1.5px solid var(--p);border-radius:var(--rp);padding:9px;font-size:11px;color:var(--p);cursor:pointer;font-weight:500">登出</button>';
+  } else {
+    info.innerHTML='<div style="color:var(--m)">尚未登入 Google 帳號</div>';
+    loginBtn.innerHTML='<div id="g_signin_btn"></div>';
+    setTimeout(function(){
+      if(window.google&&google.accounts){
+        google.accounts.id.renderButton(document.getElementById('g_signin_btn'),{theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'});
+      }
+    },100);
+  }
+}
+function closeSettings(){
+  document.getElementById('settings-modal').style.display='none';
+}
 
 function toast(msg){
   var t=document.getElementById('toast-el');t.textContent=msg;t.classList.add('show');
