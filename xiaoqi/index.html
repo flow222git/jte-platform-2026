@@ -4049,12 +4049,9 @@ function jteCheckLoginThenSave(saveFn){
     modal.style.display='flex';
     setTimeout(function(){
       if(window.google&&google.accounts){
-        google.accounts.id.renderButton(
-          document.getElementById('jte-gsi-btn'),
-          {theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'}
-        );
         google.accounts.id.initialize({
           client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
+          ux_mode:'popup',
           callback:function(resp){
             var p=JSON.parse(atob(resp.credential.split('.')[1]));
             localStorage.setItem('jte_user_email',p.email);
@@ -4065,10 +4062,10 @@ function jteCheckLoginThenSave(saveFn){
             if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
           }
         });
-        // 已登入就不再 prompt
-        if(!localStorage.getItem('jte_user_email')){
-          google.accounts.id.prompt();
-        }
+        google.accounts.id.renderButton(
+          document.getElementById('jte-gsi-btn'),
+          {theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'}
+        );
       }
     },100);
   }
@@ -4080,8 +4077,8 @@ function jteSkipLogin(){
 </script>
 
 <!-- JTE Google Login Modal -->
-<div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:flex-end;justify-content:center">
-  <div style="background:white;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px">
+<div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:20px;padding:28px 24px 32px;width:88%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.2)">
     <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif">儲存並同步紀錄</div>
     <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
     <div id="jte-gsi-btn" style="margin-bottom:10px"></div>
