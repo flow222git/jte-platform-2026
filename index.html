@@ -557,28 +557,96 @@ function renderCal(){
   document.getElementById('s-streak').textContent=s;
 }
 
+function jteDeleteLinked(btn){
+  var dateKey=btn.getAttribute('data-dkey');
+  var recordId=btn.getAttribute('data-rid');
+  if(!confirm('確定刪除這筆紀錄？')) return;
+  var all=JTE.getAll();
+  if(all[dateKey]&&all[dateKey].linked){
+    all[dateKey].linked=all[dateKey].linked.filter(function(l){return l.recordId!==recordId;});
+    localStorage.setItem(JTE_KEY,JSON.stringify(all));
+    toast('已刪除 ✓');
+    showDayDetail(dateKey, all[dateKey].linked.length||all[dateKey].moods||all[dateKey].note ? all[dateKey] : null);
+    renderCal();
+  }
+}
+
 function showDayDetail(k,rec){
   var el=document.getElementById('cal-detail');
   if(!rec){el.innerHTML='<div style="font-size:11px;color:var(--m);padding:4px 0">'+k+' — 尚無紀錄</div>';return;}
+
+  function cardStyle(color){
+    return 'background:white;border-radius:12px;padding:12px 14px;margin-top:8px;border-left:4px solid '+color+';position:relative;box-shadow:0 2px 8px rgba(0,61,124,0.06)';
+  }
+  function delBtn(dateKey, recordId){
+    return '<button data-dkey="'+dateKey+'" data-rid="'+recordId+'" onclick="jteDeleteLinked(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;color:#aaa;padding:2px 4px;border-radius:4px;line-height:1" title="刪除">🗑</button>';
+  }
+
   var html='<div style="font-size:11px;font-weight:600;color:var(--p);margin-bottom:8px;letter-spacing:0.06em">'+k+'</div>';
-  if(rec.moods&&rec.moods.length)html+='<div style="font-size:11px;color:var(--m);margin-bottom:4px">狀態：<span style="color:var(--t)">'+rec.moods.join(' · ')+'</span></div>';
-  if(rec.energy)html+='<div style="font-size:11px;color:var(--m);margin-bottom:4px">能量：<span style="color:var(--o);font-weight:600">'+rec.energy+'/10</span></div>';
-  if(rec.note)html+='<div style="font-size:11px;color:var(--m);margin-bottom:4px">註記：<span style="color:var(--t)">'+rec.note+'</span></div>';
+
+  // 基本資料
+  if(rec.moods&&rec.moods.length) html+='<div style="font-size:11px;color:var(--m);margin-bottom:4px">狀態：<span style="color:var(--t)">'+rec.moods.join(' · ')+'</span></div>';
+  if(rec.energy) html+='<div style="font-size:11px;color:var(--m);margin-bottom:8px">能量：<span style="color:var(--o);font-weight:600">'+rec.energy+'/10</span></div>';
+  if(rec.note) html+='<div style="font-size:11px;color:var(--m);margin-bottom:8px;padding:8px 10px;background:var(--pp);border-radius:8px">'+rec.note+'</div>';
+
+  // linked 紀錄
   if(rec.linked&&rec.linked.length){
-    rec.linked.forEach(function(l){
-      html+='<div class="linked-item"><div class="linked-title"><i class="ti ti-link"></i> '+l.source+'</div>';
-      if(l.source==='HRVRecord'){
-        html+='<div class="linked-grid">'+
-          '<div class="linked-kv">壓力 <span>'+l.stressIndex+'</span></div>'+
-          '<div class="linked-kv">靈活度 <span>'+l.emotionalFlexibility+'</span></div>'+
-          '<div class="linked-kv">放鬆 <span>'+l.relaxationIndex+'</span></div>'+
-          '<div class="linked-kv">活力 <span>'+l.vitalityIndex+'</span></div>'+
-          '</div><div style="font-size:9px;font-weight:600;color:var(--p);margin-top:4px">'+l.assessmentTitle+' · '+l.assessmentLevel+'</div>';
+    // 按 source 分組計數
+    var counts={};
+    rec.linked.forEach(function(l){counts[l.source]=(counts[l.source]||0)+1;});
+    var sourceIdx={};
+
+    rec.linked.forEach(function(l,i){
+      sourceIdx[l.source]=(sourceIdx[l.source]||0)+1;
+      var nth=counts[l.source]>1?' 第'+sourceIdx[l.source]+'次':'';
+      var rid=l.recordId||('rec-'+i);
+
+      if(l.source==='BreathAware'){
+        var stateColors={deep:'#4CAF19',calm:'#4CAF19',neutral:'#003D7C',tense:'#FF8A00',anxiety:'#e03a3a',fatigue:'#888'};
+        var sc=stateColors[l.stateKey]||'#003D7C';
+        var mins=l.durationSec?Math.floor(l.durationSec/60)+'分'+String(l.durationSec%60).padStart(2,'0')+'秒':'—';
+        html+='<div style="'+cardStyle(sc)+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:'+sc+';margin-bottom:6px">🌬 BreathAware'+nth+'</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:16px;font-weight:700;color:var(--o)">'+( l.bpm||'—')+'</div><div style="font-size:9px;color:var(--m)">BPM</div></div>'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.ieRatio||l.ie||'—')+'</div><div style="font-size:9px;color:var(--m)">吸：吐</div></div>'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.breathCount||'—')+'</div><div style="font-size:9px;color:var(--m)">次數</div></div>'+
+          '</div>'+
+          (l.stateLabel?'<div style="font-size:10px;color:'+sc+';font-weight:500;margin-bottom:4px">'+l.stateLabel+'</div>':'')+
+          '<div style="font-size:10px;color:var(--m)">時長 '+mins+'</div>'+
+          (l.feelings&&l.feelings.length?'<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+l.feelings.map(function(f){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+f+'</span>'}).join('')+'</div>':'')+
+          (l.note?'<div style="font-size:10px;color:var(--m);margin-top:4px;font-style:italic">'+l.note+'</div>':'')+
+          '</div>';
+
+      } else if(l.source==='XiaoQi'){
+        var mins2=l.durationSec?Math.floor(l.durationSec/60)+'分'+String(l.durationSec%60).padStart(2,'0')+'秒':'—';
+        html+='<div style="'+cardStyle('#4CAF19')+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:#4CAF19;margin-bottom:6px">🌿 小憩·練息'+nth+'</div>'+
+          '<div style="font-size:14px;font-weight:600;color:var(--p);margin-bottom:4px">'+(l.modeName||l.modeKey||'—')+'</div>'+
+          '<div style="font-size:10px;color:var(--m);margin-bottom:6px">時長 '+mins2+'</div>'+
+          (l.feelings&&l.feelings.length?'<div style="display:flex;gap:4px;flex-wrap:wrap">'+l.feelings.map(function(f){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+f+'</span>'}).join('')+'</div>':'')+
+          '</div>';
+
+      } else if(l.source==='HRVRecord'){
+        var hvColors={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
+        var hc=hvColors[l.assessmentTitle]||'#003D7C';
+        html+='<div style="'+cardStyle(hc)+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:'+hc+';margin-bottom:6px">💓 HRVRecord'+nth+'</div>'+
+          '<div style="font-size:12px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.assessmentTitle||'')+'</div>'+
+          '<div style="font-size:10px;color:var(--m);margin-bottom:6px">'+(l.assessmentLevel||'')+'</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">'+
+          '<div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.stressIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">壓力指數</div></div>'+
+          '<div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.emotionalFlexibility||'—')+'</div><div style="font-size:9px;color:var(--m)">情緒靈活度</div></div>'+
+          '<div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.relaxationIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">放鬆指數</div></div>'+
+          '<div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.vitalityIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">活力指數</div></div>'+
+          '</div>'+
+          (l.note?'<div style="font-size:10px;color:var(--m);margin-top:6px;font-style:italic">'+l.note+'</div>':'')+
+          '</div>';
       }
-      html+='</div>';
     });
   }
-  el.innerHTML='<div class="card">'+html+'</div>';
+
+  el.innerHTML='<div class="card" style="font-size:11px">'+html+'</div>';
 }
 
 function show(p){
