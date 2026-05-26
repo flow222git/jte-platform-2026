@@ -1338,35 +1338,45 @@ const FREQ_G4 = 196.00;  // G3（降八度）
 const FREQ_C4 = 130.81;  // C3（降八度）
 const FREQ_E4 = 164.81;  // E3（G3 和 C3 中間）
 
-// ── JTE GOOGLE LOGIN SYNC ──
-(function(){
-  var email=localStorage.getItem('jte_user_email');
-  if(email) window.JTE_USER_EMAIL=email;
-  var t=setInterval(function(){
-    if(window.google&&google.accounts){
-      clearInterval(t);
-      google.accounts.id.initialize({
-        client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
-        callback:function(resp){
-          var p=JSON.parse(atob(resp.credential.split('.')[1]));
-          localStorage.setItem('jte_user_email',p.email);
-          localStorage.setItem('jte_user_name',p.name||p.email);
-          localStorage.setItem('jte_user_picture',p.picture||'');
-          google.accounts.id.disableAutoSelect();
-          window.JTE_USER_EMAIL=p.email;
-        },
-        auto_select:false
-      });
-      // 已登入不再 prompt
-      if(!localStorage.getItem('jte_user_email')){
-        google.accounts.id.prompt();
-      }
-    }
-  },300);
-})();
 
-// ── JTE LOGIN MODAL ──
+// ── JTE GOOGLE LOGIN ──
 var _jtePendingSave=null;
+var _jteGoogleReady=false;
+var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+
+function _jteHandleCredential(resp){
+  var p=JSON.parse(atob(resp.credential.split('.')[1]));
+  localStorage.setItem('jte_user_email',p.email);
+  localStorage.setItem('jte_user_name',p.name||p.email);
+  localStorage.setItem('jte_user_picture',p.picture||'');
+  google.accounts.id.disableAutoSelect();
+  var modal=document.getElementById('jte-login-modal');
+  if(modal) modal.style.display='none';
+  if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
+
+function _jteInitGoogle(){
+  if(_jteGoogleReady) return;
+  _jteGoogleReady=true;
+  google.accounts.id.initialize({
+    client_id:CLIENT_ID,
+    ux_mode:'popup',
+    callback:_jteHandleCredential
+  });
+  // 已登入不再 prompt
+  if(!localStorage.getItem('jte_user_email')){
+    google.accounts.id.prompt();
+  }
+}
+
+// 等 Google SDK 載入後初始化
+var _jteGsiTimer=setInterval(function(){
+  if(window.google&&google.accounts){
+    clearInterval(_jteGsiTimer);
+    _jteInitGoogle();
+  }
+},300);
+
 function jteCheckLoginThenSave(saveFn){
   if(localStorage.getItem('jte_user_email')){
     saveFn();
@@ -1374,32 +1384,25 @@ function jteCheckLoginThenSave(saveFn){
     _jtePendingSave=saveFn;
     var modal=document.getElementById('jte-login-modal');
     modal.style.display='flex';
-    setTimeout(function(){
-      if(window.google&&google.accounts){
-        google.accounts.id.initialize({
-          client_id:'1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com',
-          ux_mode:'popup',
-          callback:function(resp){
-            var p=JSON.parse(atob(resp.credential.split('.')[1]));
-            localStorage.setItem('jte_user_email',p.email);
-            localStorage.setItem('jte_user_name',p.name||p.email);
-            localStorage.setItem('jte_user_picture',p.picture||'');
-            google.accounts.id.disableAutoSelect();
-            document.getElementById('jte-login-modal').style.display='none';
-            if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
-          }
-        });
-        google.accounts.id.renderButton(
-          document.getElementById('jte-gsi-btn'),
-          {theme:'outline',size:'large',width:320,text:'signin_with',locale:'zh-TW'}
-        );
+    // renderButton（initialize 已在頁面載入時完成）
+    var t=setInterval(function(){
+      if(_jteGoogleReady&&window.google){
+        clearInterval(t);
+        var btn=document.getElementById('jte-gsi-btn');
+        if(btn&&!btn.hasChildNodes()){
+          google.accounts.id.renderButton(btn,
+            {theme:'outline',size:'large',width:300,text:'signin_with',locale:'zh-TW'}
+          );
+        }
       }
     },100);
   }
 }
+
 function jteSkipLogin(){
   document.getElementById('jte-login-modal').style.display='none';
   if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
 }
 </script>
 
