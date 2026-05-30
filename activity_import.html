@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>練息場 · 活動名單匯入工具</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F2F4F7;color:#1A1A2E;padding:20px;max-width:600px;margin:0 auto;font-size:14px}
+h1{font-size:18px;font-weight:700;color:#003D7C;margin-bottom:4px}
+.sub{font-size:12px;color:#6B7A8D;margin-bottom:20px;line-height:1.6}
+.card{background:white;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,61,124,0.08);margin-bottom:14px}
+.card-title{font-size:11px;font-weight:600;color:#003D7C;letter-spacing:0.1em;margin-bottom:12px;text-transform:uppercase}
+label{font-size:11px;color:#6B7A8D;display:block;margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+input,textarea{width:100%;border:1.5px solid #A8C9EE;border-radius:8px;padding:9px 12px;font-size:12px;outline:none;font-family:'Inter',sans-serif;background:#F2F4F7;transition:border 0.18s;color:#1A1A2E}
+input:focus,textarea:focus{border-color:#003D7C;background:white}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+.btn{background:#FF8A00;color:white;border:none;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:'Inter',sans-serif;transition:all 0.2s;margin-top:4px}
+.btn:hover{background:#e07a00}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.btn-secondary{background:#003D7C;margin-top:8px}
+.btn-secondary:hover{background:#002d5a}
+.log{background:#1A1A2E;border-radius:10px;padding:14px;font-size:11px;font-family:monospace;max-height:240px;overflow-y:auto;margin-top:12px;line-height:1.9;display:none}
+.log .ok{color:#4CAF19}
+.log .err{color:#ff6b6b}
+.log .info{color:#A8C9EE}
+.log .warn{color:#FFD600}
+.progress{background:#EEF3F9;border-radius:999px;height:6px;margin-top:12px;overflow:hidden;display:none}
+.progress-bar{background:#4CAF19;height:100%;border-radius:999px;width:0%;transition:width 0.3s}
+.preview{background:#EEF3F9;border-radius:10px;padding:12px;margin-top:10px;font-size:11px;display:none}
+.preview-title{font-weight:600;color:#003D7C;margin-bottom:6px}
+.preview-row{display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,61,124,0.06)}
+.preview-row:last-child{border:none}
+.badge{display:inline-block;background:#E6F4EA;color:#4CAF19;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:600;margin-left:4px}
+.badge-blue{background:#EEF3F9;color:#003D7C}
+.hint{font-size:10px;color:#6B7A8D;margin-top:6px;line-height:1.6;padding:8px;background:#F2F4F7;border-radius:8px}
+.step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.step-num{background:#003D7C;color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-size:11px;color:#1A1A2E;line-height:1.6}
+.step-text strong{color:#003D7C}
+</style>
+</head>
+<body>
+
+<h1>練息場 · 活動名單匯入工具</h1>
+<p class="sub">將活動參與者名單匯入 Firestore，用戶登入後即可在日曆看到對應的活動紀錄。</p>
+
+<!-- 使用說明 -->
+<div class="card">
+  <div class="card-title">使用步驟</div>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">開啟 Google Sheet → <strong>檔案 → 下載 → CSV</strong>，或複製 Sheet 的分享連結並改成 CSV 格式</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text">填寫活動名稱與照片網址</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-text">貼上 CSV 內容 → 預覽確認 → 匯入</div>
+  </div>
+  <div class="hint">
+    💡 CSV 格式：第一欄「日期」(YYYYMMDD 或 YYYY-MM-DD)、第二欄「姓名」、第三欄「Email」<br>
+    日期欄支援：20260320 → 自動轉換成 2026-03-20
+  </div>
+</div>
+
+<!-- 活動資訊 -->
+<div class="card">
+  <div class="card-title">活動資訊</div>
+  <label>活動名稱 *</label>
+  <input type="text" id="activity-name" placeholder="例：練息場騎馬體驗">
+  <label>活動日期（若 CSV 有日期欄可留空）</label>
+  <input type="date" id="activity-date">
+  <label>活動照片網址</label>
+  <input type="text" id="activity-photo" placeholder="https://photos.app.goo.gl/...">
+  <label>活動說明（選填）</label>
+  <input type="text" id="activity-desc" placeholder="活動簡短描述">
+</div>
+
+<!-- CSV 輸入 -->
+<div class="card">
+  <div class="card-title">貼上 CSV 內容</div>
+  <textarea id="csv-input" placeholder="日期,姓名,Email,所屬企業&#10;20260320,胡馨心,crystal.hu@grandpr.com.tw,PILOT&#10;20260320,吳佩穎,leslie.wu@pilotpr.com.tw,PILOT"></textarea>
+  <button class="btn btn-secondary" onclick="parseCSV()">預覽名單</button>
+  <div class="preview" id="preview"></div>
+</div>
+
+<!-- 匯入 -->
+<div class="card">
+  <div class="card-title">執行匯入</div>
+  <button class="btn" id="import-btn" onclick="startImport()" disabled>先預覽名單才能匯入</button>
+  <div class="progress" id="progress-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+var _db=null;
+var _parsedRows=[];
+
+window.addEventListener('load',function(){
+  try{
+    firebase.initializeApp({
+      apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+      authDomain:"jointoenjoy.firebaseapp.com",
+      projectId:"jointoenjoy",
+      storageBucket:"jointoenjoy.firebasestorage.app",
+      messagingSenderId:"978242729427",
+      appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+    });
+    _db=firebase.firestore();
+    log('info','Firebase 連線成功 ✓');
+  }catch(e){log('err','Firebase 連線失敗: '+e.message);}
+});
+
+function normalizeDate(raw){
+  if(!raw) return '';
+  var s=String(raw).trim().replace(/\//g,'-').replace(/\./g,'-');
+  // YYYYMMDD → YYYY-MM-DD
+  if(/^\d{8}$/.test(s)) return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+  // 民國 YYYMMDD → 西元
+  if(/^\d{7}$/.test(s)){
+    var y=parseInt(s.slice(0,3))+1911;
+    return y+'-'+s.slice(3,5)+'-'+s.slice(5,7);
+  }
+  // 已是 YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return s;
+}
+
+function parseCSV(){
+  var raw=document.getElementById('csv-input').value.trim();
+  if(!raw){alert('請貼上 CSV 內容');return;}
+
+  var lines=raw.split('\n').filter(function(l){return l.trim();});
+  var headers=lines[0].split(',').map(function(h){return h.trim();});
+
+  // 找欄位 index
+  function findCol(names){
+    for(var i=0;i<names.length;i++){
+      for(var j=0;j<headers.length;j++){
+        if(headers[j].toLowerCase().includes(names[i].toLowerCase())) return j;
+      }
+    }
+    return -1;
+  }
+
+  var dateCol=findCol(['日期','date','參與日']);
+  var nameCol=findCol(['first name','姓名','name']);
+  var emailCol=findCol(['email','mail']);
+  var orgCol=findCol(['所屬','企業','集團','org','company']);
+
+  log('info','欄位偵測：日期['+dateCol+'] 姓名['+nameCol+'] Email['+emailCol+'] 企業['+orgCol+']');
+
+  _parsedRows=[];
+  var skipped=0;
+
+  for(var i=1;i<lines.length;i++){
+    var cols=lines[i].split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});
+    var email=emailCol>=0?cols[emailCol]:'';
+    if(!email||!email.includes('@')){skipped++;continue;}
+
+    var dateRaw=dateCol>=0?cols[dateCol]:'';
+    var actDate=normalizeDate(dateRaw)||document.getElementById('activity-date').value||'';
+    var name=nameCol>=0?cols[nameCol]:'';
+    var org=orgCol>=0?cols[orgCol]:'';
+
+    _parsedRows.push({email:email.toLowerCase().trim(),name:name,date:actDate,org:org});
+  }
+
+  // 顯示預覽
+  var byDate={};
+  _parsedRows.forEach(function(r){
+    var d=r.date||'未知日期';
+    if(!byDate[d]) byDate[d]=[];
+    byDate[d].push(r);
+  });
+
+  var preview=document.getElementById('preview');
+  var html='<div class="preview-title">預覽：共 '+_parsedRows.length+' 筆，跳過 '+skipped+' 筆（無 email）</div>';
+
+  Object.keys(byDate).sort().forEach(function(d){
+    html+='<div style="margin-top:8px;font-weight:600;color:#003D7C;font-size:10px">'+d+' ('+byDate[d].length+' 人)</div>';
+    byDate[d].slice(0,5).forEach(function(r){
+      html+='<div class="preview-row"><span style="flex:1">'+r.name+'</span><span style="color:#6B7A8D;font-size:10px">'+r.email+'</span>'+(r.org?'<span class="badge badge-blue">'+r.org+'</span>':'')+'</div>';
+    });
+    if(byDate[d].length>5) html+='<div style="font-size:10px;color:#6B7A8D;padding:4px 0">...還有 '+(byDate[d].length-5)+' 人</div>';
+  });
+
+  preview.innerHTML=html;
+  preview.style.display='block';
+
+  var btn=document.getElementById('import-btn');
+  btn.disabled=false;
+  btn.textContent='開始匯入 '+_parsedRows.length+' 筆到 Firestore';
+  log('ok','預覽完成，共 '+_parsedRows.length+' 筆有效紀錄');
+}
+
+async function startImport(){
+  if(!_db){log('err','Firebase 未連線');return;}
+  if(!_parsedRows.length){log('err','請先預覽名單');return;}
+
+  var actName=document.getElementById('activity-name').value.trim();
+  var actPhoto=document.getElementById('activity-photo').value.trim();
+  var actDesc=document.getElementById('activity-desc').value.trim();
+
+  if(!actName){alert('請填寫活動名稱');return;}
+
+  var btn=document.getElementById('import-btn');
+  btn.disabled=true;
+  btn.textContent='匯入中...';
+  document.getElementById('progress-wrap').style.display='block';
+
+  var total=_parsedRows.length,done=0,ok=0,fail=0;
+
+  // 按日期分組
+  var byDate={};
+  _parsedRows.forEach(function(r){
+    var d=r.date||document.getElementById('activity-date').value||'unknown';
+    if(!byDate[d]) byDate[d]=[];
+    byDate[d].push(r);
+  });
+
+  log('info','── 開始匯入活動：'+actName+' ──');
+
+  for(var date in byDate){
+    var group=byDate[date];
+    var actId='act-'+actName.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'')+'-'+date;
+
+    // 1. 寫活動總表
+    try{
+      await _db.collection('activities').doc(actId).set({
+        id:actId,
+        name:actName,
+        date:date,
+        photoUrl:actPhoto||'',
+        description:actDesc||'',
+        participantCount:group.length,
+        participants:group.map(function(r){return r.email;}),
+        importedAt:new Date().toISOString()
+      },{merge:true});
+      log('info','活動建立：'+actName+' ('+date+') — '+group.length+' 人');
+    }catch(e){log('err','活動建立失敗: '+e.message);}
+
+    // 2. 寫每個用戶的 daily 紀錄
+    for(var i=0;i<group.length;i++){
+      var r=group[i];
+      try{
+        var docRef=_db.collection('users').doc(r.email).collection('daily').doc(date);
+        var snap=await docRef.get();
+        var existing=snap.exists?snap.data():{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:date+'T00:00:00'};
+        if(!existing.linked) existing.linked=[];
+
+        // 避免重複
+        var already=existing.linked.some(function(l){return l.source==='Activity'&&l.activityId===actId;});
+        if(!already){
+          existing.linked.push({
+            source:'Activity',
+            activityId:actId,
+            activityName:actName,
+            date:date,
+            photoUrl:actPhoto||'',
+            description:actDesc||'',
+            org:r.org||'',
+            importedAt:new Date().toISOString()
+          });
+          existing.updatedAt=new Date().toISOString();
+          await docRef.set(existing,{merge:true});
+
+          // 同時確保 users/{email} 有個人資料
+          await _db.collection('users').doc(r.email).set({
+            email:r.email,
+            name:r.name||'',
+            org:r.org||'',
+            updatedAt:new Date().toISOString()
+          },{merge:true});
+
+          ok++;
+          log('ok','✓ '+r.name+' ('+r.email+')');
+        }else{
+          log('warn','↷ 已存在：'+r.email);
+        }
+      }catch(e){
+        log('err','✗ '+r.email+': '+e.message);
+        fail++;
+      }
+      done++;
+      document.getElementById('progress-bar').style.width=Math.round(done/total*100)+'%';
+      await new Promise(function(res){setTimeout(res,150);});
+    }
+  }
+
+  log('info','── 完成 ──');
+  log('ok','成功：'+ok+' 筆 | 失敗：'+fail+' 筆');
+  btn.textContent='匯入完成 ✓';
+  btn.style.background='#4CAF19';
+  btn.disabled=false;
+}
+
+function log(type,msg){
+  var el=document.getElementById('log');
+  el.style.display='block';
+  var line=document.createElement('div');
+  line.className=type;
+  line.textContent=(new Date().toLocaleTimeString('zh-TW'))+' '+msg;
+  el.appendChild(line);
+  el.scrollTop=el.scrollHeight;
+}
+</script>
+</body>
+</html>

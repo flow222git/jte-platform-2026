@@ -363,6 +363,36 @@ function fsLoadUserData(email){
     }
   }).catch(function(e){console.warn('Profile load failed:',e);});
 
+  // 載入活動紀錄（從 activities 集合比對 email）
+  _db.collection('activities').where('participants','array-contains',cleanEmail).get().then(function(snap){
+    if(snap.empty) return;
+    var all=JTE.getAll();
+    snap.forEach(function(doc){
+      var act=doc.data();
+      var dateKey=act.date;
+      if(!dateKey) return;
+      if(!all[dateKey]) all[dateKey]={moods:[],energy:5,note:'',tags:[],linked:[],createdAt:dateKey+'T00:00:00'};
+      if(!all[dateKey].linked) all[dateKey].linked=[];
+      var already=all[dateKey].linked.some(function(l){return l.source==='Activity'&&l.activityId===act.id;});
+      if(!already){
+        all[dateKey].linked.push({
+          source:'Activity',
+          activityId:act.id,
+          activityName:act.name,
+          date:dateKey,
+          photoUrl:act.photoUrl||'',
+          description:act.description||'',
+          org:'',
+          recordId:'act-'+act.id
+        });
+        all[dateKey].updatedAt=new Date().toISOString();
+      }
+    });
+    localStorage.setItem(JTE_KEY,JSON.stringify(all));
+    renderCal();
+    console.log('Activities loaded:',snap.size);
+  }).catch(function(e){console.warn('Activities load failed:',e);});
+
   // 載入 daily 紀錄（含 HRV 歷史）
   _db.collection('users').doc(cleanEmail).collection('daily').get().then(function(snap){
     if(snap.empty) return;
@@ -609,6 +639,13 @@ function showDayDetail(k,rec){
         var hc={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
         var hcc=hc[l.assessmentTitle]||'#003D7C';
         html+='<div style="'+cardStyle(hcc)+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:'+hcc+';margin-bottom:6px">💓 HRVRecord'+nth+'</div><div style="font-size:12px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.assessmentTitle||'')+'</div><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+(l.assessmentLevel||'')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.stressIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">壓力指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.emotionalFlexibility||'—')+'</div><div style="font-size:9px;color:var(--m)">情緒靈活度</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.relaxationIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">放鬆指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.vitalityIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">活力指數</div></div></div>'+(l.note?'<div style="font-size:10px;color:var(--m);margin-top:6px;font-style:italic">'+l.note+'</div>':'')+'</div>';
+      } else if(l.source==='Activity'){
+        html+='<div style="'+cardStyle('#FF8A00')+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:#FF8A00;margin-bottom:6px">🎪 活動參與'+nth+'</div>'+
+          '<div style="font-size:14px;font-weight:600;color:var(--p);margin-bottom:4px">'+(l.activityName||'—')+'</div>'+
+          (l.org?'<div style="font-size:10px;color:var(--m);margin-bottom:6px">'+l.org+'</div>':'')+
+          (l.photoUrl?'<a href="'+l.photoUrl+'" target="_blank" style="display:inline-block;background:var(--o);color:white;padding:5px 14px;border-radius:999px;font-size:10px;font-weight:500;text-decoration:none;margin-top:4px">📷 查看活動照片</a>':'')+
+          '</div>';
       }
     });
   }
