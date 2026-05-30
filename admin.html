@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>練息場 · 管理後台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#003D7C;--pl:#A8C9EE;--pp:#F2F4F7;--pd:#002850;
+  --g:#4CAF19;--gp:#E6F4EA;--o:#FF8A00;--y:#FFD600;
+  --t:#0A1929;--t2:#4A5A6E;--t3:#8A95A5;
+  --s:#FFFFFF;--st:#EEF3F9;--warm:#FAFAF7;
+  --border:rgba(0,61,124,0.08);
+}
+html,body{font-family:'Inter','Noto Sans TC',sans-serif;background:var(--pp);color:var(--t);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--p);color:white;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-brand .zh{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;letter-spacing:0.08em}
+.topbar-brand .tag{font-size:9px;letter-spacing:0.15em;color:var(--pl);background:rgba(168,201,238,0.15);padding:3px 8px;border-radius:999px}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:12px}
+.topbar-user img{width:30px;height:30px;border-radius:50%;border:2px solid rgba(168,201,238,0.4)}
+.logout-btn{background:rgba(255,255,255,0.12);border:none;color:white;padding:6px 14px;border-radius:999px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.logout-btn:hover{background:rgba(255,255,255,0.2)}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:200px;background:white;border-right:1px solid var(--border);padding:16px 0;flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 24px;cursor:pointer;color:var(--t2);font-size:13px;transition:all 0.15s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--pp)}
+.nav-item.active{color:var(--p);background:var(--st);border-left-color:var(--p);font-weight:600}
+.nav-item i{font-size:18px}
+.content{flex:1;padding:28px 32px;overflow-x:hidden}
+
+/* PAGE */
+.page{display:none;animation:fade 0.25s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--p);margin-bottom:4px;letter-spacing:0.04em}
+.page-sub{font-size:12px;color:var(--t3);margin-bottom:24px}
+
+/* CARD */
+.card{background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,61,124,0.05);margin-bottom:16px;border:1px solid var(--border)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--p);letter-spacing:0.05em}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:white;border-radius:16px;padding:18px;box-shadow:0 2px 12px rgba(0,61,124,0.05);border:1px solid var(--border)}
+.stat-num{font-size:32px;font-weight:300;letter-spacing:-0.03em;color:var(--p);font-family:'Inter',sans-serif;line-height:1}
+.stat-lbl{font-size:11px;color:var(--t3);margin-top:6px;letter-spacing:0.05em}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:10px 12px;color:var(--t3);font-weight:600;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid var(--border)}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--t2)}
+.tbl tr:hover{background:var(--pp)}
+.tbl .name{font-weight:600;color:var(--t)}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:600}
+.badge-g{background:var(--gp);color:var(--g)}
+.badge-b{background:var(--st);color:var(--p)}
+.badge-o{background:#FFF3E0;color:var(--o)}
+.badge-owner{background:var(--p);color:white}
+
+/* BUTTONS */
+.btn{border:none;border-radius:999px;padding:9px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.btn-p{background:var(--o);color:white}
+.btn-p:hover{background:#e07a00}
+.btn-blue{background:var(--p);color:white}
+.btn-blue:hover{background:var(--pd)}
+.btn-ghost{background:var(--pp);color:var(--t2)}
+.btn-ghost:hover{background:var(--st)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-danger{background:#fff0f0;color:#e03a3a}
+.btn-danger:hover{background:#ffe0e0}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:16px;color:var(--t3);padding:4px 8px;border-radius:6px;transition:all 0.15s}
+.icon-btn:hover{background:var(--pp);color:var(--p)}
+.icon-btn.del:hover{color:#e03a3a;background:#fff0f0}
+
+/* INPUT */
+.inp{width:100%;border:1.5px solid var(--pl);border-radius:8px;padding:9px 12px;font-size:12px;outline:none;font-family:'Inter',sans-serif;background:var(--pp);transition:border 0.18s;color:var(--t)}
+.inp:focus{border-color:var(--p);background:white}
+.field{margin-bottom:12px}
+.field label{font-size:11px;color:var(--t2);display:block;margin-bottom:4px}
+
+/* GATE */
+.gate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+.gate-logo{margin-bottom:24px}
+.gate h1{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--p);margin-bottom:8px}
+.gate p{font-size:13px;color:var(--t3);margin-bottom:24px;max-width:300px;line-height:1.7}
+.gate-deny{background:#fff0f0;color:#e03a3a;padding:14px 20px;border-radius:12px;font-size:12px;margin-top:16px;max-width:340px}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal.active{display:flex}
+.modal-box{background:white;border-radius:16px;padding:24px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+.modal-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--p);margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--p);color:white;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:500;opacity:0;transition:all 0.25s;pointer-events:none;z-index:600}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.loading{text-align:center;padding:40px;color:var(--t3);font-size:12px}
+.empty{text-align:center;padding:32px;color:var(--t3);font-size:12px}
+
+@media(max-width:680px){
+  .sidebar{width:56px}
+  .nav-item span{display:none}
+  .nav-item{justify-content:center;padding:14px 0}
+  .content{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- GATE (登入/權限驗證) -->
+<div class="gate" id="gate">
+  <div class="gate-logo">
+    <img src="https://flow222git.github.io/jte-assets/assets/logo/jte-logo-inner.png" alt="練息場" style="height:28px">
+  </div>
+  <h1>管理後台</h1>
+  <p>請使用管理員 Google 帳號登入</p>
+  <div id="gate-signin"></div>
+  <div class="gate-deny" id="gate-deny" style="display:none">
+    <i class="ti ti-lock"></i> 此帳號沒有管理權限<br>
+    <span id="deny-email" style="font-size:11px;opacity:0.7"></span>
+    <div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="gateSignOut()">換帳號登入</button></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="zh">練息場</span>
+      <span class="tag">ADMIN</span>
+    </div>
+    <div class="topbar-user">
+      <img id="user-pic" src="" alt="">
+      <span id="user-name"></span>
+      <button class="logout-btn" onclick="gateSignOut()">登出</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="nav-item active" data-page="dashboard" onclick="nav('dashboard')"><i class="ti ti-layout-dashboard"></i><span>總覽</span></div>
+      <div class="nav-item" data-page="activities" onclick="nav('activities')"><i class="ti ti-calendar-event"></i><span>活動管理</span></div>
+      <div class="nav-item" data-page="users" onclick="nav('users')"><i class="ti ti-users"></i><span>用戶管理</span></div>
+      <div class="nav-item" data-page="admins" onclick="nav('admins')"><i class="ti ti-shield"></i><span>管理員</span></div>
+    </div>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">總覽</div>
+        <div class="page-sub">練息場資料統計</div>
+        <div class="stats" id="dash-stats">
+          <div class="loading">載入中…</div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">快速操作</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-blue" onclick="location.href='activity_import.html'"><i class="ti ti-upload"></i> 匯入活動名單</button>
+            <button class="btn btn-ghost" onclick="location.href='hrv_import.html'"><i class="ti ti-heart-rate-monitor"></i> 匯入 HRV 資料</button>
+            <button class="btn btn-ghost" onclick="location.href='./'"><i class="ti ti-home"></i> 回主平台</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITIES -->
+      <div class="page" id="page-activities">
+        <div class="page-title">活動管理</div>
+        <div class="page-sub">查看、編輯、刪除活動與參與名單</div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">所有活動</div>
+            <button class="btn btn-p btn-sm" onclick="location.href='activity_import.html'"><i class="ti ti-plus"></i> 新增活動</button>
+          </div>
+          <div id="activities-list"><div class="loading">載入中…</div></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="page-title">用戶管理</div>
+        <div class="page-sub">所有註冊用戶與紀錄統計</div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">用戶清單</div><input class="inp" id="user-search" placeholder="搜尋 email 或姓名" style="width:200px" oninput="filterUsers()"></div>
+          <div id="users-list"><div class="loading">載入中…</div></div>
+        </div>
+      </div>
+
+      <!-- ADMINS -->
+      <div class="page" id="page-admins">
+        <div class="page-title">管理員</div>
+        <div class="page-sub">新增或移除可進入後台的帳號</div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">新增管理員</div></div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div style="flex:1"><label style="font-size:11px;color:var(--t2);display:block;margin-bottom:4px">Email</label><input class="inp" id="new-admin-email" placeholder="admin@example.com"></div>
+            <button class="btn btn-p" onclick="addAdmin()">新增</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">目前管理員</div></div>
+          <div id="admins-list"><div class="loading">載入中…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box" id="modal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+var _db=null;
+var _currentUser=null;
+var _admins=[];
+var _allUsers=[];
+
+// 預設管理員（首次無 admins 集合時使用）
+var DEFAULT_ADMINS=['flow@jointoenjoy.com','simon@medialand.tw'];
+
+function initFirebase(){
+  if(typeof firebase==='undefined'){setTimeout(initFirebase,200);return;}
+  try{
+    if(firebase.apps.length===0){
+      firebase.initializeApp({
+        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+        authDomain:"jointoenjoy.firebaseapp.com",
+        projectId:"jointoenjoy",
+        storageBucket:"jointoenjoy.firebasestorage.app",
+        messagingSenderId:"978242729427",
+        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+      });
+    }
+    _db=firebase.firestore();
+  }catch(e){console.warn('Firebase init failed',e);}
+}
+
+window.addEventListener('load',function(){
+  initFirebase();
+
+  var t=setInterval(function(){
+    if(window.google&&google.accounts){
+      clearInterval(t);
+      google.accounts.id.initialize({client_id:CLIENT_ID,callback:onLogin,auto_select:true});
+      google.accounts.id.renderButton(document.getElementById('gate-signin'),{theme:'filled_blue',size:'large',width:280,text:'signin_with',locale:'zh-TW'});
+      var saved=localStorage.getItem('jte_admin_email');
+      if(saved) google.accounts.id.prompt();
+    }
+  },300);
+});
+
+function onLogin(resp){
+  var p=JSON.parse(atob(resp.credential.split('.')[1]));
+  _currentUser={email:p.email.toLowerCase(),name:p.name||p.email,picture:p.picture||''};
+  checkAdmin();
+}
+
+async function checkAdmin(){
+  // 載入 admins 集合
+  await loadAdmins();
+  var isAdmin=_admins.some(function(a){return a.email===_currentUser.email;});
+
+  if(isAdmin){
+    localStorage.setItem('jte_admin_email',_currentUser.email);
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('user-name').textContent=_currentUser.name;
+    if(_currentUser.picture) document.getElementById('user-pic').src=_currentUser.picture;
+    loadDashboard();
+  }else{
+    document.getElementById('gate-deny').style.display='block';
+    document.getElementById('deny-email').textContent=_currentUser.email;
+  }
+}
+
+async function loadAdmins(){
+  try{
+    var snap=await _db.collection('admins').get();
+    if(snap.empty){
+      // 首次：寫入預設管理員
+      for(var i=0;i<DEFAULT_ADMINS.length;i++){
+        await _db.collection('admins').doc(DEFAULT_ADMINS[i]).set({email:DEFAULT_ADMINS[i],role:i===0?'owner':'admin',addedAt:new Date().toISOString()});
+      }
+      _admins=DEFAULT_ADMINS.map(function(e,i){return {email:e,role:i===0?'owner':'admin'};});
+    }else{
+      _admins=[];
+      snap.forEach(function(doc){_admins.push(doc.data());});
+    }
+  }catch(e){
+    console.warn('loadAdmins failed',e);
+    // 退回預設
+    _admins=DEFAULT_ADMINS.map(function(e,i){return {email:e,role:i===0?'owner':'admin'};});
+  }
+}
+
+function gateSignOut(){
+  if(window.google&&google.accounts) google.accounts.id.disableAutoSelect();
+  localStorage.removeItem('jte_admin_email');
+  location.reload();
+}
+
+// ── NAV ──
+function nav(page){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===page);});
+  if(page==='activities') loadActivities();
+  if(page==='users') loadUsers();
+  if(page==='admins') renderAdmins();
+}
+
+// ── DASHBOARD ──
+async function loadDashboard(){
+  try{
+    var actSnap=await _db.collection('activities').get();
+    var userSnap=await _db.collection('users').get();
+    var totalHRV=0,totalActivity=0;
+    userSnap.forEach(function(u){});
+    document.getElementById('dash-stats').innerHTML=
+      statCard(userSnap.size,'註冊用戶')+
+      statCard(actSnap.size,'活動場次')+
+      statCard(_admins.length,'管理員');
+  }catch(e){
+    document.getElementById('dash-stats').innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';
+  }
+}
+function statCard(num,lbl){
+  return '<div class="stat"><div class="stat-num">'+num+'</div><div class="stat-lbl">'+lbl+'</div></div>';
+}
+
+// ── ACTIVITIES ──
+async function loadActivities(){
+  var el=document.getElementById('activities-list');
+  el.innerHTML='<div class="loading">載入中…</div>';
+  try{
+    var snap=await _db.collection('activities').orderBy('date','desc').get();
+    if(snap.empty){el.innerHTML='<div class="empty">尚無活動</div>';return;}
+    var html='<table class="tbl"><thead><tr><th>活動名稱</th><th>日期</th><th>人數</th><th>照片</th><th></th></tr></thead><tbody>';
+    snap.forEach(function(doc){
+      var a=doc.data();
+      html+='<tr><td class="name">'+a.name+'</td><td>'+a.date+'</td><td><span class="badge badge-b">'+(a.participantCount||0)+' 人</span></td><td>'+(a.photoUrl?'<a href="'+a.photoUrl+'" target="_blank" style="color:var(--p)">📷 連結</a>':'—')+'</td><td style="text-align:right"><button class="icon-btn" onclick="editActivity(\''+doc.id+'\')"><i class="ti ti-edit"></i></button><button class="icon-btn del" onclick="delActivity(\''+doc.id+'\',\''+a.name+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
+}
+
+async function editActivity(id){
+  var doc=await _db.collection('activities').doc(id).get();
+  var a=doc.data();
+  showModal('編輯活動',
+    '<div class="field"><label>活動名稱</label><input class="inp" id="ea-name" value="'+(a.name||'')+'"></div>'+
+    '<div class="field"><label>日期</label><input class="inp" id="ea-date" type="date" value="'+(a.date||'')+'"></div>'+
+    '<div class="field"><label>照片網址</label><input class="inp" id="ea-photo" value="'+(a.photoUrl||'')+'"></div>'+
+    '<div class="field"><label>說明</label><input class="inp" id="ea-desc" value="'+(a.description||'')+'"></div>'+
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="saveActivity(\''+id+'\')">儲存</button></div>');
+}
+
+async function saveActivity(id){
+  try{
+    await _db.collection('activities').doc(id).update({
+      name:document.getElementById('ea-name').value,
+      date:document.getElementById('ea-date').value,
+      photoUrl:document.getElementById('ea-photo').value,
+      description:document.getElementById('ea-desc').value,
+      updatedAt:new Date().toISOString()
+    });
+    closeModal();toast('已更新 ✓');loadActivities();
+  }catch(e){toast('更新失敗：'+e.message);}
+}
+
+function delActivity(id,name){
+  showModal('刪除活動',
+    '<p style="font-size:13px;color:var(--t2);line-height:1.7">確定刪除活動「<strong>'+name+'</strong>」嗎？<br>這只會刪除活動總表，已寫入用戶的紀錄不受影響。</p>'+
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="confirmDelActivity(\''+id+'\')">確定刪除</button></div>');
+}
+async function confirmDelActivity(id){
+  try{await _db.collection('activities').doc(id).delete();closeModal();toast('已刪除 ✓');loadActivities();}
+  catch(e){toast('刪除失敗：'+e.message);}
+}
+
+// ── USERS ──
+async function loadUsers(){
+  var el=document.getElementById('users-list');
+  el.innerHTML='<div class="loading">載入中…</div>';
+  try{
+    var snap=await _db.collection('users').get();
+    _allUsers=[];
+    snap.forEach(function(doc){_allUsers.push(Object.assign({_id:doc.id},doc.data()));});
+    renderUsers(_allUsers);
+  }catch(e){el.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
+}
+
+function renderUsers(users){
+  var el=document.getElementById('users-list');
+  if(!users.length){el.innerHTML='<div class="empty">尚無用戶</div>';return;}
+  var html='<table class="tbl"><thead><tr><th>姓名</th><th>Email</th><th>性別</th><th>生日</th><th>來源</th></tr></thead><tbody>';
+  users.forEach(function(u){
+    html+='<tr><td class="name">'+(u.name||'—')+'</td><td>'+u._id+'</td><td>'+(u.gender||'—')+'</td><td>'+(u.birthDate||'—')+'</td><td>'+(u.source==='hrv_sheet_import'?'<span class="badge badge-o">HRV匯入</span>':(u.org?'<span class="badge badge-b">'+u.org+'</span>':'<span class="badge badge-g">註冊</span>'))+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
+
+function filterUsers(){
+  var q=document.getElementById('user-search').value.toLowerCase();
+  var filtered=_allUsers.filter(function(u){
+    return u._id.toLowerCase().includes(q)||(u.name||'').toLowerCase().includes(q);
+  });
+  renderUsers(filtered);
+}
+
+// ── ADMINS ──
+function renderAdmins(){
+  var el=document.getElementById('admins-list');
+  if(!_admins.length){el.innerHTML='<div class="empty">尚無管理員</div>';return;}
+  var html='<table class="tbl"><thead><tr><th>Email</th><th>角色</th><th></th></tr></thead><tbody>';
+  _admins.forEach(function(a){
+    var isOwner=a.role==='owner';
+    var isSelf=a.email===_currentUser.email;
+    html+='<tr><td class="name">'+a.email+(isSelf?' <span style="color:var(--t3);font-weight:400">(你)</span>':'')+'</td><td>'+(isOwner?'<span class="badge badge-owner">擁有者</span>':'<span class="badge badge-b">管理員</span>')+'</td><td style="text-align:right">'+(isOwner?'':'<button class="icon-btn del" onclick="removeAdmin(\''+a.email+'\')"><i class="ti ti-trash"></i></button>')+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
+
+async function addAdmin(){
+  var email=document.getElementById('new-admin-email').value.trim().toLowerCase();
+  if(!email||!email.includes('@')){toast('請輸入有效 email');return;}
+  if(_admins.some(function(a){return a.email===email;})){toast('此 email 已是管理員');return;}
+  try{
+    await _db.collection('admins').doc(email).set({email:email,role:'admin',addedAt:new Date().toISOString(),addedBy:_currentUser.email});
+    _admins.push({email:email,role:'admin'});
+    document.getElementById('new-admin-email').value='';
+    toast('已新增管理員 ✓');
+    renderAdmins();
+  }catch(e){toast('新增失敗：'+e.message);}
+}
+
+function removeAdmin(email){
+  showModal('移除管理員',
+    '<p style="font-size:13px;color:var(--t2);line-height:1.7">確定移除「<strong>'+email+'</strong>」的管理權限嗎？</p>'+
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="confirmRemoveAdmin(\''+email+'\')">確定移除</button></div>');
+}
+async function confirmRemoveAdmin(email){
+  try{
+    await _db.collection('admins').doc(email).delete();
+    _admins=_admins.filter(function(a){return a.email!==email;});
+    closeModal();toast('已移除 ✓');renderAdmins();
+  }catch(e){toast('移除失敗：'+e.message);}
+}
+
+// ── UTILS ──
+function showModal(title,body){
+  document.getElementById('modal-content').innerHTML='<div class="modal-title">'+title+'</div>'+body;
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal(){document.getElementById('modal').classList.remove('active');}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target.id==='modal')closeModal();});
+
+function toast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2200);
+}
+</script>
+</body>
+</html>
