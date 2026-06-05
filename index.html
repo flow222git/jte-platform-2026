@@ -190,18 +190,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <!-- Tool Cards - editorial style -->
     <div style="display:flex;flex-direction:column;gap:10px">
 
-      <!-- BreathAware -->
-      <div onclick="location.href='breathaware/'" style="background:white;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,61,124,0.06);cursor:pointer;transition:all 0.2s;border:1px solid rgba(0,61,124,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden">
+      <!-- BreatheAware（新版呼吸覺察）-->
+      <div onclick="location.href='BreatheAware/'" style="background:white;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,61,124,0.06);cursor:pointer;transition:all 0.2s;border:1px solid rgba(0,61,124,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden">
         <img src="https://flow222git.github.io/jte-assets/assets/shapes/colorful/half-circle.png" style="position:absolute;right:-10px;bottom:-10px;width:70px;opacity:0.08;pointer-events:none" alt="">
         <div style="width:40px;height:40px;border-radius:12px;background:#EEF3F9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <i class="ti ti-wind" style="font-size:18px;color:#003D7C"></i>
         </div>
         <div style="flex:1">
-          <div style="font-size:8px;letter-spacing:0.2em;color:#A8C9EE;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:3px">BREATH AWARE</div>
-          <div style="font-size:13px;font-weight:600;color:#003D7C;margin-bottom:3px;letter-spacing:0.03em">呼吸覺察紀錄</div>
-          <div style="font-size:11px;color:#6B7A8D;line-height:1.5">BPM、吸吐比、當下感受，讓每一次呼吸練習留下可回看的線索。</div>
+          <div style="font-size:8px;letter-spacing:0.2em;color:#A8C9EE;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:3px">BREEEEEATHE~</div>
+          <div style="font-size:13px;font-weight:600;color:#003D7C;margin-bottom:3px;letter-spacing:0.03em">呼吸覺察</div>
+          <div style="font-size:11px;color:#6B7A8D;line-height:1.5">左吸右吐的按壓偵測，看見呼吸節奏、穩定度與練習前後的轉變。</div>
           <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
-            <span style="background:#E6F4EA;color:#4CAF19;font-size:8px;padding:2px 8px;border-radius:999px;font-weight:600">Phase 2</span>
+            <span style="background:#E6F4EA;color:#4CAF19;font-size:8px;padding:2px 8px;border-radius:999px;font-weight:600">新版</span>
             <span style="font-size:10px;color:#A8C9EE">開始覺察 →</span>
           </div>
         </div>
@@ -732,6 +732,21 @@ function showDayDetail(k,rec){
         var hc={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
         var hcc=hc[l.assessmentTitle]||'#003D7C';
         html+='<div style="'+cardStyle(hcc)+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:'+hcc+';margin-bottom:6px">💓 HRVRecord'+nth+'</div><div style="font-size:12px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.assessmentTitle||'')+'</div><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+(l.assessmentLevel||'')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.stressIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">壓力指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.emotionalFlexibility||'—')+'</div><div style="font-size:9px;color:var(--m)">情緒靈活度</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.relaxationIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">放鬆指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.vitalityIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">活力指數</div></div></div>'+(l.note?'<div style="font-size:10px;color:var(--m);margin-top:6px;font-style:italic">'+l.note+'</div>':'')+'</div>';
+      } else if(l.source==='BreatheAware'){
+        var bc={'overcontrol':'#e03a3a','shallow':'#FF8A00','fast':'#FF8A00','shortexhale':'#003D7C','inhaledom':'#003D7C','unstable':'#FF8A00','resonance':'#4CAF19','stable':'#4CAF19','observe':'#003D7C'};
+        var bcc=bc[l.patternKey]||'#4CAF19';
+        var bmins=l.durationSec?Math.floor(l.durationSec/60)+'分'+String(l.durationSec%60).padStart(2,'0')+'秒':'—';
+        html+='<div style="'+cardStyle(bcc)+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:'+bcc+';margin-bottom:6px">🌬 呼吸覺察'+nth+'</div>'+
+          '<div style="font-size:13px;font-weight:600;color:var(--p);margin-bottom:6px">'+(l.patternLabel||'')+'</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:15px;font-weight:700;color:var(--o)">'+(l.breathRate||'—')+'</div><div style="font-size:9px;color:var(--m)">次/分</div></div>'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:15px;font-weight:700;color:var(--g)">'+(l.stabilityScore||'—')+'</div><div style="font-size:9px;color:var(--m)">穩定度</div></div>'+
+          '<div style="text-align:center;background:var(--pp);border-radius:8px;padding:6px 4px"><div style="font-size:13px;font-weight:700;color:var(--p)">'+(l.modeLabel||'').slice(0,4)+'</div><div style="font-size:9px;color:var(--m)">模式</div></div>'+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--m);margin-top:6px">時長 '+bmins+' · 吸:屏:吐 '+(l.ihe||'—')+'</div>'+
+          (l.feelings&&l.feelings.length?'<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+l.feelings.map(function(f){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+f+'</span>'}).join('')+'</div>':'')+
+          '</div>';
       } else if(l.source==='Activity'){
         html+='<div style="'+cardStyle('#FF8A00')+'">'+delBtn(k,rid)+
           '<div style="font-size:10px;font-weight:600;color:#FF8A00;margin-bottom:6px">🎪 活動參與'+nth+'</div>'+
