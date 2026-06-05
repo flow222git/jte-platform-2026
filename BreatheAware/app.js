@@ -105,28 +105,63 @@ function startSession(mode){
   document.getElementById('breath-hint').textContent='';
   document.getElementById('breath-orb').className='breath-orb';
 
-  // 指定呼吸法：顯示指導區
-  var gz=document.getElementById('guide-zone');
-  if(m.guided){
-    gz.style.display='block';
-    document.getElementById('guide-text').textContent=m.text;
-    document.getElementById('guide-cue').textContent='準備';
-    document.getElementById('guide-progress').style.width='0%';
-  }else{
-    gz.style.display='none';
-  }
-
   var screen=document.getElementById('breath-screen');
   screen.className='breath-screen active';
   screen.scrollTop=0;
 
-  // 初始化波形 canvas
-  initWaveCanvas();
-
-  // timer
   session.timerInt=setInterval(updateTimer,200);
 
-  bindTouchZones();
+  if(m.guided){
+    // 指定呼吸法：自動跑節奏，隱藏觸控與波形
+    document.getElementById('guide-zone').style.display='block';
+    document.getElementById('guide-text').textContent=m.text;
+    document.querySelector('.touch-zones').style.display='none';
+    document.querySelector('.wave-wrap').style.display='none';
+    startGuidedLoop(m);
+  }else{
+    // 自然偵測：觸控 + 波形
+    document.getElementById('guide-zone').style.display='none';
+    document.querySelector('.touch-zones').style.display='flex';
+    document.querySelector('.wave-wrap').style.display='block';
+    initWaveCanvas();
+    bindTouchZones();
+  }
+}
+
+// ── 指定呼吸法：自動引導循環 ──
+function startGuidedLoop(m){
+  // 四相序列（秒）
+  var phases=[
+    {name:'吸 氣',dur:m.inhale,cls:'inhaling',bg:'inhale',freq:FREQ_G},
+    {name:'屏 息',dur:m.holdIn,cls:'',bg:'hold',freq:null},
+    {name:'吐 氣',dur:m.exhale,cls:'exhaling',bg:'exhale',freq:FREQ_C},
+    {name:'屏 息',dur:m.holdOut,cls:'',bg:'hold',freq:null}
+  ].filter(function(p){return p.dur>0;});
+
+  var idx=0;
+  function runPhase(){
+    if(!session.active) return;
+    var ph=phases[idx%phases.length];
+    idx++;
+
+    document.getElementById('breath-phase').textContent=ph.name;
+    document.getElementById('guide-cue').textContent=ph.name;
+    document.getElementById('breath-orb').className='breath-orb'+(ph.cls?' '+ph.cls:'');
+    document.getElementById('breath-screen').className='breath-screen active bg-'+ph.bg;
+
+    if(ph.freq){playTone(ph.freq);}else{stopTone();}
+
+    // 進度條
+    var bar=document.getElementById('guide-progress');
+    bar.style.transition='none';bar.style.width='0%';
+    setTimeout(function(){
+      bar.style.transition='width '+ph.dur+'s linear';
+      bar.style.width='100%';
+    },30);
+
+    session._guideTimeout=setTimeout(runPhase,ph.dur*1000);
+  }
+  runPhase();
 }
 
 // ── 波形 canvas ──
@@ -347,18 +382,25 @@ function endSession(){
   clearInterval(session.timerInt);
   stopActivePhase();
   if(session._guideInt) clearInterval(session._guideInt);
+  if(session._guideTimeout) clearTimeout(session._guideTimeout);
   if(session.waveRAF) cancelAnimationFrame(session.waveRAF);
   stopTone();
 
-  // 收尾最後一輪
-  if(session.cur.inhaleStartAt&&session.cur.exhaleEndAt){
-    finalizeCycle(Date.now());
-  }
-
   document.getElementById('breath-screen').className='breath-screen';
 
-  var analysis=analyze(session.events,(Date.now()-session.startAt)/1000);
-  renderReport(analysis);
+  var totalSec=(Date.now()-session.startAt)/1000;
+
+  if(MODES[session.mode].guided){
+    // 指定呼吸法：簡化報告
+    renderGuidedReport(totalSec);
+  }else{
+    // 自然偵測：收尾 + 完整分析
+    if(session.cur.inhaleStartAt&&session.cur.exhaleEndAt){
+      finalizeCycle(Date.now());
+    }
+    var analysis=analyze(session.events,totalSec);
+    renderReport(analysis);
+  }
   showPage('report');
 }
 
@@ -470,7 +512,55 @@ function judgeTransition(segments,valid,inhales,exhales){
 // app2.js 接續報告渲染、圖表、儲存、登入
 
 // ═══════════════════════════════════════════
-// 報告渲染
+// 指定呼吸法簡化報告
+// ═══════════════════════════════════════════
+function renderGuidedReport(totalSec){
+  _lastAnalysis={guided:true,totalSec:totalSec};
+  _reportState={moodBefore:null,moodAfter:null,feelings:[],discomforts:[],note:''};
+
+  var m=MODES[session.mode];
+  var el=document.getElementById('report-content');
+  var mins=Math.floor(totalSec/60),secs=Math.round(totalSec%60);
+
+  var html='';
+  html+='<div class="report-hero">'+
+    '<div class="report-mode">'+m.label+'</div>'+
+    '<div class="report-mode-title">練習完成</div>'+
+    '<div class="report-mode-desc">你跟著節奏完成了 '+mins+' 分 '+secs+' 秒的 '+m.label+'。給自己一點時間，感受身體現在的狀態。</div>'+
+    '</div>';
+
+  html+='<div class="metrics">'+
+    metric(mins+':'+String(secs).padStart(2,'0'),'','練習時長')+
+    metric(m.label.slice(0,4),'','呼吸法')+
+    '</div>';
+
+  // 主觀感受
+  html+='<div class="card"><div class="card-title"><i class="ti ti-mood-smile"></i>練習後感受</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-bottom:8px">這次練習帶來什麼變化？</div>'+
+    '<div class="feeling-grid" id="feeling-grid">'+
+      ['輕鬆很多','稍微放鬆','沒什麼變化','還是緊繃','有點疲倦','更清醒了','心跳變慢','頭腦清晰'].map(function(f){
+        return '<div class="feeling-opt" onclick="toggleFeeling(this)">'+f+'</div>';
+      }).join('')+
+    '</div></div>';
+
+  html+='<div class="card"><div class="card-title"><i class="ti ti-alert-circle"></i>有沒有不適？</div>'+
+    '<div class="feeling-grid">'+
+      ['頭暈','胸悶','麻','呼吸困難','恐慌'].map(function(d){
+        return '<div class="feeling-opt discomfort-opt" onclick="toggleDiscomfort(this)">'+d+'</div>';
+      }).join('')+
+    '</div></div>';
+
+  html+='<div class="card"><div class="card-title"><i class="ti ti-note"></i>備註</div>'+
+    '<textarea class="report-ta" id="report-note" rows="2" placeholder="想記下什麼嗎？"></textarea></div>';
+
+  html+='<button class="save-btn" onclick="trySaveSession()">儲存這次練習</button>';
+  html+='<button class="ghost-btn" onclick="showPage(\'home\')">不儲存，回首頁</button>';
+
+  el.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// 報告渲染（自然偵測）
 // ═══════════════════════════════════════════
 var _lastAnalysis=null;
 var _reportState={moodBefore:null,moodAfter:null,feelings:[],discomforts:[],note:''};
@@ -745,27 +835,74 @@ function skipLogin(){
 function doSave(){
   var a=_lastAnalysis;
   var now=new Date();
-  var record={
-    id:'breathe-'+Date.now(),
-    timestamp:now.toISOString(),
-    mode:session.mode,
-    modeLabel:MODES[session.mode].label,
-    durationSec:Math.round(a.totalSec),
-    breathRate:parseFloat(a.breathRate.toFixed(1)),
-    avgInhale:parseFloat(a.avgInhale.toFixed(1)),
-    avgExhale:parseFloat(a.avgExhale.toFixed(1)),
-    avgHold:parseFloat(a.avgHold.toFixed(1)),
-    stabilityScore:Math.round(a.stabilityScore),
-    ihe:a.ihe,
-    holdFraction:parseFloat(a.holdFraction.toFixed(2)),
-    patternKey:a.pattern.key,
-    patternLabel:a.pattern.label,
-    transitionKey:a.transition.key,
-    feelings:_reportState.feelings,
-    discomforts:_reportState.discomforts,
-    note:_reportState.note,
-    validCount:a.validCount
-  };
+  var record,linkData;
+
+  if(a.guided){
+    // 指定呼吸法簡化紀錄
+    record={
+      id:'breathe-'+Date.now(),
+      timestamp:now.toISOString(),
+      mode:session.mode,
+      modeLabel:MODES[session.mode].label,
+      durationSec:Math.round(a.totalSec),
+      guided:true,
+      patternLabel:MODES[session.mode].label,
+      feelings:_reportState.feelings,
+      discomforts:_reportState.discomforts,
+      note:_reportState.note
+    };
+    linkData={
+      source:'BreatheAware',
+      recordId:record.id,
+      measureDate:'',
+      mode:session.mode,
+      modeLabel:record.modeLabel,
+      durationSec:record.durationSec,
+      guided:true,
+      patternLabel:record.modeLabel,
+      feelings:record.feelings,
+      note:record.note
+    };
+  }else{
+    record={
+      id:'breathe-'+Date.now(),
+      timestamp:now.toISOString(),
+      mode:session.mode,
+      modeLabel:MODES[session.mode].label,
+      durationSec:Math.round(a.totalSec),
+      breathRate:parseFloat(a.breathRate.toFixed(1)),
+      avgInhale:parseFloat(a.avgInhale.toFixed(1)),
+      avgExhale:parseFloat(a.avgExhale.toFixed(1)),
+      avgHold:parseFloat(a.avgHold.toFixed(1)),
+      stabilityScore:Math.round(a.stabilityScore),
+      ihe:a.ihe,
+      holdFraction:parseFloat(a.holdFraction.toFixed(2)),
+      patternKey:a.pattern.key,
+      patternLabel:a.pattern.label,
+      transitionKey:a.transition.key,
+      feelings:_reportState.feelings,
+      discomforts:_reportState.discomforts,
+      note:_reportState.note,
+      validCount:a.validCount
+    };
+    linkData={
+      source:'BreatheAware',
+      recordId:record.id,
+      measureDate:'',
+      mode:session.mode,
+      modeLabel:record.modeLabel,
+      durationSec:record.durationSec,
+      breathRate:record.breathRate,
+      avgInhale:record.avgInhale,
+      avgExhale:record.avgExhale,
+      stabilityScore:record.stabilityScore,
+      ihe:record.ihe,
+      patternKey:record.patternKey,
+      patternLabel:record.patternLabel,
+      feelings:record.feelings,
+      note:record.note
+    };
+  }
 
   // 1. 存歷史
   var hist=[];
@@ -778,30 +915,15 @@ function doSave(){
     var email=localStorage.getItem('jte_user_email');
     var jteKey=email?'jte_daily_'+email.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';
     var todayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    linkData.measureDate=todayKey;
     var all=JSON.parse(localStorage.getItem(jteKey)||'{}');
     var rec=all[todayKey]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
     if(!rec.linked)rec.linked=[];
-    rec.linked.push({
-      source:'BreatheAware',
-      recordId:record.id,
-      measureDate:todayKey,
-      mode:session.mode,
-      modeLabel:record.modeLabel,
-      durationSec:record.durationSec,
-      breathRate:record.breathRate,
-      avgInhale:record.avgInhale,
-      avgExhale:record.avgExhale,
-      stabilityScore:record.stabilityScore,
-      ihe:record.ihe,
-      patternLabel:record.patternLabel,
-      feelings:record.feelings,
-      note:record.note
-    });
+    rec.linked.push(linkData);
     rec.updatedAt=new Date().toISOString();
     all[todayKey]=rec;
     localStorage.setItem(jteKey,JSON.stringify(all));
 
-    // 3. Firestore 同步
     if(_db&&email){
       _db.collection('users').doc(email.toLowerCase()).collection('daily').doc(todayKey).set(rec,{merge:true})
         .catch(function(e){console.warn('Firestore sync failed',e);});
@@ -828,28 +950,42 @@ function renderHistory(){
     return;
   }
 
-  // 最近 7 次比較
-  var recent=hist.slice(0,7);
-  var avgRate=avg(recent.map(function(r){return r.breathRate;}));
-  var avgStab=avg(recent.map(function(r){return r.stabilityScore;}));
-  cmpEl.innerHTML='<div class="card"><div class="card-title"><i class="ti ti-chart-bar"></i>最近 '+recent.length+' 次平均</div>'+
-    '<div class="metrics" style="margin-bottom:0">'+
-    metric(avgRate.toFixed(1),'次/分','平均頻率')+
-    metric(Math.round(avgStab),'分','平均穩定度')+
-    '</div></div>';
+  // 最近 7 次比較（只計自然偵測有數據的）
+  var withData=hist.filter(function(r){return !r.guided&&r.breathRate;}).slice(0,7);
+  if(withData.length){
+    var avgRate=avg(withData.map(function(r){return r.breathRate;}));
+    var avgStab=avg(withData.map(function(r){return r.stabilityScore;}));
+    cmpEl.innerHTML='<div class="card"><div class="card-title"><i class="ti ti-chart-bar"></i>最近 '+withData.length+' 次覺察平均</div>'+
+      '<div class="metrics" style="margin-bottom:0">'+
+      metric(avgRate.toFixed(1),'次/分','平均頻率')+
+      metric(Math.round(avgStab),'分','平均穩定度')+
+      '</div></div>';
+  }else{
+    cmpEl.innerHTML='';
+  }
 
   // 歷史清單
   var html='';
   hist.forEach(function(r){
     var d=new Date(r.timestamp);
     var dateStr=(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-    html+='<div class="hist-item">'+
-      '<div class="hist-top"><span class="hist-date">'+dateStr+' · '+r.modeLabel+'</span><span class="hist-tag">'+r.patternLabel+'</span></div>'+
-      '<div class="hist-stats">'+
-        '<div class="hist-stat"><strong>'+r.breathRate+'</strong> 次/分</div>'+
-        '<div class="hist-stat"><strong>'+r.stabilityScore+'</strong> 穩定度</div>'+
-        (r.feelings&&r.feelings.length?'<div class="hist-stat" style="color:var(--g)">'+r.feelings[0]+'</div>':'')+
-      '</div></div>';
+    var mins=Math.floor(r.durationSec/60),secs=r.durationSec%60;
+    if(r.guided){
+      html+='<div class="hist-item">'+
+        '<div class="hist-top"><span class="hist-date">'+dateStr+' · '+r.modeLabel+'</span><span class="hist-tag" style="background:var(--gp);color:var(--g)">跟練</span></div>'+
+        '<div class="hist-stats">'+
+          '<div class="hist-stat"><strong>'+mins+':'+String(secs).padStart(2,'0')+'</strong> 時長</div>'+
+          (r.feelings&&r.feelings.length?'<div class="hist-stat" style="color:var(--g)">'+r.feelings[0]+'</div>':'')+
+        '</div></div>';
+    }else{
+      html+='<div class="hist-item">'+
+        '<div class="hist-top"><span class="hist-date">'+dateStr+' · '+r.modeLabel+'</span><span class="hist-tag">'+r.patternLabel+'</span></div>'+
+        '<div class="hist-stats">'+
+          '<div class="hist-stat"><strong>'+r.breathRate+'</strong> 次/分</div>'+
+          '<div class="hist-stat"><strong>'+r.stabilityScore+'</strong> 穩定度</div>'+
+          (r.feelings&&r.feelings.length?'<div class="hist-stat" style="color:var(--g)">'+r.feelings[0]+'</div>':'')+
+        '</div></div>';
+    }
   });
   listEl.innerHTML=html;
 }
