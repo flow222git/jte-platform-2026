@@ -26,7 +26,11 @@ var session={
   cur:{inhaleStartAt:0,inhaleEndAt:0,exhaleStartAt:0,exhaleEndAt:0},
   timerInt:null,
   audioCtx:null,
-  currentOsc:null
+  currentOsc:null,
+  // 波形
+  wavePoints:[],
+  waveRAF:null,
+  activePhaseInt:null
 };
 
 // ═══════════════════════════════════════════
@@ -91,22 +95,92 @@ function startSession(mode){
   session.events=[];
   session.currentSide=null;
   session.cur={inhaleStartAt:0,inhaleEndAt:0,exhaleStartAt:0,exhaleEndAt:0};
+  session.wavePoints=[];
 
   initAudio();
 
   var m=MODES[mode];
   document.getElementById('breath-mode-label').textContent=m.label;
-  document.getElementById('breath-guide-text').textContent=m.guided?m.text:'';
   document.getElementById('breath-phase').textContent='開始';
   document.getElementById('breath-hint').textContent='';
   document.getElementById('breath-orb').className='breath-orb';
 
-  document.getElementById('breath-screen').classList.add('active');
+  // 指定呼吸法：顯示指導區
+  var gz=document.getElementById('guide-zone');
+  if(m.guided){
+    gz.style.display='block';
+    document.getElementById('guide-text').textContent=m.text;
+    document.getElementById('guide-cue').textContent='準備';
+    document.getElementById('guide-progress').style.width='0%';
+  }else{
+    gz.style.display='none';
+  }
+
+  var screen=document.getElementById('breath-screen');
+  screen.className='breath-screen active';
+  screen.scrollTop=0;
+
+  // 初始化波形 canvas
+  initWaveCanvas();
 
   // timer
   session.timerInt=setInterval(updateTimer,200);
 
   bindTouchZones();
+}
+
+// ── 波形 canvas ──
+var waveCanvas,waveCtx;
+function initWaveCanvas(){
+  waveCanvas=document.getElementById('waveform');
+  waveCtx=waveCanvas.getContext('2d');
+  var dpr=window.devicePixelRatio||1;
+  waveCanvas.width=waveCanvas.offsetWidth*dpr;
+  waveCanvas.height=waveCanvas.offsetHeight*dpr;
+  if(session.waveRAF) cancelAnimationFrame(session.waveRAF);
+  drawWave();
+}
+
+function phaseY(phase,H){
+  // phase: 1=吸(上), 0=吐(下), 0.5=屏(中)
+  var pad=H*0.18;
+  return pad+(H-2*pad)*(1-phase);
+}
+
+function drawWave(){
+  if(!session.active){return;}
+  var W=waveCanvas.width,H=waveCanvas.height;
+  var dpr=window.devicePixelRatio||1;
+  waveCtx.clearRect(0,0,W,H);
+
+  var now=Date.now()-session.startAt;
+  var windowMs=18000;
+  var livePhase=session.currentSide==='inhale'?1:session.currentSide==='exhale'?0:0.5;
+  var visible=session.wavePoints.concat([{t:now,phase:livePhase}]);
+  var startT=Math.max(0,now-windowMs);
+
+  if(visible.length>=2){
+    waveCtx.beginPath();
+    var first=true;
+    for(var i=0;i<visible.length;i++){
+      var p=visible[i];
+      if(p.t<startT) continue;
+      var x=((p.t-startT)/windowMs)*W;
+      var y=phaseY(p.phase,H);
+      if(first){waveCtx.moveTo(x,y);first=false;}
+      else{
+        var prev=visible[i-1];
+        var px=((prev.t-startT)/windowMs)*W;
+        waveCtx.lineTo(px+1,y);
+        waveCtx.lineTo(x,y);
+      }
+    }
+    waveCtx.lineTo(W,phaseY(livePhase,H));
+    waveCtx.strokeStyle='rgba(255,255,255,0.85)';
+    waveCtx.lineWidth=2*dpr;waveCtx.lineCap='round';waveCtx.lineJoin='round';
+    waveCtx.stroke();
+  }
+  session.waveRAF=requestAnimationFrame(drawWave);
 }
 
 function updateTimer(){
@@ -143,32 +217,61 @@ function onInhaleStart(){
   }
   session.currentSide='inhale';
   session.cur.inhaleStartAt=now;
+  pushWave(1);
+  startActivePhase(1);
   playTone(FREQ_G);
   setPhase('吸氣','inhaling');
+  setBg('inhale');
 }
 
 function onInhaleEnd(){
   var now=Date.now();
   session.currentSide=null;
   session.cur.inhaleEndAt=now;
+  stopActivePhase();
+  pushWave(0.5);
   stopTone();
   setPhase('屏息','');
+  setBg('hold');
 }
 
 function onExhaleStart(){
   var now=Date.now();
   session.currentSide='exhale';
   session.cur.exhaleStartAt=now;
+  pushWave(0);
+  startActivePhase(0);
   playTone(FREQ_C);
   setPhase('吐氣','exhaling');
+  setBg('exhale');
 }
 
 function onExhaleEnd(){
   var now=Date.now();
   session.currentSide=null;
   session.cur.exhaleEndAt=now;
+  stopActivePhase();
+  pushWave(0.5);
   stopTone();
   setPhase('屏息','');
+  setBg('hold');
+}
+
+function pushWave(phase){
+  if(session.active) session.wavePoints.push({t:Date.now()-session.startAt,phase:phase});
+}
+function startActivePhase(phase){
+  stopActivePhase();
+  session.activePhaseInt=setInterval(function(){
+    if(session.active) session.wavePoints.push({t:Date.now()-session.startAt,phase:phase});
+  },120);
+}
+function stopActivePhase(){
+  if(session.activePhaseInt){clearInterval(session.activePhaseInt);session.activePhaseInt=null;}
+}
+function setBg(phase){
+  var screen=document.getElementById('breath-screen');
+  screen.className='breath-screen active bg-'+phase;
 }
 
 function finalizeCycle(cycleEndAt){
@@ -203,25 +306,32 @@ function finalizeCycle(cycleEndAt){
 function setPhase(text,orbClass){
   document.getElementById('breath-phase').textContent=text;
   document.getElementById('breath-orb').className='breath-orb'+(orbClass?' '+orbClass:'');
-  // 指定呼吸法提示
-  if(MODES[session.mode].guided&&session.currentSide){
-    showGuidedHint();
-  } else {
-    document.getElementById('breath-hint').textContent='';
+  // 指定呼吸法：更新指導 cue + 進度條
+  if(MODES[session.mode].guided){
+    var cue=document.getElementById('guide-cue');
+    if(session.currentSide==='inhale') cue.textContent='吸 氣';
+    else if(session.currentSide==='exhale') cue.textContent='吐 氣';
+    else cue.textContent='屏 息';
+    if(session.currentSide) runGuideProgress();
   }
 }
 
-function showGuidedHint(){
+function runGuideProgress(){
   var m=MODES[session.mode];
   var target=session.currentSide==='inhale'?m.inhale:m.exhale;
+  var bar=document.getElementById('guide-progress');
   var hint=document.getElementById('breath-hint');
-  var checkInt=setInterval(function(){
-    if(session.currentSide===null){clearInterval(checkInt);hint.textContent='';return;}
-    var elapsed=(Date.now()-getPhaseStart())/1000;
+  var startT=getPhaseStart();
+  if(session._guideInt) clearInterval(session._guideInt);
+  session._guideInt=setInterval(function(){
+    if(session.currentSide===null){clearInterval(session._guideInt);bar.style.width='0%';hint.textContent='';return;}
+    var elapsed=(Date.now()-startT)/1000;
+    var pct=Math.min(100,elapsed/target*100);
+    bar.style.width=pct+'%';
     if(elapsed<target-1) hint.textContent='保持… '+Math.ceil(target-elapsed)+' 秒';
     else if(elapsed<=target+0.8) hint.textContent='✓ 剛好';
     else hint.textContent='可以換邊了';
-  },200);
+  },100);
 }
 function getPhaseStart(){
   if(session.currentSide==='inhale') return session.cur.inhaleStartAt;
@@ -235,6 +345,9 @@ function getPhaseStart(){
 function endSession(){
   session.active=false;
   clearInterval(session.timerInt);
+  stopActivePhase();
+  if(session._guideInt) clearInterval(session._guideInt);
+  if(session.waveRAF) cancelAnimationFrame(session.waveRAF);
   stopTone();
 
   // 收尾最後一輪
@@ -242,7 +355,7 @@ function endSession(){
     finalizeCycle(Date.now());
   }
 
-  document.getElementById('breath-screen').classList.remove('active');
+  document.getElementById('breath-screen').className='breath-screen';
 
   var analysis=analyze(session.events,(Date.now()-session.startAt)/1000);
   renderReport(analysis);
@@ -584,9 +697,23 @@ function renderNavUser(){
   var pic=localStorage.getItem('jte_user_picture');
   if(email){
     el.innerHTML=pic?'<img src="'+pic+'" alt="">':'<span style="font-size:11px;color:var(--p)">'+email.split('@')[0]+'</span>';
+    el.onclick=null;
   }else{
-    el.innerHTML='';
+    el.innerHTML='<button style="background:var(--p);color:white;border:none;padding:5px 12px;border-radius:999px;font-size:11px;cursor:pointer;font-family:Inter,sans-serif">登入</button>';
+    el.onclick=function(){openLoginModal();};
   }
+}
+
+function openLoginModal(){
+  _pendingSave=null;
+  document.getElementById('login-modal').classList.add('active');
+  setTimeout(function(){
+    if(window.google&&google.accounts){
+      var btn=document.getElementById('login-gsi-btn');
+      btn.innerHTML='';
+      google.accounts.id.renderButton(btn,{theme:'filled_blue',size:'large',width:300,text:'signin_with',locale:'zh-TW'});
+    }
+  },100);
 }
 
 var _pendingSave=null;
