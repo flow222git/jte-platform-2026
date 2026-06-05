@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Breeeeeathe~ 呼吸覺察</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -16,13 +16,12 @@
   --g:#4CAF19;--gp:#E6F4EA;--o:#FF8A00;--y:#FFD600;
   --t:#0A1929;--t2:#4A5A6E;--t3:#8A95A5;
   --s:#FFFFFF;--st:#EEF3F9;--warm:#FAFAF7;
-  --inhale:#4CAF19;--exhale:#003D7C;--hold:#A8C9EE;
   --border:rgba(0,61,124,0.08);
+  --orb-dark:#2a3441;--orb-inhale:#2a6b5a;--orb-exhale:#2d5f8a;
+  --warm-bg:#f5ecd9;--warm-cool:#d8e4e8;--warm-ink:#5a5347;--warm-ink-soft:#8a8273;--warm-accent:#c19a6b;
 }
 html,body{height:100%;font-family:'Inter','Noto Sans TC',sans-serif;background:var(--warm);color:var(--t);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 body{max-width:480px;margin:0 auto;position:relative;min-height:100vh;box-shadow:0 0 40px rgba(0,61,124,0.06)}
-
-/* NAV */
 .nav{background:rgba(250,250,247,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 18px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .nav-brand{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--p);letter-spacing:0.1em}
 .nav-tabs{display:flex;gap:2px}
@@ -30,167 +29,159 @@ body{max-width:480px;margin:0 auto;position:relative;min-height:100vh;box-shadow
 .nav-tab.active{background:var(--st);color:var(--p);font-weight:600}
 .nav-user{display:flex;align-items:center;gap:6px}
 .nav-user img{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--pl)}
-
-/* PAGE */
 .page{display:none}
 .page.active{display:block;animation:fade 0.3s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-
-/* HOME */
-.home{padding:32px 20px;text-align:center;min-height:calc(100vh - 52px);display:flex;flex-direction:column;justify-content:center}
-.home-title{font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700;color:var(--p);letter-spacing:0.06em;margin-bottom:8px}
-.home-sub{font-size:13px;color:var(--t3);letter-spacing:0.1em;margin-bottom:32px}
-.home-card{background:var(--st);border-radius:16px;padding:20px;margin-bottom:24px;text-align:left}
+.home{padding:28px 20px 40px}
+.home-title{font-family:'Noto Serif TC',serif;font-size:30px;font-weight:700;color:var(--p);letter-spacing:0.06em;text-align:center;margin-bottom:6px}
+.home-sub{font-size:13px;color:var(--t3);letter-spacing:0.1em;text-align:center;margin-bottom:28px}
+.home-card{background:var(--st);border-radius:16px;padding:18px;margin-bottom:24px}
 .home-card p{font-size:13px;color:var(--t2);line-height:1.9}
 .home-card p strong{color:var(--p)}
-.mode-select{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.mode-btn{background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;text-align:left;display:flex;align-items:center;gap:14px}
-.mode-btn:hover{border-color:var(--pl);box-shadow:0 4px 16px rgba(0,61,124,0.08)}
-.mode-btn.primary{background:var(--p);border-color:var(--p)}
-.mode-btn.primary .mode-name,.mode-btn.primary .mode-desc{color:white}
-.mode-btn.primary .mode-desc{color:var(--pl)}
-.mode-icon{width:42px;height:42px;border-radius:12px;background:var(--st);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;color:var(--p)}
-.mode-btn.primary .mode-icon{background:rgba(255,255,255,0.15);color:white}
-.mode-name{font-size:14px;font-weight:600;color:var(--p);margin-bottom:2px}
-.mode-desc{font-size:11px;color:var(--t3)}
-
-/* GUIDED PICKER */
+.section-label{font-size:10px;color:var(--t3);letter-spacing:0.1em;margin:20px 0 10px;text-transform:uppercase}
+.mode-btn{background:var(--p);border:none;border-radius:14px;padding:18px;cursor:pointer;transition:all 0.2s;text-align:left;display:flex;align-items:center;gap:14px;width:100%;margin-bottom:10px}
+.mode-btn:active{transform:scale(0.99)}
+.mode-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;color:white}
+.mode-name{font-size:15px;font-weight:600;color:white;margin-bottom:2px}
+.mode-desc{font-size:11px;color:var(--pl)}
 .guided-list{display:flex;flex-direction:column;gap:8px}
 .guided-item{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between}
 .guided-item:hover{border-color:var(--pl)}
-.guided-info .g-name{font-size:13px;font-weight:600;color:var(--p)}
-.guided-info .g-pattern{font-size:11px;color:var(--t3);margin-top:2px}
-
-/* BREATHING SCREEN */
-.breath-screen{position:fixed;inset:0;max-width:480px;margin:0 auto;display:none;flex-direction:column;z-index:200;overflow:hidden;background:#0a2a4f;transition:background 1.2s ease}
-.breath-screen.active{display:flex}
-.breath-screen.bg-inhale{background:linear-gradient(165deg,#1a5a3a,#0a3a5f)}
-.breath-screen.bg-exhale{background:linear-gradient(165deg,#002850,#0a2a4f)}
-.breath-screen.bg-hold{background:linear-gradient(165deg,#0a3050,#0a2540)}
-.breath-top{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;color:white;z-index:10}
-.breath-timer{font-size:14px;font-family:'Inter',sans-serif;font-weight:300;letter-spacing:0.05em}
-.breath-mode-label{font-size:11px;color:var(--pl);letter-spacing:0.1em}
-.breath-end-btn{background:rgba(255,255,255,0.15);border:none;color:white;padding:7px 16px;border-radius:999px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif}
-
-.breath-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding-top:10px}
-
-/* ORB + 光環 */
-.orb-wrap{position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-.orb-ring{position:absolute;inset:-2px;border-radius:50%;border:1.5px solid rgba(168,201,238,0.25);animation:ringPulse 4s ease-in-out infinite}
-.orb-ring2{position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(168,201,238,0.12);animation:ringPulse 4s ease-in-out infinite 0.8s}
-@keyframes ringPulse{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:0.9;transform:scale(1.04)}}
-.breath-orb{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 38% 34%,rgba(168,201,238,0.45),rgba(76,175,25,0.12));display:flex;align-items:center;justify-content:center;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1),background 0.5s;position:relative;z-index:2;box-shadow:0 8px 50px rgba(0,61,124,0.3)}
-.breath-orb.inhaling{transform:scale(1.22);background:radial-gradient(circle at 38% 34%,rgba(76,175,25,0.55),rgba(76,175,25,0.12))}
-.breath-orb.exhaling{transform:scale(0.82);background:radial-gradient(circle at 38% 34%,rgba(168,201,238,0.5),rgba(0,61,124,0.25))}
-.breath-phase{font-family:'Noto Serif TC',serif;font-size:26px;color:white;font-weight:500;letter-spacing:0.18em}
-
-/* 即時波形 */
-.wave-wrap{width:88%;margin-bottom:14px}
-canvas#waveform{width:100%;height:90px;display:block}
-.wave-label{font-size:9px;color:rgba(168,201,238,0.5);letter-spacing:0.1em;text-align:center;margin-bottom:4px}
-
-/* 指導區（小憩風格）*/
-.guide-zone{width:88%;text-align:center;margin-bottom:10px}
-.guide-cue{font-family:'Noto Serif TC',serif;font-size:18px;color:white;letter-spacing:0.2em;height:26px;margin-bottom:10px;transition:opacity 0.3s}
-.guide-progress-wrap{width:100%;height:4px;background:rgba(168,201,238,0.15);border-radius:999px;overflow:hidden;margin-bottom:12px}
-.guide-progress{height:100%;background:linear-gradient(90deg,#4CAF19,#A8C9EE);border-radius:999px;width:0%;transition:width 0.2s linear}
-.guide-text{font-size:12px;color:rgba(168,201,238,0.85);line-height:1.7;min-height:20px;letter-spacing:0.03em}
-.breath-hint{font-size:11px;color:var(--pl);height:16px;letter-spacing:0.05em}
-
-/* TOUCH ZONES */
-.touch-zones{display:flex;height:30%;border-top:1px solid rgba(168,201,238,0.15);z-index:5}
-.touch-zone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:background 0.15s;position:relative}
-.touch-zone:active,.touch-zone.pressing{background:rgba(255,255,255,0.1)}
-.touch-zone.left{border-right:1px solid rgba(168,201,238,0.15)}
-.touch-zone-label{font-family:'Noto Serif TC',serif;font-size:18px;color:white;font-weight:500;letter-spacing:0.1em;margin-bottom:4px}
-.touch-zone-sub{font-size:10px;color:var(--pl);letter-spacing:0.08em}
-.touch-zone-icon{font-size:24px;margin-bottom:8px;opacity:0.85}
-
-/* REPORT */
+.g-name{font-size:13px;font-weight:600;color:var(--p)}
+.g-pattern{font-size:11px;color:var(--t3);margin-top:2px}
+.safety{background:#FFF3E0;border:1px solid rgba(255,138,0,0.2);border-radius:12px;padding:12px 14px;font-size:11px;color:#8a5000;line-height:1.7;margin-top:20px}
+.safety i{color:var(--o)}
+.detect-screen{position:fixed;inset:0;max-width:480px;margin:0 auto;background:#f0f0eb;display:none;flex-direction:column;z-index:200;overflow:hidden}
+.detect-screen.active{display:flex}
+.detect-top{padding:18px 20px 8px;text-align:center}
+.detect-eyebrow{font-size:11px;letter-spacing:0.25em;color:var(--t3);text-transform:uppercase}
+.detect-orb-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px}
+.orb-outer{position:relative;width:330px;height:330px;max-width:82vw;max-height:82vw;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.orb-ring{position:absolute;inset:-8px;border-radius:50%;border:1.5px solid rgba(42,107,90,0.15);animation:ringPulse 4s ease-in-out infinite}
+.orb-ring2{position:absolute;inset:-20px;border-radius:50%;border:1px solid rgba(42,107,90,0.08);animation:ringPulse 4s ease-in-out infinite 0.8s}
+@keyframes ringPulse{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:0.9;transform:scale(1.03)}}
+.orb{width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;cursor:pointer;user-select:none;transition:transform 0.15s ease,box-shadow 0.3s ease;box-shadow:0 8px 40px rgba(42,52,65,0.18);z-index:2}
+.orb.pressed{transform:scale(1.03)}
+.orb-half{position:absolute;top:0;height:100%;width:50%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14%;transition:background 0.3s}
+.orb-half.left{left:0;background:var(--orb-dark)}
+.orb-half.right{right:0;background:var(--orb-exhale)}
+.orb-half.left.lit{background:var(--orb-inhale)}
+.orb-half.right.lit{background:#3a7099}
+.orb-half-label{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;pointer-events:none}
+.orb-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:3}
+.orb-idle{text-align:center}
+.orb-idle-main{font-family:'Noto Serif TC',serif;font-size:22px;color:rgba(255,255,255,0.9);letter-spacing:0.05em;margin-bottom:4px}
+.orb-idle-sub{font-size:13px;color:rgba(255,255,255,0.6)}
+.orb-active{width:88%;display:none;flex-direction:column;align-items:center;gap:10px}
+.orb-active.show{display:flex}
+canvas#waveform{width:100%;height:96px;display:block}
+.orb-phase-label{font-family:'Noto Serif TC',serif;font-size:26px;color:rgba(255,255,255,0.92);letter-spacing:0.05em}
+.orb-state-name{font-size:13px;color:rgba(255,255,255,0.6);letter-spacing:0.05em;min-height:18px}
+.detect-hint{font-size:12px;color:var(--t3);text-align:center;margin-bottom:14px;letter-spacing:0.05em;height:18px}
+.detect-bottom{padding:0 20px 32px;text-align:center}
+.detect-go{background:var(--p);color:white;border:none;border-radius:999px;padding:13px 60px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.1em;transition:all 0.2s}
+.detect-go:active{transform:scale(0.97)}
+.detect-end{background:rgba(0,61,124,0.08);color:var(--p);border:none;border-radius:999px;padding:13px 60px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.05em}
+.detect-timer{font-family:'Noto Serif TC',serif;font-size:18px;color:var(--p);margin-bottom:14px;letter-spacing:0.05em}
+.guided-setup{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--warm-bg);display:none;flex-direction:column;z-index:200;padding:24px;overflow-y:auto}
+.guided-setup.active{display:flex}
+.gs-card{background:rgba(255,255,255,0.5);border-radius:20px;padding:28px 24px;margin:auto 0}
+.gs-title{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:var(--warm-ink);letter-spacing:0.1em;margin-bottom:4px}
+.gs-subtitle{font-size:12px;color:var(--warm-ink-soft);letter-spacing:0.05em;margin-bottom:20px}
+.gs-info{background:rgba(193,154,107,0.1);border-left:3px solid var(--warm-accent);border-radius:8px;padding:16px;font-size:13px;color:var(--warm-ink);line-height:2;margin-bottom:24px}
+.gs-duration-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.gs-duration-label{font-size:13px;color:var(--warm-ink-soft)}
+.gs-duration-val{font-size:14px;color:var(--warm-ink);font-weight:600}
+.gs-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:999px;background:rgba(90,83,71,0.15);outline:none;margin-bottom:24px}
+.gs-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:white;border:2px solid var(--warm-accent);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.gs-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:white;border:2px solid var(--warm-accent);cursor:pointer}
+.gs-start{background:var(--warm-ink);color:var(--warm-bg);border:none;border-radius:999px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;width:100%;font-family:'Noto Serif TC',serif;letter-spacing:0.3em;transition:all 0.2s}
+.gs-start:active{transform:scale(0.99)}
+.gs-back{background:none;border:none;color:var(--warm-ink-soft);font-size:13px;cursor:pointer;margin-top:20px;width:100%;letter-spacing:0.1em;font-family:'Noto Serif TC',serif}
+.guided-screen{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--warm-bg);display:none;flex-direction:column;align-items:center;z-index:200;transition:background 2s ease}
+.guided-screen.active{display:flex}
+.guided-screen.inhale{background:var(--warm-cool)}
+.guided-screen.exhale{background:var(--warm-bg)}
+.gp-header{padding:24px 0 0;text-align:center}
+.gp-mode{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--warm-ink-soft);letter-spacing:0.2em;margin-bottom:6px}
+.gp-timer{font-family:'Noto Serif TC',serif;font-size:26px;color:var(--warm-ink);letter-spacing:0.1em}
+.gp-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:0 40px}
+.gp-cue{font-family:'Noto Serif TC',serif;font-size:48px;color:var(--warm-ink-soft);letter-spacing:0.1em;margin-bottom:28px;transition:all 0.5s}
+.gp-progress-wrap{width:160px;height:3px;background:rgba(90,83,71,0.15);border-radius:999px;overflow:hidden;margin-bottom:28px}
+.gp-progress{height:100%;background:var(--warm-accent);border-radius:999px;width:0%}
+.gp-guide{font-size:14px;color:var(--warm-ink-soft);line-height:2;text-align:center;letter-spacing:0.05em}
+.gp-footer{padding-bottom:36px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.gp-phase-sub{font-size:12px;color:var(--warm-ink-soft);letter-spacing:0.3em}
+.gp-end{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.6);border:1px solid rgba(90,83,71,0.15);color:var(--warm-ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
 .report{padding:20px;padding-bottom:80px}
-.report-hero{background:var(--p);border-radius:20px;padding:24px;color:white;margin-bottom:16px;position:relative;overflow:hidden}
-.report-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;background:rgba(168,201,238,0.12);border-radius:50%}
-.report-mode{font-size:11px;color:var(--pl);letter-spacing:0.1em;margin-bottom:8px}
-.report-mode-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:0.04em}
-.report-mode-desc{font-size:12px;color:rgba(168,201,238,0.9);line-height:1.7}
+.report-hero{border-radius:24px;padding:28px 24px;color:white;margin-bottom:16px;position:relative;overflow:hidden;text-align:center}
+.report-hero.gold{background:radial-gradient(circle at 40% 35%,#d4b876,#b8985a)}
+.report-hero.blue{background:radial-gradient(circle at 40% 35%,#4a7ba8,#2d5f8a)}
+.report-hero.green{background:radial-gradient(circle at 40% 35%,#5a9b7a,#3a7b5a)}
+.report-hero.warn{background:radial-gradient(circle at 40% 35%,#d49060,#b8703a)}
+.report-mode{font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:0.1em;margin-bottom:10px}
+.report-pattern{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;margin-bottom:12px;letter-spacing:0.04em}
+.report-pattern-desc{font-size:12px;color:rgba(255,255,255,0.9);line-height:1.8;text-align:left}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
 .metric{background:white;border-radius:14px;padding:14px;box-shadow:0 2px 12px rgba(0,61,124,0.05);border:1px solid var(--border)}
 .metric-val{font-size:24px;font-weight:300;color:var(--p);letter-spacing:-0.02em;font-family:'Inter',sans-serif}
 .metric-val .unit{font-size:11px;color:var(--t3);font-weight:400}
 .metric-lbl{font-size:10px;color:var(--t3);margin-top:2px;letter-spacing:0.05em}
-
 .card{background:white;border-radius:16px;padding:18px;box-shadow:0 2px 12px rgba(0,61,124,0.05);margin-bottom:14px;border:1px solid var(--border)}
 .card-title{font-size:11px;font-weight:600;color:var(--p);letter-spacing:0.08em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
 .card-title i{font-size:14px}
-
-/* COLLAPSIBLE */
+.segments-3{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;margin-bottom:12px;align-items:center}
+.seg3{text-align:center;padding:14px 6px;border-radius:12px;background:var(--pp)}
+.seg3-label{font-size:10px;color:var(--t3);margin-bottom:8px;letter-spacing:0.05em}
+.seg3-rate{font-size:20px;font-weight:300;color:var(--p);font-family:'Inter',sans-serif}
+.seg3-unit{font-size:9px;color:var(--t3)}
+.seg3-stab{font-size:10px;color:var(--g);margin-top:4px}
+.seg3-arrow{font-size:14px;color:var(--pl)}
 .collapse-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 0}
-.collapse-head .ch-title{font-size:12px;font-weight:600;color:var(--p)}
+.ch-title{font-size:12px;font-weight:600;color:var(--p)}
 .collapse-body{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
-.collapse-body.open{max-height:600px}
+.collapse-body.open{max-height:800px}
 .collapse-chevron{transition:transform 0.3s;color:var(--t3)}
 .collapse-chevron.open{transform:rotate(180deg)}
-
-/* CHART */
-.chart-wrap{margin-top:8px}
 .chart-svg{width:100%;height:auto;display:block}
 .chart-legend{display:flex;gap:14px;justify-content:center;margin-top:8px;flex-wrap:wrap}
 .chart-leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
 .chart-leg .dot{width:8px;height:8px;border-radius:2px}
-
-/* INSIGHT BOX */
 .insight{background:var(--st);border-radius:12px;padding:14px;font-size:12px;color:var(--t2);line-height:1.8;border-left:3px solid var(--p)}
 .insight.warn{background:#FFF3E0;border-left-color:var(--o)}
 .insight.good{background:var(--gp);border-left-color:var(--g)}
-
-/* MOOD/FEELING */
 .feeling-grid{display:flex;gap:8px;flex-wrap:wrap}
 .feeling-opt{background:var(--pp);border:1.5px solid transparent;border-radius:999px;padding:7px 14px;font-size:12px;color:var(--t2);cursor:pointer;transition:all 0.18s}
 .feeling-opt.selected{background:var(--gp);border-color:var(--g);color:var(--g);font-weight:500}
 .discomfort-opt.selected{background:#FFF3E0;border-color:var(--o);color:var(--o)}
-.mood-scale{display:flex;gap:6px;justify-content:space-between}
-.mood-face{flex:1;aspect-ratio:1;border-radius:12px;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all 0.18s}
-.mood-face.selected{border-color:var(--p);background:var(--st);transform:scale(1.05)}
 .report-ta{width:100%;border:1.5px solid var(--pl);border-radius:10px;padding:10px 12px;font-size:12px;resize:none;font-family:inherit;background:var(--pp);outline:none;line-height:1.6}
 .report-ta:focus{border-color:var(--p)}
-
 .save-btn{background:var(--o);color:white;border:none;border-radius:999px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:'Inter',sans-serif;transition:all 0.2s;letter-spacing:0.04em}
 .save-btn:hover{background:#e07a00}
 .ghost-btn{background:transparent;color:var(--p);border:1.5px solid var(--p);border-radius:999px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;width:100%;font-family:'Inter',sans-serif;margin-top:8px}
-
-/* HISTORY */
+.detail-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.detail-row span:first-child{color:var(--t3)}
+.detail-row span:last-child{color:var(--p);font-weight:500}
 .history{padding:20px;padding-bottom:80px}
-.hist-item{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,61,124,0.05);margin-bottom:10px;border:1px solid var(--border);cursor:pointer;transition:all 0.2s}
-.hist-item:hover{box-shadow:0 4px 18px rgba(0,61,124,0.1)}
+.hist-item{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,61,124,0.05);margin-bottom:10px;border:1px solid var(--border)}
 .hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .hist-date{font-size:11px;color:var(--t3)}
 .hist-tag{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;background:var(--st);color:var(--p)}
 .hist-stats{display:flex;gap:16px}
 .hist-stat{font-size:11px;color:var(--t2)}
 .hist-stat strong{color:var(--p);font-size:14px;font-weight:600}
-
-/* SAFETY BANNER */
-.safety{background:#FFF3E0;border:1px solid rgba(255,138,0,0.2);border-radius:12px;padding:12px 14px;font-size:11px;color:#8a5000;line-height:1.7;margin-top:14px}
-.safety i{color:var(--o)}
-
-/* LOGIN MODAL */
 .login-modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
 .login-modal.active{display:flex}
 .login-box{background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
 .login-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--p);margin-bottom:6px}
 .login-sub{font-size:12px;color:var(--t3);margin-bottom:18px;line-height:1.6}
 .login-skip{width:100%;background:var(--pp);border:none;border-radius:999px;padding:10px;font-size:12px;color:var(--t3);cursor:pointer;font-family:'Inter',sans-serif;margin-top:10px}
-
-/* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--p);color:white;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:500;opacity:0;transition:all 0.25s;pointer-events:none;z-index:600;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-.section-label{font-size:10px;color:var(--t3);letter-spacing:0.1em;margin:20px 0 10px;text-transform:uppercase}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav">
   <span class="nav-brand">Breeeeeathe~</span>
   <div class="nav-tabs">
@@ -200,121 +191,120 @@ canvas#waveform{width:100%;height:90px;display:block}
   <div class="nav-user" id="nav-user"></div>
 </nav>
 
-<!-- HOME -->
 <div class="page active" id="page-home">
   <div class="home">
     <div class="home-title">Breeeeeathe~</div>
     <div class="home-sub">用呼吸了解自己</div>
-
     <div class="home-card">
       <p>這個工具透過你的<strong>左右按壓時序</strong>來觀察呼吸：</p>
       <p style="margin-top:10px">🟢 左邊按住 = <strong>吸氣</strong><br>🔵 右邊按住 = <strong>吐氣</strong><br>⚪ 兩邊放開 = <strong>屏息</strong></p>
       <p style="margin-top:10px;font-size:12px;color:var(--t3)">它分析的是呼吸節奏與穩定度，不測量血氧或肺活量。</p>
     </div>
-
-    <div class="section-label">選擇模式</div>
-    <div class="mode-select">
-      <div class="mode-btn primary" onclick="startSession('natural')">
-        <div class="mode-icon"><i class="ti ti-wind"></i></div>
-        <div>
-          <div class="mode-name">自然偵測</div>
-          <div class="mode-desc">不刻意控制，記錄你現在怎麼呼吸</div>
-        </div>
+    <div class="section-label">先覺察</div>
+    <button class="mode-btn" onclick="openDetect()">
+      <div class="mode-icon"><i class="ti ti-wind"></i></div>
+      <div>
+        <div class="mode-name">自然偵測</div>
+        <div class="mode-desc">不刻意控制，記錄你現在怎麼呼吸</div>
       </div>
-    </div>
-
-    <div class="section-label">指定呼吸法</div>
+    </button>
+    <div class="section-label">再練習</div>
     <div class="guided-list">
-      <div class="guided-item" onclick="startSession('resonance')">
-        <div class="guided-info">
-          <div class="g-name">諧振呼吸</div>
-          <div class="g-pattern">吸 5.5 秒 · 吐 5.5 秒 · 約 5.5 次/分</div>
-        </div>
+      <div class="guided-item" onclick="openGuidedSetup('resonance')">
+        <div><div class="g-name">諧振呼吸</div><div class="g-pattern">吸 5.5 秒 · 吐 5.5 秒 · 調節自主神經</div></div>
         <i class="ti ti-chevron-right" style="color:var(--t3)"></i>
       </div>
-      <div class="guided-item" onclick="startSession('box')">
-        <div class="guided-info">
-          <div class="g-name">箱式呼吸</div>
-          <div class="g-pattern">吸 4 · 屏 4 · 吐 4 · 屏 4 秒</div>
-        </div>
+      <div class="guided-item" onclick="openGuidedSetup('box')">
+        <div><div class="g-name">箱式呼吸</div><div class="g-pattern">吸 4 · 屏 4 · 吐 4 · 屏 4 秒 · 穩定抗壓</div></div>
         <i class="ti ti-chevron-right" style="color:var(--t3)"></i>
       </div>
-      <div class="guided-item" onclick="startSession('counting')">
-        <div class="guided-info">
-          <div class="g-name">數息法</div>
-          <div class="g-pattern">吸 4 秒 · 吐 6 秒 · 吐氣延長</div>
-        </div>
+      <div class="guided-item" onclick="openGuidedSetup('counting')">
+        <div><div class="g-name">數息法</div><div class="g-pattern">吸 4 秒 · 吐 6 秒 · 延長吐氣放鬆</div></div>
         <i class="ti ti-chevron-right" style="color:var(--t3)"></i>
       </div>
     </div>
-
     <div class="safety">
       <i class="ti ti-info-circle"></i> 本工具提供呼吸覺察與練習建議，無法診斷疾病。若有胸悶、喘、頭暈、麻、心悸、恐慌或呼吸困難，請停止並諮詢專業人員。
     </div>
   </div>
 </div>
 
-<!-- HISTORY -->
 <div class="page" id="page-history">
   <div class="history">
     <div style="font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--p);margin-bottom:4px;letter-spacing:0.04em">練習軌跡</div>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">你的呼吸覺察紀錄</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">你的呼吸覺察與練習紀錄</div>
     <div id="hist-compare"></div>
     <div class="section-label">歷史紀錄</div>
     <div id="hist-list"></div>
   </div>
 </div>
 
-<!-- BREATHING SCREEN -->
-<div class="breath-screen" id="breath-screen">
-  <div class="breath-top">
-    <div>
-      <div class="breath-mode-label" id="breath-mode-label">自然偵測</div>
-      <div class="breath-timer" id="breath-timer">0:00</div>
-    </div>
-    <button class="breath-end-btn" onclick="endSession()">結束</button>
-  </div>
-  <div class="breath-center">
-    <div class="orb-wrap">
-      <div class="orb-ring"></div>
-      <div class="orb-ring2"></div>
-      <div class="breath-orb" id="breath-orb">
-        <div class="breath-phase" id="breath-phase">準備</div>
-      </div>
-    </div>
-
-    <div class="wave-wrap">
-      <div class="wave-label">呼吸軌跡</div>
-      <canvas id="waveform"></canvas>
-    </div>
-
-    <div class="guide-zone" id="guide-zone" style="display:none">
-      <div class="guide-cue" id="guide-cue"></div>
-      <div class="guide-progress-wrap"><div class="guide-progress" id="guide-progress"></div></div>
-      <div class="guide-text" id="guide-text"></div>
-    </div>
-    <div class="breath-hint" id="breath-hint"></div>
-  </div>
-  <div class="touch-zones">
-    <div class="touch-zone left" id="zone-inhale">
-      <div class="touch-zone-icon">🟢</div>
-      <div class="touch-zone-label">吸氣</div>
-      <div class="touch-zone-sub">按住左邊</div>
-    </div>
-    <div class="touch-zone right" id="zone-exhale">
-      <div class="touch-zone-icon">🔵</div>
-      <div class="touch-zone-label">吐氣</div>
-      <div class="touch-zone-sub">按住右邊</div>
-    </div>
-  </div>
-</div>
-
-<!-- REPORT -->
 <div class="page" id="page-report">
   <div class="report" id="report-content"></div>
 </div>
 
-<!-- LOGIN MODAL -->
+<div class="detect-screen" id="detect-screen">
+  <div class="detect-top"><div class="detect-eyebrow" id="detect-eyebrow">HOW TO USE</div></div>
+  <div class="detect-orb-area">
+    <div class="orb-outer">
+      <div class="orb-ring"></div>
+      <div class="orb-ring2"></div>
+      <div class="orb" id="orb">
+        <div class="orb-half left" id="orb-left"><span class="orb-half-label">吸氣</span></div>
+        <div class="orb-half right" id="orb-right"><span class="orb-half-label">吐氣</span></div>
+        <div class="orb-content">
+          <div class="orb-idle" id="orb-idle">
+            <div class="orb-idle-main">準備好了嗎</div>
+            <div class="orb-idle-sub">按 GO 開始</div>
+          </div>
+          <div class="orb-active" id="orb-active">
+            <canvas id="waveform"></canvas>
+            <div class="orb-phase-label" id="orb-phase">準備</div>
+            <div class="orb-state-name" id="orb-state"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detect-hint" id="detect-hint">左半邊吸氣 · 右半邊吐氣 · 放開屏息</div>
+  </div>
+  <div class="detect-bottom">
+    <div class="detect-timer" id="detect-timer" style="display:none">0:00</div>
+    <button class="detect-go" id="detect-go" onclick="startDetect()">GO</button>
+    <button class="detect-end" id="detect-end" onclick="endDetect()" style="display:none">結束練習</button>
+  </div>
+</div>
+
+<div class="guided-setup" id="guided-setup">
+  <div class="gs-card">
+    <div class="gs-title" id="gs-title">諧振呼吸</div>
+    <div class="gs-subtitle" id="gs-subtitle">調節自主神經系統</div>
+    <div class="gs-info" id="gs-info"></div>
+    <div class="gs-duration-row">
+      <span class="gs-duration-label">練習時長</span>
+      <span class="gs-duration-val"><span id="gs-dur-val">5</span> 分鐘</span>
+    </div>
+    <input type="range" class="gs-slider" id="gs-slider" min="1" max="10" value="5" oninput="updateDuration(this.value)">
+    <button class="gs-start" onclick="startGuided()">開　始</button>
+    <button class="gs-back" onclick="closeGuidedSetup()">← 返回</button>
+  </div>
+</div>
+
+<div class="guided-screen" id="guided-screen">
+  <div class="gp-header">
+    <div class="gp-mode" id="gp-mode">諧振呼吸</div>
+    <div class="gp-timer" id="gp-timer">05:00</div>
+  </div>
+  <div class="gp-stage">
+    <div class="gp-cue" id="gp-cue">準備</div>
+    <div class="gp-progress-wrap"><div class="gp-progress" id="gp-progress"></div></div>
+    <div class="gp-guide" id="gp-guide"></div>
+  </div>
+  <div class="gp-footer">
+    <div class="gp-phase-sub" id="gp-phase-sub"></div>
+    <button class="gp-end" onclick="endGuided()" title="結束"><i class="ti ti-square"></i></button>
+  </div>
+</div>
+
 <div class="login-modal" id="login-modal">
   <div class="login-box">
     <div class="login-title">儲存並同步紀錄</div>
