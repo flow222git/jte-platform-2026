@@ -1476,6 +1476,9 @@
 </head>
 <body>
 
+<!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
+
 <!-- 呼吸背景色塊 -->
 <div class="breath-bg" id="breath-bg"></div>
 
@@ -4076,6 +4079,9 @@ function jteSkipLogin(){
   document.getElementById('jte-login-modal').style.display='none';
   if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
 }
+// 供共用 userbar 呼叫（重用本工具既有登入流程，避免重複初始化 GSI）
+window.jteLogin=function(){ jteCheckLoginThenSave(function(){ location.reload(); }); };
+window.jteLogout=function(){ localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture'); if(window.google&&google.accounts)try{google.accounts.id.disableAutoSelect();}catch(e){} location.reload(); };
 </script>
 
 <!-- JTE Google Login Modal -->

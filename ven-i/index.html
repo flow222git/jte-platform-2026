@@ -30,7 +30,7 @@
   html,body{margin:0;padding:0}
   body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",sans-serif;
     font-weight:300;line-height:1.7;letter-spacing:.01em;padding:0 18px env(safe-area-inset-bottom)}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:28px 0 120px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:46px 0 120px}
   header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
   .logo{font-family:"Noto Serif TC",serif;font-weight:700;font-size:22px;letter-spacing:.08em}
   .sub{font-size:12px;color:var(--ink-faint);letter-spacing:.18em}
@@ -1288,6 +1288,10 @@ function renderIntro(){
      <p>一是<b>問易</b>，用幾個問題照見你的內在；<br>二是<b>卜易</b>，靜心擲錢、求一卦指引。</p>
    </div>
    <div style="height:40px"></div>`;
+ const histLink=document.createElement("button");histLink.className="hist-entry-link";
+ histLink.textContent="我的占問歷史 →";
+ histLink.onclick=()=>{state.mode="history";renderHistory();};
+ d.appendChild(histLink);
  app.appendChild(d);
  const inner=document.createElement("div");inner.className="bar-inner";
  const b=document.createElement("button");b.className="btn-soft";b.textContent="開始 →";
@@ -1638,6 +1642,9 @@ function jteCheckLoginThenSave(saveFn){
  },100);
 }
 function jteCloseLogin(){var m=document.getElementById('jte-login-modal');if(m)m.style.display='none';_jtePendingSave=null;}
+/* 供共用 userbar 呼叫（重用本工具既有登入流程，避免重複初始化 GSI）*/
+window.jteLogin=function(){jteCheckLoginThenSave(function(){location.reload();});};
+window.jteLogout=function(){localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');if(window.google&&google.accounts)try{google.accounts.id.disableAutoSelect();}catch(e){}location.reload();};
 
 /* —— 結果頁「保存區」：問易/卜易共用。buildRec(note) 回傳該模式的記錄欄位 —— */
 function appendSaveBlock(container,source,buildRec){
@@ -1736,6 +1743,9 @@ window.testTriChange=function(){
 };
 console.log("%c[dev] 輸入 testTriChange() 直達三爻變結果頁","color:#3a5a52");
 </script>
+
+<!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
 
 <!-- Google 登入 modal（按「存這次」未登入時跳出）-->
 <div id="jte-login-modal">
