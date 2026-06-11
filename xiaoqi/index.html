@@ -4028,6 +4028,7 @@ function _jteHandleCredential(resp){
   google.accounts.id.disableAutoSelect();
   var modal=document.getElementById('jte-login-modal');
   if(modal) modal.style.display='none';
+  if(window.jteUserbarRefresh)window.jteUserbarRefresh();
   if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
 }
 
