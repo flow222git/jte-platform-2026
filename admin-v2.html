@@ -255,7 +255,7 @@ body{min-height:100vh}
         <div class="page-title">全部記錄</div>
         <div class="page-sub">跨使用者的最近記錄（最多 200 筆）</div>
         <div class="card">
-          <div class="card-head"><div class="card-title">最近記錄</div><select class="inp" id="rec-filter" onchange="renderAllRecords()" style="width:150px"><option value="">全部來源</option><option>XiaoQi</option><option>BreatheAware</option><option>HRVRecord</option><option>Activity</option><option>WenYi</option><option>BuYi</option><option>WriteSpace</option></select></div>
+          <div class="card-head"><div class="card-title">最近記錄</div><select class="inp" id="rec-filter" onchange="_recLimit=200;renderAllRecords()" style="width:150px"><option value="">全部來源</option><option>XiaoQi</option><option>BreatheAware</option><option>HRVRecord</option><option>Activity</option><option>WenYi</option><option>BuYi</option><option>WriteSpace</option></select></div>
           <div id="records-list"><div class="loading">載入中…</div></div>
         </div>
       </div>
@@ -696,13 +696,18 @@ async function loadAllRecords(){
     _allRecCache=flat;renderAllRecords();
   }catch(e){el.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
 }
+var _recLimit=200;
 function renderAllRecords(){
   var el=document.getElementById('records-list'),f=document.getElementById('rec-filter').value;
-  var rows=_allRecCache.filter(function(r){return !f||r.l.source===f;}).slice(0,200);
+  var filtered=_allRecCache.filter(function(r){return !f||r.l.source===f;});
+  var rows=filtered.slice(0,_recLimit);
   if(!rows.length){el.innerHTML='<div class="empty">無記錄</div>';return;}
-  var html='<table class="tbl"><thead><tr><th>日期</th><th>使用者</th><th>記錄</th></tr></thead><tbody>';
+  var html='<div style="font-size:11px;color:var(--t2);margin-bottom:8px">顯示 '+rows.length+' / 共 '+filtered.length+' 筆（資料完整保存，這裡僅為瀏覽分頁）</div>';
+  html+='<table class="tbl"><thead><tr><th>日期</th><th>使用者</th><th>記錄</th></tr></thead><tbody>';
   rows.forEach(function(r){html+='<tr><td style="white-space:nowrap;vertical-align:top">'+(r.date||'')+'</td><td class="name" style="white-space:nowrap;vertical-align:top">'+(r.name||r.email)+'</td><td>'+jteLinkedCard(r.l)+'</td></tr>';});
-  html+='</tbody></table>';el.innerHTML=html;
+  html+='</tbody></table>';
+  if(filtered.length>_recLimit)html+='<div style="text-align:center;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="_recLimit+=300;renderAllRecords()">載入更多（還有 '+(filtered.length-_recLimit)+' 筆）</button></div>';
+  el.innerHTML=html;
 }
 </script>
 </body>
