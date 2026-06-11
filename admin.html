@@ -120,6 +120,16 @@ body{min-height:100vh}
   .nav-item{justify-content:center;padding:14px 0}
   .content{padding:20px 16px}
 }
+
+/* v2 新增：詳情/上傳 */
+.csv-ta{width:100%;min-height:120px;border:1px solid var(--line,#e2e6ec);border-radius:8px;padding:10px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.6;resize:vertical;background:#fff}
+.imp-preview{margin-top:10px;font-size:11px;max-height:200px;overflow:auto}
+.imp-row{display:flex;gap:8px;align-items:center;padding:3px 0;border-bottom:1px solid #f0f2f5}
+.imp-prog{height:6px;background:#eef2f7;border-radius:999px;margin-top:10px;overflow:hidden;display:none}
+.imp-prog .bar{height:100%;width:0;background:#4CAF19;transition:width .2s}
+.imp-log{margin-top:10px;font-family:ui-monospace,monospace;font-size:10px;line-height:1.6;max-height:160px;overflow:auto;display:none;background:#0d1b2a;color:#cfe3ff;border-radius:8px;padding:8px}
+.imp-log .ok{color:#7CFC8A}.imp-log .err{color:#ff8a8a}.imp-log .warn{color:#ffd27c}.imp-log .info{color:#9ec5ff}
+.det-day{margin-top:12px}.det-daylbl{font-size:12px;font-weight:700;color:var(--p)}
 </style>
 </head>
 <body>
@@ -172,7 +182,7 @@ body{min-height:100vh}
         <div class="card">
           <div class="card-head"><div class="card-title">快速操作</div></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-blue" onclick="location.href='activity_import.html'"><i class="ti ti-upload"></i> 匯入活動名單</button>
+            <button class="btn btn-blue" onclick="nav('activities');setTimeout(toggleUpload,150)"><i class="ti ti-upload"></i> 匯入活動名單</button>
             <button class="btn btn-ghost" onclick="location.href='hrv_import.html'"><i class="ti ti-heart-rate-monitor"></i> 匯入 HRV 資料</button>
             <button class="btn btn-ghost" onclick="location.href='./'"><i class="ti ti-home"></i> 回主平台</button>
           </div>
@@ -186,9 +196,24 @@ body{min-height:100vh}
         <div class="card">
           <div class="card-head">
             <div class="card-title">所有活動</div>
-            <button class="btn btn-p btn-sm" onclick="location.href='activity_import.html'"><i class="ti ti-plus"></i> 新增活動</button>
+            <button class="btn btn-p btn-sm" onclick="toggleUpload()"><i class="ti ti-upload"></i> 上傳活動名單</button>
           </div>
           <div id="activities-list"><div class="loading">載入中…</div></div>
+        </div>
+        <div class="card" id="upload-card" style="display:none">
+          <div class="card-head"><div class="card-title">上傳活動名單（CSV）</div><button class="btn btn-ghost btn-sm" onclick="toggleUpload()">收合</button></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div class="field"><label>活動名稱 *</label><input class="inp" id="activity-name" placeholder="例：練息場騎馬體驗"></div>
+            <div class="field"><label>活動日期（CSV 有日期可留空）</label><input class="inp" id="activity-date" type="date"></div>
+            <div class="field"><label>活動照片網址</label><input class="inp" id="activity-photo" placeholder="https://..."></div>
+            <div class="field"><label>說明（選填）</label><input class="inp" id="activity-desc" placeholder="活動簡短描述"></div>
+          </div>
+          <label style="font-size:11px;color:var(--t2)">貼上 CSV（第一列為標題：日期,姓名,Email,所屬企業）</label>
+          <textarea class="csv-ta" id="csv-input" placeholder="日期,姓名,Email,所屬企業&#10;20260320,胡馨心,crystal.hu@grandpr.com.tw,PILOT"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="parseCSV()">預覽名單</button><button class="btn btn-p btn-sm" id="import-btn" onclick="startImport()" disabled>先預覽才能匯入</button></div>
+          <div class="imp-preview" id="preview"></div>
+          <div class="imp-prog" id="progress-wrap"><div class="bar" id="progress-bar"></div></div>
+          <div class="imp-log" id="implog"></div>
         </div>
       </div>
 
@@ -196,10 +221,11 @@ body{min-height:100vh}
       <div class="page" id="page-users">
         <div class="page-title">用戶管理</div>
         <div class="page-sub">所有註冊用戶與紀錄統計</div>
-        <div class="card">
+        <div class="card" id="users-list-card">
           <div class="card-head"><div class="card-title">用戶清單</div><input class="inp" id="user-search" placeholder="搜尋 email 或姓名" style="width:200px" oninput="filterUsers()"></div>
           <div id="users-list"><div class="loading">載入中…</div></div>
         </div>
+        <div class="card" id="user-detail" style="display:none"></div>
       </div>
 
       <!-- ADMINS -->
@@ -415,9 +441,9 @@ async function loadUsers(){
 function renderUsers(users){
   var el=document.getElementById('users-list');
   if(!users.length){el.innerHTML='<div class="empty">尚無用戶</div>';return;}
-  var html='<table class="tbl"><thead><tr><th>姓名</th><th>Email</th><th>性別</th><th>生日</th><th>來源</th></tr></thead><tbody>';
+  var html='<table class="tbl"><thead><tr><th>姓名</th><th>Email</th><th>性別</th><th>生日</th><th>來源</th><th></th></tr></thead><tbody>';
   users.forEach(function(u){
-    html+='<tr><td class="name">'+(u.name||'—')+'</td><td>'+u._id+'</td><td>'+(u.gender||'—')+'</td><td>'+(u.birthDate||'—')+'</td><td>'+(u.source==='hrv_sheet_import'?'<span class="badge badge-o">HRV匯入</span>':(u.org?'<span class="badge badge-b">'+u.org+'</span>':'<span class="badge badge-g">註冊</span>'))+'</td></tr>';
+    html+='<tr><td class="name">'+(u.name||'—')+'</td><td>'+u._id+'</td><td>'+(u.gender||'—')+'</td><td>'+(u.birthDate||'—')+'</td><td>'+(u.source==='hrv_sheet_import'?'<span class="badge badge-o">HRV匯入</span>':(u.org?'<span class="badge badge-b">'+u.org+'</span>':'<span class="badge badge-g">註冊</span>'))+'</td><td style="text-align:right"><button class="btn btn-ghost btn-sm" onclick="openUserDetail(\''+u._id+'\')">查看</button></td></tr>';
   });
   html+='</tbody></table>';
   el.innerHTML=html;
@@ -482,6 +508,83 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 function toast(msg){
   var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2200);
+}
+
+// ── v2：使用者詳情（唯讀時間軸） ──
+function jteLinkedCard(l){
+  var M={
+    XiaoQi:{ic:'🌿',lab:'小憩·練息',c:'#4CAF19',b:(l.modeName||l.modeKey||'')+(l.durationSec?(' · '+Math.round(l.durationSec/60)+'分'):'')},
+    BreatheAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.patternLabel||'')+(l.breathRate?(' · '+l.breathRate+'次/分'):'')},
+    BreathAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.stateLabel||'')+(l.bpm?(' · '+l.bpm+'BPM'):'')},
+    HRVRecord:{ic:'💓',lab:'HRV',c:'#FF8A00',b:(l.assessmentTitle||'')+' · 壓力'+(l.stressIndex||'—')+'/活力'+(l.vitalityIndex||'—')},
+    Activity:{ic:'🎪',lab:'活動',c:'#FF8A00',b:(l.activityName||'')+(l.org?(' · '+l.org):'')},
+    WenYi:{ic:'☯',lab:'問易',c:'#6B4F9E',b:(l.mainHex||'')+(l.toneLabel?(' · '+l.toneLabel):'')+(l.topic?(' · '+l.topic):'')},
+    BuYi:{ic:'☯',lab:'卜易',c:'#6B4F9E',b:(l.ben||'')+(l.bian?('→'+l.bian):'')+(l.question?(' · '+l.question):'')},
+    WriteSpace:{ic:'✍️',lab:'書寫',c:'#5C7A9E',b:(l.topic||'')+(l.excerpt?(' · '+l.excerpt):'')},
+    TWCT:{ic:'💬',lab:'溝通類型',c:'#003D7C',b:(l.typeName||'')}
+  };
+  var m=M[l.source]||{ic:'•',lab:l.source||'紀錄',c:'#888',b:''};
+  return '<div style="border-left:3px solid '+m.c+';padding:6px 10px;margin:5px 0;background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,61,124,.05)"><span style="font-size:11px;font-weight:600;color:'+m.c+'">'+m.ic+' '+m.lab+'</span> <span style="font-size:11px;color:var(--t2)">'+m.b+'</span>'+(l.note?'<div style="font-size:10px;color:var(--t3,#9aa);margin-top:2px">📝 '+l.note+'</div>':'')+'</div>';
+}
+async function openUserDetail(email){
+  var listCard=document.getElementById('users-list-card');
+  var detail=document.getElementById('user-detail');
+  listCard.style.display='none'; detail.style.display='block';
+  detail.innerHTML='<div class="loading">載入中…</div>';
+  try{
+    var u=(_allUsers||[]).find(function(x){return x._id===email;})||{};
+    var snap=await _db.collection('users').doc(email).collection('daily').get();
+    var days=[]; snap.forEach(function(doc){days.push({id:doc.id,d:doc.data()});});
+    days.sort(function(a,b){return (b.id||'').localeCompare(a.id||'');});
+    var html='<div class="card-head"><div class="card-title">'+(u.name||email)+'</div><button class="btn btn-ghost btn-sm" onclick="closeUserDetail()">← 返回清單</button></div>';
+    html+='<div style="font-size:11px;color:var(--t2);margin-bottom:8px">'+email+(u.org?(' · '+u.org):'')+(u.gender?(' · '+u.gender):'')+(u.birthDate?(' · '+u.birthDate):'')+' · 共 '+days.length+' 天紀錄</div>';
+    if(!days.length){html+='<div class="empty">這位使用者還沒有任何記錄</div>';}
+    else{
+      days.forEach(function(o){
+        var d=o.d; html+='<div class="det-day"><div class="det-daylbl">'+o.id+'</div>';
+        if(d.moods&&d.moods.length)html+='<div style="font-size:11px;color:var(--t2)">狀態：'+d.moods.join(' · ')+(d.energy?(' · 能量 '+d.energy+'/10'):'')+'</div>';
+        if(d.note)html+='<div style="font-size:11px;color:var(--t2)">註記：'+d.note+'</div>';
+        (d.linked||[]).forEach(function(l){html+=jteLinkedCard(l);});
+        html+='</div>';
+      });
+    }
+    detail.innerHTML=html;
+  }catch(e){detail.innerHTML='<div class="empty">載入失敗：'+e.message+'</div><button class="btn btn-ghost btn-sm" onclick="closeUserDetail()">返回</button>';}
+}
+function closeUserDetail(){document.getElementById('user-detail').style.display='none';document.getElementById('users-list-card').style.display='block';}
+
+// ── v2：活動 CSV 上傳（整合自 activity_import） ──
+function toggleUpload(){var c=document.getElementById('upload-card');if(c)c.style.display=c.style.display==='none'?'block':'none';}
+function impLog(type,msg){var el=document.getElementById('implog');el.style.display='block';var d=document.createElement('div');d.className=type;d.textContent=new Date().toLocaleTimeString('zh-TW')+' '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function normalizeDate(raw){if(!raw)return'';var s=String(raw).trim().replace(/\//g,'-').replace(/\./g,'-');if(/^\d{8}$/.test(s))return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);if(/^\d{7}$/.test(s)){var y=parseInt(s.slice(0,3))+1911;return y+'-'+s.slice(3,5)+'-'+s.slice(5,7);}if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;return s;}
+var _parsedRows=[];
+function parseCSV(){
+  var raw=document.getElementById('csv-input').value.trim(); if(!raw){toast('請貼上 CSV 內容');return;}
+  var lines=raw.split('\n').filter(function(l){return l.trim();});
+  var headers=lines[0].split(',').map(function(h){return h.trim();});
+  function findCol(names){for(var i=0;i<names.length;i++)for(var j=0;j<headers.length;j++)if(headers[j].toLowerCase().includes(names[i].toLowerCase()))return j;return -1;}
+  var dateCol=findCol(['日期','date','參與日']),nameCol=findCol(['first name','姓名','name']),emailCol=findCol(['email','mail']),orgCol=findCol(['所屬','企業','集團','org','company']);
+  _parsedRows=[];var skipped=0;
+  for(var i=1;i<lines.length;i++){var cols=lines[i].split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});var email=emailCol>=0?cols[emailCol]:'';if(!email||!email.includes('@')){skipped++;continue;}var actDate=normalizeDate(dateCol>=0?cols[dateCol]:'')||document.getElementById('activity-date').value||'';_parsedRows.push({email:email.toLowerCase().trim(),name:nameCol>=0?cols[nameCol]:'',date:actDate,org:orgCol>=0?cols[orgCol]:''});}
+  var byDate={};_parsedRows.forEach(function(r){var d=r.date||'未知日期';(byDate[d]=byDate[d]||[]).push(r);});
+  var html='<div style="font-weight:600;color:var(--p)">預覽：共 '+_parsedRows.length+' 筆，跳過 '+skipped+' 筆（無 email）</div>';
+  Object.keys(byDate).sort().forEach(function(d){html+='<div style="margin-top:6px;font-weight:600;font-size:10px;color:var(--p)">'+d+' ('+byDate[d].length+' 人)</div>';byDate[d].slice(0,5).forEach(function(r){html+='<div class="imp-row"><span style="flex:1">'+r.name+'</span><span style="color:var(--t2);font-size:10px">'+r.email+'</span>'+(r.org?'<span class="badge badge-b">'+r.org+'</span>':'')+'</div>';});if(byDate[d].length>5)html+='<div style="font-size:10px;color:var(--t2)">…還有 '+(byDate[d].length-5)+' 人</div>';});
+  document.getElementById('preview').innerHTML=html;
+  var btn=document.getElementById('import-btn');btn.disabled=false;btn.textContent='開始匯入 '+_parsedRows.length+' 筆';
+  impLog('ok','預覽完成，共 '+_parsedRows.length+' 筆');
+}
+async function startImport(){
+  if(!_db){impLog('err','Firebase 未連線');return;} if(!_parsedRows.length){impLog('err','請先預覽名單');return;}
+  var actName=document.getElementById('activity-name').value.trim(),actPhoto=document.getElementById('activity-photo').value.trim(),actDesc=document.getElementById('activity-desc').value.trim();
+  if(!actName){toast('請填寫活動名稱');return;}
+  var btn=document.getElementById('import-btn');btn.disabled=true;btn.textContent='匯入中…';document.getElementById('progress-wrap').style.display='block';
+  var total=_parsedRows.length,done=0,ok=0,fail=0,byDate={};
+  _parsedRows.forEach(function(r){var d=r.date||document.getElementById('activity-date').value||'unknown';(byDate[d]=byDate[d]||[]).push(r);});
+  impLog('info','── 開始匯入：'+actName+' ──');
+  for(var date in byDate){var group=byDate[date];var actId='act-'+actName.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'')+'-'+date;
+    try{await _db.collection('activities').doc(actId).set({id:actId,name:actName,date:date,photoUrl:actPhoto||'',description:actDesc||'',participantCount:group.length,participants:group.map(function(r){return r.email;}),importedAt:new Date().toISOString()},{merge:true});impLog('info','活動建立：'+actName+' ('+date+') '+group.length+' 人');}catch(e){impLog('err','活動建立失敗:'+e.message);}
+    for(var i=0;i<group.length;i++){var r=group[i];try{var ref=_db.collection('users').doc(r.email).collection('daily').doc(date);var snap=await ref.get();var ex=snap.exists?snap.data():{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:date+'T00:00:00'};if(!ex.linked)ex.linked=[];var dup=ex.linked.some(function(l){return l.source==='Activity'&&l.activityId===actId;});if(!dup){ex.linked.push({source:'Activity',activityId:actId,activityName:actName,date:date,photoUrl:actPhoto||'',description:actDesc||'',org:r.org||'',recordId:'act-'+actId,importedAt:new Date().toISOString()});ex.updatedAt=new Date().toISOString();await ref.set(ex,{merge:true});await _db.collection('users').doc(r.email).set({email:r.email,name:r.name||'',org:r.org||'',updatedAt:new Date().toISOString()},{merge:true});ok++;impLog('ok','✓ '+r.name+' ('+r.email+')');}else{impLog('warn','↷ 已存在：'+r.email);}}catch(e){impLog('err','✗ '+r.email+': '+e.message);fail++;}done++;document.getElementById('progress-bar').style.width=Math.round(done/total*100)+'%';await new Promise(function(res){setTimeout(res,120);});}}
+  impLog('info','── 完成：成功 '+ok+' / 失敗 '+fail+' ──');btn.textContent='匯入完成 ✓';btn.disabled=false;loadActivities();
 }
 </script>
 </body>
