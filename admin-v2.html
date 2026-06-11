@@ -130,6 +130,7 @@ body{min-height:100vh}
 .imp-log{margin-top:10px;font-family:ui-monospace,monospace;font-size:10px;line-height:1.6;max-height:160px;overflow:auto;display:none;background:#0d1b2a;color:#cfe3ff;border-radius:8px;padding:8px}
 .imp-log .ok{color:#7CFC8A}.imp-log .err{color:#ff8a8a}.imp-log .warn{color:#ffd27c}.imp-log .info{color:#9ec5ff}
 .det-day{margin-top:12px}.det-daylbl{font-size:12px;font-weight:700;color:var(--p)}
+.rb.on{background:var(--p);color:#fff;border-color:var(--p)}
 </style>
 </head>
 <body>
@@ -178,6 +179,20 @@ body{min-height:100vh}
       <div class="page active" id="page-dashboard">
         <div class="page-title">總覽</div>
         <div class="page-sub">練息場資料統計</div>
+        <div class="card" style="padding:10px 14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px">
+            <span style="color:var(--t2)">區間：</span>
+            <button class="btn btn-ghost btn-sm rb" data-r="7" onclick="setRange(7)">近7天</button>
+            <button class="btn btn-ghost btn-sm rb on" data-r="30" onclick="setRange(30)">近30天</button>
+            <button class="btn btn-ghost btn-sm rb" data-r="90" onclick="setRange(90)">近90天</button>
+            <button class="btn btn-ghost btn-sm rb" data-r="all" onclick="setRange('all')">全部</button>
+            <span style="margin-left:8px;color:var(--t3,#9aa)">自訂</span>
+            <input type="date" class="inp" id="r-start" style="width:140px">
+            <input type="date" class="inp" id="r-end" style="width:140px">
+            <button class="btn btn-p btn-sm" onclick="applyCustomRange()">套用</button>
+            <span id="r-label" style="margin-left:auto;color:var(--p);font-weight:600"></span>
+          </div>
+        </div>
         <div class="stats" id="dash-stats"><div class="loading">分析中…</div></div>
         <div class="card"><div class="card-head"><div class="card-title">活躍與參與</div></div><div id="dash-engage"><div class="loading">分析中…</div></div></div>
         <div class="card"><div class="card-head"><div class="card-title">HRV 健康分析</div></div><div id="dash-hrv"><div class="loading">分析中…</div></div></div>
@@ -399,86 +414,63 @@ function daysAgoStr(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFul
 function topN(map,n){return Object.keys(map).map(function(k){return {label:k,value:map[k]};}).sort(function(a,b){return b.value-a.value;}).slice(0,n);}
 function hbars(items,opt){opt=opt||{};if(!items.length)return '<div style="font-size:11px;color:var(--t3,#9aa)">尚無資料</div>';var max=1;items.forEach(function(i){if(i.value>max)max=i.value;});return items.map(function(i){var p=Math.round(i.value/max*100);return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11px"><div style="width:'+(opt.lw||92)+'px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+i.label+'</div><div style="flex:1;background:#eef2f7;border-radius:999px;height:13px;overflow:hidden"><div style="width:'+Math.max(2,p)+'%;height:100%;background:'+(i.color||'#003D7C')+'"></div></div><div style="width:40px;text-align:right;font-weight:600">'+i.value+'</div></div>';}).join('');}
 function vbars(items){if(!items.length)return '';var max=1;items.forEach(function(i){if(i.value>max)max=i.value;});return '<div style="display:flex;align-items:flex-end;gap:2px;height:56px;margin-top:6px">'+items.map(function(i){var h=Math.round(i.value/max*100);return '<div title="'+i.label+'：'+i.value+'" style="flex:1;background:#003D7C;border-radius:2px 2px 0 0;height:'+Math.max(3,h)+'%;opacity:.82"></div>';}).join('')+'</div>';}
+function minDate(all){var m=null;all.forEach(function(o){if(o.date&&(!m||o.date<m))m=o.date;});return m;}
+function buildBuckets(start,end){var sd=new Date(start),ed=new Date(end);var span=Math.max(1,Math.round((ed-sd)/86400000)+1);var bd=Math.max(1,Math.ceil(span/30));var nb=Math.ceil(span/bd);var buckets=[];for(var i=0;i<nb;i++){var d=new Date(sd);d.setDate(d.getDate()+i*bd);buckets.push({label:(d.getMonth()+1)+'/'+d.getDate(),value:0});}return {gran:bd===1?'每日':('每'+bd+'天'),buckets:buckets,start:start,bd:bd,add:function(ds){if(!ds)return;var idx=Math.floor((new Date(ds)-new Date(this.start))/86400000/this.bd);if(idx>=0&&idx<this.buckets.length)this.buckets[idx].value++;}};}
+
+var _rangeStart=daysAgoStr(29),_rangeEnd=daysAgoStr(0);
+function setRange(n){_rangeEnd=daysAgoStr(0);_rangeStart=(n==='all')?'2000-01-01':daysAgoStr((+n)-1);document.querySelectorAll('.rb').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-r')==(''+n));});var si=document.getElementById('r-start'),ei=document.getElementById('r-end');if(si)si.value=(_rangeStart==='2000-01-01'?'':_rangeStart);if(ei)ei.value=_rangeEnd;loadDashboard();}
+function applyCustomRange(){var a=document.getElementById('r-start').value,b=document.getElementById('r-end').value;if(!a||!b){toast('請選起訖日期');return;}if(a>b){toast('起日不能晚於訖日');return;}_rangeStart=a;_rangeEnd=b;document.querySelectorAll('.rb').forEach(function(x){x.classList.remove('on');});loadDashboard();}
 
 async function loadDashboard(){
   var statEl=document.getElementById('dash-stats');
   statEl.innerHTML='<div class="loading">分析中…</div>';
   try{
+    var rs=_rangeStart,re=_rangeEnd;
+    function inR(d){return d&&d>=rs&&d<=re;}
+    var lblEl=document.getElementById('r-label');if(lblEl)lblEl.textContent=(rs==='2000-01-01'?'全部':rs)+' ~ '+re;
     var userSnap=await _db.collection('users').get();
     var users=[];userSnap.forEach(function(d){users.push(Object.assign({_id:d.id},d.data()));});
     var actSnap=await _db.collection('activities').get();
-    var actCount=actSnap.size,partSum=0;actSnap.forEach(function(d){partSum+=(d.data().participantCount||0);});
+    var actCount=0,partSum=0;actSnap.forEach(function(d){var a=d.data();if(inR(a.date)){actCount++;partSum+=(a.participantCount||0);}});
     var all=await loadAllDaily(true);
-    var cut7=daysAgoStr(6);
-    // 彙整
-    var totalRecords=0,srcCount={},active7={},topicMap={},emoMap={},datesByUser={},hrvByUser={};
-    var dayTrend={},weekEmo={};
+    var bStart=(rs==='2000-01-01')?(minDate(all)||re):rs;
+    var recB=buildBuckets(bStart,re),emoB=buildBuckets(bStart,re);
+    var totalRecords=0,srcCount={},activeR={},topicMap={},emoMap={},datesAll={},hrvByUser={};
     all.forEach(function(o){
-      if(o.date>=cut7)active7[o.email]=1;
-      (datesByUser[o.email]=datesByUser[o.email]||{})[o.date]=1;
-      // 每日記錄趨勢（近30天，依 o.date 計 linked 數）
-      // 情緒：moods/tags
-      (o.data.moods||[]).forEach(function(m){emoMap[m]=(emoMap[m]||0)+1;markWeek(o.date,1);});
-      (o.data.tags||[]).forEach(function(t){emoMap[t]=(emoMap[t]||0)+1;markWeek(o.date,1);});
-      (o.data.linked||[]).forEach(function(l){
-        totalRecords++;
-        srcCount[l.source]=(srcCount[l.source]||0)+1;
-        var ld=l.measureDate||l.date||o.date;
-        if(ld>=daysAgoStr(29))dayTrend[ld]=(dayTrend[ld]||0)+1;
+      (datesAll[o.email]=datesAll[o.email]||{})[o.date]=1;
+      if(inR(o.date)){activeR[o.email]=1;
+        (o.data.moods||[]).forEach(function(m){emoMap[m]=(emoMap[m]||0)+1;emoB.add(o.date);});
+        (o.data.tags||[]).forEach(function(t){emoMap[t]=(emoMap[t]||0)+1;emoB.add(o.date);});}
+      (o.data.linked||[]).forEach(function(l){var ld=l.measureDate||l.date||o.date;if(!inR(ld))return;
+        totalRecords++;srcCount[l.source]=(srcCount[l.source]||0)+1;recB.add(ld);
         if(l.source==='WenYi'&&l.topic)topicMap[l.topic]=(topicMap[l.topic]||0)+1;
         if(l.source==='WriteSpace'&&l.topic)topicMap[l.topic]=(topicMap[l.topic]||0)+1;
         if(l.source==='BuYi'&&l.question)topicMap[l.question]=(topicMap[l.question]||0)+1;
-        (l.feelings||[]).forEach(function(fe){emoMap[fe]=(emoMap[fe]||0)+1;markWeek(ld,1);});
-        if(l.source==='HRVRecord'){var d=l.measureDate||o.date;if(!hrvByUser[o.email]||d>hrvByUser[o.email].date)hrvByUser[o.email]={email:o.email,name:o.name,date:d,l:l};}
-      });
+        (l.feelings||[]).forEach(function(fe){emoMap[fe]=(emoMap[fe]||0)+1;emoB.add(ld);});
+        if(l.source==='HRVRecord'){if(!hrvByUser[o.email]||ld>hrvByUser[o.email].date)hrvByUser[o.email]={email:o.email,name:o.name,date:ld,l:l};}});
     });
-    function markWeek(dateStr,inc){var t=new Date();var d=new Date(dateStr);var diff=Math.floor((t-d)/86400000);var w=Math.floor(diff/7);if(w>=0&&w<8)weekEmo[7-w]=(weekEmo[7-w]||0)+inc;}
-    // 上面 forEach 已呼叫 markWeek，但因 hoisting markWeek 為函式宣告 OK
-
-    // A. 概況
-    statEl.innerHTML=statCard(users.length,'總使用者')+statCard(Object.keys(active7).length,'近7天活躍')+statCard(totalRecords,'總記錄筆數')+statCard(actCount,'活動場次')+statCard(partSum,'總參與人次');
-
-    // B. 活躍與參與
-    var trend=[];for(var i=29;i>=0;i--){var ds=daysAgoStr(i);trend.push({label:ds.slice(5),value:dayTrend[ds]||0});}
-    var streaks=Object.keys(datesByUser).map(function(em){var sset=datesByUser[em];var n=0,d=new Date();while(true){var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(sset[ds]){n++;d.setDate(d.getDate()-1);}else break;}var u=users.find(function(x){return x._id===em;});return {label:(u&&u.name)||em,value:n};});
+    // A 概況
+    statEl.innerHTML=statCard(users.length,'總使用者')+statCard(Object.keys(activeR).length,'區間活躍')+statCard(totalRecords,'區間記錄數')+statCard(actCount,'區間活動')+statCard(partSum,'參與人次');
+    // B 活躍與參與
+    var streaks=Object.keys(datesAll).map(function(em){var sset=datesAll[em];var n=0,d=new Date();while(true){var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(sset[ds]){n++;d.setDate(d.getDate()-1);}else break;}var u=users.find(function(x){return x._id===em;});return {label:(u&&u.name)||em,value:n};});
     var avgStreak=streaks.length?(streaks.reduce(function(a,b){return a+b.value;},0)/streaks.length).toFixed(1):0;
     var toolBars=topN(srcCount,9).map(function(i){return {label:SRC_LABEL[i.label]||i.label,value:i.value,color:SRC_COLOR[i.label]||'#888'};});
-    document.getElementById('dash-engage').innerHTML=
-      '<div style="font-size:11px;color:var(--t2);margin-bottom:2px">近 30 天每日記錄數</div>'+vbars(trend)+
-      '<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">各工具使用次數</div>'+hbars(toolBars)+
-      '<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">平均連續天數：<strong style="color:var(--p)">'+avgStreak+' 天</strong>　連續天數 Top</div>'+hbars(streaks.sort(function(a,b){return b.value-a.value;}).slice(0,5));
-
-    // C. HRV
+    document.getElementById('dash-engage').innerHTML='<div style="font-size:11px;color:var(--t2);margin-bottom:2px">記錄趨勢（'+recB.gran+'）</div>'+vbars(recB.buckets)+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">各工具使用次數</div>'+hbars(toolBars)+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">平均連續天數：<strong style="color:var(--p)">'+avgStreak+' 天</strong>（全期）　Top</div>'+hbars(streaks.sort(function(a,b){return b.value-a.value;}).slice(0,5));
+    // C HRV
     var hrvRows=Object.keys(hrvByUser).map(function(k){return hrvByUser[k];});
     var lvl={};hrvRows.forEach(function(r){var t=r.l.assessmentTitle||'未評估';lvl[t]=(lvl[t]||0)+1;});
     var lvlBars=['黃金狀態','穩定可用','煞車失靈','紅色警戒','未評估'].filter(function(t){return lvl[t];}).map(function(t){return {label:t,value:lvl[t],color:HRV_COLOR[t]||'#888'};});
     var sSum=0,sN=0,vSum=0,vN=0;hrvRows.forEach(function(r){if(r.l.stressIndex!=null){sSum+=r.l.stressIndex;sN++;}if(r.l.vitalityIndex!=null){vSum+=r.l.vitalityIndex;vN++;}});
     var watch=hrvRows.filter(function(r){return r.l.assessmentTitle==='紅色警戒'||r.l.assessmentTitle==='煞車失靈';}).sort(function(a,b){return (b.l.stressIndex||0)-(a.l.stressIndex||0);});
-    var hrvHtml='';
-    if(!hrvRows.length)hrvHtml='<div style="font-size:11px;color:var(--t3,#9aa)">尚無 HRV 記錄</div>';
-    else{hrvHtml='<div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px"><div>平均壓力 <strong style="color:#e03a3a">'+(sN?Math.round(sSum/sN):'—')+'</strong></div><div>平均活力 <strong style="color:#4CAF19">'+(vN?Math.round(vSum/vN):'—')+'</strong></div></div>'+hbars(lvlBars,{lw:80});
-      hrvHtml+='<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">需要關注（'+watch.length+' 人）</div>';
-      if(!watch.length)hrvHtml+='<div style="font-size:11px;color:#4CAF19">目前沒有警示 ✓</div>';
-      else watch.slice(0,8).forEach(function(r){var c=HRV_COLOR[r.l.assessmentTitle];hrvHtml+='<div style="font-size:11px;margin:3px 0"><span class="badge" style="background:'+c+';color:#fff">'+r.l.assessmentTitle+'</span> '+(r.name||r.email)+' · 壓力'+(r.l.stressIndex||'—')+' · '+(r.l.measureDate||r.date)+'</div>';});
-    }
-    document.getElementById('dash-hrv').innerHTML=hrvHtml;
-
-    // E. 議題與情緒
-    var topicBars=topN(topicMap,8).map(function(i){return {label:i.label,value:i.value};});
-    var emoBars=topN(emoMap,10).map(function(i){return {label:i.label,value:i.value,color:'#5C7A9E'};});
-    var weekArr=[];for(var w=0;w<8;w++)weekArr.push({label:'第'+(w+1)+'週',value:weekEmo[w]||0});
-    document.getElementById('dash-topics').innerHTML=
-      '<div style="font-size:11px;color:var(--t2);margin-bottom:4px">最常被討論的議題（問易/卜易/書寫）</div>'+hbars(topicBars,{lw:160})+
-      '<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">最常被標記的情緒/感受</div>'+hbars(emoBars,{lw:92})+
-      '<div style="font-size:11px;color:var(--t2);margin:14px 0 2px">近 8 週情緒標記次數趨勢</div>'+vbars(weekArr);
-
-    // D. 資料品質
+    var hh='';if(!hrvRows.length)hh='<div style="font-size:11px;color:var(--t3,#9aa)">此區間尚無 HRV 記錄</div>';else{hh='<div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px"><div>平均壓力 <strong style="color:#e03a3a">'+(sN?Math.round(sSum/sN):'—')+'</strong></div><div>平均活力 <strong style="color:#4CAF19">'+(vN?Math.round(vSum/vN):'—')+'</strong></div></div>'+hbars(lvlBars,{lw:80})+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">需要關注（'+watch.length+' 人）</div>';if(!watch.length)hh+='<div style="font-size:11px;color:#4CAF19">此區間沒有警示 ✓</div>';else watch.slice(0,8).forEach(function(r){var c=HRV_COLOR[r.l.assessmentTitle];hh+='<div style="font-size:11px;margin:3px 0"><span class="badge" style="background:'+c+';color:#fff">'+r.l.assessmentTitle+'</span> '+(r.name||r.email)+' · 壓力'+(r.l.stressIndex||'—')+' · '+(r.l.measureDate||r.date)+'</div>';});}
+    document.getElementById('dash-hrv').innerHTML=hh;
+    // E 議題與情緒
+    var topicBars=topN(topicMap,8),emoBars=topN(emoMap,10).map(function(i){return {label:i.label,value:i.value,color:'#5C7A9E'};});
+    document.getElementById('dash-topics').innerHTML='<div style="font-size:11px;color:var(--t2);margin-bottom:4px">最常被討論的議題（問易/卜易/書寫）</div>'+hbars(topicBars,{lw:160})+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">最常被標記的情緒/感受</div>'+hbars(emoBars,{lw:92})+'<div style="font-size:11px;color:var(--t2);margin:14px 0 2px">情緒標記趨勢（'+emoB.gran+'）</div>'+vbars(emoB.buckets);
+    // D 資料品質
     var incomplete=users.filter(function(u){return !u.name||!u.birthDate||!u.gender;}).length;
-    var srcDist={'HRV匯入':0,'活動':0,'自註冊':0};
-    users.forEach(function(u){if(u.source&&u.source.indexOf('hrv')>=0)srcDist['HRV匯入']++;else if(u.org)srcDist['活動']++;else srcDist['自註冊']++;});
-    document.getElementById('dash-quality').innerHTML=
-      '<div style="font-size:12px;margin-bottom:10px">資料不完整（缺姓名/生日/性別）：<strong style="color:#FF8A00">'+incomplete+'</strong> / '+users.length+' 人</div>'+
-      hbars(Object.keys(srcDist).map(function(k){return {label:k,value:srcDist[k]};}));
+    var srcDist={'HRV匯入':0,'活動':0,'自註冊':0};users.forEach(function(u){if(u.source&&u.source.indexOf('hrv')>=0)srcDist['HRV匯入']++;else if(u.org)srcDist['活動']++;else srcDist['自註冊']++;});
+    document.getElementById('dash-quality').innerHTML='<div style="font-size:12px;margin-bottom:10px">資料不完整（缺姓名/生日/性別）：<strong style="color:#FF8A00">'+incomplete+'</strong> / '+users.length+' 人</div>'+hbars(Object.keys(srcDist).map(function(k){return {label:k,value:srcDist[k]};}));
   }catch(e){
     statEl.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';
   }
