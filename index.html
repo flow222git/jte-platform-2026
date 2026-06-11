@@ -574,6 +574,12 @@ function showDayDetail(k,rec){
           (l.question?'<div style="font-size:11px;color:var(--t);margin-bottom:4px">問：'+l.question+'</div>':'')+
           (l.note?'<div style="font-size:11px;color:var(--m);margin-top:6px;padding:8px 10px;background:var(--pp);border-radius:8px">📝 '+l.note+'</div>':'')+
           '</div>';
+      } else if(l.source==='WriteSpace'){
+        html+='<div style="'+cardStyle('#5C7A9E')+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:#5C7A9E;margin-bottom:6px">✍️ 心理位移書寫'+nth+'</div>'+
+          '<div style="font-size:13px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.topic||'一次書寫')+'</div>'+
+          (l.excerpt?'<div style="font-size:11px;color:var(--m);line-height:1.6">'+l.excerpt+'</div>':'')+
+          '</div>';
       }
     });
   }
