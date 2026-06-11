@@ -768,6 +768,24 @@ function showDayDetail(k,rec){
           (l.org?'<div style="font-size:10px;color:var(--m);margin-bottom:6px">'+l.org+'</div>':'')+
           (l.photoUrl?'<a href="'+l.photoUrl+'" target="_blank" style="display:inline-block;background:var(--o);color:white;padding:5px 14px;border-radius:999px;font-size:10px;font-weight:500;text-decoration:none;margin-top:4px">📷 查看活動照片</a>':'')+
           '</div>';
+      } else if(l.source==='WenYi'){
+        var wyc={good:'#4CAF19',neutral:'#003D7C',lack:'#FF8A00'};
+        var wycc=wyc[l.tone]||'#6B4F9E';
+        html+='<div style="'+cardStyle(wycc)+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:'+wycc+';margin-bottom:6px">☯ 問易'+nth+'</div>'+
+          '<div style="font-size:15px;font-weight:700;color:var(--p);margin-bottom:2px;font-family:\'Noto Serif TC\',serif">'+(l.mainHex||'')+(l.toneLabel?' · '+l.toneLabel:'')+'</div>'+
+          (l.topic?'<div style="font-size:10px;color:var(--m);margin-bottom:4px">主題：'+l.topic+'</div>':'')+
+          (l.summary?'<div style="font-size:11px;color:var(--t);margin-bottom:4px">'+l.summary+'</div>':'')+
+          (l.note?'<div style="font-size:11px;color:var(--m);margin-top:6px;padding:8px 10px;background:var(--pp);border-radius:8px">📝 '+l.note+'</div>':'')+
+          '</div>';
+      } else if(l.source==='BuYi'){
+        html+='<div style="'+cardStyle('#6B4F9E')+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:#6B4F9E;margin-bottom:6px">☯ 卜易'+nth+'</div>'+
+          '<div style="font-size:15px;font-weight:700;color:var(--p);margin-bottom:2px;font-family:\'Noto Serif TC\',serif">'+(l.ben||'')+(l.bian?' → '+l.bian:'')+'</div>'+
+          (l.changingLabel?'<div style="font-size:10px;color:var(--m);margin-bottom:4px">'+l.changingLabel+'</div>':'')+
+          (l.question?'<div style="font-size:11px;color:var(--t);margin-bottom:4px">問：'+l.question+'</div>':'')+
+          (l.note?'<div style="font-size:11px;color:var(--m);margin-top:6px;padding:8px 10px;background:var(--pp);border-radius:8px">📝 '+l.note+'</div>':'')+
+          '</div>';
       }
     });
   }
