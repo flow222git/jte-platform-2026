@@ -159,7 +159,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <div id="home-quote-tag" style="font-size:9px;letter-spacing:0.22em;color:rgba(168,201,238,0.7);text-transform:uppercase;font-family:'Inter',sans-serif;margin-bottom:14px;transition:opacity .5s">DAILY REFLECTION</div>
     <div id="home-quote" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,5.2vw,1.85rem);font-weight:700;color:#fff;letter-spacing:0.04em;line-height:1.55;min-height:2.8em;transition:opacity .5s">　</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
-      <button onclick="show('cal')" style="background:#FF8A00;color:white;border:none;padding:11px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.03em">查看我的記錄 →</button>
+      <button id="home-cta" onclick="show('cal')" style="background:#FF8A00;color:white;border:none;padding:11px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.03em;transition:opacity .5s">查看我的記錄 →</button>
     </div>
   </div>
 
@@ -755,46 +755,53 @@ document.addEventListener('visibilitychange', function(){
 });
 </script>
 <script>
-/* v2：最上方金句 / 研究文案輪播 */
+/* 最上方金句 / 研究文案輪播 — 每句連動對應練習，CTA 跟著換 */
 var HOME_LINES=[
-  {t:'reflection',x:'練習，是溫柔地把自己接回來。'},
-  {t:'reflection',x:'看見發生的，而不是你想看到的。'},
-  {t:'reflection',x:'身體比腦袋誠實，先聽身體說。'},
-  {t:'reflection',x:'穩定，不是不動；是動了，還回得來。'},
-  {t:'reflection',x:'重點不是你跑掉幾次，是你回來了幾次。'},
-  {t:'reflection',x:'呼吸不是用力堵住情緒，是讓它流動。'},
-  {t:'reflection',x:'覺察，就是不評價地看著。'},
-  {t:'reflection',x:'完美不是目標，真實才是。'},
-  {t:'reflection',x:'你不必修好自己，你已經夠好。'},
-  {t:'reflection',x:'你不是這些念頭，你是看著念頭的人。'},
-  {t:'reflection',x:'今天三分鐘，勝過完美的三十分鐘。'},
-  {t:'reflection',x:'情緒會過去，但你必須先讓它經過。'},
-  {t:'reflection',x:'緊繃在哪裡，就把呼吸送到哪裡。'},
-  {t:'reflection',x:'焦慮，是腦袋已經跑到下個小時。'},
-  {t:'reflection',x:'看清楚壓力的樣子，你就有空間。'},
-  {t:'reflection',x:'別跟情緒打架，跟它坐下來。'},
-  {t:'reflection',x:'每一口呼吸，都是新的開始。'},
-  {t:'reflection',x:'滑手機前，先問：我現在需要什麼？'},
-  {t:'reflection',x:'別等到撐不住才呼吸。'},
-  {t:'reflection',x:'只有現在，是真實的。'},
-  {t:'science',x:'放慢吐氣，會啟動副交感神經，讓身體踩下煞車。'},
-  {t:'science',x:'HRV（心率變異度）越有彈性，代表你越能在壓力後回得來。'},
-  {t:'science',x:'呼吸的彈性，就是生命的彈性。'},
-  {t:'science',x:'每天一點點的覺察，時間久了會在數據上看見變化。'},
-  {t:'science',x:'吐氣比吸氣長，是給神經系統最簡單的安撫。'}
+  {t:'reflection',x:'練習，是溫柔地把自己接回來。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'看見發生的，而不是你想看到的。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
+  {t:'reflection',x:'身體比腦袋誠實，先聽身體說。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'穩定，不是不動；是動了，還回得來。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'重點不是你跑掉幾次，是你回來了幾次。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'呼吸不是用力堵住情緒，是讓它流動。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'覺察，就是不評價地看著。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
+  {t:'reflection',x:'完美不是目標，真實才是。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',x:'你不必修好自己，你已經夠好。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',x:'你不是這些念頭，你是看著念頭的人。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
+  {t:'reflection',x:'今天三分鐘，勝過完美的三十分鐘。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'情緒會過去，但你必須先讓它經過。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',x:'緊繃在哪裡，就把呼吸送到哪裡。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'焦慮，是腦袋已經跑到下個小時。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'看清楚壓力的樣子，你就有空間。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',x:'別跟情緒打架，跟它坐下來。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',x:'每一口呼吸，都是新的開始。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'滑手機前，先問：我現在需要什麼？',cta:'問問自己 →',href:'ven-i/'},
+  {t:'reflection',x:'別等到撐不住才呼吸。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'reflection',x:'只有現在，是真實的。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
+  {t:'science',x:'放慢吐氣，會啟動副交感神經，讓身體踩下煞車。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'science',x:'HRV（心率變異度）越有彈性，代表你越能在壓力後回得來。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
+  {t:'science',x:'呼吸的彈性，就是生命的彈性。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'science',x:'每天一點點的覺察，時間久了會在數據上看見變化。',cta:'查看我的記錄 →',href:'cal'},
+  {t:'science',x:'吐氣比吸氣長，是給神經系統最簡單的安撫。',cta:'做一次呼吸練習 →',href:'xiaoqi/'}
 ];
 (function(){
   var el=document.getElementById('home-quote');
   var tag=document.getElementById('home-quote-tag');
+  var cta=document.getElementById('home-cta');
   if(!el)return;
   var order=HOME_LINES.map(function(_,i){return i;});
-  for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=order[i];order[i]=order[j];order[j]=tmp;}
+  for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}
   var p=0;
   function lab(t){return t==='science'?'RESEARCH · 科學':'DAILY REFLECTION';}
+  function mk(h){return h==='cal'?function(){show('cal');}:function(){location.href=h;};}
   function step(){
     var it=HOME_LINES[order[p]];
-    el.style.opacity='0';if(tag)tag.style.opacity='0';
-    setTimeout(function(){el.textContent=it.x;if(tag)tag.textContent=lab(it.t);el.style.opacity='1';if(tag)tag.style.opacity='1';},320);
+    el.style.opacity='0';if(tag)tag.style.opacity='0';if(cta)cta.style.opacity='0';
+    setTimeout(function(){
+      el.textContent=it.x;
+      if(tag)tag.textContent=lab(it.t);
+      if(cta){cta.textContent=it.cta;cta.onclick=mk(it.href);}
+      el.style.opacity='1';if(tag)tag.style.opacity='1';if(cta)cta.style.opacity='1';
+    },320);
     p=(p+1)%order.length;
   }
   step();
