@@ -452,64 +452,6 @@ window.addEventListener('load',function(){
   },300);
 });
 
-// ── HRV MOCK ──
-var mockHRV={recordId:'1778382549443',measureDate:'2026-05-10',stressIndex:59,emotionalFlexibility:62,relaxationIndex:21,vitalityIndex:3579,averageHeartRate:65,assessmentTitle:'黃金狀態',assessmentLevel:'高能韌性型',note:''};
-
-function writebackHRV(){
-  JTE.writeback('HRVRecord',mockHRV);
-  renderHRVCard(mockHRV);
-  toast('HRV 紀錄已掛載 ✓');
-}
-
-function renderHRVCard(hrv){
-  var colors={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
-  var c=colors[hrv.assessmentTitle]||'#003D7C';
-  var el=document.getElementById('hrv-display');
-  el.innerHTML='<div class="hrv-card"><span class="hrv-badge" style="background:'+c+'">'+hrv.assessmentTitle+'</span><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+hrv.assessmentLevel+' · '+hrv.measureDate+'</div><div class="hrv-row"><div class="hrv-stat"><div class="hrv-val">'+hrv.stressIndex+'</div><div class="hrv-lbl">壓力指數</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--g)">'+hrv.emotionalFlexibility+'</div><div class="hrv-lbl">情緒靈活度</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--p)">'+hrv.relaxationIndex+'</div><div class="hrv-lbl">放鬆指數</div></div><div class="hrv-stat"><div class="hrv-val" style="color:var(--p)">'+hrv.vitalityIndex+'</div><div class="hrv-lbl">活力指數</div></div></div><button class="hrv-mock-btn" style="background:#e03a3a" onclick="removeHRV()">✕ 移除掛載</button></div>';
-}
-
-function removeHRV(){
-  var k=JTE.todayKey();var rec=JTE.get(k);
-  if(rec){rec.linked=(rec.linked||[]).filter(function(l){return l.source!=='HRVRecord';});JTE.set(k,rec);}
-  document.getElementById('hrv-display').innerHTML='<div style="font-size:10px;color:var(--m);margin-bottom:8px">將 HRV 量測結果掛載到今日紀錄：</div><button class="hrv-mock-btn" onclick="writebackHRV()"><i class="ti ti-download"></i> 掛載今日 HRV 紀錄（示範）</button>';
-  toast('已移除 HRV 掛載');
-}
-
-// ── DAILY CHECK ──
-var eVal=5;
-
-function saveDC(){
-  var k=JTE.todayKey();
-  var existing=JTE.get(k)||{};
-  var moods=[];document.querySelectorAll('.mood-btn.sel').forEach(function(b){moods.push(b.textContent.trim());});
-  var tags=[];document.querySelectorAll('.tag.sel').forEach(function(t){tags.push(t.textContent.trim());});
-  var data={moods:moods,energy:eVal,note:document.getElementById('dc-note').value,tags:tags,linked:existing.linked||[],createdAt:existing.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-  JTE.set(k,data);
-  var email=localStorage.getItem('jte_user_email');
-  if(email)fsSave(email,k,data);
-  toast('今日紀錄已儲存 ✓');
-  setTimeout(function(){show('cal');},1200);
-}
-
-function loadDC(){
-  var k=JTE.todayKey();var rec=JTE.get(k);if(!rec)return;
-  document.querySelectorAll('.mood-btn').forEach(function(b){b.classList.toggle('sel',!!(rec.moods&&rec.moods.indexOf(b.textContent.trim())>-1));});
-  if(rec.energy){eVal=rec.energy;document.querySelectorAll('.e-dot').forEach(function(d,i){d.className='e-dot'+(i<eVal?' on':'');});document.getElementById('e-val').textContent=eVal+'/10';}
-  if(rec.note)document.getElementById('dc-note').value=rec.note;
-  document.querySelectorAll('.tag').forEach(function(t){t.classList.toggle('sel',!!(rec.tags&&rec.tags.indexOf(t.textContent.trim())>-1));});
-  var hrv=rec.linked&&rec.linked.find(function(l){return l.source==='HRVRecord';});
-  if(hrv)renderHRVCard(hrv);
-}
-
-function exportJSON(){
-  var k=JTE.todayKey();var rec=JTE.get(k);
-  if(!rec){toast('請先儲存今日紀錄');return;}
-  var blob=new Blob([JSON.stringify(rec,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);var a=document.createElement('a');
-  a.href=url;a.download='jte-'+k+'.json';a.click();URL.revokeObjectURL(url);
-  toast('已匯出 '+k+'.json');
-}
-
 // ── CALENDAR ──
 var curMonth=new Date();
 
@@ -714,10 +656,6 @@ function show(p){
   if(p==='cal')renderCal();
 }
 
-function setDCDate(){
-  var d=new Date(),wd=['日','一','二','三','四','五','六'];
-  document.getElementById('dc-date-lbl').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 (星期'+wd[d.getDay()]+')';
-}
 
 function loadTWCTBadge(){
   var badge=document.getElementById('twct-result-badge');
