@@ -168,6 +168,8 @@ body{min-height:100vh}
       <div class="nav-item active" data-page="dashboard" onclick="nav('dashboard')"><i class="ti ti-layout-dashboard"></i><span>總覽</span></div>
       <div class="nav-item" data-page="activities" onclick="nav('activities')"><i class="ti ti-calendar-event"></i><span>活動管理</span></div>
       <div class="nav-item" data-page="users" onclick="nav('users')"><i class="ti ti-users"></i><span>用戶管理</span></div>
+      <div class="nav-item" data-page="hrv" onclick="nav('hrv')"><i class="ti ti-heart-rate-monitor"></i><span>HRV 量測</span></div>
+      <div class="nav-item" data-page="records" onclick="nav('records')"><i class="ti ti-history"></i><span>全部記錄</span></div>
       <div class="nav-item" data-page="admins" onclick="nav('admins')"><i class="ti ti-shield"></i><span>管理員</span></div>
     </div>
 
@@ -226,6 +228,36 @@ body{min-height:100vh}
           <div id="users-list"><div class="loading">載入中…</div></div>
         </div>
         <div class="card" id="user-detail" style="display:none"></div>
+      </div>
+
+      <!-- HRV -->
+      <div class="page" id="page-hrv">
+        <div class="page-title">HRV 量測</div>
+        <div class="page-sub">所有使用者的 HRV 狀態總覽與上傳</div>
+        <div class="stats" id="hrv-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"><div class="loading">載入中…</div></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">使用者最新 HRV</div><button class="btn btn-p btn-sm" onclick="toggleHrvUpload()"><i class="ti ti-upload"></i> 上傳 HRV</button></div>
+          <div id="hrv-list"><div class="loading">載入中…</div></div>
+        </div>
+        <div class="card" id="hrv-upload-card" style="display:none">
+          <div class="card-head"><div class="card-title">上傳 HRV（CSV）</div><button class="btn btn-ghost btn-sm" onclick="toggleHrvUpload()">收合</button></div>
+          <label style="font-size:11px;color:var(--t2)">CSV 標題列：Email,日期,壓力,情緒靈活度,放鬆,活力,心率,評估,等級,備註</label>
+          <textarea class="csv-ta" id="hrv-csv" placeholder="Email,日期,壓力,情緒靈活度,放鬆,活力,心率,評估,等級,備註&#10;dabo@jointoenjoy.com,20260513,130,46,26,2496,98,穩定可用,一般狀態,"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="parseHrv()">預覽</button><button class="btn btn-p btn-sm" id="hrv-import-btn" onclick="startHrvImport()" disabled>先預覽才能匯入</button></div>
+          <div class="imp-preview" id="hrv-preview"></div>
+          <div class="imp-prog" id="hrv-prog"><div class="bar" id="hrv-bar"></div></div>
+          <div class="imp-log" id="hrv-log"></div>
+        </div>
+      </div>
+
+      <!-- RECORDS -->
+      <div class="page" id="page-records">
+        <div class="page-title">全部記錄</div>
+        <div class="page-sub">跨使用者的最近記錄（最多 200 筆）</div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">最近記錄</div><select class="inp" id="rec-filter" onchange="renderAllRecords()" style="width:150px"><option value="">全部來源</option><option>XiaoQi</option><option>BreatheAware</option><option>HRVRecord</option><option>Activity</option><option>WenYi</option><option>BuYi</option><option>WriteSpace</option></select></div>
+          <div id="records-list"><div class="loading">載入中…</div></div>
+        </div>
       </div>
 
       <!-- ADMINS -->
@@ -354,6 +386,8 @@ function nav(page){
   if(page==='activities') loadActivities();
   if(page==='users') loadUsers();
   if(page==='admins') renderAdmins();
+  if(page==='hrv') loadHrvOverview();
+  if(page==='records') loadAllRecords();
 }
 
 // ── DASHBOARD ──
@@ -585,6 +619,90 @@ async function startImport(){
     try{await _db.collection('activities').doc(actId).set({id:actId,name:actName,date:date,photoUrl:actPhoto||'',description:actDesc||'',participantCount:group.length,participants:group.map(function(r){return r.email;}),importedAt:new Date().toISOString()},{merge:true});impLog('info','活動建立：'+actName+' ('+date+') '+group.length+' 人');}catch(e){impLog('err','活動建立失敗:'+e.message);}
     for(var i=0;i<group.length;i++){var r=group[i];try{var ref=_db.collection('users').doc(r.email).collection('daily').doc(date);var snap=await ref.get();var ex=snap.exists?snap.data():{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:date+'T00:00:00'};if(!ex.linked)ex.linked=[];var dup=ex.linked.some(function(l){return l.source==='Activity'&&l.activityId===actId;});if(!dup){ex.linked.push({source:'Activity',activityId:actId,activityName:actName,date:date,photoUrl:actPhoto||'',description:actDesc||'',org:r.org||'',recordId:'act-'+actId,importedAt:new Date().toISOString()});ex.updatedAt=new Date().toISOString();await ref.set(ex,{merge:true});await _db.collection('users').doc(r.email).set({email:r.email,name:r.name||'',org:r.org||'',updatedAt:new Date().toISOString()},{merge:true});ok++;impLog('ok','✓ '+r.name+' ('+r.email+')');}else{impLog('warn','↷ 已存在：'+r.email);}}catch(e){impLog('err','✗ '+r.email+': '+e.message);fail++;}done++;document.getElementById('progress-bar').style.width=Math.round(done/total*100)+'%';await new Promise(function(res){setTimeout(res,120);});}}
   impLog('info','── 完成：成功 '+ok+' / 失敗 '+fail+' ──');btn.textContent='匯入完成 ✓';btn.disabled=false;loadActivities();
+}
+
+// ── Phase B：跨使用者資料載入（快取） ──
+var _allDailyCache=null;
+async function loadAllDaily(force){
+  if(_allDailyCache&&!force)return _allDailyCache;
+  var us=await _db.collection('users').get();
+  var people=[];us.forEach(function(d){people.push({email:d.id,name:(d.data().name||'')});});
+  var out=[];
+  for(var i=0;i<people.length;i++){
+    try{var ds=await _db.collection('users').doc(people[i].email).collection('daily').get();
+      ds.forEach(function(doc){out.push({email:people[i].email,name:people[i].name,date:doc.id,data:doc.data()});});
+    }catch(e){}
+  }
+  _allDailyCache=out;return out;
+}
+var HRV_COLOR={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
+async function loadHrvOverview(){
+  var listEl=document.getElementById('hrv-list'),statEl=document.getElementById('hrv-stats');
+  listEl.innerHTML='<div class="loading">掃描所有使用者…</div>';
+  try{
+    var all=await loadAllDaily();var byUser={};
+    all.forEach(function(o){(o.data.linked||[]).forEach(function(l){if(l.source==='HRVRecord'){var d=l.measureDate||o.date;if(!byUser[o.email]||d>byUser[o.email].date)byUser[o.email]={email:o.email,name:o.name,date:d,l:l};}});});
+    var rows=Object.keys(byUser).map(function(k){return byUser[k];}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    var counts={};rows.forEach(function(r){var t=r.l.assessmentTitle||'未評估';counts[t]=(counts[t]||0)+1;});
+    var sh='';['黃金狀態','穩定可用','煞車失靈','紅色警戒'].forEach(function(t){sh+='<div style="text-align:center;padding:12px 6px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,61,124,.06)"><div style="font-size:22px;font-weight:700;color:'+(HRV_COLOR[t]||'#888')+'">'+(counts[t]||0)+'</div><div style="font-size:10px;color:var(--t2);margin-top:2px">'+t+'</div></div>';});
+    statEl.innerHTML=sh;
+    if(!rows.length){listEl.innerHTML='<div class="empty">尚無 HRV 記錄</div>';return;}
+    var html='<table class="tbl"><thead><tr><th>使用者</th><th>最新日期</th><th>評估</th><th>壓力</th><th>活力</th><th>情緒靈活</th></tr></thead><tbody>';
+    rows.forEach(function(r){var l=r.l,c=HRV_COLOR[l.assessmentTitle]||'#888';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.measureDate||r.date)+'</td><td>'+(l.assessmentTitle?'<span class="badge" style="background:'+c+';color:#fff">'+l.assessmentTitle+'</span>':'—')+'</td><td>'+(l.stressIndex!=null?l.stressIndex:'—')+'</td><td>'+(l.vitalityIndex!=null?l.vitalityIndex:'—')+'</td><td>'+(l.emotionalFlexibility!=null?l.emotionalFlexibility:'—')+'</td></tr>';});
+    html+='</tbody></table>';listEl.innerHTML=html;
+  }catch(e){listEl.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
+}
+function toggleHrvUpload(){var c=document.getElementById('hrv-upload-card');c.style.display=c.style.display==='none'?'block':'none';}
+function hrvLog(t,m){var el=document.getElementById('hrv-log');el.style.display='block';var d=document.createElement('div');d.className=t;d.textContent=new Date().toLocaleTimeString('zh-TW')+' '+m;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+var _hrvRows=[];
+function parseHrv(){
+  var raw=document.getElementById('hrv-csv').value.trim();if(!raw){toast('請貼上 CSV');return;}
+  var lines=raw.split('\n').filter(function(l){return l.trim();});
+  var H=lines[0].split(',').map(function(h){return h.trim();});
+  function col(names){for(var i=0;i<names.length;i++)for(var j=0;j<H.length;j++)if(H[j].toLowerCase().includes(names[i].toLowerCase()))return j;return -1;}
+  var c={email:col(['email','mail']),date:col(['日期','date']),stress:col(['壓力','stress']),emo:col(['情緒','emotional','flex']),relax:col(['放鬆','relax']),vit:col(['活力','vital']),hr:col(['心率','heart']),title:col(['評估','assessment','狀態']),level:col(['等級','level','型']),note:col(['備註','note'])};
+  _hrvRows=[];var skip=0;
+  for(var i=1;i<lines.length;i++){var x=lines[i].split(',').map(function(v){return v.trim().replace(/^"|"$/g,'');});var em=c.email>=0?x[c.email]:'';if(!em||!em.includes('@')){skip++;continue;}
+    var num=function(idx){if(idx<0)return null;var v=parseFloat(x[idx]);return isNaN(v)?null:v;};
+    _hrvRows.push({email:em.toLowerCase().trim(),measureDate:normalizeDate(c.date>=0?x[c.date]:''),stressIndex:num(c.stress),emotionalFlexibility:num(c.emo),relaxationIndex:num(c.relax),vitalityIndex:num(c.vit),averageHeartRate:num(c.hr),assessmentTitle:c.title>=0?x[c.title]:'',assessmentLevel:c.level>=0?x[c.level]:'',note:c.note>=0?x[c.note]:''});}
+  var html='<div style="font-weight:600;color:var(--p)">預覽：'+_hrvRows.length+' 筆，跳過 '+skip+'</div>';
+  _hrvRows.slice(0,8).forEach(function(r){html+='<div class="imp-row"><span style="flex:1">'+r.email+'</span><span style="font-size:10px;color:var(--t2)">'+r.measureDate+' · '+(r.assessmentTitle||'—')+' · 壓力'+(r.stressIndex!=null?r.stressIndex:'—')+'</span></div>';});
+  if(_hrvRows.length>8)html+='<div style="font-size:10px;color:var(--t2)">…還有 '+(_hrvRows.length-8)+' 筆</div>';
+  document.getElementById('hrv-preview').innerHTML=html;
+  var b=document.getElementById('hrv-import-btn');b.disabled=false;b.textContent='匯入 '+_hrvRows.length+' 筆';hrvLog('ok','預覽完成 '+_hrvRows.length+' 筆');
+}
+async function startHrvImport(){
+  if(!_db||!_hrvRows.length){hrvLog('err','請先預覽');return;}
+  var b=document.getElementById('hrv-import-btn');b.disabled=true;b.textContent='匯入中…';document.getElementById('hrv-prog').style.display='block';
+  var total=_hrvRows.length,done=0,ok=0,fail=0;
+  for(var i=0;i<_hrvRows.length;i++){var r=_hrvRows[i];if(!r.measureDate){fail++;done++;continue;}
+    try{var ref=_db.collection('users').doc(r.email).collection('daily').doc(r.measureDate);var snap=await ref.get();var ex=snap.exists?snap.data():{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:r.measureDate+'T00:00:00'};if(!ex.linked)ex.linked=[];
+      var rid='hrv-'+r.measureDate+'-'+(r.stressIndex||'')+'-'+(r.vitalityIndex||'');
+      var dup=ex.linked.some(function(l){return l.source==='HRVRecord'&&l.recordId===rid;});
+      if(!dup){ex.linked.push(Object.assign({source:'HRVRecord',recordId:rid,importedFrom:'admin_csv',importedAt:new Date().toISOString()},r));ex.updatedAt=new Date().toISOString();await ref.set(ex,{merge:true});
+        await _db.collection('users').doc(r.email).set({email:r.email,updatedAt:new Date().toISOString()},{merge:true});ok++;hrvLog('ok','✓ '+r.email+' '+r.measureDate);}
+      else hrvLog('warn','↷ 已存在 '+r.email+' '+r.measureDate);
+    }catch(e){fail++;hrvLog('err','✗ '+r.email+': '+e.message);}
+    done++;document.getElementById('hrv-bar').style.width=Math.round(done/total*100)+'%';await new Promise(function(res){setTimeout(res,120);});}
+  hrvLog('info','完成：成功 '+ok+' / 失敗 '+fail);b.textContent='匯入完成 ✓';b.disabled=false;_allDailyCache=null;loadHrvOverview();
+}
+// 全部記錄
+var _allRecCache=[];
+async function loadAllRecords(){
+  var el=document.getElementById('records-list');el.innerHTML='<div class="loading">掃描所有使用者…</div>';
+  try{var all=await loadAllDaily();var flat=[];
+    all.forEach(function(o){(o.data.linked||[]).forEach(function(l){flat.push({email:o.email,name:o.name,date:l.measureDate||l.date||o.date,l:l});});});
+    flat.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    _allRecCache=flat;renderAllRecords();
+  }catch(e){el.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
+}
+function renderAllRecords(){
+  var el=document.getElementById('records-list'),f=document.getElementById('rec-filter').value;
+  var rows=_allRecCache.filter(function(r){return !f||r.l.source===f;}).slice(0,200);
+  if(!rows.length){el.innerHTML='<div class="empty">無記錄</div>';return;}
+  var html='<table class="tbl"><thead><tr><th>日期</th><th>使用者</th><th>記錄</th></tr></thead><tbody>';
+  rows.forEach(function(r){html+='<tr><td style="white-space:nowrap;vertical-align:top">'+(r.date||'')+'</td><td class="name" style="white-space:nowrap;vertical-align:top">'+(r.name||r.email)+'</td><td>'+jteLinkedCard(r.l)+'</td></tr>';});
+  html+='</tbody></table>';el.innerHTML=html;
 }
 </script>
 </body>
