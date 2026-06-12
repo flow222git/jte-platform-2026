@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-analyze tests</title>
+<script src="hrv-analyze.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+function near(a,b,tol,m){ if(Math.abs(a-b)>tol) throw new Error((m||'near')+' got '+a+' want '+b+'±'+tol); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+async function run(){
+  assert(typeof HrvAnalyze === 'object', 'HrvAnalyze 應載入');
+
+  // === Task 1: 指標計算核心 ===
+  await check('metricsFromRr：等距 RR → hr=60、rmssd=0、sdnn=0', async () => {
+    const m = HrvAnalyze.metricsFromRr([1000,1000,1000,1000]);
+    near(m.hr,60,0.01,'hr'); near(m.rmssd,0,0.01,'rmssd'); near(m.sdnn,0,0.01,'sdnn');
+  });
+  await check('metricsFromRr：交替 800/1200 → hr=60、rmssd=400、sdnn=200', async () => {
+    const m = HrvAnalyze.metricsFromRr([800,1200,800,1200]);
+    near(m.hr,60,0.01,'hr'); near(m.rmssd,400,0.01,'rmssd'); near(m.sdnn,200,0.01,'sdnn');
+  });
+  await check('classify：rmssd 高→放鬆、中→平衡、低→緊繃', async () => {
+    eq(HrvAnalyze.classify({rmssd:60,hr:65}).state,'relaxed','高');
+    eq(HrvAnalyze.classify({rmssd:35,hr:70}).state,'balanced','中');
+    eq(HrvAnalyze.classify({rmssd:15,hr:80}).state,'tense','低');
+    assert(HrvAnalyze.classify({rmssd:60,hr:65}).advice,'有建議文字');
+  });
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
