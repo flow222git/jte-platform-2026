@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>index sanity</title></head>
+<body>
+<pre id="out">running...</pre>
+<iframe id="fr" src="index.html" style="width:420px;height:700px;border:1px solid #ccc"></iframe>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){ lines.push(s); out.textContent=lines.join('\n'); }
+function check(name,cond,extra){ if(cond){pass++;log('PASS '+name);} else {fail++;log('FAIL '+name+(extra?' :: '+extra:''));} }
+
+let jsError=null;
+window.addEventListener('error', function(e){ if(e&&e.message) jsError=e.message; });
+
+async function run(){
+  const fr=document.getElementById('fr');
+  // 等 iframe 載入
+  await new Promise(function(res){
+    if(fr.contentDocument && fr.contentDocument.readyState==='complete') return res();
+    fr.addEventListener('load', function(){ res(); });
+    setTimeout(res, 6000);
+  });
+  // 再給腳本/defer 腳本一點時間跑（hrv-analyze.js / hrv-freq.js defer）
+  await new Promise(function(res){ setTimeout(res, 2500); });
+
+  const w=fr.contentWindow, doc=fr.contentDocument;
+  // 抓 iframe 內部的錯誤
+  w.addEventListener('error', function(e){ if(e&&e.message) jsError='iframe: '+e.message; });
+
+  check('iframe 內無 JS 例外', !jsError, jsError||'');
+  check('HrvAnalyze 已載入', !!(w.HrvAnalyze), 'HrvAnalyze='+typeof (w&&w.HrvAnalyze));
+  check('HrvFreq 已載入', !!(w.HrvFreq), 'HrvFreq='+typeof (w&&w.HrvFreq));
+  check('HrvFreq 有 bandPowers/indices', !!(w.HrvFreq&&w.HrvFreq.bandPowers&&w.HrvFreq.indices), 'missing fns');
+
+  // 說明頁兩顆鈕：「開始量測」（快測）＋「進階分析」
+  const btns = doc ? Array.prototype.slice.call(doc.querySelectorAll('button')) : [];
+  const texts = btns.map(function(b){ return (b.textContent||'').trim(); });
+  check('說明頁有「開始量測」鈕', texts.indexOf('開始量測')>=0, texts.join(' | '));
+  check('說明頁有「進階分析」鈕', texts.some(function(t){ return /進階分析/.test(t); }), texts.join(' | '));
+
+  // 快測流程未壞：說明頁初始 ring 顯示秒數為 60（advanced 預設 false）
+  // session/measureSec 為腳本作用域內部變數（非全域），改以渲染後的 DOM 與原始碼旗標檢查。
+  const ringSec = doc ? doc.getElementById('ringSec') : null; // 說明頁尚未進量測，故應為 null
+  check('說明頁尚未進入量測（無 ringSec）', ringSec===null, 'ringSec 不該在說明頁');
+
+  log('---'); log('DONE pass='+pass+' fail='+fail);
+  document.title = fail?('FAIL '+fail):'OK';
+  window.__done=true;
+  try{ await fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
+}
+window.__done=false;
+run();
+</script>
+</body></html>

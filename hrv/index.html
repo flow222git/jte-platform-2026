@@ -159,10 +159,12 @@
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
-const MEASURE_SEC=60;       // 品質轉綠後量測秒數
+const QUICK_SEC=60;         // 快測：品質轉綠後量測秒數
+const ADVANCED_SEC=120;     // 進階：頻域分析需較長量測
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
+function measureSec(){ return session.advanced ? ADVANCED_SEC : QUICK_SEC; }
 
-const session={ mode:'intro', stream:null, track:null, raf:null,
+const session={ mode:'intro', stream:null, track:null, raf:null, advanced:false,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null };
 
 function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
@@ -197,9 +199,23 @@ function renderIntro(){
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
   app.appendChild(d);
 
+  // 進階分析入口（約 2 分鐘）：放在說明區下方，附小字說明
+  const advBlock=document.createElement('div');
+  advBlock.style.cssText='margin:6px 0 2px';
+  const advBtn=document.createElement('button');
+  advBtn.className='btn btn-primary';
+  advBtn.style.cssText='width:100%;background:var(--card);color:var(--accent);border:1.5px solid var(--accent)';
+  advBtn.textContent='進階分析（約 2 分鐘）';
+  advBtn.onclick=function(){ session.advanced=true; renderMeasure(); };
+  const advHint=document.createElement('p');
+  advHint.style.cssText='font-size:12px;color:var(--ink-faint);text-align:center;margin:8px 0 0;line-height:1.6';
+  advHint.textContent='更完整的壓力/放鬆/活力分析（相對參考）';
+  advBlock.appendChild(advBtn);advBlock.appendChild(advHint);
+  d.insertBefore(advBlock, d.querySelector('.disclaimer'));
+
   const inner=document.createElement('div');inner.className='bar-inner';
   const start=document.createElement('button');start.className='btn btn-primary';start.textContent='開始量測';
-  start.onclick=function(){ renderMeasure(); };
+  start.onclick=function(){ session.advanced=false; renderMeasure(); };
   const hist=document.createElement('button');hist.className='btn-ghost';hist.textContent='看趨勢';
   hist.onclick=function(){ renderTrend(); };
   inner.appendChild(hist);inner.appendChild(start);
@@ -223,7 +239,7 @@ function renderMeasure(){
             '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>'+
             '<circle id="ringProg" cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>'+
           '</svg>'+
-          '<div class="ring-num"><span class="n" id="ringSec">60</span><span class="u">秒</span></div>'+
+          '<div class="ring-num"><span class="n" id="ringSec">'+measureSec()+'</span><span class="u">秒</span></div>'+
         '</div>'+
         '<div class="quality"><span class="qdot red" id="qdot"></span><span id="qlabel">偵測訊號中…</span></div>'+
         '<div class="hr-live"><span class="hb">♥</span><span class="v" id="hrLive">--</span><span class="u">bpm</span></div>'+
@@ -414,11 +430,12 @@ function updateLiveUi(now){
     if(hint){ hint.className='cam-hint'; hint.textContent='開始量測，保持靜止，正常呼吸…'; }
   }
   if(session.measuring){
+    const total=measureSec();
     const elapsed=(now-session.countdownStart)/1000;
-    const remain=Math.max(0, MEASURE_SEC-elapsed);
+    const remain=Math.max(0, total-elapsed);
     const secEl=document.getElementById('ringSec'); if(secEl)secEl.textContent=String(Math.ceil(remain));
     const prog=document.getElementById('ringProg');
-    if(prog){ const C=2*Math.PI*52; prog.setAttribute('stroke-dashoffset', String(C*(1-Math.min(1,elapsed/MEASURE_SEC)))); }
+    if(prog){ const C=2*Math.PI*52; prog.setAttribute('stroke-dashoffset', String(C*(1-Math.min(1,elapsed/total)))); }
     if(q==='red'){
       // 中途轉紅：提示調整（不重置倒數，避免一直歸零）
       if(hint){ hint.className='cam-hint warn'; hint.textContent='訊號變差了，手指別移開、放輕鬆…'; }
@@ -554,7 +571,7 @@ function renderTrend(){
   const home=document.createElement('button');home.className='btn btn-ghost';home.style.flex='1';home.textContent='回開始';
   home.onclick=function(){ renderIntro(); };
   const again=document.createElement('button');again.className='btn btn-primary';again.textContent='量一次';
-  again.onclick=function(){ renderMeasure(); };
+  again.onclick=function(){ session.advanced=false; renderMeasure(); };
   inner.appendChild(home);inner.appendChild(again);
   bar.appendChild(inner);
 
@@ -755,6 +772,8 @@ renderIntro();
 
 <!-- 訊號處理純模組 -->
 <script defer src="hrv-analyze.js"></script>
+<!-- 進階頻域分析純模組（resampleRr/fft/bandPowers/indices） -->
+<script defer src="hrv-freq.js"></script>
 
 <!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
