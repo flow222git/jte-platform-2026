@@ -346,8 +346,11 @@ function updateDebug(recent, beats, rr, q){
   for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
   const d=session.lastDiag||{R:0,G:0,sat:0};
   const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
+  let per=0; try{ const pr=HrvAnalyze._prep(recent); if(pr) per=HrvAnalyze._periodicity(pr.ac, pr.fs); }catch(e){}
+  const mm=HrvAnalyze.metricsFromRr(rr);
   el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
+    '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
     '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nsamples '+recent.length;
 }
 

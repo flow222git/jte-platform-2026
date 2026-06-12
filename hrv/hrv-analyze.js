@@ -32,7 +32,9 @@
     if (trimmed.length < 10) trimmed = samples; // 資料太短就不修剪
     var v = trimmed.map(function(s){ return s.v; }), t = trimmed.map(function(s){ return s.t; });
     var dur = t[t.length-1]-t[0], fs = dur>0 ? (v.length-1)/(dur/1000) : 30;
-    var win = Math.max(5, Math.round(fs*0.6)), ac = [];
+    // 去趨勢視窗 ~2 秒（約 2 個心跳週期）：移動平均近乎為零→保留脈搏、只去掉慢漂移。
+    // 原本 0.6 秒太短，會把脈搏一起平均掉、削弱振幅導致漏拍。
+    var win = Math.max(5, Math.round(fs*1.0)), ac = [];
     for (var i=0;i<v.length;i++){
       var a=Math.max(0,i-win), b=Math.min(v.length-1,i+win), s=0,c=0;
       for(var k=a;k<=b;k++){ s+=v[k]; c++; }
@@ -91,17 +93,17 @@
     var pr=_prep(samples); if(!pr) return 'red';
     var per=_periodicity(pr.ac, pr.fs);
     var d=_detect(samples), rr=rrFromBeats(d.beats);
-    if (rr.length < 4 || per < 0.30) return 'red'; // 心跳太少 / 沒週期性＝雜訊
-    var rrCv = _cv(rr), hr = 60000/mean(rr);
+    if (rr.length < 3 || per < 0.30) return 'red'; // 沒週期性＝雜訊（這是穩健的核心判斷）
+    var hr = 60000/mean(rr);
     if (hr < 40 || hr > 150) return 'red';         // 不合生理／雜訊湊出的過快節律
-    if (per >= 0.50 && rrCv < 0.20) return 'green';
-    if (per >= 0.35 && rrCv < 0.40) return 'yellow';
-    return 'red';
+    // 以週期性為準：真脈搏週期性強。不再用 rrCv 當門檻——漏拍會讓 RR 假性不規律、誤殺好訊號。
+    if (per >= 0.42) return 'green';
+    return 'yellow';
   }
 
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify,
     detectBeats: detectBeats, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
-    _mean: mean
+    _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);
