@@ -109,6 +109,21 @@
   details.metrics summary::before{content:'▸ ';}
   details.metrics[open] summary::before{content:'▾ ';}
 
+  /* —— 進階：免責卡 ＋ 四指數卡 —— */
+  .adv-note{background:#fff8ec;border:1px solid #e9d4a8;border-radius:var(--radius);padding:14px 16px;margin-bottom:16px}
+  .adv-note .t{font-family:"Noto Serif TC",serif;font-size:14px;font-weight:500;color:#9a6a12;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .adv-note p{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:0}
+  .idx-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;margin-bottom:12px}
+  .idx-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px}
+  .idx-name{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:500;color:var(--ink)}
+  .idx-lv{font-size:12px;font-weight:500;padding:2px 11px;border-radius:999px;color:#fff}
+  .idx-lv.high{background:var(--relaxed)} .idx-lv.mid{background:var(--balanced)} .idx-lv.low{background:var(--ink-faint)}
+  .idx-bar{height:9px;background:var(--paper);border-radius:999px;overflow:hidden;margin-bottom:9px}
+  .idx-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .5s}
+  .idx-fill.high{background:var(--relaxed)} .idx-fill.mid{background:var(--balanced)} .idx-fill.low{background:var(--ink-faint)}
+  .idx-adv{font-size:13px;color:var(--ink-soft);line-height:1.7}
+  .idx-score{font-family:"Noto Serif TC",serif;font-size:13px;color:var(--ink-faint);margin-left:6px}
+
   .save-block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;margin-top:18px}
   .save-title{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px}
   .save-sub{font-size:12px;color:var(--ink-faint);margin-bottom:12px}
@@ -178,6 +193,11 @@ function _h(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&
 
 const DISCLAIMER='本工具以手機相機估算心率與心率變異，為健康與放鬆的參考，'+
   '受光線、姿勢與裝置影響，並非醫療診斷。若有健康疑慮，請諮詢專業醫療人員。';
+// 進階免責（spec §5）：相對參考、看自己趨勢，非舊儀器數值、非醫療診斷。常駐於進階結果頁最上方。
+const ADV_DISCLAIMER='進階分析為「相對參考」——看自己的趨勢就好，不等於你舊儀器的數值，也非醫療診斷。'+
+  '相機量測受光線與晃動影響，數值會浮動。';
+// 四指數中文名（依面向）
+const FACE_LABEL={ stress:'壓力', relax:'放鬆', vitality:'活力', flexibility:'情緒反應靈活度' };
 
 /* —— 入口／說明 —— */
 function renderIntro(){
@@ -486,6 +506,7 @@ function stopCamera(){
 function renderResult(samples){
   session.mode='result'; clearAll();
   samples=samples||[];
+  if(session.advanced){ renderAdvancedResult(samples); return; }
   const A=window.HrvAnalyze;
   // 用既有純函式算指標與品質
   const beats=A?A.detectBeats(samples):[];
@@ -552,6 +573,109 @@ function renderResult(samples){
   trend.onclick=function(){ renderTrend(); };
   const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
   again.onclick=function(){ renderMeasure(); };
+  inner.appendChild(trend);inner.appendChild(again);
+  bar.appendChild(inner);
+}
+
+/* —— 進階結果頁（頻域四指數）—— */
+function renderAdvancedResult(samples){
+  clearAll();
+  samples=samples||[];
+  const A=window.HrvAnalyze, F=window.HrvFreq;
+  const beats=A?A.detectBeats(samples):[];
+  const rr=A?A.cleanRr(A.rrFromBeats(beats)):[];      // 偽差校正後的 RR
+  const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
+  const quality=A?A.signalQuality(samples):'red';
+  const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
+  // 誠實把關：清理後 RR 太少 / 品質紅 / hr 不合理 → 不出四指數
+  const gated = !A || !F || rr.length<60 || quality==='red' || !(m.hr>=30&&m.hr<=220);
+
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+
+  // 進階免責卡（常駐，最上方）
+  const note=document.createElement('div');note.className='adv-note';
+  const nt=document.createElement('div');nt.className='t';
+  nt.innerHTML='<i class="ti ti-info-circle"></i>';
+  nt.appendChild(document.createTextNode('進階分析 · 相對參考'));
+  const np=document.createElement('p');np.textContent=ADV_DISCLAIMER;
+  note.appendChild(nt);note.appendChild(np);
+  d.appendChild(note);
+
+  if(gated){
+    // 不出四指數：只給 HR＋狀態＋「這次不夠穩，建議重量」
+    const c=document.createElement('div');c.className='err-card';
+    const validHr=(m.hr>=30&&m.hr<=220);
+    let body='<h3>這次訊號不夠穩</h3>';
+    if(validHr){
+      const cls=A.classify(m); const stZh=STATE_LABEL[cls.state]||cls.state;
+      body+='<p>先給你基本結果：心率約 <b>'+_h(String(hr))+'</b> bpm，狀態偏「'+_h(stZh)+'」。'+
+        '進階四指數需要更穩定的訊號，這次不夠穩，建議在光線充足、手指輕貼鏡頭、保持靜止下再量一次。</p>';
+    }else{
+      body+='<p>這次沒量到穩定的心率。請在光線充足處，手指輕貼鏡頭（含旁邊的閃光燈），保持靜止，再量一次。</p>';
+    }
+    c.innerHTML=body;
+    d.appendChild(c);
+    d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+    app.appendChild(d);
+    const inner=document.createElement('div');inner.className='bar-inner';
+    const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+    again.onclick=function(){ renderMeasure(); };  // 維持 session.advanced=true
+    inner.appendChild(again);
+    bar.appendChild(inner);
+    return;
+  }
+
+  // 算四指數
+  const series=F.resampleRr(rr,4).series;
+  const bp=F.bandPowers(series,4);
+  const idx=F.indices(bp,{ sdnn:m.sdnn, rmssd:m.rmssd });
+
+  // 四張指數卡（順序：壓力、放鬆、活力、情緒反應靈活度）
+  const order=['stress','relax','vitality','flexibility'];
+  order.forEach(function(face){
+    const it=idx[face]||{score:0,level:'low',label:'低',advice:''};
+    const score=Number(it.score)||0, lv=it.level||'low';
+    const card=document.createElement('div');card.className='idx-card';
+    const head=document.createElement('div');head.className='idx-head';
+    const nm=document.createElement('span');nm.className='idx-name';nm.textContent=FACE_LABEL[face]||face;
+    const sc=document.createElement('span');sc.className='idx-score';sc.textContent=String(score)+' / 100';
+    nm.appendChild(sc);
+    const lvEl=document.createElement('span');lvEl.className='idx-lv '+lv;lvEl.textContent=it.label||'';
+    head.appendChild(nm);head.appendChild(lvEl);
+    const barEl=document.createElement('div');barEl.className='idx-bar';
+    const fill=document.createElement('div');fill.className='idx-fill '+lv;
+    fill.style.width=Math.max(0,Math.min(100,score))+'%';
+    barEl.appendChild(fill);
+    const adv=document.createElement('div');adv.className='idx-adv';adv.textContent=it.advice||'';
+    card.appendChild(head);card.appendChild(barEl);card.appendChild(adv);
+    d.appendChild(card);
+  });
+
+  // 下方基本數據：HR、RMSSD
+  const panel=document.createElement('div');panel.className='panel';
+  panel.innerHTML='<h3>基本數據</h3>'+
+    '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="aHr"></span></div>'+
+    '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="aRm"></span></div>';
+  d.appendChild(panel);
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  app.appendChild(d);
+  panel.querySelector('#aHr').textContent=String(hr)+' bpm';
+  panel.querySelector('#aRm').textContent=String(rmssd)+' ms';
+
+  // 儲存進階記錄（四指數存 score 數字；明文一般記錄）。只在有效時存。
+  const cls=A.classify(m); const now=new Date();
+  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
+  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
+    hr:hr, rmssd:rmssd, sdnn:sdnn, state:cls.state, adv:true,
+    stress:Number(idx.stress.score)||0, relax:Number(idx.relax.score)||0,
+    vitality:Number(idx.vitality.score)||0, flexibility:Number(idx.flexibility.score)||0 });
+
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
+  trend.onclick=function(){ renderTrend(); };
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+  again.onclick=function(){ renderMeasure(); };  // 維持 advanced 模式
   inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
 }

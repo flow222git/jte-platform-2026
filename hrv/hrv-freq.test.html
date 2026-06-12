@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-freq tests</title>
+<script src="hrv-analyze.js"></script>
 <script src="hrv-freq.js"></script>
 </head>
 <body>
@@ -70,6 +71,39 @@ async function run(){
     var hi=HrvFreq.indices({lf:50,hf:50,total:6000,lfhf:1},{sdnn:100,rmssd:80});
     assert(hi.vitality.score > lo.vitality.score, '活力隨 total 升');
     assert(hi.flexibility.score > lo.flexibility.score, '靈活度隨 sdnn 升');
+  });
+
+  // === 端到端：相機 PPG → RR → 頻域 → 四指數（誠實把關邊界）===
+  // 合成乾淨 PPG（沿用 analyze 測試的形狀：{t,v}，含 RR 微抖以產生 HRV）
+  function synthPpgRr(bpm, durSec, fs){
+    fs=fs||30; var s=[], n=Math.round(durSec*fs), t=0, nextBeat=0, beatI=0;
+    for(var i=0;i<n;i++){
+      t=i*1000/fs;
+      // 以正弦近似脈搏；瞬時頻率隨呼吸（0.25Hz）微調 → 產生 RR 變異
+      var inst=bpm/60*(1+0.06*Math.sin(2*Math.PI*0.25*t/1000));
+      var v=Math.sin(2*Math.PI*inst*t/1000) + (Math.random()-0.5)*0.05;
+      s.push({t:t, v:50+v});
+    }
+    return s;
+  }
+  await check('端到端：乾淨 ~120s PPG → RR≥60、四指數齊全（把關放行）', async () => {
+    var A=window.HrvAnalyze; assert(typeof A==='object','需 HrvAnalyze');
+    var s=synthPpgRr(72,120,30);
+    var rr=A.cleanRr(A.rrFromBeats(A.detectBeats(s)));
+    assert(rr.length>=60, 'RR 應 ≥60，實得 '+rr.length);
+    var m=A.metricsFromRr(rr);
+    var idx=HrvFreq.indices(HrvFreq.bandPowers(HrvFreq.resampleRr(rr,4).series,4),{sdnn:m.sdnn,rmssd:m.rmssd});
+    ['stress','relax','vitality','flexibility'].forEach(function(f){
+      assert(idx[f] && isFinite(idx[f].score) && idx[f].score>=0 && idx[f].score<=100, f+' 分數 0-100');
+      assert(['high','mid','low'].indexOf(idx[f].level)>=0, f+' level 合法');
+      assert(idx[f].advice, f+' 有建議');
+    });
+  });
+  await check('端到端：短量測（~20s）→ RR<60（把關應擋）', async () => {
+    var A=window.HrvAnalyze;
+    var s=synthPpgRr(72,20,30);
+    var rr=A.cleanRr(A.rrFromBeats(A.detectBeats(s)));
+    assert(rr.length<60, '短量測 RR 應 <60（觸發把關），實得 '+rr.length);
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
