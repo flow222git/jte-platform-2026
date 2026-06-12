@@ -1,5 +1,8 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><title>bsrs-score tests</title>
+<script>window.__JTE_PRIVACY_TEST = true;</script>
+<script src="../jte-crypto.js"></script>
+<script src="../jte-privacy.js"></script>
 <script src="bsrs-score.js"></script>
 </head>
 <body>
@@ -16,8 +19,25 @@ async function check(name, fn){
   catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
 }
 
+// fake Firestore：支援 .collection('users').doc(email).get()/.set(data,{merge})
+function makeFakeDb(){
+  const store = {};
+  return {
+    _store: store,
+    collection(){ return {
+      doc(id){ return {
+        get(){ return Promise.resolve({ exists: id in store, data(){ return store[id]; } }); },
+        set(data, opts){ store[id] = (opts && opts.merge) ? Object.assign({}, store[id], data) : data; return Promise.resolve(); }
+      }; }
+    }; }
+  };
+}
+function unlocked(){ const db=makeFakeDb(); JtePrivacy._reset(); JtePrivacy._setBackend({db,email:'u@x.com'}); sessionStorage.clear(); localStorage.removeItem('jte_dek_u@x.com'); return JtePrivacy._doEnable('pw-12345678'); }
+const sampleBsrs = { id:'bs-1', recordId:'bs-1', source:'BSRS', ts:'2026-06-12T01:00:00Z', score:15, level:'severe', answers:[3,3,3,3,3,2], item6:2 };
+
 async function run(){
   assert(typeof BsrsScore === 'object', 'BsrsScore 應載入');
+  assert(typeof JtePrivacy === 'object', 'JtePrivacy 應載入');
 
   await check('score 邊界：總分與分級', async () => {
     eq(BsrsScore.score([0,0,0,0,0,0]).total, 0, '全 0 總分');
@@ -42,6 +62,27 @@ async function run(){
   await check('score 回傳 levelLabel/advice/item6', async () => {
     const r = BsrsScore.score([3,3,3,3,3,3]);
     assert(r.levelLabel && r.advice, '有分級標籤與建議'); eq(r.item6, 3, 'item6 帶回');
+  });
+
+  await check('toCloudRec（解鎖）：分數/作答加密進 priv、移除明文、留 source/ts', async () => {
+    await unlocked();
+    const c = await BsrsScore.toCloudRec(sampleBsrs);
+    eq(c.source,'BSRS','source 留'); eq(c.score,undefined,'score 明文移除'); eq(c.answers,undefined,'answers 移除'); eq(c.item6,undefined,'item6 移除'); eq(c.level,undefined,'level 移除');
+    assert(c.priv&&c.priv.score&&c.priv.score.iv,'priv.score 密文');
+    assert(JSON.stringify(c).indexOf('severe')===-1,'雲端物件不含明文 level');
+  });
+  await check('toCloudRec（未解鎖）：私密欄位整個不上傳、無 priv', async () => {
+    JtePrivacy.lock(); sessionStorage.clear(); localStorage.removeItem('jte_dek_u@x.com');
+    const c = await BsrsScore.toCloudRec(sampleBsrs);
+    eq(c.source,'BSRS','source 留'); eq(c.score,undefined,'score 未上傳'); eq(c.priv,undefined,'無 priv');
+  });
+  await check('mergeCloud：本機明文優先、雲端獨有解密併入、依 recordId 去重', async () => {
+    await unlocked();
+    const cloud = await BsrsScore.toCloudRec({ ...sampleBsrs, id:'bs-2', recordId:'bs-2', score:8, level:'mild', answers:[2,2,1,1,2,0], item6:0 });
+    const merged = await BsrsScore.mergeCloud({ '2026-06-12':{linked:[sampleBsrs]} }, { '2026-06-12':{linked:[cloud]} });
+    const flat=[]; Object.keys(merged).forEach(d=>(merged[d].linked||[]).forEach(r=>flat.push(r)));
+    eq(flat.map(r=>r.recordId).sort().join(','),'bs-1,bs-2','兩筆去重');
+    const r2=flat.find(r=>r.recordId==='bs-2'); eq(r2.score,8,'雲端記錄解密還原 score');
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);

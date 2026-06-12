@@ -27,5 +27,33 @@
     return { total:total, item6:item6, level:level, levelLabel:LEVELS[level].label, advice:LEVELS[level].advice, crisis:crisis };
   }
 
-  root.BsrsScore = { QUESTIONS:QUESTIONS, OPTIONS:OPTIONS, LEVELS:LEVELS, score:score };
+  // —— 記錄分層（比照 ven-i-privacy.js，私密欄位改 BSRS）——
+  var PRIVATE_FIELDS = ['score','level','answers','item6'];
+  function _pickPrivate(rec){ var p={}; PRIVATE_FIELDS.forEach(function(f){ if(rec[f]!==undefined&&rec[f]!==null&&rec[f]!=='') p[f]=(typeof rec[f]==='object')?JSON.stringify(rec[f]):String(rec[f]); }); return p; }
+  // 產生「可上雲」版本：可分析欄位明文保留；私密欄位→解鎖則加密進 priv、未解鎖則整個略去
+  function toCloudRec(rec){
+    var out={}; Object.keys(rec).forEach(function(k){ if(PRIVATE_FIELDS.indexOf(k)===-1) out[k]=rec[k]; });
+    if(!root.JtePrivacy||!root.JtePrivacy.isUnlocked()) return Promise.resolve(out);
+    var priv=_pickPrivate(rec); if(!Object.keys(priv).length) return Promise.resolve(out);
+    return root.JtePrivacy.encryptPrivate(priv).then(function(enc){ out.priv=enc; return out; });
+  }
+  function _coerce(v){ if(typeof v!=='string') return v; try{ return JSON.parse(v); }catch(e){ return v; } }
+  // 把雲端 days 併入本機 days：依 recordId 去重（本機優先），雲端獨有者解密 priv 後併入
+  function mergeCloud(localAll, cloudDays){
+    var result=JSON.parse(JSON.stringify(localAll||{})), seen={};
+    Object.keys(result).forEach(function(d){ (result[d].linked||[]).forEach(function(r){ var k=r.recordId||r.id; if(k) seen[k]=true; }); });
+    var unlocked=root.JtePrivacy&&root.JtePrivacy.isUnlocked(), chain=Promise.resolve();
+    Object.keys(cloudDays||{}).forEach(function(d){ (cloudDays[d].linked||[]).forEach(function(cr){
+      var key=cr.recordId||cr.id; if(key&&seen[key]) return; if(key) seen[key]=true;
+      chain=chain.then(function(){
+        var rec={}; Object.keys(cr).forEach(function(k){ if(k!=='priv') rec[k]=cr[k]; });
+        if(unlocked&&cr.priv){ return root.JtePrivacy.decryptPrivate(cr.priv).then(function(p){ Object.keys(p).forEach(function(f){ if(p[f]!=null) rec[f]=(f==='answers')?_coerce(p[f]):(f==='score'||f==='item6')?Number(p[f]):p[f]; }); _push(result,d,rec); }); }
+        _push(result,d,rec);
+      });
+    }); });
+    return chain.then(function(){ return result; });
+  }
+  function _push(all,d,rec){ if(!all[d]) all[d]={linked:[]}; if(!all[d].linked) all[d].linked=[]; all[d].linked.push(rec); }
+
+  root.BsrsScore = { QUESTIONS:QUESTIONS, OPTIONS:OPTIONS, LEVELS:LEVELS, score:score, PRIVATE_FIELDS:PRIVATE_FIELDS, toCloudRec:toCloudRec, mergeCloud:mergeCloud };
 })(typeof window !== 'undefined' ? window : this);
