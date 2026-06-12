@@ -354,6 +354,45 @@
       .catch(function (e){ if (err) err.textContent = '更換失敗，請再試一次'; throw e; });
   }
 
+  // —— 隱私聲明（唯讀 modal，固定文案，平台共用）——
+  function showInfo(){
+    if (!_doc) return;
+    injectStyles();
+    var old = _doc.getElementById('jte-privacy-info');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var ov = _doc.createElement('div');
+    ov.id = 'jte-privacy-info';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483641;background:rgba(8,20,38,.46);' +
+      '-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;' +
+      'padding:18px;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif';
+    var card = _doc.createElement('div');
+    card.style.cssText = 'background:#fff;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.28);' +
+      'width:100%;max-width:380px;max-height:84vh;overflow-y:auto;padding:24px 22px 18px;box-sizing:border-box;color:#1f2d3d';
+    card.innerHTML =
+      '<h3 style="margin:0 0 12px;font-size:17px;color:#003D7C;font-weight:700">🔒 你的私密書寫，只有你看得到</h3>' +
+      '<p style="margin:0 0 14px;font-size:13px;line-height:1.7;color:#43536B">我們從設計上就讓自己「看不到」你的私密內容：</p>' +
+      '<p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#003D7C">只有你能看到的（我們完全看不到）</p>' +
+      '<p style="margin:0 0 12px;font-size:13px;line-height:1.7;color:#43536B">' +
+        '・卜卦時打下的問題、你的筆記<br>' +
+        '・你的心理位移書寫全文<br>' +
+        '這些預設只留在你的裝置。若你開啟「跨裝置私密同步」，內容會在離開裝置前先用你的通關密語加密，上雲的是一段亂碼，連我們也解不開。</p>' +
+      '<p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#003D7C">我們看得到的（只有統計，沒有你的內容）</p>' +
+      '<p style="margin:0 0 12px;font-size:13px;line-height:1.7;color:#43536B">' +
+        '・卦象、你選的問題類型、時間<br>' +
+        '・有多少人在用、哪些卦較常出現這類整體趨勢<br>' +
+        '這些幫我們把工具做更好，但沒有任何一句你寫的話。</p>' +
+      '<p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#003D7C">關於你的通關密語</p>' +
+      '<p style="margin:0 0 14px;font-size:13px;line-height:1.7;color:#43536B">' +
+        '它只存在你心裡和你的裝置，我們手上沒有副本——這正是「連我們也解不開」的原因。也因此請保存好設定時給你的恢復碼；兩者都遺失，我們也無法幫你救回。</p>' +
+      '<p style="margin:0 0 16px;font-size:13px;line-height:1.7;color:#003D7C;font-weight:600">你可以放心地寫。</p>' +
+      '<div style="display:flex"><button type="button" id="jte-info-ok" style="flex:1;border:none;border-radius:999px;padding:11px;font-size:13.5px;font-weight:600;cursor:pointer;background:#003D7C;color:#fff">好的</button></div>';
+    ov.appendChild(card);
+    _doc.body.appendChild(ov);
+    function close(){ if (ov && ov.parentNode) ov.parentNode.removeChild(ov); }
+    card.querySelector('#jte-info-ok').onclick = close;
+    ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
+  }
+
   function enable(){
     return new Promise(function (resolve, reject){
       _closeModal();
@@ -386,8 +425,12 @@
     isUnlocked: function (){ return !!_loadCachedDek(); },
     lock: function (){ _dek = null; _purgeAllDek(); },
     encryptPrivate: encryptPrivate, decryptPrivate: decryptPrivate,
-    enable: enable, unlock: unlock, changePassphrase: changePassphrase
+    enable: enable, unlock: unlock, changePassphrase: changePassphrase,
+    showInfo: showInfo
   };
+
+  // 既有 inline onclick="window.showPrivacyInfo&&..." 用：開出隱私聲明
+  root.showPrivacyInfo = function(){ root.JtePrivacy.showInfo(); };
 
   // —— 測試／內部鉤子：只有測試旗標開啟時才掛上 global，正式站不存在 ——
   // （測試頁在載入本檔的 <script> 前用 inline script 設 window.__JTE_PRIVACY_TEST = true）

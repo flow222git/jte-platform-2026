@@ -46,6 +46,16 @@ async function run(){
   assert(typeof JtePrivacy === 'object', 'JtePrivacy 應載入');
 
   // 測項於後續 Task 插入此處 —— 標記：TESTS_HERE
+  await check('showInfo() 開出隱私聲明 modal、含關鍵承諾文字', async () => {
+    var m0 = document.getElementById('jte-privacy-info'); if (m0) m0.remove();
+    JtePrivacy.showInfo();
+    const m = document.getElementById('jte-privacy-info');
+    assert(m, 'modal 應存在');
+    assert(/只有你看得到/.test(m.textContent), '含「只有你看得到」');
+    assert(/連我們也解不開|不會上傳/.test(m.textContent), '含加密或本機承諾');
+    assert(typeof window.showPrivacyInfo === 'function', 'window.showPrivacyInfo 已掛');
+    m.remove();
+  });
 
   // === Task 2: 啟用狀態＋Firestore blob 存取 ===
   await check('未啟用使用者 isEnabled()=false', async () => {
