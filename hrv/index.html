@@ -283,9 +283,13 @@ async function startCamera(){
   try{
     const devs=await navigator.mediaDevices.enumerateDevices();
     const cams=devs.filter(function(d){ return d.kind==='videoinput'; });
-    const isBack=function(l){ return /back|rear|environment|後|背/i.test(l||''); };
-    const isMulti=function(l){ return /dual|triple|ultra|wide angle|telephoto|超廣角|望遠|雙鏡|三鏡/i.test(l||''); };
-    let pick=cams.filter(function(d){ return isBack(d.label)&&!isMulti(d.label); })[0];
+    const isBack=function(l){ return /back|rear|environment|後置|後|背/i.test(l||''); };
+    const isVirtual=function(l){ return /dual|triple|雙|三/i.test(l||''); }; // 含「雙/三」＝自動切換的虛擬鏡頭
+    // 1) 純主鏡頭「後置相機 / Back Camera」最優先（單一實體、不自動切換）
+    let pick=cams.filter(function(d){ return /^\s*(後置相機|back camera)\s*$/i.test(d.label||''); })[0];
+    // 2) 否則任一非虛擬的後置單鏡頭（超廣角/望遠）
+    if(!pick) pick=cams.filter(function(d){ return isBack(d.label)&&!isVirtual(d.label); })[0];
+    // 3) 再不然取 label 最短的後置鏡頭
     if(!pick){ const backs=cams.filter(function(d){ return isBack(d.label); }); backs.sort(function(a,b){ return (a.label||'').length-(b.label||'').length; }); pick=backs[0]; }
     if(pick&&pick.deviceId){
       const cur=stream.getVideoTracks()[0];
