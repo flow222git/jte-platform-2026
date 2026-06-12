@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>心率變異 HRV · 練息場</title>
+<meta name="description" content="手指輕貼後鏡頭，約一分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
+<meta property="og:title" content="心率變異 HRV · 練息場">
+<meta property="og:description" content="手指貼鏡頭，一分鐘量身體狀態。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<!-- 登入＋記錄：沿用練息場平台的 Google 登入 + Firebase/Firestore -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
+    --paper:#f4f6fa; --card:#ffffff; --line:#e3e8f0;
+    --accent:#003D7C; --accent-soft:#eaf0f7;
+    --relaxed:#2e8b57; --relaxed-soft:#e6f3ec;
+    --balanced:#b8860b; --balanced-soft:#fbf2dd;
+    --tense:#c2631f; --tense-soft:#fbeede;
+    --green:#2e8b57; --yellow:#c9a227; --red:#c0392b;
+    --radius:16px; --maxw:560px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",sans-serif;
+    font-weight:300;line-height:1.7;letter-spacing:.01em;padding:0 18px env(safe-area-inset-bottom)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:54px 0 130px}
+  header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+  .logo{font-family:"Noto Serif TC",serif;font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--accent)}
+  .sub{font-size:11px;color:var(--ink-faint);letter-spacing:.18em}
+  .tagline{font-size:13px;color:var(--ink-soft);margin:0 0 24px;line-height:1.6}
+  .step{animation:rise .4s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .lead{font-size:14px;color:var(--ink-soft);line-height:1.8;margin:0 0 18px}
+  .home-link{display:inline-block;background:none;border:none;color:var(--ink-faint);font-family:inherit;font-size:13px;cursor:pointer;padding:0 0 12px}
+  .home-link:active{color:var(--accent)}
+
+  .btn{border:none;border-radius:999px;padding:15px;font-family:"Noto Sans TC",sans-serif;font-weight:700;
+    font-size:15.5px;letter-spacing:.04em;cursor:pointer;transition:.18s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:disabled{background:var(--line);color:var(--ink-faint);cursor:not-allowed}
+  .btn-primary:active:not(:disabled){transform:scale(.98)}
+  .btn-ghost{background:none;border:none;color:var(--ink-faint);font-size:14px;cursor:pointer;padding:15px 4px;font-family:inherit}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--paper) 72%,transparent)}
+  .bar-inner{max-width:var(--maxw);margin:0 auto;display:flex;gap:10px;align-items:center}
+  .bar-inner .btn{flex:1}
+  .bar-inner .btn-ghost{flex:none}
+
+  /* —— 說明卡 —— */
+  .guide-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,61,124,.04)}
+  .guide-card h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:15px;margin:0 0 10px;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .guide-list{list-style:none;margin:0;padding:0}
+  .guide-list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.7;color:var(--ink-soft);margin-bottom:9px}
+  .guide-list li:last-child{margin-bottom:0}
+  .guide-list i{color:var(--accent);font-size:18px;flex:none;margin-top:2px}
+
+  /* —— 量測 —— */
+  .cam-stage{position:relative;background:#11151c;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;aspect-ratio:1/1;max-height:42vh;display:flex;align-items:center;justify-content:center}
+  .cam-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
+  .cam-overlay{position:relative;z-index:2;text-align:center;color:#fff;padding:18px}
+  .ring{position:relative;width:120px;height:120px;margin:0 auto 12px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .ring-num .n{font-family:"Noto Serif TC",serif;font-size:34px;font-weight:700;line-height:1}
+  .ring .ring-num .u{font-size:10px;letter-spacing:.1em;opacity:.8;margin-top:2px}
+  .quality{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border-radius:999px;padding:7px 14px;font-size:13px}
+  .qdot{width:11px;height:11px;border-radius:50%;background:var(--red);transition:.3s;box-shadow:0 0 0 0 rgba(255,255,255,.0)}
+  .qdot.green{background:var(--green)} .qdot.yellow{background:var(--yellow)} .qdot.red{background:var(--red)}
+  .hr-live{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px}
+  .hr-live .hb{font-size:18px;color:#ff6b81}
+  .hr-live .v{font-family:"Noto Serif TC",serif;font-size:30px;font-weight:700}
+  .hr-live .u{font-size:12px;opacity:.8}
+  .wave-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 6px;margin-bottom:14px}
+  .wave-card canvas{width:100%;height:70px;display:block}
+  .cam-hint{font-size:13px;color:var(--ink-soft);line-height:1.7;text-align:center;margin:0 0 4px;min-height:2.6em}
+  .cam-hint.warn{color:var(--tense)}
+
+  .err-card{background:var(--tense-soft);border:1px solid var(--tense);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  .err-card h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--tense);margin:0 0 8px}
+  .err-card p{font-size:13.5px;color:var(--ink);line-height:1.75;margin:0}
+
+  .disclaimer{font-size:11.5px;color:var(--ink-faint);text-align:center;margin:18px 0 0;line-height:1.7;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+
+  /* —— 結果頁 —— */
+  .state-card{color:#fff;border-radius:var(--radius);padding:24px 22px;margin-bottom:16px}
+  .state-card.s-relaxed{background:var(--relaxed)} .state-card.s-balanced{background:var(--balanced)} .state-card.s-tense{background:var(--tense)}
+  .state-card .lab{font-size:11.5px;letter-spacing:.18em;opacity:.85;margin-bottom:10px}
+  .state-card .big{font-family:"Noto Serif TC",serif;font-size:38px;font-weight:700;line-height:1.1}
+  .state-card .adv{font-size:14px;line-height:1.8;margin-top:10px;opacity:.97}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+  .panel h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:15px;margin:0 0 10px;color:var(--accent)}
+  .metric-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .metric-row:last-child{border-bottom:none}
+  .metric-row .mt{color:var(--ink-soft)} .metric-row .mt small{color:var(--ink-faint);font-size:11px}
+  .metric-row .mv{font-family:"Noto Serif TC",serif;color:var(--accent);font-weight:500;font-size:16px}
+  details.metrics summary{cursor:pointer;color:var(--accent);font-size:13.5px;padding:6px 0;list-style:none}
+  details.metrics summary::-webkit-details-marker{display:none}
+  details.metrics summary::before{content:'▸ ';}
+  details.metrics[open] summary::before{content:'▾ ';}
+
+  .save-block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;margin-top:18px}
+  .save-title{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px}
+  .save-sub{font-size:12px;color:var(--ink-faint);margin-bottom:12px}
+  .save-actions{display:flex;gap:10px}
+  .save-actions button{flex:1;border-radius:999px;padding:12px;font-size:14px;font-family:inherit;cursor:pointer;border:1px solid var(--line)}
+  .save-skip{background:transparent;color:var(--ink-faint)}
+  .save-do{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
+  .save-actions button:active{transform:scale(.98)}
+  .save-done{font-size:13.5px;color:var(--accent);line-height:1.7}
+  .save-done .save-view{color:var(--accent);text-decoration:underline;cursor:pointer}
+
+  /* —— 趨勢 —— */
+  .trend-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 14px 10px;margin-bottom:16px}
+  .trend-svg{width:100%;height:170px;display:block}
+  .hist-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px}
+  .hist-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .hist-badge{font-size:10.5px;padding:2px 9px;border-radius:999px;font-weight:500;color:#fff}
+  .hist-badge.s-relaxed{background:var(--relaxed)} .hist-badge.s-balanced{background:var(--balanced)} .hist-badge.s-tense{background:var(--tense)}
+  .hist-hr{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:700;color:var(--ink)}
+  .hist-when{margin-left:auto;font-size:11px;color:var(--ink-faint)}
+  .hist-ops{display:flex;gap:14px;margin-top:8px}
+  .hist-ops button{background:none;border:none;font-family:inherit;font-size:12.5px;cursor:pointer;padding:0}
+  .hist-del{color:var(--tense)}
+
+  /* —— Google 登入 modal —— */
+  #jte-login-modal{display:none;position:fixed;inset:0;background:rgba(20,28,40,.45);z-index:9999;align-items:center;justify-content:center;padding:18px}
+  #jte-login-modal .jm-box{background:var(--card);border-radius:20px;padding:26px 22px 24px;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+  #jte-login-modal .jm-title{font-family:"Noto Serif TC",serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  #jte-login-modal .jm-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:18px}
+  #jte-gsi-btn{display:flex;justify-content:center;margin-bottom:12px;min-height:40px}
+  #jte-login-modal .jm-skip{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:10px;font-size:12.5px;color:var(--ink-faint);cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="logo">心率變異 HRV</span><span class="sub">CAMERA PPG</span></header>
+  <p class="tagline">手指貼鏡頭，一分鐘量身體狀態。</p>
+  <div id="app"></div>
+</div>
+<div class="bar" id="bar"></div>
+
+<script>
+/* ============================================================
+   心率變異 HRV（相機 PPG）· 說明 → 量測（即時回饋）→ 結果 → 趨勢
+   訊號處理純邏輯在 hrv-analyze.js（window.HrvAnalyze）
+   記錄走平台 users/{email}/daily linked[]，source:'HRV'，明文一般記錄（不加密）。
+   ============================================================ */
+const app=document.getElementById('app');
+const bar=document.getElementById('bar');
+const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
+const MEASURE_SEC=60;       // 品質轉綠後量測秒數
+const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
+
+const session={ mode:'intro', stream:null, track:null, raf:null,
+  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null };
+
+function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
+function backHomeLink(){
+  const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
+  b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
+  return b;
+}
+// HTML 跳脫（卡片用 innerHTML 組裝時，使用者/雲端資料插入前都要跳脫，防 XSS）
+function _h(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+const DISCLAIMER='本工具以手機相機估算心率與心率變異，為健康與放鬆的參考，'+
+  '受光線、姿勢與裝置影響，並非醫療診斷。若有健康疑慮，請諮詢專業醫療人員。';
+
+/* —— 入口／說明 —— */
+function renderIntro(){
+  session.mode='intro'; stopCamera(); clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend','<p class="lead">用手機後鏡頭量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。<br>需要約一分鐘，找個能坐穩、放鬆的地方。</p>');
+
+  const g=document.createElement('div');g.className='guide-card';
+  g.innerHTML='<h3><i class="ti ti-hand-finger"></i>怎麼量</h3>'+
+    '<ul class="guide-list">'+
+    '<li><i class="ti ti-camera"></i>手指輕輕蓋住手機<b>後鏡頭</b>（含旁邊的閃光燈），不要壓太用力。</li>'+
+    '<li><i class="ti ti-armchair"></i>手與身體保持靜止，正常呼吸，不要說話。</li>'+
+    '<li><i class="ti ti-bulb"></i>iPhone 若無法開閃光燈，請在<b>光線充足</b>的地方量。</li>'+
+    '<li><i class="ti ti-clock-hour-4"></i>畫面品質燈轉綠後，會開始約一分鐘的倒數。</li>'+
+    '</ul>';
+  d.appendChild(g);
+
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  app.appendChild(d);
+
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const start=document.createElement('button');start.className='btn btn-primary';start.textContent='開始量測';
+  start.onclick=function(){ renderMeasure(); };
+  const hist=document.createElement('button');hist.className='btn-ghost';hist.textContent='看趨勢';
+  hist.onclick=function(){ renderTrend(); };
+  inner.appendChild(hist);inner.appendChild(start);
+  bar.appendChild(inner);
+}
+
+/* —— 量測（相機 + 即時回饋）—— */
+let waveCanvas=null, waveCtx=null;
+function renderMeasure(){
+  session.mode='measure'; clearAll();
+  session.samples=[]; session.measuring=false; session.countdownStart=0;
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+
+  d.insertAdjacentHTML('beforeend',
+    '<div class="cam-stage">'+
+      '<video id="cam" playsinline muted autoplay></video>'+
+      '<div class="cam-overlay">'+
+        '<div class="ring">'+
+          '<svg width="120" height="120" viewBox="0 0 120 120">'+
+            '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>'+
+            '<circle id="ringProg" cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>'+
+          '</svg>'+
+          '<div class="ring-num"><span class="n" id="ringSec">60</span><span class="u">秒</span></div>'+
+        '</div>'+
+        '<div class="quality"><span class="qdot red" id="qdot"></span><span id="qlabel">偵測訊號中…</span></div>'+
+        '<div class="hr-live"><span class="hb">♥</span><span class="v" id="hrLive">--</span><span class="u">bpm</span></div>'+
+      '</div>'+
+    '</div>');
+
+  d.insertAdjacentHTML('beforeend','<div class="wave-card"><canvas id="wave"></canvas></div>');
+  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">把手指輕輕蓋住後鏡頭，保持靜止…</p>');
+  d.insertAdjacentHTML('beforeend','<div id="camErr"></div>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  app.appendChild(d);
+
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const cancel=document.createElement('button');cancel.className='btn btn-ghost';cancel.style.flex='1';cancel.textContent='取消';
+  cancel.onclick=function(){ renderIntro(); };
+  inner.appendChild(cancel);
+  bar.appendChild(inner);
+
+  waveCanvas=document.getElementById('wave');
+  if(waveCanvas){
+    const dpr=window.devicePixelRatio||1;
+    waveCanvas.width=Math.round(waveCanvas.clientWidth*dpr)||600;
+    waveCanvas.height=Math.round(70*dpr);
+    waveCtx=waveCanvas.getContext('2d');
+    if(waveCtx)waveCtx.scale(dpr,dpr);
+  }
+  startCamera();
+}
+
+function showCamError(title,msg){
+  const box=document.getElementById('camErr'); if(!box)return;
+  box.innerHTML='<div class="err-card"><h3>'+_h(title)+'</h3><p>'+_h(msg)+'</p></div>';
+  const hint=document.getElementById('camHint'); if(hint)hint.style.display='none';
+}
+
+let _video=null, _grabCanvas=null, _grabCtx=null;
+async function startCamera(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    showCamError('這個裝置不支援相機量測','請改用支援相機的手機瀏覽器（建議 Chrome 或 Safari）再試一次。');
+    return;
+  }
+  let stream;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } } });
+  }catch(e){
+    if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){
+      showCamError('需要相機權限','請允許使用相機才能量測。你可以在網址列或設定中開啟相機權限，再回來重試。');
+    }else if(e&&e.name==='NotFoundError'){
+      showCamError('找不到相機','這個裝置似乎沒有可用的相機。請改用有後鏡頭的手機。');
+    }else{
+      showCamError('無法開啟相機','相機暫時無法使用，請重新整理或換個瀏覽器再試一次。');
+    }
+    return;
+  }
+  session.stream=stream;
+  const track=stream.getVideoTracks()[0];
+  session.track=track;
+  // iPhone：閃光燈（torch）常不支援，applyConstraints 會丟例外 → 吞掉，改用環境光。
+  try{
+    if(track&&track.applyConstraints){
+      await track.applyConstraints({ advanced:[{ torch:true }] });
+    }
+  }catch(e){ /* 無閃光燈，靠環境光；說明已引導到亮的地方 */ }
+
+  _video=document.getElementById('cam');
+  if(!_video){ return; }
+  _video.srcObject=stream;
+  try{ await _video.play(); }catch(e){ /* autoplay 受限時忽略，影格仍可讀 */ }
+
+  _grabCanvas=document.createElement('canvas');
+  _grabCanvas.width=64; _grabCanvas.height=64;
+  _grabCtx=_grabCanvas.getContext('2d',{ willReadFrequently:true });
+  session.lastUi=0;
+  loopGrab();
+}
+
+function loopGrab(){
+  session.raf=requestAnimationFrame(loopGrab);
+  const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
+  if(_video&&_grabCtx&&_video.videoWidth){
+    const vw=_video.videoWidth, vh=_video.videoHeight;
+    const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
+    try{
+      _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
+      // 取中央 ~50x50（7..57）紅光平均值
+      const img=_grabCtx.getImageData(7,7,50,50).data;
+      let r=0; for(let i=0;i<img.length;i+=4) r+=img[i];
+      const redMean=r/(img.length/4);
+      session.samples.push({ t:now, v:redMean });
+      // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
+      if(!session.measuring){
+        const cutoff=now-KEEP_SEC*1000;
+        while(session.samples.length && session.samples[0].t<cutoff) session.samples.shift();
+      }
+    }catch(e){ /* 影格未就緒/跨域，忽略此格 */ }
+  }
+  if(now-session.lastUi>=500){ session.lastUi=now; updateLiveUi(now); }
+}
+
+function recentSamples(now,sec){
+  const cutoff=now-sec*1000, out=[];
+  for(let i=session.samples.length-1;i>=0;i--){
+    if(session.samples[i].t<cutoff)break;
+    out.push(session.samples[i]);
+  }
+  out.reverse(); return out;
+}
+
+function updateLiveUi(now){
+  if(!window.HrvAnalyze)return;
+  const recent=recentSamples(now, KEEP_SEC);
+  drawWave(recent);
+  const q=HrvAnalyze.signalQuality(recent);
+  const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
+  if(dot){ dot.className='qdot '+q; }
+  if(ql){ ql.textContent = q==='green'?'訊號良好':(q==='yellow'?'訊號普通，盡量別動':'請調整手指與光線'); }
+  // 即時心率
+  const beats=HrvAnalyze.detectBeats(recent);
+  const rr=HrvAnalyze.rrFromBeats(beats);
+  const m=HrvAnalyze.metricsFromRr(rr);
+  const hrEl=document.getElementById('hrLive');
+  if(hrEl) hrEl.textContent = (m.hr>=30&&m.hr<=220) ? String(Math.round(m.hr)) : '--';
+
+  const hint=document.getElementById('camHint');
+  // 品質轉 green 才開始倒數
+  if(q==='green' && !session.measuring){
+    session.measuring=true; session.countdownStart=now; session.samples=[];
+    if(hint){ hint.className='cam-hint'; hint.textContent='開始量測，保持靜止，正常呼吸…'; }
+  }
+  if(session.measuring){
+    const elapsed=(now-session.countdownStart)/1000;
+    const remain=Math.max(0, MEASURE_SEC-elapsed);
+    const secEl=document.getElementById('ringSec'); if(secEl)secEl.textContent=String(Math.ceil(remain));
+    const prog=document.getElementById('ringProg');
+    if(prog){ const C=2*Math.PI*52; prog.setAttribute('stroke-dashoffset', String(C*(1-Math.min(1,elapsed/MEASURE_SEC)))); }
+    if(q==='red'){
+      // 中途轉紅：提示調整（不重置倒數，避免一直歸零）
+      if(hint){ hint.className='cam-hint warn'; hint.textContent='訊號變差了，手指別移開、放輕鬆…'; }
+    }else if(hint && hint.classList.contains('warn')){
+      hint.className='cam-hint'; hint.textContent='很好，保持住…';
+    }
+    if(remain<=0){ finishMeasure(); }
+  }else{
+    if(hint && !hint.classList.contains('warn')){
+      hint.textContent = q==='red' ? '把手指輕蓋後鏡頭、保持靜止…' : '快好了，穩住，等品質燈轉綠…';
+    }
+  }
+}
+
+function drawWave(samples){
+  if(!waveCtx||!waveCanvas)return;
+  const w=waveCanvas.clientWidth||600, h=70;
+  waveCtx.clearRect(0,0,w,h);
+  if(samples.length<2)return;
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<samples.length;i++){ const v=samples[i].v; if(v<mn)mn=v; if(v>mx)mx=v; }
+  const range=(mx-mn)||1;
+  waveCtx.beginPath();
+  waveCtx.lineWidth=2; waveCtx.strokeStyle='#003D7C'; waveCtx.lineJoin='round';
+  for(let i=0;i<samples.length;i++){
+    const x=w*i/(samples.length-1);
+    const y=h-6 - (samples[i].v-mn)/range*(h-12);
+    if(i===0)waveCtx.moveTo(x,y); else waveCtx.lineTo(x,y);
+  }
+  waveCtx.stroke();
+}
+
+function finishMeasure(){
+  const collected=session.samples.slice();
+  stopCamera();
+  session.mode='result';
+  renderResult(collected);
+}
+
+function stopCamera(){
+  if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
+  if(session.track){ try{ session.track.applyConstraints({ advanced:[{ torch:false }] }); }catch(e){} }
+  if(session.stream){ try{ session.stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} session.stream=null; }
+  session.track=null; _video=null; _grabCtx=null; _grabCanvas=null; session.measuring=false;
+}
+
+/* —— 結果頁（Task 4 填入）—— */
+function renderResult(samples){
+  clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend','<p class="lead">量測完成（結果與儲存將於下一步加入）。樣本數：'+Number(samples.length)+'</p>');
+  app.appendChild(d);
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+  again.onclick=function(){ renderMeasure(); };
+  inner.appendChild(again);
+  bar.appendChild(inner);
+}
+
+/* —— 趨勢頁（Task 4 填入）—— */
+function renderTrend(){
+  session.mode='trend'; stopCamera(); clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend','<p class="lead">趨勢頁將於下一步加入。</p>');
+  app.appendChild(d);
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const home=document.createElement('button');home.className='btn btn-primary';home.textContent='回開始';
+  home.onclick=function(){ renderIntro(); };
+  inner.appendChild(home);
+  bar.appendChild(inner);
+}
+
+window.addEventListener('pagehide',stopCamera);
+window.addEventListener('beforeunload',stopCamera);
+
+/* ============================================================
+   平台記錄 helper（HRV 走「一般記錄」明文，不加密；localStorage + Firestore）
+   ============================================================ */
+var _db=null;
+function initFirebase(){
+  if(typeof firebase==='undefined'){setTimeout(initFirebase,200);return;}
+  try{
+    if(firebase.apps.length===0){
+      firebase.initializeApp({
+        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+        authDomain:"jointoenjoy.firebaseapp.com",
+        projectId:"jointoenjoy",
+        storageBucket:"jointoenjoy.firebasestorage.app",
+        messagingSenderId:"978242729427",
+        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+      });
+    }
+    _db=firebase.firestore();
+  }catch(e){console.warn('Firebase init failed',e);}
+}
+window.addEventListener('load',initFirebase);
+
+function jteEmail(){return localStorage.getItem('jte_user_email')||'';}
+function jteKey(){const e=jteEmail();return e?'jte_daily_'+e.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';}
+function jteTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function jteAll(){try{return JSON.parse(localStorage.getItem(jteKey())||'{}')}catch(e){return{}}}
+function jteFsSave(dateKey,day){
+  const e=jteEmail();if(!_db||!e)return;
+  // HRV 為一般記錄、明文直接上雲（不加密）。
+  _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').doc(dateKey).set(day,{merge:true})
+    .catch(function(err){console.warn('Firestore write failed',err);});
+}
+function jteWriteRecord(rec){
+  const k=jteKey(),today=jteTodayKey(),all=jteAll();
+  const day=all[today]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
+  if(!day.linked)day.linked=[];
+  day.linked.push(rec);day.updatedAt=new Date().toISOString();
+  all[today]=day;localStorage.setItem(k,JSON.stringify(all));
+  jteFsSave(today,day);
+}
+function _flattenHrv(all){var out=[];Object.keys(all).forEach(function(dk){(all[dk].linked||[]).forEach(function(l){if(l.source==='HRV')out.push(l);});});out.sort(function(a,b){return (a.ts||'').localeCompare(b.ts||'');});return out;}
+function jteFsLoadDays(){
+  const e=jteEmail();if(!_db||!e)return Promise.resolve({});
+  return _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').get()
+   .then(function(snap){var days={};snap.forEach(function(doc){days[doc.id]=doc.data();});return days;})
+   .catch(function(){return {};});
+}
+/* 把雲端 daily 的 HRV 記錄併回本機（依 recordId 去重）、hydrate localStorage，回傳攤平清單（時間正序） */
+function jteListRecordsMerged(){
+  const localAll=jteAll();
+  return jteFsLoadDays().then(function(cloudDays){
+    const merged=Object.assign({},localAll);
+    Object.keys(cloudDays).forEach(function(dk){
+      const cloudDay=cloudDays[dk]||{};
+      const base=merged[dk]?Object.assign({},merged[dk]):Object.assign({},cloudDay);
+      const seen={}; const linked=[];
+      (merged[dk]&&merged[dk].linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id)seen[id]=1; linked.push(r); });
+      (cloudDay.linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id&&!seen[id]){ seen[id]=1; linked.push(r); } else if(!id){ linked.push(r); } });
+      base.linked=linked; merged[dk]=base;
+    });
+    try{localStorage.setItem(jteKey(),JSON.stringify(merged));}catch(e){}
+    return _flattenHrv(merged);
+  });
+}
+function jteDeleteRecord(id){
+  const k=jteKey(),all=jteAll();let touched=null;
+  Object.keys(all).forEach(function(dk){
+    if(!all[dk].linked)return;
+    const before=all[dk].linked.length;
+    all[dk].linked=all[dk].linked.filter(function(l){return l.id!==id;});
+    if(all[dk].linked.length!==before)touched=dk;
+  });
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
+}
+
+/* —— Google 登入（惰性）—— */
+var _jtePendingSave=null,_jteGoogleReady=false;
+var JTE_CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+function _jteHandleCredential(resp){
+  var p=JSON.parse(atob(resp.credential.split('.')[1]));
+  localStorage.setItem('jte_user_email',p.email);
+  localStorage.setItem('jte_user_name',p.name||p.email);
+  localStorage.setItem('jte_user_picture',p.picture||'');
+  if(window.google&&google.accounts)google.accounts.id.disableAutoSelect();
+  var m=document.getElementById('jte-login-modal');if(m)m.style.display='none';
+  if(window.jteUserbarRefresh)window.jteUserbarRefresh();
+  if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
+function _jteInitGoogle(){
+  if(_jteGoogleReady)return;_jteGoogleReady=true;
+  google.accounts.id.initialize({client_id:JTE_CLIENT_ID,ux_mode:'popup',callback:_jteHandleCredential});
+}
+var _jteGsiTimer=setInterval(function(){
+  if(window.google&&google.accounts){clearInterval(_jteGsiTimer);_jteInitGoogle();}
+},300);
+function jteCheckLoginThenSave(saveFn){
+  if(jteEmail()){saveFn();return;}
+  _jtePendingSave=saveFn;
+  var modal=document.getElementById('jte-login-modal');modal.style.display='flex';
+  var t=setInterval(function(){
+    if(_jteGoogleReady&&window.google){
+      clearInterval(t);
+      var btn=document.getElementById('jte-gsi-btn');
+      if(btn&&!btn.hasChildNodes())
+        google.accounts.id.renderButton(btn,{theme:'outline',size:'large',width:280,text:'signin_with',locale:'zh-TW'});
+    }
+  },100);
+}
+function jteCloseLogin(){var m=document.getElementById('jte-login-modal');if(m)m.style.display='none';_jtePendingSave=null;}
+window.jteLogin=function(){jteCheckLoginThenSave(function(){location.reload();});};
+window.jteLogout=function(){localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');if(window.google&&google.accounts)try{google.accounts.id.disableAutoSelect();}catch(e){}location.reload();};
+
+/* —— 啟動 —— */
+renderIntro();
+</script>
+
+<!-- 訊號處理純模組 -->
+<script defer src="hrv-analyze.js"></script>
+
+<!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
+
+<!-- Google 登入 modal（按「存這次」未登入時跳出）-->
+<div id="jte-login-modal">
+  <div class="jm-box">
+    <div class="jm-title">登入以儲存這次</div>
+    <div class="jm-desc">用 Google 登入，這次的量測結果會存進你的帳號，並同步到練息場平台的記錄。</div>
+    <div id="jte-gsi-btn"></div>
+    <button class="jm-skip" onclick="jteCloseLogin()">先不要</button>
+  </div>
+</div>
+</body>
+</html>
