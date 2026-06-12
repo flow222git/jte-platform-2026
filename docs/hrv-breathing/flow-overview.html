@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRV-breathing 整體流程</title>
+<style>
+:root{
+  --white:#FFFFFF;--gray-bg:#F5F5F7;--ink:#1D1D1F;--ink-2:#6E6E73;--ink-3:#86868B;
+  --border:#D2D2D7;--blue:#0071E3;--blue-hover:#0077ED;
+  --font:-apple-system,"SF Pro Text","PingFang TC","Helvetica Neue",sans-serif;
+  --radius:18px;--shadow:0 2px 12px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--ink);font-family:var(--font);line-height:1.6;
+  padding:48px 24px 80px;max-width:1080px;margin:0 auto}
+.eyebrow{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+h1{font-size:40px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px}
+.lead{font-size:19px;color:var(--ink-2);max-width:680px;margin-bottom:48px}
+.flow{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.step{flex:1;min-width:180px;background:var(--gray-bg);border-radius:var(--radius);padding:26px 22px;position:relative}
+.step .n{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:50%;background:var(--blue);color:#fff;font-size:14px;font-weight:700;margin-bottom:14px}
+.step h3{font-size:19px;font-weight:600;margin-bottom:8px}
+.step p{font-size:14px;color:var(--ink-2)}
+.arrow{align-self:center;color:var(--border);font-size:24px;font-weight:300}
+.loopnote{display:inline-flex;align-items:center;gap:8px;background:#EAF4FF;color:var(--blue);
+  font-size:14px;font-weight:500;padding:10px 18px;border-radius:980px;margin-bottom:48px}
+.values{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 12px}
+.v{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px}
+.v .vt{font-size:15px;font-weight:600;margin-bottom:4px}
+.v .vs{font-size:13px;color:var(--ink-3)}
+.section{margin-bottom:40px}
+.section .label{font-size:13px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.q{background:var(--gray-bg);border-radius:var(--radius);padding:32px;margin-top:24px}
+.q h2{font-size:24px;font-weight:700;margin-bottom:6px}
+.q .sub{color:var(--ink-2);font-size:15px;margin-bottom:22px}
+.options{display:flex;flex-direction:column;gap:12px}
+.option{display:flex;gap:16px;align-items:flex-start;background:var(--white);border:1.5px solid var(--border);
+  border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .15s}
+.option:hover{border-color:var(--blue)}
+.option.selected{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.15)}
+.option .letter{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--ink-2);flex-shrink:0}
+.option.selected .letter{background:var(--blue);color:#fff;border-color:var(--blue)}
+.option h4{font-size:16px;font-weight:600;margin-bottom:3px}
+.option p{font-size:14px;color:var(--ink-2)}
+@media(max-width:720px){.values{grid-template-columns:repeat(2,1fr)}h1{font-size:32px}.arrow{display:none}}
+</style>
+</head>
+<body>
+  <div class="eyebrow">HRV-breathing ｜ 整體流程草案</div>
+  <h1>用手指蓋鏡頭量 HRV，<br>然後馬上練呼吸降壓</h1>
+  <p class="lead">這是我想像的完整動線。先確認大方向對不對，細節（準確度、數值、BSRS）我們後面一關一關談。</p>
+
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h3>放上手指</h3><p>食指輕蓋後鏡頭＋閃光燈，看著動畫穩住不動。</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">2</div><h3>量測 60–120 秒</h3><p>鏡頭讀指尖血流（PPG），即時顯示心跳與訊號品質。</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">3</div><h3>看懂報告</h3><p>四個重點值＋一句白話結論，對照常模知道高低。</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">4</div><h3>練諧振呼吸</h3><p>一鍵進入每分鐘 6 次呼吸，跟著節奏 3–5 分鐘。</p></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">5</div><h3>再量一次</h3><p>看數值有沒有變好，建立「降壓有效」的體感。</p></div>
+  </div>
+  <div class="loopnote">⟳ 也可加一份 BSRS 心理壓力小測，跟身體數據對照「身心是否同步」</div>
+
+  <div class="section">
+    <div class="label">報告會解釋的四個重點值（沿用本專案 HRV 指標）</div>
+    <div class="values">
+      <div class="v"><div class="vt">壓力指數</div><div class="vs">交感神經負荷，越低越好</div></div>
+      <div class="v"><div class="vt">活力指數</div><div class="vs">整體能量／HRV 總量</div></div>
+      <div class="v"><div class="vt">情緒彈性</div><div class="vs">自律神經調節彈性</div></div>
+      <div class="v"><div class="vt">放鬆指數</div><div class="vs">副交感／放鬆煞車強度</div></div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h2>這個整體流程，符合你要的嗎？</h2>
+    <p class="sub">點一個最接近的，其他想調整的直接打字告訴我。</p>
+    <div class="options">
+      <div class="option" data-choice="a" onclick="toggleSelect(this)">
+        <div class="letter">A</div>
+        <div><h4>對，就是這個動線</h4><p>量 → 報告 → 呼吸 →（可選）再量，方向正確。</p></div>
+      </div>
+      <div class="option" data-choice="b" onclick="toggleSelect(this)">
+        <div class="letter">B</div>
+        <div><h4>大致對，但有地方想改</h4><p>例如步驟順序、要不要「再量一次」、BSRS 放哪裡。</p></div>
+      </div>
+      <div class="option" data-choice="c" onclick="toggleSelect(this)">
+        <div class="letter">C</div>
+        <div><h4>跟我想的不太一樣</h4><p>我心裡的流程其實是另一種，我說給你聽。</p></div>
+      </div>
+    </div>
+  </div>
+<script>function toggleSelect(el){el.classList.toggle("selected");}</script>
+</body>
+</html>
