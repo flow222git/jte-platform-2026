@@ -45,5 +45,50 @@
     }
   }
 
-  root.HrvFreq = { resampleRr:resampleRr, fft:fft, _mean:mean, _clamp:clamp };
+  // 去均值＋Hanning 窗＋補零至 2 次方→FFT→週期圖→頻帶積分。回 {lf,hf,total,lfhf}
+  function bandPowers(series, fs){
+    fs = fs||4;
+    var n0=(series||[]).length;
+    if (n0 < 16) return { lf:0, hf:0, total:0, lfhf:0 };
+    var m=mean(series), x=new Array(n0);
+    for (var i=0;i<n0;i++) x[i]=series[i]-m;
+    var winSq=0, re=[], im=[];
+    for (i=0;i<n0;i++){ var w=0.5-0.5*Math.cos(2*Math.PI*i/(n0-1)); winSq+=w*w; re.push(x[i]*w); im.push(0); }
+    var N=1; while(N<n0) N<<=1;
+    while(re.length<N){ re.push(0); im.push(0); }
+    fft(re, im);
+    var df=fs/N, norm=1/(fs*winSq), lf=0, hf=0, total=0;
+    for (var k=1;k<N/2;k++){
+      var p=(re[k]*re[k]+im[k]*im[k])*norm, f=k*df;
+      if (f>=0.0033 && f<0.40) total+=p*df;
+      if (f>=0.04   && f<0.15) lf+=p*df;
+      if (f>=0.15   && f<0.40) hf+=p*df;
+    }
+    return { lf:lf, hf:hf, total:total, lfhf: hf>0 ? lf/hf : 0 };
+  }
+
+  function scoreLog(x, lo, hi){ if(x<=0) return 0; return clamp(100*(Math.log(x)-Math.log(lo))/(Math.log(hi)-Math.log(lo)), 0, 100); }
+  function scoreLin(x, lo, hi){ return clamp(100*(x-lo)/(hi-lo), 0, 100); }
+  function lvl(s){ return s>=67?'high':(s>=34?'mid':'low'); }
+  var LBL={high:'高',mid:'中',low:'低'};
+  // 四指數的白話建議（依面向＋高低）
+  var ADV={
+    relax:{high:'副交感活躍，身體偏休息放鬆。',mid:'放鬆程度中等。',low:'放鬆訊號偏低，給自己一點喘息。'},
+    stress:{high:'交感偏主導，壓力訊號較明顯，留意休息。',mid:'壓力張力中等。',low:'壓力訊號低，狀態平穩。'},
+    vitality:{high:'整體自律神經活性高，活力充沛。',mid:'活力中等。',low:'整體活性偏低，可能累了或需要休息。'},
+    flexibility:{high:'心率變化豐富，自律調節有彈性。',mid:'調節彈性中等。',low:'變化偏小，彈性較低。'}
+  };
+  function mk(face, score){ var l=lvl(score); return { score:Math.round(score), level:l, label:LBL[l], advice:ADV[face][l] }; }
+  // 參考範圍＝相對校準的合理估值（非臨床常模）；hfnu/lfhf 為尺度無關較穩健
+  function indices(bp, td){
+    bp=bp||{}; td=td||{};
+    var hfnu = (bp.lf+bp.hf)>0 ? bp.hf/(bp.lf+bp.hf) : 0;        // 副交感占比 0~1
+    var relax = mk('relax', hfnu*100);
+    var stress = mk('stress', scoreLin(bp.lfhf||0, 0.5, 4));
+    var vitality = mk('vitality', scoreLog(bp.total||0, 100, 8000));
+    var flexibility = mk('flexibility', scoreLog(td.sdnn||0, 10, 120));
+    return { relax:relax, stress:stress, vitality:vitality, flexibility:flexibility };
+  }
+
+  root.HrvFreq = { resampleRr:resampleRr, fft:fft, bandPowers:bandPowers, indices:indices, _mean:mean, _clamp:clamp };
 })(typeof window !== 'undefined' ? window : this);
