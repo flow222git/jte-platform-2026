@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心情溫度計 · 練息場</title>
+<meta name="description" content="一分鐘，看看最近一星期的情緒溫度。BSRS 心情量表自我篩檢，結果只屬於你。">
+<meta property="og:title" content="心情溫度計 · 練息場">
+<meta property="og:description" content="一分鐘，看看最近的情緒。篩檢參考，非診斷。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  :root{
+    --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
+    --paper:#f4f6fa; --card:#ffffff; --line:#e3e8f0;
+    --accent:#003D7C; --accent-soft:#eaf0f7;
+    --good:#2e8b57; --good-soft:#e6f3ec;
+    --mild:#b8860b; --mild-soft:#fbf2dd;
+    --mod:#c2631f; --mod-soft:#fbeede;
+    --severe:#c0392b; --severe-soft:#fbe8e6;
+    --crisis:#c0392b; --crisis-soft:#fdeef0;
+    --radius:16px; --maxw:560px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",sans-serif;
+    font-weight:300;line-height:1.7;letter-spacing:.01em;padding:0 18px env(safe-area-inset-bottom)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:54px 0 130px}
+  header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+  .logo{font-family:"Noto Serif TC",serif;font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--accent)}
+  .sub{font-size:11px;color:var(--ink-faint);letter-spacing:.18em}
+  .tagline{font-size:13px;color:var(--ink-soft);margin:0 0 24px;line-height:1.6}
+  .progress{display:flex;gap:6px;margin-bottom:24px}
+  .progress i{flex:1;height:3px;border-radius:3px;background:var(--line);transition:.4s}
+  .progress i.on{background:var(--accent)}
+  .step{animation:rise .4s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .lead{font-size:14px;color:var(--ink-soft);line-height:1.8;margin:0 0 18px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px 12px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,61,124,.04)}
+  .qhead{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+  .qnum{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:700;color:var(--accent);flex:none}
+  .qtext{font-size:15.5px;color:var(--ink);font-weight:400;line-height:1.5}
+  .qbadge{display:inline-block;font-size:10.5px;color:var(--severe);background:var(--severe-soft);border-radius:999px;padding:2px 8px;margin-left:6px;font-weight:500;vertical-align:middle}
+  .opts{display:flex;gap:6px}
+  .opt{flex:1;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:11px;
+    padding:9px 4px;text-align:center;font-size:11.5px;color:var(--ink-soft);font-family:inherit;font-weight:300;transition:.15s;line-height:1.3}
+  .opt .on{display:block;font-family:"Noto Serif TC",serif;font-size:15px;color:var(--ink-faint);margin-bottom:2px;font-weight:700}
+  .opt:active{transform:scale(.97)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .opt.sel .on{color:var(--accent)}
+  .bar{position:fixed;left:0;right:0;bottom:0;padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--paper) 72%,transparent)}
+  .bar-inner{max-width:var(--maxw);margin:0 auto;display:flex;gap:10px;align-items:center}
+  .btn{flex:1;border:none;border-radius:999px;padding:15px;font-family:"Noto Sans TC",sans-serif;font-weight:700;
+    font-size:15.5px;letter-spacing:.04em;cursor:pointer;transition:.18s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:disabled{background:var(--line);color:var(--ink-faint);cursor:not-allowed}
+  .btn-primary:active:not(:disabled){transform:scale(.98)}
+  .btn-ghost{flex:none;background:none;border:none;color:var(--ink-faint);font-size:14px;cursor:pointer;padding:15px 4px;font-family:inherit}
+  .home-link{display:inline-block;background:none;border:none;color:var(--ink-faint);font-family:inherit;font-size:13px;cursor:pointer;padding:0 0 12px}
+  .home-link:active{color:var(--accent)}
+
+  /* —— 結果頁 —— */
+  .crisis-card{background:var(--crisis-soft);border:1.5px solid var(--crisis);border-radius:var(--radius);padding:18px 18px;margin-bottom:18px}
+  .crisis-card .ct{display:flex;align-items:center;gap:8px;font-family:"Noto Sans TC",sans-serif;font-weight:700;font-size:16px;color:var(--crisis);margin-bottom:8px}
+  .crisis-card p{margin:0 0 12px;font-size:14px;line-height:1.8;color:var(--ink)}
+  .crisis-res{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .crisis-res li{font-size:14px;line-height:1.5;color:var(--ink)}
+  .crisis-res a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--crisis);
+    background:#fff;border:1px solid var(--crisis);border-radius:12px;padding:10px 14px;font-weight:500}
+  .crisis-res a .num{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:700}
+  .crisis-res a .nm{font-size:13px;color:var(--ink-soft);font-weight:300}
+
+  .score-card{color:#fff;border-radius:var(--radius);padding:24px 22px;margin-bottom:16px;position:relative;overflow:hidden}
+  .score-card.b-good{background:var(--good)} .score-card.b-mild{background:var(--mild)}
+  .score-card.b-moderate{background:var(--mod)} .score-card.b-severe{background:var(--severe)}
+  .score-card .lab{font-size:11.5px;letter-spacing:.18em;opacity:.85;margin-bottom:10px}
+  .score-card .big{display:flex;align-items:baseline;gap:6px}
+  .score-card .num{font-family:"Noto Serif TC",serif;font-size:54px;font-weight:700;line-height:1}
+  .score-card .max{font-size:15px;opacity:.8}
+  .score-card .lvl{font-family:"Noto Serif TC",serif;font-size:21px;font-weight:700;margin-top:12px}
+  .score-card .adv{font-size:14px;line-height:1.8;margin-top:8px;opacity:.97}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+  .panel h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:15px;margin:0 0 10px;color:var(--accent)}
+  .panel p{margin:0;font-size:13.5px;line-height:1.75;color:var(--ink-soft)}
+  .ans-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .ans-row:last-child{border-bottom:none}
+  .ans-row .at{color:var(--ink-soft);flex:1;padding-right:10px}
+  .ans-row .av{flex:none;font-family:"Noto Serif TC",serif;color:var(--accent);font-weight:500}
+  .ans-row.supp .av{color:var(--severe)}
+
+  .disclaimer{font-size:11.5px;color:var(--ink-faint);text-align:center;margin:18px 0 0;line-height:1.7;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="logo">心情溫度計</span><span class="sub">BSRS</span></header>
+  <p class="tagline">一分鐘，看看最近一星期的情緒溫度。</p>
+  <div class="progress" id="progress"></div>
+  <div id="app"></div>
+</div>
+<div class="bar" id="bar"></div>
+
+<script>
+/* ============================================================
+   心情溫度計 BSRS · 作答 → 計分分級 → 危機把關
+   純邏輯（計分/分級/危機）在 bsrs-score.js（window.BsrsScore）
+   ============================================================ */
+const app=document.getElementById('app');
+const bar=document.getElementById('bar');
+const progressEl=document.getElementById('progress');
+const state={ mode:'intro', answers:[null,null,null,null,null,null] };
+
+// HTML 跳脫：所有插入 innerHTML 的使用者/資料內容都要跳脫，防 XSS（比照 ven-i 的 _h）。
+function _h(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function clearAll(){ app.innerHTML=''; bar.innerHTML=''; progressEl.innerHTML=''; }
+function backHomeLink(){
+  const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
+  b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
+  return b;
+}
+
+/* —— 入口 —— */
+function renderIntro(){
+  state.mode='intro';clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend',
+    '<p class="lead">最近一星期（包括今天），這些問題讓你感到困擾或苦惱嗎？<br>誠實回答，只需要一分鐘。你寫的只有你看得到。</p>');
+  const start=document.createElement('button');start.className='btn btn-primary';start.style.width='100%';start.textContent='開始作答';
+  start.onclick=renderQuiz;
+  d.appendChild(start);
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer" style="margin-top:24px">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
+  app.appendChild(d);
+}
+
+/* —— 作答 —— */
+function renderQuiz(){
+  state.mode='quiz';clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-bottom:14px"><b style="color:var(--ink)">最近一星期（包括今天）</b>，這些問題讓你感到困擾或苦惱的程度？</p>');
+  const Q=BsrsScore.QUESTIONS, OPTS=BsrsScore.OPTIONS;
+  Q.forEach(function(q,qi){
+    const card=document.createElement('div');card.className='qcard';
+    const badge=q.supplementary?'<span class="qbadge">附加題 · 不計入總分</span>':'';
+    let opthtml='';
+    OPTS.forEach(function(o,oi){
+      const sel=state.answers[qi]===oi?' sel':'';
+      opthtml+='<button class="opt'+sel+'" data-q="'+qi+'" data-o="'+oi+'"><span class="on">'+oi+'</span>'+_h(o)+'</button>';
+    });
+    card.innerHTML='<div class="qhead"><span class="qnum">'+(qi+1)+'.</span><span class="qtext">'+_h(q.text)+badge+'</span></div><div class="opts">'+opthtml+'</div>';
+    card.querySelectorAll('.opt').forEach(function(btn){
+      btn.onclick=function(){
+        const qq=Number(btn.dataset.q),oo=Number(btn.dataset.o);
+        state.answers[qq]=oo;
+        card.querySelectorAll('.opt').forEach(function(b){b.classList.remove('sel');});
+        btn.classList.add('sel');
+        updateQuizBar();
+      };
+    });
+    d.appendChild(card);
+  });
+  app.appendChild(d);
+  updateQuizBar();
+}
+function updateQuizBar(){
+  const done=state.answers.every(function(a){return a!==null;});
+  bar.innerHTML='';
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const go=document.createElement('button');go.className='btn btn-primary';go.textContent=done?'看結果':'請完成所有題目';go.disabled=!done;
+  go.onclick=function(){if(done)renderResult();};
+  inner.appendChild(go);
+  bar.appendChild(inner);
+}
+
+/* —— 結果 + 危機把關 + 免責 —— */
+const CRISIS_RESOURCES=[
+  {num:'1925',nm:'安心專線（24 小時免付費）',tel:'1925'},
+  {num:'1995',nm:'生命線協談專線',tel:'1995'},
+  {num:'1980',nm:'張老師專線',tel:'1980'}
+];
+function renderResult(){
+  state.mode='result';
+  const r=BsrsScore.score(state.answers);
+  state.lastResult=r;
+  clearAll();
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+
+  // 危機把關：最上方明顯（非折疊）
+  if(r.crisis){
+    const c=document.createElement('div');c.className='crisis-card';
+    let resHtml='';
+    CRISIS_RESOURCES.forEach(function(x){
+      resHtml+='<li><a href="tel:'+x.tel+'"><span class="num">'+x.num+'</span><span class="nm">'+_h(x.nm)+'</span></a></li>';
+    });
+    c.innerHTML='<div class="ct"><i class="ti ti-heart-handshake"></i>你並不孤單，現在就可以找人說</div>'+
+      '<p>你的回答顯示，最近這段時間可能很不好受。這些感受值得被認真對待——請讓專業的人陪你一起面對，不用一個人撐。</p>'+
+      '<ul class="crisis-res">'+resHtml+
+      '<li><a href="tel:119"><span class="num">119 / 110</span><span class="nm">若有立即危險，請立刻撥打</span></a></li></ul>';
+    d.appendChild(c);
+  }
+
+  const sc=document.createElement('div');sc.className='score-card b-'+r.level;
+  sc.innerHTML='<div class="lab">最近一星期的情緒困擾分數</div>'+
+    '<div class="big"><span class="num">'+r.total+'</span><span class="max">／ 20</span></div>'+
+    '<div class="lvl">'+_h(r.levelLabel)+'</div>'+
+    '<div class="adv">'+_h(r.advice)+'</div>';
+  d.appendChild(sc);
+
+  // 附加題提醒（item6 ≥1 但未到 crisis 門檻時，也溫和提示）
+  if(r.item6>=1 && !r.crisis){
+    const note=document.createElement('div');note.className='panel';
+    note.style.borderColor='var(--severe)';
+    note.innerHTML='<h3 style="color:var(--severe)">關於第 6 題</h3><p>你在「自殺的想法」這題有些勾選。即使分數不高，這份感受也值得被好好照顧。若這些念頭讓你困擾，隨時可以撥打安心專線 <b>1925</b>，有人願意聽你說。</p>';
+    d.appendChild(note);
+  }
+
+  // 各題作答回顧
+  const detail=document.createElement('div');detail.className='panel';
+  let rows='<h3>你的作答</h3>';
+  BsrsScore.QUESTIONS.forEach(function(q,qi){
+    const v=state.answers[qi];
+    rows+='<div class="ans-row'+(q.supplementary?' supp':'')+'"><span class="at">'+(qi+1)+'. '+_h(q.text)+'</span><span class="av">'+_h(BsrsScore.OPTIONS[v]||'')+'</span></div>';
+  });
+  detail.innerHTML=rows;
+  d.appendChild(detail);
+
+  // 免責常駐
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
+
+  app.appendChild(d);
+
+  // 動作列
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再測一次';
+  again.onclick=function(){state.answers=[null,null,null,null,null,null];renderQuiz();};
+  inner.appendChild(again);
+  bar.appendChild(inner);
+}
+
+/* —— 啟動 —— */
+renderIntro();
+window.testCrisis=function(){state.answers=[3,3,3,3,3,2];renderResult();};
+</script>
+
+<!-- BSRS 計分核心 -->
+<script defer src="bsrs-score.js"></script>
+</body>
+</html>
