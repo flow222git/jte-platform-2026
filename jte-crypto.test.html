@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>jte-crypto tests</title></head>
+<body>
+<pre id="out">running...</pre>
+<script src="jte-crypto.js"></script>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+async function run(){
+  assert(typeof crypto !== 'undefined' && crypto.subtle, 'WebCrypto unavailable (need secure context)');
+  // 測項於後續 Task 插入此處 —— 標記：TESTS_HERE
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+}
+run();
+</script>
+</body></html>
