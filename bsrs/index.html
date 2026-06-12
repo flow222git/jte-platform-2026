@@ -12,6 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<!-- 登入＋記錄：沿用練息場平台的 Google 登入 + Firebase/Firestore -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
@@ -95,6 +99,46 @@
 
   .disclaimer{font-size:11.5px;color:var(--ink-faint);text-align:center;margin:18px 0 0;line-height:1.7;
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+
+  /* —— 保存區 —— */
+  .save-block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;margin-top:18px}
+  .save-title{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px}
+  .save-sub{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-faint);margin-bottom:12px}
+  .save-actions{display:flex;gap:10px}
+  .save-actions button{flex:1;border-radius:999px;padding:12px;font-size:14px;font-family:inherit;cursor:pointer;border:1px solid var(--line)}
+  .save-skip{background:transparent;color:var(--ink-faint)}
+  .save-do{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
+  .save-actions button:active{transform:scale(.98)}
+  .save-done{font-size:13.5px;color:var(--accent);line-height:1.7}
+  .save-done .save-view{color:var(--accent);text-decoration:underline;cursor:pointer}
+
+  /* —— 趨勢頁 —— */
+  .priv-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+  .priv-btn{background:var(--accent-soft);color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:12.5px;cursor:pointer}
+  .priv-btn:hover{background:var(--accent);color:#fff}
+  .priv-link{font-size:12px;color:var(--accent);text-decoration:none;cursor:pointer}
+  .priv-ok{font-size:12.5px;color:var(--ink-soft)}
+  .trend-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 14px 10px;margin-bottom:16px}
+  .trend-svg{width:100%;height:160px;display:block}
+  .hist-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px}
+  .hist-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .hist-badge{font-size:10.5px;padding:2px 9px;border-radius:999px;font-weight:500;color:#fff}
+  .hist-badge.b-good{background:var(--good)} .hist-badge.b-mild{background:var(--mild)}
+  .hist-badge.b-moderate{background:var(--mod)} .hist-badge.b-severe{background:var(--severe)}
+  .hist-score{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:700;color:var(--ink)}
+  .hist-when{margin-left:auto;font-size:11px;color:var(--ink-faint)}
+  .hist-crisis{font-size:11px;color:var(--severe);margin-top:4px}
+  .hist-ops{display:flex;gap:14px;margin-top:8px}
+  .hist-ops button{background:none;border:none;font-family:inherit;font-size:12.5px;cursor:pointer;padding:0}
+  .hist-del{color:var(--severe)}
+
+  /* —— Google 登入 modal —— */
+  #jte-login-modal{display:none;position:fixed;inset:0;background:rgba(20,28,40,.45);z-index:9999;align-items:center;justify-content:center;padding:18px}
+  #jte-login-modal .jm-box{background:var(--card);border-radius:20px;padding:26px 22px 24px;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+  #jte-login-modal .jm-title{font-family:"Noto Serif TC",serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  #jte-login-modal .jm-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-bottom:18px}
+  #jte-gsi-btn{display:flex;justify-content:center;margin-bottom:12px;min-height:40px}
+  #jte-login-modal .jm-skip{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:10px;font-size:12.5px;color:var(--ink-faint);cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -108,26 +152,29 @@
 
 <script>
 /* ============================================================
-   心情溫度計 BSRS · 作答 → 計分分級 → 危機把關
-   純邏輯（計分/分級/危機）在 bsrs-score.js（window.BsrsScore）
+   心情溫度計 BSRS · 作答 → 計分分級 → 危機把關 → 趨勢
+   純邏輯（計分/分級/危機/記錄分層）在 bsrs-score.js（window.BsrsScore）
    ============================================================ */
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const progressEl=document.getElementById('progress');
 const state={ mode:'intro', answers:[null,null,null,null,null,null] };
 
-// HTML 跳脫：所有插入 innerHTML 的使用者/資料內容都要跳脫，防 XSS（比照 ven-i 的 _h）。
-function _h(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function clearAll(){ app.innerHTML=''; bar.innerHTML=''; progressEl.innerHTML=''; }
+function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
 function backHomeLink(){
   const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
   b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
   return b;
 }
+function setProgress(on,total){
+  progressEl.innerHTML='';
+  for(let i=0;i<total;i++){const s=document.createElement('i');if(i<on)s.className='on';progressEl.appendChild(s);}
+}
 
 /* —— 入口 —— */
 function renderIntro(){
-  state.mode='intro';clearAll();
+  state.mode='intro';
+  clearAll();setProgress(0,1);progressEl.innerHTML='';
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   d.insertAdjacentHTML('beforeend',
@@ -135,13 +182,17 @@ function renderIntro(){
   const start=document.createElement('button');start.className='btn btn-primary';start.style.width='100%';start.textContent='開始作答';
   start.onclick=renderQuiz;
   d.appendChild(start);
+  const hist=document.createElement('button');hist.className='home-link';hist.style.cssText='display:block;margin:16px auto 0;text-align:center;width:100%';hist.textContent='看我的情緒趨勢 →';
+  hist.onclick=function(){renderTrend();};
+  d.appendChild(hist);
   d.insertAdjacentHTML('beforeend','<p class="disclaimer" style="margin-top:24px">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
   app.appendChild(d);
 }
 
 /* —— 作答 —— */
 function renderQuiz(){
-  state.mode='quiz';clearAll();
+  state.mode='quiz';
+  clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-bottom:14px"><b style="color:var(--ink)">最近一星期（包括今天）</b>，這些問題讓你感到困擾或苦惱的程度？</p>');
@@ -167,6 +218,7 @@ function renderQuiz(){
     d.appendChild(card);
   });
   app.appendChild(d);
+  setProgress(0,1);progressEl.innerHTML='';
   updateQuizBar();
 }
 function updateQuizBar(){
@@ -189,7 +241,7 @@ function renderResult(){
   state.mode='result';
   const r=BsrsScore.score(state.answers);
   state.lastResult=r;
-  clearAll();
+  clearAll();bar.innerHTML='';progressEl.innerHTML='';
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
 
@@ -235,14 +287,281 @@ function renderResult(){
   // 免責常駐
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
 
+  // 保存區
+  appendSaveBlock(d,r);
+
   app.appendChild(d);
 
   // 動作列
   const inner=document.createElement('div');inner.className='bar-inner';
   const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再測一次';
   again.onclick=function(){state.answers=[null,null,null,null,null,null];renderQuiz();};
-  inner.appendChild(again);
+  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
+  trend.onclick=function(){renderTrend();};
+  inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
+}
+
+/* —— 保存區 —— */
+function appendSaveBlock(container,r){
+  const wrap=document.createElement('div');wrap.className='save-block';
+  wrap.innerHTML='<div class="save-title">把這次的溫度記下來嗎？</div>'+
+    '<div class="save-sub"><span>🔒</span><span>只有你看得到，連我們也解不開</span></div>'+
+    '<div class="save-actions"><button class="save-skip">這次不存</button><button class="save-do">存這次</button></div>'+
+    '<div class="save-done" style="display:none">已存到你的記錄 ✓　<a class="save-view">看我的情緒趨勢 →</a></div>';
+  wrap.querySelector('.save-do').onclick=function(){
+    jteCheckLoginThenSave(function(){
+      const _id='bs-'+Date.now();
+      const rec={ id:_id, recordId:_id, source:'BSRS', ts:new Date().toISOString(),
+        score:r.total, level:r.level, answers:state.answers.slice(), item6:r.item6 };
+      jteWriteRecord(rec);
+      wrap.querySelector('.save-title').style.display='none';
+      wrap.querySelector('.save-sub').style.display='none';
+      wrap.querySelector('.save-actions').style.display='none';
+      wrap.querySelector('.save-done').style.display='block';
+    });
+  };
+  wrap.querySelector('.save-skip').onclick=function(){
+    wrap.querySelector('.save-sub').style.display='none';
+    wrap.querySelector('.save-actions').style.display='none';
+    wrap.querySelector('.save-title').textContent='好，這次先不存。';
+  };
+  wrap.querySelector('.save-view').onclick=function(){renderTrend();};
+  container.appendChild(wrap);
+}
+
+/* ============================================================
+   平台記錄 helper（比照 ven-i：localStorage + Firestore，fail-closed）
+   ============================================================ */
+var _db=null;
+function initFirebase(){
+  if(typeof firebase==='undefined'){setTimeout(initFirebase,200);return;}
+  try{
+    if(firebase.apps.length===0){
+      firebase.initializeApp({
+        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+        authDomain:"jointoenjoy.firebaseapp.com",
+        projectId:"jointoenjoy",
+        storageBucket:"jointoenjoy.firebasestorage.app",
+        messagingSenderId:"978242729427",
+        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+      });
+    }
+    _db=firebase.firestore();
+  }catch(e){console.warn('Firebase init failed',e);}
+}
+window.addEventListener('load',initFirebase);
+
+function jteEmail(){return localStorage.getItem('jte_user_email')||'';}
+function jteKey(){const e=jteEmail();return e?'jte_daily_'+e.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';}
+function jteTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function jteAll(){try{return JSON.parse(localStorage.getItem(jteKey())||'{}')}catch(e){return{}}}
+// fail-closed 脫敏：BsrsScore 模組載入失敗時，本地去掉私密欄位再上傳（絕不上傳明文分數/作答）。
+// 私密欄位清單須與 bsrs-score.js 的 PRIVATE_FIELDS 同步：['score','level','answers','item6']。
+function _bsrsStripPrivate(r){var P=['score','level','answers','item6'];var o={};Object.keys(r).forEach(function(k){if(P.indexOf(k)===-1)o[k]=r[k];});return o;}
+function jteFsSave(dateKey,day){
+  const e=jteEmail();if(!_db||!e)return;
+  const linked=day.linked||[];
+  Promise.all(linked.map(function(r){return (window.BsrsScore&&window.BsrsScore.toCloudRec)?window.BsrsScore.toCloudRec(r):Promise.resolve(_bsrsStripPrivate(r));}))
+   .then(function(cloudLinked){
+     const cloudDay=Object.assign({},day,{linked:cloudLinked});
+     return _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').doc(dateKey).set(cloudDay,{merge:true});
+   }).catch(function(err){console.warn('Firestore write failed',err);});
+}
+function jteWriteRecord(rec){
+  const k=jteKey(),today=jteTodayKey(),all=jteAll();
+  const day=all[today]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
+  if(!day.linked)day.linked=[];
+  day.linked.push(rec);day.updatedAt=new Date().toISOString();
+  all[today]=day;localStorage.setItem(k,JSON.stringify(all));
+  jteFsSave(today,day);
+}
+function _flattenBsrs(all){var out=[];Object.keys(all).forEach(function(dk){(all[dk].linked||[]).forEach(function(l){if(l.source==='BSRS')out.push(l);});});out.sort(function(a,b){return (a.ts||'').localeCompare(b.ts||'');});return out;}
+function jteFsLoadDays(){
+  const e=jteEmail();if(!_db||!e)return Promise.resolve({});
+  return _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').get()
+   .then(function(snap){var days={};snap.forEach(function(doc){days[doc.id]=doc.data();});return days;})
+   .catch(function(){return {};});
+}
+/* async：把雲端 daily 併回本機、hydrate localStorage，回傳攤平清單（時間正序） */
+function jteListRecordsMerged(){
+  const localAll=jteAll();
+  if(!window.BsrsScore||!window.BsrsScore.mergeCloud)return Promise.resolve(_flattenBsrs(localAll));
+  return jteFsLoadDays().then(function(cloudDays){
+    return window.BsrsScore.mergeCloud(localAll,cloudDays);
+  }).then(function(mergedAll){
+    try{localStorage.setItem(jteKey(),JSON.stringify(mergedAll));}catch(e){}
+    return _flattenBsrs(mergedAll);
+  });
+}
+function jteDeleteRecord(id){
+  const k=jteKey(),all=jteAll();let touched=null;
+  Object.keys(all).forEach(function(dk){
+    if(!all[dk].linked)return;
+    const before=all[dk].linked.length;
+    all[dk].linked=all[dk].linked.filter(function(l){return l.id!==id;});
+    if(all[dk].linked.length!==before)touched=dk;
+  });
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
+}
+
+/* —— Google 登入（惰性）—— */
+var _jtePendingSave=null,_jteGoogleReady=false;
+var JTE_CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+function _jteHandleCredential(resp){
+  var p=JSON.parse(atob(resp.credential.split('.')[1]));
+  localStorage.setItem('jte_user_email',p.email);
+  localStorage.setItem('jte_user_name',p.name||p.email);
+  localStorage.setItem('jte_user_picture',p.picture||'');
+  if(window.google&&google.accounts)google.accounts.id.disableAutoSelect();
+  var m=document.getElementById('jte-login-modal');if(m)m.style.display='none';
+  if(window.jteUserbarRefresh)window.jteUserbarRefresh();
+  if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
+}
+function _jteInitGoogle(){
+  if(_jteGoogleReady)return;_jteGoogleReady=true;
+  google.accounts.id.initialize({client_id:JTE_CLIENT_ID,ux_mode:'popup',callback:_jteHandleCredential});
+}
+var _jteGsiTimer=setInterval(function(){
+  if(window.google&&google.accounts){clearInterval(_jteGsiTimer);_jteInitGoogle();}
+},300);
+function jteCheckLoginThenSave(saveFn){
+  if(jteEmail()){saveFn();return;}
+  _jtePendingSave=saveFn;
+  var modal=document.getElementById('jte-login-modal');modal.style.display='flex';
+  var t=setInterval(function(){
+    if(_jteGoogleReady&&window.google){
+      clearInterval(t);
+      var btn=document.getElementById('jte-gsi-btn');
+      if(btn&&!btn.hasChildNodes())
+        google.accounts.id.renderButton(btn,{theme:'outline',size:'large',width:280,text:'signin_with',locale:'zh-TW'});
+    }
+  },100);
+}
+function jteCloseLogin(){var m=document.getElementById('jte-login-modal');if(m)m.style.display='none';_jtePendingSave=null;}
+window.jteLogin=function(){jteCheckLoginThenSave(function(){location.reload();});};
+window.jteLogout=function(){localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');if(window.google&&google.accounts)try{google.accounts.id.disableAutoSelect();}catch(e){}location.reload();};
+
+/* ============================================================
+   趨勢頁
+   ============================================================ */
+// HTML 跳脫：歷史/趨勢卡片用 innerHTML 組裝，使用者資料與雲端解密內容插入前都要跳脫，防 XSS（比照 ven-i 的 _h）。
+function _h(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var _bsrsRenderToken=0;
+function renderTrend(){
+  state.mode='trend';
+  var my=++_bsrsRenderToken;
+  clearAll();bar.innerHTML='';progressEl.innerHTML='';
+  const d=document.createElement('div');d.className='step';
+  d.appendChild(backHomeLink());
+  d.insertAdjacentHTML('beforeend','<h2 style="font-family:\'Noto Serif TC\',serif;font-weight:700;font-size:20px;color:var(--accent);margin:4px 0 14px">我的情緒趨勢</h2>');
+  // 動作列：回去再測
+  const inner=document.createElement('div');inner.className='bar-inner';
+  const test=document.createElement('button');test.className='btn btn-primary';test.textContent='做一次測驗';
+  test.onclick=function(){state.answers=[null,null,null,null,null,null];renderQuiz();};
+  inner.appendChild(test);bar.appendChild(inner);
+
+  if(!jteEmail()){
+    d.insertAdjacentHTML('beforeend','<p class="lead">登入後，你存過的每次心情溫度都會在這裡，看得到自己的變化。</p>');
+    const btn=document.createElement('button');btn.className='btn btn-primary';btn.style.width='100%';btn.textContent='登入查看';
+    btn.onclick=function(){jteCheckLoginThenSave(function(){renderTrend();});};
+    d.appendChild(btn);
+    // 本機若有記錄也顯示
+    const localList=_flattenBsrs(jteAll());
+    if(localList.length){d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-top:18px">這個裝置上的記錄：</p>');_renderTrendBody(localList,d);}
+    app.appendChild(d);return;
+  }
+  const pbar=document.createElement('div');pbar.className='priv-bar';
+  d.appendChild(pbar);
+  _renderPrivacyBar(pbar);
+  const loading=document.createElement('p');loading.className='lead';loading.textContent='載入中…';
+  d.appendChild(loading);
+  app.appendChild(d);
+  jteListRecordsMerged().then(function(list){
+    if(my!==_bsrsRenderToken)return;
+    if(loading&&loading.parentNode)loading.parentNode.removeChild(loading);
+    _renderTrendBody(list,d);
+  });
+}
+function _renderPrivacyBar(box){
+  if(!window.JtePrivacy){box.innerHTML='';return;}
+  box.innerHTML='<span class="priv-ok" style="color:var(--ink-faint)">私密同步：檢查中…</span>';
+  Promise.resolve(JtePrivacy.isEnabled()).then(function(enabled){
+    if(!enabled){
+      box.innerHTML='<button class="priv-btn">🔒 開啟跨裝置加密同步</button> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+      box.querySelector('.priv-btn').onclick=function(){JtePrivacy.enable().then(function(){renderTrend();}).catch(function(){});};
+      _bindLearn(box);
+      return;
+    }
+    if(!JtePrivacy.isUnlocked()){
+      box.innerHTML='<button class="priv-btn">🔓 解鎖</button> <a href="#" class="priv-link priv-change">換密語</a> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+      box.querySelector('.priv-btn').onclick=function(){JtePrivacy.unlock().then(function(){renderTrend();}).catch(function(){});};
+      box.querySelector('.priv-change').onclick=function(ev){ev.preventDefault();JtePrivacy.changePassphrase().then(function(){renderTrend();}).catch(function(){});};
+      _bindLearn(box);
+      return;
+    }
+    box.innerHTML='<span class="priv-ok">✓ 已加密同步</span> <a href="#" class="priv-link priv-lock">鎖定</a> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+    box.querySelector('.priv-lock').onclick=function(ev){ev.preventDefault();JtePrivacy.lock();renderTrend();};
+    _bindLearn(box);
+  }).catch(function(){box.innerHTML='';});
+}
+function _bindLearn(box){
+  var el=box.querySelector('.priv-learn');
+  if(el)el.onclick=function(ev){ev.preventDefault();if(window.showPrivacyInfo)showPrivacyInfo();};
+}
+const LEVEL_BADGE={good:'良好',mild:'輕度',moderate:'中度',severe:'重度'};
+function _renderTrendBody(list,d){
+  if(!list||!list.length){
+    d.insertAdjacentHTML('beforeend','<p class="lead">還沒有記錄。做一次測驗，把這一刻的溫度存下來吧。</p>');
+    return;
+  }
+  // 折線圖（總分 0-20 over time）
+  d.appendChild(_buildTrendSvg(list));
+  // 卡片（最新在上）
+  const sorted=list.slice().sort(function(a,b){return (b.ts||'').localeCompare(a.ts||'');});
+  sorted.forEach(function(l){
+    const card=document.createElement('div');card.className='hist-card';
+    const lvl=(l.level||'').toString();
+    const when=(l.ts||'').slice(0,16).replace('T',' ');
+    const sc=(l.score!=null)?l.score:'—';
+    const badgeLbl=LEVEL_BADGE[lvl]||'';
+    const i6=Number(l.item6||0);
+    const crisisFlag=( (Number(l.score)||0)>=15 || i6>=2 );
+    card.innerHTML='<div class="hist-head"><span class="hist-badge b-'+_h(lvl)+'">'+_h(badgeLbl)+'</span>'+
+      '<span class="hist-score">'+_h(String(sc))+' / 20</span>'+
+      '<span class="hist-when">'+_h(when)+'</span></div>'+
+      (crisisFlag?'<div class="hist-crisis">⚠ 這次達到需要關注的程度。安心專線 1925 隨時都在。</div>':'')+
+      '<div class="hist-ops"><button class="hist-del">刪除</button></div>';
+    card.querySelector('.hist-del').onclick=function(){if(confirm('確定刪除這筆記錄？')){jteDeleteRecord(l.id);renderTrend();}};
+    d.appendChild(card);
+  });
+}
+function _buildTrendSvg(listAsc){
+  // listAsc 已時間正序
+  const wrap=document.createElement('div');wrap.className='trend-wrap';
+  const W=520,H=160,padL=28,padR=14,padT=14,padB=22;
+  const pts=listAsc.filter(function(l){return l.score!=null;}).map(function(l){return Number(l.score)||0;});
+  if(pts.length===0){wrap.innerHTML='<p class="lead" style="margin:0">尚無可繪製的分數（解鎖後可看見私密分數）。</p>';return wrap;}
+  const n=pts.length;
+  const innerW=W-padL-padR, innerH=H-padT-padB;
+  function x(i){return padL + (n===1?innerW/2:innerW*i/(n-1));}
+  function y(v){return padT + innerH*(1 - v/20);}
+  let grid='';
+  [0,5,10,15,20].forEach(function(g){
+    const gy=y(g);
+    grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e3e8f0" stroke-width="1"/>'+
+      '<text x="'+(padL-6)+'" y="'+(gy+3)+'" font-size="9" fill="#8a93a3" text-anchor="end">'+g+'</text>';
+  });
+  let path='';
+  pts.forEach(function(v,i){path+=(i===0?'M':'L')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';});
+  let dots='';
+  pts.forEach(function(v,i){
+    const col=v<=5?'#2e8b57':v<=9?'#b8860b':v<=14?'#c2631f':'#c0392b';
+    dots+='<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3.5" fill="'+col+'"/>';
+  });
+  wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    grid+'<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+  return wrap;
 }
 
 /* —— 啟動 —— */
@@ -250,7 +569,22 @@ renderIntro();
 window.testCrisis=function(){state.answers=[3,3,3,3,3,2];renderResult();};
 </script>
 
-<!-- BSRS 計分核心 -->
+<!-- 隱私/加密共用模組（Plan 1/2）＋ BSRS 記錄分層 -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-crypto.js"></script>
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-privacy.js"></script>
 <script defer src="bsrs-score.js"></script>
+
+<!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
+
+<!-- Google 登入 modal（按「存這次」未登入時跳出）-->
+<div id="jte-login-modal">
+  <div class="jm-box">
+    <div class="jm-title">登入以儲存這次</div>
+    <div class="jm-desc">用 Google 登入，這次的心情溫度會存進你的帳號，並同步到練息場平台的記錄。</div>
+    <div id="jte-gsi-btn"></div>
+    <button class="jm-skip" onclick="jteCloseLogin()">先不要</button>
+  </div>
+</div>
 </body>
 </html>
