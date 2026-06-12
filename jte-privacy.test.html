@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><title>jte-privacy tests</title>
 <script src="jte-crypto.js"></script>
+<script>window.__JTE_PRIVACY_TEST = true;</script>
 <script src="jte-privacy.js"></script>
 </head>
 <body>
@@ -141,12 +142,30 @@ async function run(){
     const modal = document.getElementById('jte-privacy-modal');
     assert(modal, 'modal 應存在');
     assert(modal.querySelector('input[type=password]'), '應有密語輸入');
-    // 模擬填入並送出：用 modal 暴露的測試鉤子完成
+    // 模擬填入並送出：用 modal 暴露的測試鉤子完成（兩步：送出密語→確認已存恢復碼）
     assert(typeof JtePrivacy._modalSubmitEnable === 'function', '應提供測試送出鉤子');
-    await JtePrivacy._modalSubmitEnable('pw-via-modal', 'pw-via-modal');
-    const rec = await p;                          // enable() resolve（恢復碼已在 modal 顯示）
+    assert(typeof JtePrivacy._modalConfirmRecoverySaved === 'function', '應提供恢復碼確認鉤子');
+    await JtePrivacy._modalSubmitEnable('pw-via-modal', 'pw-via-modal');  // 第一步：顯示恢復碼畫面
+    assert(document.getElementById('jte-rec'), '應顯示恢復碼閘門畫面');
+    assert(document.getElementById('jte-privacy-modal'), '恢復碼確認前 modal 仍開著');
+    await JtePrivacy._modalConfirmRecoverySaved();                        // 第二步：勾「我已保存」＋完成
+    const rec = await p;                          // enable() resolve（恢復碼閘門已通過）
     eq(JtePrivacy.isUnlocked(), true, '啟用後解鎖');
     assert(!document.getElementById('jte-privacy-modal'), 'modal 完成後關閉');
+  });
+  await check('恢復碼閘門：未經 _modalConfirmRecoverySaved 不會 resolve（無繞過路徑）', async () => {
+    freshPrivacy(null); clearDekStores();
+    let resolved = false;
+    const p = JtePrivacy.enable();
+    p.then(() => { resolved = true; });
+    await new Promise(r => setTimeout(r, 30));
+    await JtePrivacy._modalSubmitEnable('pw-gate-8', 'pw-gate-8');  // 只送密語，未確認恢復碼
+    await new Promise(r => setTimeout(r, 30));
+    eq(resolved, false, '只送密語不應 resolve（閘門擋住）');
+    assert(document.getElementById('jte-rec'), '恢復碼畫面仍在');
+    await JtePrivacy._modalConfirmRecoverySaved();              // 通過閘門才完成
+    await p;
+    eq(resolved, true, '確認後才 resolve');
   });
   await check('unlock() 經 modal 鉤子輸入正確密語→解鎖', async () => {
     const s = await JteCrypto.setup('pw-u'); freshPrivacy(s.blob); clearDekStores();
@@ -155,6 +174,59 @@ async function run(){
     await JtePrivacy._modalSubmitUnlock('pw-u', false);
     await p;
     eq(JtePrivacy.isUnlocked(), true, '解鎖');
+  });
+
+  // === I2: 切帳號/登出殘留 DEK ===
+  await check('lock() 掃除所有 jte_dek_* 含其他帳號（防跨帳號殘留）', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('pw', true);
+    // 模擬另一帳號殘留在兩種 storage
+    sessionStorage.setItem('jte_dek_other@x.com', 'AAAA');
+    localStorage.setItem('jte_dek_other@x.com', 'AAAA');
+    JtePrivacy.lock();
+    eq(sessionStorage.getItem(DEKKEY), null, '當前帳號 session DEK 清掉');
+    eq(localStorage.getItem(DEKKEY), null, '當前帳號 local DEK 清掉');
+    eq(sessionStorage.getItem('jte_dek_other@x.com'), null, '其他帳號 session DEK 也清掉');
+    eq(localStorage.getItem('jte_dek_other@x.com'), null, '其他帳號 local DEK 也清掉');
+    eq(JtePrivacy.isUnlocked(), false, 'lock 後鎖定');
+  });
+
+  // === I3: changePassphrase 覆蓋 ===
+  await check('核心路徑：_doChange 換新密語→舊密語失效、新密語可解鎖', async () => {
+    const db = freshPrivacy(null); clearDekStores();
+    await JtePrivacy._doEnable('orig-pw');          // 啟用即解鎖
+    await JtePrivacy._doChange('changed-pw');        // 換新密語
+    JtePrivacy.lock(); clearDekStores();
+    let oldThrew = false;
+    try { await JtePrivacy._doUnlock('orig-pw', false); } catch(e){ oldThrew = true; }
+    assert(oldThrew, '舊密語應失效');
+    eq(JtePrivacy.isUnlocked(), false, '舊密語未解鎖');
+    await JtePrivacy._doUnlock('changed-pw', false);
+    eq(JtePrivacy.isUnlocked(), true, '新密語可解鎖');
+  });
+  await check('modal 路徑：changePassphrase() 經 _modalSubmitChange 完成', async () => {
+    const s = await JteCrypto.setup('start-pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('start-pw', false);   // 先解鎖→changePassphrase 直接進換密語 modal
+    assert(typeof JtePrivacy._modalSubmitChange === 'function', '應提供換密語送出鉤子');
+    const p = JtePrivacy.changePassphrase();
+    await new Promise(r => setTimeout(r, 50));
+    assert(document.getElementById('jte-ch-p1'), '應顯示換密語 modal');
+    await JtePrivacy._modalSubmitChange('newer-pw', 'newer-pw');
+    await p;
+    assert(!document.getElementById('jte-privacy-modal'), 'modal 完成後關閉');
+    JtePrivacy.lock(); clearDekStores();
+    await JtePrivacy._doUnlock('newer-pw', false);
+    eq(JtePrivacy.isUnlocked(), true, '新密語可解鎖');
+  });
+
+  // === C1 驗證：測試鉤子只在旗標開啟時掛上（正式站不存在）===
+  await check('C1：測試旗標已開→底線鉤子存在；公開 API 永遠在', async () => {
+    eq(window.__JTE_PRIVACY_TEST, true, '測試頁旗標應為 true');
+    eq(typeof JtePrivacy._setBackend, 'function', '旗標開→_setBackend 存在');
+    eq(typeof JtePrivacy._doChange, 'function', '旗標開→_doChange 存在');
+    // 公開 API 無條件導出
+    ['isEnabled','isUnlocked','enable','unlock','changePassphrase','lock','encryptPrivate','decryptPrivate']
+      .forEach(k => eq(typeof JtePrivacy[k], 'function', '公開 API ' + k + ' 應存在'));
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);

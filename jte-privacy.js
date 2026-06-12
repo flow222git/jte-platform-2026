@@ -37,7 +37,18 @@
   function _ub64(str){ var bin=atob(str), u=new Uint8Array(bin.length); for (var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
   function _cacheDek(dek, remember){
     _dek = dek; var k=_dekKey(), v=_b64(dek);
-    try { root.sessionStorage.setItem(k, v); if (remember) root.localStorage.setItem(k, v); } catch(e){}
+    try { root.sessionStorage.setItem(k, v); if (remember) root.localStorage.setItem(k, v); }
+    catch(e){ try { root.console && root.console.warn('jte-privacy: 無法寫入 DEK 快取（storage 失敗）'); } catch(e2){} }
+  }
+  // 掃除所有 jte_dek_ 開頭的快取 key（防跨帳號殘留）
+  function _purgeAllDek(){
+    [root.sessionStorage, root.localStorage].forEach(function (st){
+      try {
+        var rm = [];
+        for (var i = 0; i < st.length; i++){ var k = st.key(i); if (k && k.indexOf('jte_dek_') === 0) rm.push(k); }
+        rm.forEach(function (k){ st.removeItem(k); });
+      } catch(e){}
+    });
   }
   function _loadCachedDek(){
     if (_dek) return _dek;
@@ -105,6 +116,7 @@
   // ===================================================================
   var _doc = root.document;
   var _modalEl = null, _modalResolve = null, _modalReject = null;
+  var _recoveryConfirm = null; // 恢復碼畫面顯示後，等同使用者按「完成」的動作（測試鉤子用）
 
   function injectStyles(){
     if (!_doc || _doc.getElementById('jte-privacy-style')) return;
@@ -140,7 +152,7 @@
 
   function _closeModal(){
     if (_modalEl && _modalEl.parentNode) _modalEl.parentNode.removeChild(_modalEl);
-    _modalEl = null; _modalResolve = null; _modalReject = null;
+    _modalEl = null; _modalResolve = null; _modalReject = null; _recoveryConfirm = null;
   }
   function _openOverlay(){
     injectStyles();
@@ -164,7 +176,7 @@
     if (res) res(val);
   }
 
-  function _esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function _esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
   function _downloadRecovery(code){
     try {
@@ -194,7 +206,14 @@
     var cb = card.querySelector('#jte-rec-saved');
     dl.onclick = function(){ _downloadRecovery(code); };
     cb.onchange = function(){ ok.disabled = !cb.checked; };
-    ok.onclick = function(){ onDone(); };
+    ok.onclick = function(){ if (!cb.checked) return; onDone(); };
+    // 測試鉤子用：等同使用者勾「我已保存」＋按「完成」。
+    // 仍走真實閘門：先勾選 checkbox（解除 disabled），再走 onclick 路徑（含 cb.checked 判斷）。
+    _recoveryConfirm = function(){
+      cb.checked = true; ok.disabled = false; // 等同使用者勾選
+      ok.onclick();                            // 走與真人相同的完成路徑（含閘門判斷）
+      return Promise.resolve(true);
+    };
   }
 
   // —— enable() ——
@@ -231,12 +250,11 @@
       return recoveryCode;
     }).catch(function (e){ if (err) err.textContent = '啟用失敗，請再試一次'; throw e; });
   }
-  // 測試鉤子用：跑完 _submitEnable 的密語階段後，直接完成恢復碼確認階段並 resolve（等同人手勾「我已保存」按「完成」）。
-  function _submitEnableFull(p1, p2){
-    return _submitEnable(p1, p2).then(function (recoveryCode){
-      _resolveWith(true);
-      return recoveryCode;
-    });
+  // 測試鉤子用：等同使用者在恢復碼畫面勾「我已保存」＋按「完成」。
+  // 走真實閘門：未顯示恢復碼畫面或未勾選 → reject，程式中不存在任何繞過閘門的捷徑。
+  function _confirmRecoverySaved(){
+    if (typeof _recoveryConfirm !== 'function') return Promise.reject(new Error('no-recovery-screen'));
+    return _recoveryConfirm();
   }
 
   // —— unlock() ＋ 忘記密語→恢復 ——
@@ -362,18 +380,34 @@
     });
   }
 
+  // —— 公開 API（無條件導出，正式站使用）——
   root.JtePrivacy = {
-    _setBackend: function (b){ _backend = b; },
-    _reset: function (){ _backend = null; _dek = null; _closeModal(); },
     isEnabled: function (){ return loadBlob().then(function (x){ return !!x; }); },
     isUnlocked: function (){ return !!_loadCachedDek(); },
-    lock: function (){ _dek = null; try { root.sessionStorage.removeItem(_dekKey()); root.localStorage.removeItem(_dekKey()); } catch(e){} },
+    lock: function (){ _dek = null; _purgeAllDek(); },
     encryptPrivate: encryptPrivate, decryptPrivate: decryptPrivate,
-    enable: enable, unlock: unlock, changePassphrase: changePassphrase,
-    _doEnable: _doEnable, _doUnlock: _doUnlock, _doRecover: _doRecover, _doChange: _doChange,
-    // 測試鉤子：等同使用者在 modal 內按送出
-    _modalSubmitEnable: function (p1, p2){ return _submitEnableFull(p1, p2); },
-    _modalSubmitUnlock: function (pw, remember){ return _submitUnlock(pw, remember); },
-    _modalSubmitRecover: function (code, p1, p2){ return _submitRecover(code, p1, p2); }
+    enable: enable, unlock: unlock, changePassphrase: changePassphrase
   };
+
+  // —— 測試／內部鉤子：只有測試旗標開啟時才掛上 global，正式站不存在 ——
+  // （測試頁在載入本檔的 <script> 前用 inline script 設 window.__JTE_PRIVACY_TEST = true）
+  if (root.__JTE_PRIVACY_TEST === true){
+    root.JtePrivacy._setBackend = function (b){ _backend = b; };
+    root.JtePrivacy._reset = function (){ _backend = null; _dek = null; _closeModal(); };
+    root.JtePrivacy._doEnable = _doEnable;
+    root.JtePrivacy._doUnlock = _doUnlock;
+    root.JtePrivacy._doRecover = _doRecover;
+    root.JtePrivacy._doChange = _doChange;
+    // modal 測試鉤子：等同使用者在 modal 內按送出
+    root.JtePrivacy._modalSubmitEnable = function (p1, p2){ return _submitEnable(p1, p2); };
+    root.JtePrivacy._modalConfirmRecoverySaved = function (){ return _confirmRecoverySaved(); };
+    root.JtePrivacy._modalSubmitUnlock = function (pw, remember){ return _submitUnlock(pw, remember); };
+    root.JtePrivacy._modalSubmitRecover = function (code, p1, p2){ return _submitRecover(code, p1, p2); };
+    root.JtePrivacy._modalSubmitChange = function (p1, p2){ return _submitChange(p1, p2); };
+  }
+
+  // —— 模組載入時：若已登出（無 jte_user_email），掃除所有殘留 DEK 快取 ——
+  try {
+    if (!(root.localStorage.getItem('jte_user_email') || '').trim()) _purgeAllDek();
+  } catch(e){}
 })(typeof window !== 'undefined' ? window : this);
