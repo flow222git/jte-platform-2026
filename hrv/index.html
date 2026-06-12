@@ -339,19 +339,23 @@ function updateDebug(recent, beats, rr, q){
   let el=document.getElementById('hrvDbg');
   if(!el){
     el=document.createElement('div'); el.id='hrvDbg';
-    el.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;background:rgba(0,0,0,.82);color:#0f0;font:13px/1.45 monospace;padding:7px 9px;border-radius:7px;white-space:pre;pointer-events:none';
+    el.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;background:rgba(0,0,0,.82);color:#0f0;font:13px/1.45 monospace;padding:7px 9px;border-radius:7px;white-space:pre;pointer-events:auto;cursor:pointer';
+    el.onclick=function(){ try{ navigator.clipboard.writeText(JSON.stringify(session._dbgRecent||[])); el.style.color='#ff0'; setTimeout(function(){el.style.color='#0f0';},700); }catch(e){} };
     document.body.appendChild(el);
   }
+  session._dbgRecent = recent;
   let rmn=Infinity,rmx=-Infinity,gmn=Infinity,gmx=-Infinity;
   for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
   const d=session.lastDiag||{R:0,G:0,sat:0};
   const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
-  let per=0; try{ const pr=HrvAnalyze._prep(recent); if(pr) per=HrvAnalyze._periodicity(pr.ac, pr.fs); }catch(e){}
+  let per=0, fs=0, acn=0; try{ const pr=HrvAnalyze._prep(recent); if(pr){ per=HrvAnalyze._periodicity(pr.ac, pr.fs); fs=pr.fs; acn=pr.ac.length; } }catch(e){}
   const mm=HrvAnalyze.metricsFromRr(rr);
   el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
+    '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
-    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nsamples '+recent.length;
+    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nsamples '+recent.length+
+    '\n(點我複製原始資料)';
 }
 
 function updateLiveUi(now){
