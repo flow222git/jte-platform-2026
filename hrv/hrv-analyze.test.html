@@ -17,6 +17,14 @@ async function check(name, fn){
   catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
 }
 
+// 合成 PPG：fs Hz、durSec 秒、bpm 心率的正弦（可加雜訊）
+function synthPpg(bpm, durSec, fs, noise){
+  fs=fs||30; durSec=durSec||20; noise=noise||0;
+  var s=[], f=bpm/60, n=Math.round(durSec*fs);
+  for(var i=0;i<n;i++){ var t=i*1000/fs; var v=Math.sin(2*Math.PI*f*t/1000) + (noise?(Math.random()-0.5)*noise:0); s.push({t:t,v:v}); }
+  return s;
+}
+
 async function run(){
   assert(typeof HrvAnalyze === 'object', 'HrvAnalyze 應載入');
 
@@ -34,6 +42,29 @@ async function run(){
     eq(HrvAnalyze.classify({rmssd:35,hr:70}).state,'balanced','中');
     eq(HrvAnalyze.classify({rmssd:15,hr:80}).state,'tense','低');
     assert(HrvAnalyze.classify({rmssd:60,hr:65}).advice,'有建議文字');
+  });
+
+  // === Task 2: 脈搏偵測 + RR + 訊號品質 ===
+  await check('detectBeats：60bpm 合成訊號 → hr≈60', async () => {
+    var s=synthPpg(60,20,30,0.05);
+    var beats=HrvAnalyze.detectBeats(s);
+    var rr=HrvAnalyze.rrFromBeats(beats);
+    var m=HrvAnalyze.metricsFromRr(rr);
+    near(m.hr,60,4,'hr≈60');
+  });
+  await check('detectBeats：75bpm 合成訊號 → hr≈75', async () => {
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpg(75,20,30,0.05))));
+    near(m.hr,75,5,'hr≈75');
+  });
+  await check('rrFromBeats 偽差過濾：剔除超出 300-2000ms 的間隔', async () => {
+    var beats=[0,1000,2000,2100,3100]; // 2000→2100=100ms（太短）應剔除
+    var rr=HrvAnalyze.rrFromBeats(beats);
+    assert(rr.indexOf(100)===-1,'100ms 被剔除');
+  });
+  await check('signalQuality：乾淨脈動→green、平坦雜訊→red', async () => {
+    eq(HrvAnalyze.signalQuality(synthPpg(60,8,30,0.05)),'green','乾淨');
+    var flat=[]; for(var i=0;i<240;i++) flat.push({t:i*33.3,v:(Math.random()-0.5)*0.02});
+    eq(HrvAnalyze.signalQuality(flat),'red','平坦雜訊');
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
