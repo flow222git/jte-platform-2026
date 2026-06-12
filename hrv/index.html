@@ -587,13 +587,13 @@ function renderAdvancedResult(samples){
   clearAll();
   samples=samples||[];
   const A=window.HrvAnalyze, F=window.HrvFreq;
-  const beats=A?A.detectBeats(samples):[];
+  const beats=A?A.detectBeatsWindowed(samples,30):[]; // 長錄音分段偵測：弱段心跳也抓得到，避免被把關誤擋
   const rr=A?A.cleanRr(A.rrFromBeats(beats)):[];      // 偽差校正後的 RR
   const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
   const quality=A?A.signalQuality(samples):'red';
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
   // 誠實把關：清理後 RR 太少 / 品質紅 / hr 不合理 → 不出四指數
-  const gated = !A || !F || rr.length<60 || quality==='red' || !(m.hr>=30&&m.hr<=220);
+  const gated = !A || !F || rr.length<45 || quality==='red' || !(m.hr>=30&&m.hr<=220);
 
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());

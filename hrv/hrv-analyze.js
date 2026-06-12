@@ -93,6 +93,24 @@
     return best;
   }
   function detectBeats(samples){ return _detect(samples).beats; }
+  // 長錄音用：切成 winSec 秒一段、各用「局部門檻」偵測再串接。單一全域門檻會被高振幅段
+  // 撐高、漏掉弱段落的心跳（2 分鐘量測常見）；分段後弱段也抓得到。
+  function detectBeatsWindowed(samples, winSec){
+    winSec = winSec || 30;
+    samples = samples || [];
+    if (samples.length < 10) return detectBeats(samples);
+    var t0=samples[0].t, tEnd=samples[samples.length-1].t, beats=[], start=t0;
+    while (start < tEnd){
+      var end=start+winSec*1000, seg=[];
+      for (var i=0;i<samples.length;i++){ if (samples[i].t>=start && samples[i].t<end) seg.push(samples[i]); }
+      if (seg.length>=10){
+        var b=_detect(seg).beats;
+        for (var j=0;j<b.length;j++){ if (beats.length===0 || b[j]-beats[beats.length-1]>=300) beats.push(b[j]); }
+      }
+      start=end;
+    }
+    return beats;
+  }
   function rrFromBeats(beats){
     var rr=[];
     for(var i=1;i<beats.length;i++){
@@ -124,7 +142,7 @@
 
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr,
-    detectBeats: detectBeats, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
+    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);

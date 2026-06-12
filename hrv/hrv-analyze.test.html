@@ -104,6 +104,19 @@ async function run(){
     var s=synthEndDrop(74,12,60);
     assert(HrvAnalyze.signalQuality(s)!=='red','品質不應紅，實得 '+HrvAnalyze.signalQuality(s));
   });
+  // 長錄音、振幅由弱漸強 —— 重現真機「2分鐘進階量測，全域門檻漏掉弱段心跳→被把關擋下」
+  function synthLong(bpm, durSec, fs){
+    fs=fs||30; var s=[], f=bpm/60, n=Math.round(fs*durSec);
+    for(var i=0;i<n;i++){ var t=i*1000/fs; var amp=0.3+0.7*(i/n); s.push({t:t, v:50+amp*Math.sin(2*Math.PI*f*t/1000)+(Math.random()-0.5)*0.08}); }
+    return s;
+  }
+  await check('detectBeatsWindowed：長錄音變幅下偵測到多數心跳（多於單次全域門檻）', async () => {
+    var s=synthLong(67,80,30);
+    var single=HrvAnalyze.detectBeats(s).length;
+    var win=HrvAnalyze.detectBeatsWindowed(s,30).length;
+    assert(win>=single, 'windowed 不少於單次（win='+win+' single='+single+'）');
+    assert(win>=70, 'windowed 應抓到多數心跳（80s×67bpm≈89），實得 '+win);
+  });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
