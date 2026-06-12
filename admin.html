@@ -170,7 +170,6 @@ body{min-height:100vh}
       <div class="nav-item" data-page="activities" onclick="nav('activities')"><i class="ti ti-calendar-event"></i><span>活動管理</span></div>
       <div class="nav-item" data-page="users" onclick="nav('users')"><i class="ti ti-users"></i><span>用戶管理</span></div>
       <div class="nav-item" data-page="hrv" onclick="nav('hrv')"><i class="ti ti-heart-rate-monitor"></i><span>HRV 量測</span></div>
-      <div class="nav-item" data-page="records" onclick="nav('records')"><i class="ti ti-history"></i><span>全部記錄</span></div>
       <div class="nav-item" data-page="admins" onclick="nav('admins')"><i class="ti ti-shield"></i><span>管理員</span></div>
     </div>
 
@@ -264,16 +263,6 @@ body{min-height:100vh}
           <div class="imp-preview" id="hrv-preview"></div>
           <div class="imp-prog" id="hrv-prog"><div class="bar" id="hrv-bar"></div></div>
           <div class="imp-log" id="hrv-log"></div>
-        </div>
-      </div>
-
-      <!-- RECORDS -->
-      <div class="page" id="page-records">
-        <div class="page-title">全部記錄</div>
-        <div class="page-sub">跨使用者的最近記錄（最多 200 筆）</div>
-        <div class="card">
-          <div class="card-head"><div class="card-title">最近記錄</div><select class="inp" id="rec-filter" onchange="_recLimit=200;renderAllRecords()" style="width:150px"><option value="">全部來源</option><option>XiaoQi</option><option>BreatheAware</option><option>HRVRecord</option><option>Activity</option><option>WenYi</option><option>BuYi</option><option>WriteSpace</option></select></div>
-          <div id="records-list"><div class="loading">載入中…</div></div>
         </div>
       </div>
 
@@ -404,7 +393,6 @@ function nav(page){
   if(page==='users') loadUsers();
   if(page==='admins') renderAdmins();
   if(page==='hrv') loadHrvOverview();
-  if(page==='records') loadAllRecords();
 }
 
 // ── DASHBOARD ──
@@ -757,29 +745,6 @@ async function startHrvImport(){
     }catch(e){fail++;hrvLog('err','✗ '+r.email+': '+e.message);}
     done++;document.getElementById('hrv-bar').style.width=Math.round(done/total*100)+'%';await new Promise(function(res){setTimeout(res,120);});}
   hrvLog('info','完成：成功 '+ok+' / 失敗 '+fail);b.textContent='匯入完成 ✓';b.disabled=false;_allDailyCache=null;loadHrvOverview();
-}
-// 全部記錄
-var _allRecCache=[];
-async function loadAllRecords(){
-  var el=document.getElementById('records-list');el.innerHTML='<div class="loading">掃描所有使用者…</div>';
-  try{var all=await loadAllDaily();var flat=[];
-    all.forEach(function(o){(o.data.linked||[]).forEach(function(l){flat.push({email:o.email,name:o.name,date:l.measureDate||l.date||o.date,l:l});});});
-    flat.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-    _allRecCache=flat;renderAllRecords();
-  }catch(e){el.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
-}
-var _recLimit=200;
-function renderAllRecords(){
-  var el=document.getElementById('records-list'),f=document.getElementById('rec-filter').value;
-  var filtered=_allRecCache.filter(function(r){return !f||r.l.source===f;});
-  var rows=filtered.slice(0,_recLimit);
-  if(!rows.length){el.innerHTML='<div class="empty">無記錄</div>';return;}
-  var html='<div style="font-size:11px;color:var(--t2);margin-bottom:8px">顯示 '+rows.length+' / 共 '+filtered.length+' 筆（資料完整保存，這裡僅為瀏覽分頁）</div>';
-  html+='<table class="tbl"><thead><tr><th>日期</th><th>使用者</th><th>記錄</th></tr></thead><tbody>';
-  rows.forEach(function(r){html+='<tr><td style="white-space:nowrap;vertical-align:top">'+(r.date||'')+'</td><td class="name" style="white-space:nowrap;vertical-align:top">'+(r.name||r.email)+'</td><td>'+jteLinkedCard(r.l)+'</td></tr>';});
-  html+='</tbody></table>';
-  if(filtered.length>_recLimit)html+='<div style="text-align:center;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="_recLimit+=300;renderAllRecords()">載入更多（還有 '+(filtered.length-_recLimit)+' 筆）</button></div>';
-  el.innerHTML=html;
 }
 </script>
 </body>
