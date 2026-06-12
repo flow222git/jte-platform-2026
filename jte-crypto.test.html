@@ -17,6 +17,37 @@ async function check(name, fn){
 async function run(){
   assert(typeof crypto !== 'undefined' && crypto.subtle, 'WebCrypto unavailable (need secure context)');
   // 測項於後續 Task 插入此處 —— 標記：TESTS_HERE
+  // --- 欄位加解密 ---
+  let _dek1, _dek2;
+  await check('setup() 產出 32-byte dek', async () => {
+    const s = await JteCrypto.setup('pw-correct-horse');
+    _dek1 = s.dek;
+    assert(_dek1 instanceof Uint8Array, 'dek 應為 Uint8Array');
+    eq(_dek1.length, 32, 'dek 長度');
+  });
+  await check('encrypt→decrypt 還原中文', async () => {
+    const blob = await JteCrypto.encryptField(_dek1, '我該不該換工作？很怕做錯決定。');
+    assert(blob && blob.iv && blob.ct, '欄位密文應有 iv/ct');
+    const out = await JteCrypto.decryptField(_dek1, blob);
+    eq(out, '我該不該換工作？很怕做錯決定。', '還原內容');
+  });
+  await check('encrypt→decrypt 還原空字串', async () => {
+    const blob = await JteCrypto.encryptField(_dek1, '');
+    eq(await JteCrypto.decryptField(_dek1, blob), '', '空字串還原');
+  });
+  await check('同明文兩次加密 iv/ct 不同（隨機 iv）', async () => {
+    const a = await JteCrypto.encryptField(_dek1, 'same');
+    const b = await JteCrypto.encryptField(_dek1, 'same');
+    assert(a.iv !== b.iv, 'iv 應不同');
+    assert(a.ct !== b.ct, 'ct 應不同');
+  });
+  await check('不同 dek 解不開（拋例外）', async () => {
+    _dek2 = (await JteCrypto.setup('other')).dek;
+    const blob = await JteCrypto.encryptField(_dek1, 'secret');
+    let threw = false;
+    try { await JteCrypto.decryptField(_dek2, blob); } catch(e){ threw = true; }
+    assert(threw, '用錯 dek 應拋例外');
+  });
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
 }
