@@ -46,6 +46,21 @@ async function run(){
 
   // 測項於後續 Task 插入此處 —— 標記：TESTS_HERE
 
+  // === Task 2: 啟用狀態＋Firestore blob 存取 ===
+  await check('未啟用使用者 isEnabled()=false', async () => {
+    freshPrivacy(null);
+    eq(await JtePrivacy.isEnabled(), false, 'isEnabled');
+  });
+  await check('已有 crypto blob → isEnabled()=true', async () => {
+    const s = await JteCrypto.setup('pw');
+    freshPrivacy(s.blob);
+    eq(await JtePrivacy.isEnabled(), true, 'isEnabled');
+  });
+  await check('未登入（email 空）→ isEnabled()=false 不丟例外', async () => {
+    JtePrivacy._reset(); JtePrivacy._setBackend({ db: makeFakeDb(), email: '' });
+    eq(await JtePrivacy.isEnabled(), false, '空 email');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;

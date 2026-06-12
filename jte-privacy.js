@@ -17,9 +17,24 @@
   }
   function backend(){ return _backend || _liveBackend(); }
 
+  // —— Firestore blob 存取（users/{email}.crypto）——
+  function loadBlob(){
+    var b = backend();
+    if (!b.db || !b.email) return Promise.resolve(null);
+    return b.db.collection('users').doc(b.email).get()
+      .then(function (snap){ return (snap.exists && snap.data() && snap.data().crypto) || null; })
+      .catch(function (){ return null; });
+  }
+  function saveBlob(blob){
+    var b = backend();
+    if (!b.db || !b.email) return Promise.reject(new Error('no-user'));
+    return b.db.collection('users').doc(b.email).set({ crypto: blob }, { merge: true });
+  }
+
   root.JtePrivacy = {
     _setBackend: function (b){ _backend = b; },
-    _reset: function (){ _backend = null; _dek = null; }
+    _reset: function (){ _backend = null; _dek = null; },
+    isEnabled: function (){ return loadBlob().then(function (x){ return !!x; }); }
     // 其餘 API 於後續 Task 補上
   };
 })(typeof window !== 'undefined' ? window : this);
