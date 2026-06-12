@@ -587,13 +587,15 @@ function renderAdvancedResult(samples){
   clearAll();
   samples=samples||[];
   const A=window.HrvAnalyze, F=window.HrvFreq;
-  const beats=A?A.detectBeatsWindowed(samples,30):[]; // 長錄音分段偵測：弱段心跳也抓得到，避免被把關誤擋
-  const rr=A?A.cleanRr(A.rrFromBeats(beats)):[];      // 偽差校正後的 RR
+  // 穩健聚合：切段、只收「品質好」時段的心跳（壞段不污染 HR/數量）
+  const gw=A?A.rrFromGoodWindows(samples,15):{rr:[],good:0,bad:0};
+  const rr=gw.rr;
   const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
-  const quality=A?A.signalQuality(samples):'red';
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
-  // 誠實把關：清理後 RR 太少 / 品質紅 / hr 不合理 → 不出四指數
-  const gated = !A || !F || rr.length<45 || quality==='red' || !(m.hr>=30&&m.hr<=220);
+  const hrOk=(m.hr>=40&&m.hr<=150);
+  // 三層：failed（沒量到穩定心跳）／basic（夠給狀態）／full（≥45 RR 才出四指數）
+  const failed = !A || !hrOk || rr.length<15;
+  const full = !failed && !!F && rr.length>=45;
 
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
@@ -607,74 +609,85 @@ function renderAdvancedResult(samples){
   note.appendChild(nt);note.appendChild(np);
   d.appendChild(note);
 
-  if(gated){
-    // 不出四指數：只給 HR＋狀態＋「這次不夠穩，建議重量」
+  // 除錯（?debug）：分到哪一層、為什麼
+  if(/debug/.test(location.search)||/debug/.test(location.hash)){
+    const db=document.createElement('div');
+    db.style.cssText='background:#11151c;color:#0f0;font:12px monospace;padding:6px 9px;border-radius:8px;margin-bottom:10px;white-space:pre-wrap';
+    db.textContent='[進階診斷] good窗='+gw.good+'  bad窗='+gw.bad+'  rr='+rr.length+'  hr='+hr+'  → '+(failed?'fail':(full?'full(四指數)':'basic'));
+    d.appendChild(db);
+  }
+
+  // 第三層：真的沒量到穩定心跳 → 重量
+  if(failed){
     const c=document.createElement('div');c.className='err-card';
-    const validHr=(m.hr>=30&&m.hr<=220);
-    let body='<h3>這次訊號不夠穩</h3>';
-    if(validHr){
-      const cls=A.classify(m); const stZh=STATE_LABEL[cls.state]||cls.state;
-      body+='<p>先給你基本結果：心率約 <b>'+_h(String(hr))+'</b> bpm，狀態偏「'+_h(stZh)+'」。'+
-        '進階四指數需要更穩定的訊號，這次不夠穩，建議在光線充足、手指輕貼鏡頭、保持靜止下再量一次。</p>';
-    }else{
-      body+='<p>這次沒量到穩定的心率。請在光線充足處，手指輕貼鏡頭（含旁邊的閃光燈），保持靜止，再量一次。</p>';
-    }
-    c.innerHTML=body;
+    c.innerHTML='<h3>這次沒量到穩定心跳</h3><p>請在光線充足處，手指輕貼鏡頭（含旁邊的閃光燈），保持靜止、約 2 分鐘別移開，再量一次。</p>';
     d.appendChild(c);
     d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
     app.appendChild(d);
-    const inner=document.createElement('div');inner.className='bar-inner';
-    const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
-    again.onclick=function(){ renderMeasure(); };  // 維持 session.advanced=true
-    inner.appendChild(again);
-    bar.appendChild(inner);
+    const inner0=document.createElement('div');inner0.className='bar-inner';
+    const again0=document.createElement('button');again0.className='btn btn-primary';again0.textContent='再量一次';
+    again0.onclick=function(){ renderMeasure(); };
+    inner0.appendChild(again0);bar.appendChild(inner0);
     return;
   }
 
-  // 算四指數
-  const series=F.resampleRr(rr,4).series;
-  const bp=F.bandPowers(series,4);
-  const idx=F.indices(bp,{ sdnn:m.sdnn, rmssd:m.rmssd });
+  // —— 基本結果：狀態卡（basic 與 full 都顯示，兩分鐘不會看起來整個失敗）——
+  const cls=A.classify(m), stZh=STATE_LABEL[cls.state]||cls.state;
+  const stc=document.createElement('div');stc.className='state-card s-'+cls.state;
+  stc.innerHTML='<div class="lab">現在的身體狀態</div><div class="big">'+_h(stZh)+'</div><div class="adv">'+_h(cls.advice||'')+'</div>';
+  d.appendChild(stc);
 
-  // 四張指數卡（順序：壓力、放鬆、活力、情緒反應靈活度）
-  const order=['stress','relax','vitality','flexibility'];
-  order.forEach(function(face){
-    const it=idx[face]||{score:0,level:'low',label:'低',advice:''};
-    const score=Number(it.score)||0, lv=it.level||'low';
-    const card=document.createElement('div');card.className='idx-card';
-    const head=document.createElement('div');head.className='idx-head';
-    const nm=document.createElement('span');nm.className='idx-name';nm.textContent=FACE_LABEL[face]||face;
-    const sc=document.createElement('span');sc.className='idx-score';sc.textContent=String(score)+' / 100';
-    nm.appendChild(sc);
-    const lvEl=document.createElement('span');lvEl.className='idx-lv '+lv;lvEl.textContent=it.label||'';
-    head.appendChild(nm);head.appendChild(lvEl);
-    const barEl=document.createElement('div');barEl.className='idx-bar';
-    const fill=document.createElement('div');fill.className='idx-fill '+lv;
-    fill.style.width=Math.max(0,Math.min(100,score))+'%';
-    barEl.appendChild(fill);
-    const adv=document.createElement('div');adv.className='idx-adv';adv.textContent=it.advice||'';
-    card.appendChild(head);card.appendChild(barEl);card.appendChild(adv);
-    d.appendChild(card);
-  });
+  // 第一層 full：算並顯示四指數；第二層 basic：柔性說明四指數這次先略過
+  let idx=null;
+  if(full){
+    const series=F.resampleRr(rr,4).series;
+    const bp=F.bandPowers(series,4);
+    idx=F.indices(bp,{ sdnn:m.sdnn, rmssd:m.rmssd });
+    const order=['stress','relax','vitality','flexibility'];
+    order.forEach(function(face){
+      const it=idx[face]||{score:0,level:'low',label:'低',advice:''};
+      const score=Number(it.score)||0, lv=it.level||'low';
+      const card=document.createElement('div');card.className='idx-card';
+      const head=document.createElement('div');head.className='idx-head';
+      const nm=document.createElement('span');nm.className='idx-name';nm.textContent=FACE_LABEL[face]||face;
+      const sc=document.createElement('span');sc.className='idx-score';sc.textContent=String(score)+' / 100';
+      nm.appendChild(sc);
+      const lvEl=document.createElement('span');lvEl.className='idx-lv '+lv;lvEl.textContent=it.label||'';
+      head.appendChild(nm);head.appendChild(lvEl);
+      const barEl=document.createElement('div');barEl.className='idx-bar';
+      const fill=document.createElement('div');fill.className='idx-fill '+lv;
+      fill.style.width=Math.max(0,Math.min(100,score))+'%';
+      barEl.appendChild(fill);
+      const adv=document.createElement('div');adv.className='idx-adv';adv.textContent=it.advice||'';
+      card.appendChild(head);card.appendChild(barEl);card.appendChild(adv);
+      d.appendChild(card);
+    });
+  }else{
+    const soft=document.createElement('div');soft.className='guide-card';
+    soft.innerHTML='<h3><i class="ti ti-wave-sine"></i> 進階四指數這次先略過</h3>'+
+      '<p style="font-size:13.5px;color:var(--ink-soft);line-height:1.75;margin:0">四指數（壓力/放鬆/活力/靈活度）需要更穩定的 2 分鐘訊號。這次先給你上面的基本狀態，下次手指更穩、光線更足就會出現。</p>';
+    d.appendChild(soft);
+  }
 
-  // 下方基本數據：HR、RMSSD
+  // 下方基本數據：HR、RMSSD、SDNN
   const panel=document.createElement('div');panel.className='panel';
   panel.innerHTML='<h3>基本數據</h3>'+
     '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="aHr"></span></div>'+
-    '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="aRm"></span></div>';
+    '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="aRm"></span></div>'+
+    '<div class="metric-row"><span class="mt">心率變異 <small>SDNN</small></span><span class="mv" id="aSd"></span></div>';
   d.appendChild(panel);
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
   app.appendChild(d);
   panel.querySelector('#aHr').textContent=String(hr)+' bpm';
   panel.querySelector('#aRm').textContent=String(rmssd)+' ms';
+  panel.querySelector('#aSd').textContent=String(sdnn)+' ms';
 
-  // 儲存進階記錄（四指數存 score 數字；明文一般記錄）。只在有效時存。
-  const cls=A.classify(m); const now=new Date();
+  // 儲存記錄（basic 存基本狀態；full 另存四指數）。明文一般記錄。
+  const now=new Date();
   const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
-  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, state:cls.state, adv:true,
-    stress:Number(idx.stress.score)||0, relax:Number(idx.relax.score)||0,
-    vitality:Number(idx.vitality.score)||0, flexibility:Number(idx.flexibility.score)||0 });
+  const rec={ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(), hr:hr, rmssd:rmssd, sdnn:sdnn, state:cls.state, adv:true };
+  if(full && idx){ rec.stress=Number(idx.stress.score)||0; rec.relax=Number(idx.relax.score)||0; rec.vitality=Number(idx.vitality.score)||0; rec.flexibility=Number(idx.flexibility.score)||0; }
+  jteWriteRecord(rec);
 
   const inner=document.createElement('div');inner.className='bar-inner';
   const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';

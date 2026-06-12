@@ -3,17 +3,22 @@
   'use strict';
   function mean(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return a.length?s/a.length:0; }
   function _median(a){ var s=a.slice().sort(function(x,y){return x-y;}), n=s.length, h=Math.floor(n/2); return n? (n%2 ? s[h] : (s[h-1]+s[h])/2) : 0; }
-  // RR 偽差校正（給結果計算用；metricsFromRr 維持純公式）。兩道：
-  // ①剔除偏離中位數 ±30% 的（漏拍倍長/假拍短間隔）②連續差濾波：跳動 >20% 前值的非生理跳動剔除。
-  // RMSSD＝連續差的均方根，對掉訊號造成的假間隔極敏感，必須先清乾淨否則會灌爆到數百 ms。
-  function cleanRr(rr){
+  // 溫和偽差校正：只剔除偏離中位數 ±30% 的粗大偽差（漏拍倍長/假拍短間隔），
+  // 保留真實逐拍變異。頻域分析要的就是變異，故進階用這版。
+  function cleanRrGentle(rr){
     rr = (rr||[]).filter(function(x){ return x>0; });
     if (rr.length < 3) return rr;
     var med=_median(rr), lo=med*0.7, hi=med*1.3, band=[];
     for(var i=0;i<rr.length;i++){ if(rr[i]>=lo && rr[i]<=hi) band.push(rr[i]); }
+    return band.length>=2 ? band : rr;
+  }
+  // 嚴格偽差校正（給快測 RMSSD 用）：溫和版＋連續差濾波（跳動 >20% 前值的非生理跳動剔除）。
+  // RMSSD＝連續差的均方根，對掉訊號造成的假間隔極敏感，必須清乾淨否則會灌爆到數百 ms。
+  function cleanRr(rr){
+    var band=cleanRrGentle(rr);
     if (band.length < 2) return rr;
     var out=[band[0]];
-    for(i=1;i<band.length;i++){ var prev=out[out.length-1]; if(Math.abs(band[i]-prev)/prev <= 0.20) out.push(band[i]); }
+    for(var i=1;i<band.length;i++){ var prev=out[out.length-1]; if(Math.abs(band[i]-prev)/prev <= 0.20) out.push(band[i]); }
     return out.length>=2 ? out : band;
   }
   function metricsFromRr(rr){
@@ -140,9 +145,34 @@
     return 'yellow';
   }
 
+  // 長錄音穩健聚合（給進階 2 分鐘用）：切成 winSec 秒一段，每段各自品質把關，
+  // 只收「品質非紅、HR 合理」時段的 RR（溫和清理後）。壞時段直接丟掉——
+  // 避免雜訊段污染 HR（兩次量同條件卻 88 vs 69）與心跳數（綠燈卻被誤擋）。
+  // 回 { rr:[...], good:好時段數, bad:壞時段數 }。
+  function rrFromGoodWindows(samples, winSec){
+    winSec = winSec || 15;
+    samples = samples || [];
+    if (samples.length < 10) return { rr:[], good:0, bad:0 };
+    var t0=samples[0].t, tEnd=samples[samples.length-1].t, allRr=[], good=0, bad=0, start=t0;
+    while (start < tEnd){
+      var end=start+winSec*1000, seg=[];
+      for (var i=0;i<samples.length;i++){ if (samples[i].t>=start && samples[i].t<end) seg.push(samples[i]); }
+      if (seg.length >= 10){
+        if (signalQuality(seg) !== 'red'){
+          var rr=cleanRrGentle(rrFromBeats(detectBeats(seg)));
+          var hr=rr.length ? 60000/mean(rr) : 0;
+          if (hr>=40 && hr<=150){ for(var j=0;j<rr.length;j++) allRr.push(rr[j]); good++; }
+          else bad++;
+        } else bad++;
+      }
+      start=end;
+    }
+    return { rr:allRr, good:good, bad:bad };
+  }
+
   root.HrvAnalyze = {
-    metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr,
-    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
+    metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
+    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);

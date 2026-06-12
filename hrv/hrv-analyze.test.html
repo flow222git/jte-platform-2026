@@ -117,6 +117,28 @@ async function run(){
     assert(win>=single, 'windowed 不少於單次（win='+win+' single='+single+'）');
     assert(win>=70, 'windowed 應抓到多數心跳（80s×67bpm≈89），實得 '+win);
   });
+  await check('cleanRrGentle：去粗大偽差但保留逐拍變異（頻域用）', async () => {
+    var rr=[800,950,820,1600,900,780,1580,850]; // 1600/1580 為漏拍倍長
+    var g=HrvAnalyze.cleanRrGentle(rr);
+    assert(g.indexOf(1600)===-1 && g.indexOf(1580)===-1, '倍長被剔除');
+    assert(g.length>=5, '保留多數變異（未被連續差濾掉），實得 '+g.length);
+  });
+  // 混合錄音：好時段(脈搏)＋壞時段(雜訊) —— 驗證只收好時段、壞時段不污染 HR
+  function synthMixed(){
+    var s=[], fs=30, f=67/60;
+    for(var i=0;i<fs*60;i++){ var t=i*1000/fs;
+      var v=(t>=30000&&t<45000) ? 50+(Math.random()-0.5)*0.05 : 50+Math.sin(2*Math.PI*f*t/1000)+(Math.random()-0.5)*0.08;
+      s.push({t:t,v:v}); }
+    return s;
+  }
+  await check('rrFromGoodWindows：只收好時段心跳、壞時段丟掉、HR 不被污染', async () => {
+    var gw=HrvAnalyze.rrFromGoodWindows(synthMixed(), 15);
+    assert(gw.good>=2, '應有好時段，實得 good='+gw.good);
+    assert(gw.bad>=1, '應偵測壞時段，實得 bad='+gw.bad);
+    var sum=0; for(var i=0;i<gw.rr.length;i++) sum+=gw.rr[i];
+    var hr=gw.rr.length?60000/(sum/gw.rr.length):0;
+    near(hr, 67, 9, '好時段聚合 HR 合理，實得 '+Math.round(hr));
+  });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
