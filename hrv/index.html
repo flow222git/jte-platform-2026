@@ -278,6 +278,24 @@ async function startCamera(){
     }
     return;
   }
+  // 多鏡頭機種（iPhone Pro 等）：facingMode:environment 常給「自動切換」的虛擬鏡頭，
+  // 手指貼近時會在主鏡頭/超廣角/微距間跳動→畫面斷續→掉訊號。鎖定單一主後鏡頭（Back Camera）。
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const cams=devs.filter(function(d){ return d.kind==='videoinput'; });
+    const isBack=function(l){ return /back|rear|environment|後|背/i.test(l||''); };
+    const isMulti=function(l){ return /dual|triple|ultra|wide angle|telephoto|超廣角|望遠|雙鏡|三鏡/i.test(l||''); };
+    let pick=cams.filter(function(d){ return isBack(d.label)&&!isMulti(d.label); })[0];
+    if(!pick){ const backs=cams.filter(function(d){ return isBack(d.label); }); backs.sort(function(a,b){ return (a.label||'').length-(b.label||'').length; }); pick=backs[0]; }
+    if(pick&&pick.deviceId){
+      const cur=stream.getVideoTracks()[0];
+      const curId=(cur&&cur.getSettings)?cur.getSettings().deviceId:null;
+      if(pick.deviceId!==curId){
+        stream.getTracks().forEach(function(t){ t.stop(); });
+        stream=await navigator.mediaDevices.getUserMedia({ video:{ deviceId:{ exact:pick.deviceId } } });
+      }
+    }
+  }catch(e){ /* 列舉/重取失敗→沿用原本的 stream */ }
   session.stream=stream;
   const track=stream.getVideoTracks()[0];
   session.track=track;
