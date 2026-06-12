@@ -76,12 +76,34 @@
     });
   }
 
+  // —— 私密欄位加解密（用 session DEK，逐欄位 chain）——
+  function encryptPrivate(obj){
+    var dek = _loadCachedDek();
+    if (!dek) return Promise.reject(new Error('locked'));
+    var keys = Object.keys(obj || {}), out = {}, chain = Promise.resolve();
+    keys.forEach(function (k){ chain = chain.then(function (){ return root.JteCrypto.encryptField(dek, String(obj[k])).then(function (f){ out[k] = f; }); }); });
+    return chain.then(function (){ return out; });
+  }
+  function decryptPrivate(obj){
+    var dek = _loadCachedDek();
+    if (!dek) return Promise.reject(new Error('locked'));
+    var keys = Object.keys(obj || {}), out = {}, chain = Promise.resolve();
+    keys.forEach(function (k){
+      var v = obj[k];
+      if (v && typeof v === 'object' && v.iv && v.ct){
+        chain = chain.then(function (){ return root.JteCrypto.decryptField(dek, v).then(function (p){ out[k] = p; }).catch(function (){ out[k] = null; }); });
+      } else { out[k] = v; } // 非密文（向後相容明文）原樣保留
+    });
+    return chain.then(function (){ return out; });
+  }
+
   root.JtePrivacy = {
     _setBackend: function (b){ _backend = b; },
     _reset: function (){ _backend = null; _dek = null; },
     isEnabled: function (){ return loadBlob().then(function (x){ return !!x; }); },
     isUnlocked: function (){ return !!_loadCachedDek(); },
     lock: function (){ _dek = null; try { root.sessionStorage.removeItem(_dekKey()); root.localStorage.removeItem(_dekKey()); } catch(e){} },
+    encryptPrivate: encryptPrivate, decryptPrivate: decryptPrivate,
     _doEnable: _doEnable, _doUnlock: _doUnlock, _doRecover: _doRecover, _doChange: _doChange
     // 其餘 API 於後續 Task 補上
   };

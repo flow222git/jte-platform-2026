@@ -111,6 +111,28 @@ async function run(){
     eq(JtePrivacy.isUnlocked(), true, '新密語可解鎖');
   });
 
+  // === Task 4: 私密欄位 encryptPrivate/decryptPrivate ===
+  await check('encryptPrivate→decryptPrivate 還原多欄位', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('pw', false);
+    const enc = await JtePrivacy.encryptPrivate({ question: '我該換工作嗎？', note: '其實已經想很久了' });
+    assert(enc.question && enc.question.iv && enc.question.ct, '欄位應為 {iv,ct}');
+    const out = await JtePrivacy.decryptPrivate(enc);
+    eq(out.question, '我該換工作嗎？', 'question 還原'); eq(out.note, '其實已經想很久了', 'note 還原');
+  });
+  await check('未解鎖時 encryptPrivate throw', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores(); JtePrivacy.lock();
+    let threw = false;
+    try { await JtePrivacy.encryptPrivate({ a: 'x' }); } catch(e){ threw = true; }
+    assert(threw, '鎖定時應 throw');
+  });
+  await check('decryptPrivate 跳過非 {iv,ct} 欄位（向後相容明文）', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('pw', false);
+    const out = await JtePrivacy.decryptPrivate({ plain: '舊明文', enc: (await JtePrivacy.encryptPrivate({ x: 'hi' })).x });
+    eq(out.plain, '舊明文', '非密文欄位原樣保留'); eq(out.enc, 'hi', '密文欄位解開');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
