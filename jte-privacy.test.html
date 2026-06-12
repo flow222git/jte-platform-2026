@@ -61,6 +61,56 @@ async function run(){
     eq(await JtePrivacy.isEnabled(), false, '空 email');
   });
 
+  // === Task 3: session DEK＋記住裝置＋核心啟用/解鎖/重設邏輯 ===
+  const DEKKEY = 'jte_dek_u@x.com';
+  function clearDekStores(){ sessionStorage.removeItem(DEKKEY); localStorage.removeItem(DEKKEY); }
+  await check('_doEnable 設定密語→存 blob→isEnabled/isUnlocked 皆 true', async () => {
+    const db = freshPrivacy(null); clearDekStores();
+    const rec = await JtePrivacy._doEnable('pw-enable');
+    assert(typeof rec === 'string' && rec.length >= 20, '應回傳恢復碼供顯示');
+    eq(!!db._store['u@x.com'].crypto, true, 'blob 已存');
+    eq(JtePrivacy.isUnlocked(), true, '啟用後即解鎖');
+  });
+  await check('_doUnlock 正確密語→解鎖；私密欄位可加解密', async () => {
+    const s = await JteCrypto.setup('pw-x'); freshPrivacy(s.blob); clearDekStores();
+    eq(JtePrivacy.isUnlocked(), false, '初始鎖定');
+    await JtePrivacy._doUnlock('pw-x', false);
+    eq(JtePrivacy.isUnlocked(), true, '解鎖成功');
+  });
+  await check('_doUnlock 錯密語→reject 且維持鎖定', async () => {
+    const s = await JteCrypto.setup('right'); freshPrivacy(s.blob); clearDekStores();
+    let threw = false;
+    try { await JtePrivacy._doUnlock('wrong', false); } catch(e){ threw = true; }
+    assert(threw, '錯密語應 reject');
+    eq(JtePrivacy.isUnlocked(), false, '仍鎖定');
+  });
+  await check('記住裝置：remember=true 寫 localStorage；false 只寫 sessionStorage', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('pw', false);
+    eq(localStorage.getItem(DEKKEY), null, 'false 不寫 localStorage');
+    assert(sessionStorage.getItem(DEKKEY), 'false 有寫 sessionStorage');
+    clearDekStores(); JtePrivacy.lock();
+    await JtePrivacy._doUnlock('pw', true);
+    assert(localStorage.getItem(DEKKEY), 'true 寫 localStorage');
+  });
+  await check('lock() 清掉所有 DEK 快取且 isUnlocked=false', async () => {
+    const s = await JteCrypto.setup('pw'); freshPrivacy(s.blob); clearDekStores();
+    await JtePrivacy._doUnlock('pw', true);
+    JtePrivacy.lock();
+    eq(JtePrivacy.isUnlocked(), false, '鎖定');
+    eq(localStorage.getItem(DEKKEY), null, 'localStorage 清掉');
+    eq(sessionStorage.getItem(DEKKEY), null, 'sessionStorage 清掉');
+  });
+  await check('忘記密語：_doRecover 用恢復碼重設密語→新密語可解鎖', async () => {
+    const db = freshPrivacy(null); clearDekStores();
+    const rec = await JtePrivacy._doEnable('old-pw');
+    JtePrivacy.lock(); clearDekStores();
+    await JtePrivacy._doRecover(rec, 'brand-new-pw');
+    JtePrivacy.lock(); clearDekStores();
+    await JtePrivacy._doUnlock('brand-new-pw', false);
+    eq(JtePrivacy.isUnlocked(), true, '新密語可解鎖');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
