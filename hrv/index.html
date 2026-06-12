@@ -308,11 +308,12 @@ function loopGrab(){
     const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
     try{
       _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
-      // 取中央 ~50x50（7..57）紅光平均值
-      const img=_grabCtx.getImageData(7,7,50,50).data;
-      let r=0; for(let i=0;i<img.length;i+=4) r+=img[i];
-      const redMean=r/(img.length/4);
-      session.samples.push({ t:now, v:redMean });
+      // 取中央 ~50x50（7..57）：紅光平均（訊號）＋綠光平均＋紅光飽和比例（診斷用）
+      const img=_grabCtx.getImageData(7,7,50,50).data, px=img.length/4;
+      let r=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
+      const redMean=r/px, greenMean=g/px;
+      session.samples.push({ t:now, v:redMean, g:greenMean });
+      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px };
       // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
       if(!session.measuring){
         const cutoff=now-KEEP_SEC*1000;
@@ -332,6 +333,24 @@ function recentSamples(now,sec){
   out.reverse(); return out;
 }
 
+// —— 診斷模式（網址加 ?debug 或 #debug 時顯示）：只觀測、不改變量測邏輯 ——
+function isDebug(){ return /debug/.test(location.search) || /debug/.test(location.hash); }
+function updateDebug(recent, beats, rr, q){
+  let el=document.getElementById('hrvDbg');
+  if(!el){
+    el=document.createElement('div'); el.id='hrvDbg';
+    el.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;background:rgba(0,0,0,.82);color:#0f0;font:13px/1.45 monospace;padding:7px 9px;border-radius:7px;white-space:pre;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  let rmn=Infinity,rmx=-Infinity,gmn=Infinity,gmx=-Infinity;
+  for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
+  const d=session.lastDiag||{R:0,G:0,sat:0};
+  const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
+  el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
+    '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
+    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nsamples '+recent.length;
+}
+
 function updateLiveUi(now){
   if(!window.HrvAnalyze)return;
   const recent=recentSamples(now, KEEP_SEC);
@@ -346,6 +365,7 @@ function updateLiveUi(now){
   const m=HrvAnalyze.metricsFromRr(rr);
   const hrEl=document.getElementById('hrLive');
   if(hrEl) hrEl.textContent = (m.hr>=30&&m.hr<=220) ? String(Math.round(m.hr)) : '--';
+  if(isDebug()) updateDebug(recent, beats, rr, q);
 
   const hint=document.getElementById('camHint');
   // 品質轉 green 才開始倒數
