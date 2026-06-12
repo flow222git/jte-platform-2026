@@ -87,6 +87,17 @@ async function run(){
     near(m.hr,64,6,'hr≈64');
     assert(HrvAnalyze.signalQuality(s)!=='red','品質不應紅，實得 '+HrvAnalyze.signalQuality(s));
   });
+  // 結尾一個大暫態（手指尾段移動）＋整段乾淨脈搏 —— 重現真機「beats 13/好脈搏卻 per=0 紅燈」
+  function synthEndDrop(bpm,durSec,fs){
+    fs=fs||60; var s=[], f=bpm/60, n=Math.round(durSec*fs);
+    for(var i=0;i<n;i++){ var t=i*1000/fs; var pulse=Math.sin(2*Math.PI*f*t/1000);
+      var drop=(i>n-8 && i<n-2)?-15:0; s.push({t:t, v:50+pulse+drop+(Math.random()-0.5)*0.1}); }
+    return s;
+  }
+  await check('結尾大暫態＋乾淨脈搏：週期性穩健、品質非紅（重現真機 per=0 紅燈）', async () => {
+    var s=synthEndDrop(74,12,60);
+    assert(HrvAnalyze.signalQuality(s)!=='red','品質不應紅，實得 '+HrvAnalyze.signalQuality(s));
+  });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';

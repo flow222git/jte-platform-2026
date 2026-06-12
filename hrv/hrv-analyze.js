@@ -60,14 +60,21 @@
     return { beats:beats, heights:heights };
   }
   // 自相關週期性分數(0~1)：真脈搏在 40-150bpm 對應 lag 有強自相關；雜訊接近 0。
+  // 先 winsorize（以中位數絕對值×4 夾住離群暫態），否則單一大暫態會壟斷能量(c0)、把週期性壓成 0
+  // ——即使脈搏其實很規律（真機實證：beats 13、好脈搏卻 per=0）。
   function _periodicity(ac, fs){
     var n=ac.length; if(n<20) return 0;
-    var m=mean(ac), x=new Array(n); for(var i=0;i<n;i++) x[i]=ac[i]-m;
+    var absv=new Array(n); for(var i=0;i<n;i++) absv[i]=Math.abs(ac[i]);
+    var srt=absv.slice().sort(function(a,b){return a-b;});
+    var medAbs=srt[Math.floor(n/2)]||0, cap=medAbs>0 ? medAbs*4 : Infinity;
+    var x=new Array(n), m=0;
+    for(i=0;i<n;i++){ var c=ac[i]; if(c>cap)c=cap; else if(c<-cap)c=-cap; x[i]=c; m+=c; }
+    m/=n; for(i=0;i<n;i++) x[i]-=m;
     var c0=0; for(i=0;i<n;i++) c0+=x[i]*x[i]; if(c0<=0) return 0;
     var lagMin=Math.max(1,Math.round(fs*0.4)), lagMax=Math.round(fs*1.5), best=0;
     for(var lag=lagMin; lag<=lagMax && lag<n; lag++){
-      var c=0; for(var j=0;j+lag<n;j++) c+=x[j]*x[j+lag];
-      var r=c/c0; if(r>best) best=r;
+      var cc=0; for(var j=0;j+lag<n;j++) cc+=x[j]*x[j+lag];
+      var r=cc/c0; if(r>best) best=r;
     }
     return best;
   }
