@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>jte-privacy tests</title>
+<script src="jte-crypto.js"></script>
+<script src="jte-privacy.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+// fake Firestore：支援 .collection('users').doc(email).get()/.set(data,{merge})
+function makeFakeDb(){
+  const store = {}; // email -> doc data
+  return {
+    _store: store,
+    collection(){ return {
+      doc(id){ return {
+        get(){ return Promise.resolve({ exists: id in store, data(){ return store[id]; } }); },
+        set(data, opts){ store[id] = (opts && opts.merge) ? Object.assign({}, store[id], data) : data; return Promise.resolve(); }
+      }; }
+    }; }
+  };
+}
+
+function freshPrivacy(seedBlob){
+  const db = makeFakeDb();
+  if (seedBlob) db._store['u@x.com'] = { crypto: seedBlob };
+  JtePrivacy._reset();
+  JtePrivacy._setBackend({ db: db, email: 'u@x.com' });
+  return db;
+}
+
+async function run(){
+  assert(typeof crypto !== 'undefined' && crypto.subtle, 'WebCrypto unavailable (need secure context)');
+  assert(typeof JteCrypto === 'object', 'JteCrypto 應載入');
+  assert(typeof JtePrivacy === 'object', 'JtePrivacy 應載入');
+
+  // 測項於後續 Task 插入此處 —— 標記：TESTS_HERE
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  // 回報最終結果給 runner（POST /__result）；直接開檔時 404 忽略。
+  // 用法：python3 jte-testrun.py jte-privacy.test.html
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
