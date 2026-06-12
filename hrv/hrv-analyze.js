@@ -2,8 +2,18 @@
 (function (root) {
   'use strict';
   function mean(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return a.length?s/a.length:0; }
-  function metricsFromRr(rr){
+  function _median(a){ var s=a.slice().sort(function(x,y){return x-y;}), n=s.length, h=Math.floor(n/2); return n? (n%2 ? s[h] : (s[h-1]+s[h])/2) : 0; }
+  // 偽差校正：剔除偏離中位數 ±30% 的 RR（漏拍造成的倍長、假拍造成的短間隔）。
+  // RMSSD 對這種偽差極敏感，一個倍長間隔就會灌爆數值——這是相機 PPG HRV 最關鍵的清理。
+  function _cleanRr(rr){
     rr = (rr||[]).filter(function(x){ return x>0; });
+    if (rr.length < 3) return rr;
+    var med=_median(rr), lo=med*0.7, hi=med*1.3, out=[];
+    for(var i=0;i<rr.length;i++){ if(rr[i]>=lo && rr[i]<=hi) out.push(rr[i]); }
+    return out.length>=2 ? out : rr;
+  }
+  function metricsFromRr(rr){
+    rr = _cleanRr(rr);
     if (rr.length < 2) return { hr:0, rmssd:0, sdnn:0, n:rr.length };
     var mr = mean(rr);
     var sq=0; for(var i=1;i<rr.length;i++){ var d=rr[i]-rr[i-1]; sq+=d*d; }
