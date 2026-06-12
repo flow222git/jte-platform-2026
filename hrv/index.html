@@ -439,7 +439,7 @@ function renderResult(samples){
   const A=window.HrvAnalyze;
   // 用既有純函式算指標與品質
   const beats=A?A.detectBeats(samples):[];
-  const rr=A?A.rrFromBeats(beats):[];
+  const rr=A?A.cleanRr(A.rrFromBeats(beats)):[]; // 偽差校正後再算指標（RMSSD 才不會被掉訊號灌爆）
   const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
   const quality=A?A.signalQuality(samples):'red';
   // 誠實降級：訊號太差→不顯示任何數字、不存記錄、引導重量

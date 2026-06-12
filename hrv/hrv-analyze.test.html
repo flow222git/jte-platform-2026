@@ -50,9 +50,9 @@ async function run(){
     const m = HrvAnalyze.metricsFromRr([800,1200,800,1200]);
     near(m.hr,60,0.01,'hr'); near(m.rmssd,400,0.01,'rmssd'); near(m.sdnn,200,0.01,'sdnn');
   });
-  await check('metricsFromRr 偽差校正：漏拍倍長 RR 被剔除，RMSSD 不被灌爆', async () => {
+  await check('cleanRr 偽差校正：漏拍倍長＋大跳動 RR 剔除，RMSSD 不被灌爆', async () => {
     var rr=[800,810,790,1600,805,795,800,810,1580,800]; // 中間兩個倍長(漏拍)
-    var m=HrvAnalyze.metricsFromRr(rr);
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.cleanRr(rr));
     assert(m.rmssd < 60, 'RMSSD 應落合理範圍（偽差移除），實得 '+m.rmssd);
     near(m.hr, 75, 10, 'hr 仍合理');
   });
