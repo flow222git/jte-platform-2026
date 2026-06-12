@@ -133,6 +133,30 @@ async function run(){
     eq(out.plain, '舊明文', '非密文欄位原樣保留'); eq(out.enc, 'hi', '密文欄位解開');
   });
 
+  // === Task 5: DOM modal 串接核心（程式驅動測試鉤子）===
+  await check('enable() 開出 modal 且含密語輸入與恢復碼流程節點', async () => {
+    freshPrivacy(null); clearDekStores();
+    const p = JtePrivacy.enable();               // 不 await（等使用者）
+    await new Promise(r => setTimeout(r, 50));
+    const modal = document.getElementById('jte-privacy-modal');
+    assert(modal, 'modal 應存在');
+    assert(modal.querySelector('input[type=password]'), '應有密語輸入');
+    // 模擬填入並送出：用 modal 暴露的測試鉤子完成
+    assert(typeof JtePrivacy._modalSubmitEnable === 'function', '應提供測試送出鉤子');
+    await JtePrivacy._modalSubmitEnable('pw-via-modal', 'pw-via-modal');
+    const rec = await p;                          // enable() resolve（恢復碼已在 modal 顯示）
+    eq(JtePrivacy.isUnlocked(), true, '啟用後解鎖');
+    assert(!document.getElementById('jte-privacy-modal'), 'modal 完成後關閉');
+  });
+  await check('unlock() 經 modal 鉤子輸入正確密語→解鎖', async () => {
+    const s = await JteCrypto.setup('pw-u'); freshPrivacy(s.blob); clearDekStores();
+    const p = JtePrivacy.unlock();
+    await new Promise(r => setTimeout(r, 50));
+    await JtePrivacy._modalSubmitUnlock('pw-u', false);
+    await p;
+    eq(JtePrivacy.isUnlocked(), true, '解鎖');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
