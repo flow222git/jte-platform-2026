@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-freq tests</title>
+<script src="hrv-freq.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+function near(a,b,tol,m){ if(Math.abs(a-b)>tol) throw new Error((m||'near')+' got '+a+' want '+b+'±'+tol); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+// 合成等間隔 tachogram：在 base 上疊加單頻 freqHz 正弦
+function synthTach(freqHz, fs, durSec, amp, base){
+  fs=fs||4; durSec=durSec||120; amp=amp||50; base=base||800;
+  var s=[], n=Math.round(fs*durSec);
+  for(var i=0;i<n;i++) s.push(base + amp*Math.sin(2*Math.PI*freqHz*i/fs));
+  return s;
+}
+
+async function run(){
+  assert(typeof HrvFreq === 'object', 'HrvFreq 應載入');
+
+  // === Task 1: 重採樣 + FFT ===
+  await check('resampleRr：等距 RR → 等間隔序列、值接近原值', async () => {
+    var rr=[]; for(var i=0;i<60;i++) rr.push(1000); // 60 拍 ~60 秒
+    var out=HrvFreq.resampleRr(rr, 4);
+    assert(out.series.length>=200, '4Hz×~60s 應有 ~240 點，實得 '+out.series.length);
+    near(out.series[100], 1000, 1, '值接近 1000');
+  });
+  await check('fft：DC 輸入 → 只有第0 bin有值', async () => {
+    var re=[1,1,1,1,1,1,1,1], im=[0,0,0,0,0,0,0,0];
+    HrvFreq.fft(re, im);
+    near(re[0], 8, 1e-6, 'DC=N'); near(Math.hypot(re[1],im[1]), 0, 1e-6, 'bin1=0');
+  });
+  await check('fft：bin2 餘弦 → 譜峰在 bin2', async () => {
+    var N=16, re=[], im=[]; for(var i=0;i<N;i++){ re.push(Math.cos(2*Math.PI*2*i/N)); im.push(0); }
+    HrvFreq.fft(re, im);
+    var mag=[]; for(i=0;i<N;i++) mag.push(Math.hypot(re[i],im[i]));
+    var pk=1; for(i=1;i<N/2;i++) if(mag[i]>mag[pk]) pk=i;
+    eq(pk, 2, '峰在 bin2');
+  });
+
+  // === Task 2: 頻帶功率 + 四指數 ===
+  await check('bandPowers：0.25Hz 振盪 → HF≫LF', async () => {
+    var bp=HrvFreq.bandPowers(synthTach(0.25,4,120,50), 4);
+    assert(bp.hf > bp.lf*4, 'HF 應遠大於 LF（hf='+bp.hf.toFixed(0)+' lf='+bp.lf.toFixed(0)+'）');
+  });
+  await check('bandPowers：0.10Hz 振盪 → LF≫HF', async () => {
+    var bp=HrvFreq.bandPowers(synthTach(0.10,4,120,50), 4);
+    assert(bp.lf > bp.hf*4, 'LF 應遠大於 HF（lf='+bp.lf.toFixed(0)+' hf='+bp.hf.toFixed(0)+'）');
+  });
+  await check('indices：高 HF→放鬆高/壓力低；高 LF→壓力高/放鬆低', async () => {
+    var hfDom=HrvFreq.indices({lf:100,hf:1000,total:1100,lfhf:0.1}, {sdnn:60,rmssd:45});
+    var lfDom=HrvFreq.indices({lf:1000,hf:100,total:1100,lfhf:10}, {sdnn:60,rmssd:45});
+    assert(hfDom.relax.score >= 60, '高HF→放鬆高'); assert(hfDom.stress.score <= 40, '高HF→壓力低');
+    assert(lfDom.stress.score >= 60, '高LF→壓力高'); assert(lfDom.relax.score <= 40, '高LF→放鬆低');
+    assert(['high','mid','low'].indexOf(hfDom.relax.level)>=0, 'level 合法');
+    assert(hfDom.relax.label && hfDom.relax.advice, '有標籤與建議');
+  });
+  await check('indices：活力/靈活度隨 total/sdnn 提高而上升', async () => {
+    var lo=HrvFreq.indices({lf:50,hf:50,total:120,lfhf:1},{sdnn:12,rmssd:10});
+    var hi=HrvFreq.indices({lf:50,hf:50,total:6000,lfhf:1},{sdnn:100,rmssd:80});
+    assert(hi.vitality.score > lo.vitality.score, '活力隨 total 升');
+    assert(hi.flexibility.score > lo.flexibility.score, '靈活度隨 sdnn 升');
+  });
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
