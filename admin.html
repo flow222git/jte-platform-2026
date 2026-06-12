@@ -443,9 +443,9 @@ async function loadDashboard(){
         (o.data.tags||[]).forEach(function(t){emoMap[t]=(emoMap[t]||0)+1;emoB.add(o.date);});}
       (o.data.linked||[]).forEach(function(l){var ld=l.measureDate||l.date||o.date;if(!inR(ld))return;
         totalRecords++;srcCount[l.source]=(srcCount[l.source]||0)+1;recB.add(ld);
-        if(l.source==='WenYi'&&l.topic)topicMap[l.topic]=(topicMap[l.topic]||0)+1;
-        if(l.source==='WriteSpace'&&l.topic)topicMap[l.topic]=(topicMap[l.topic]||0)+1;
-        if(l.source==='BuYi'&&l.question)topicMap[l.question]=(topicMap[l.question]||0)+1;
+        if(l.source==='WenYi'&&l.topic)topicMap[l.topic]=(topicMap[l.topic]||0)+1;       // 問易：問題類型（可分析）
+        if(l.source==='WriteSpace')topicMap['心理位移書寫']=(topicMap['心理位移書寫']||0)+1; // 書寫：只計數、不讀使用者文字
+        if(l.source==='BuYi'&&l.ben)topicMap[l.ben]=(topicMap[l.ben]||0)+1;               // 卜易：卦象（最常出現的卦），不讀問題原文
         (l.feelings||[]).forEach(function(fe){emoMap[fe]=(emoMap[fe]||0)+1;emoB.add(ld);});
         if(l.source==='HRVRecord'){if(!hrvByUser[o.email]||ld>hrvByUser[o.email].date)hrvByUser[o.email]={email:o.email,name:o.name,date:ld,l:l};}});
     });
@@ -623,12 +623,14 @@ function jteLinkedCard(l){
     HRVRecord:{ic:'💓',lab:'HRV',c:'#FF8A00',b:(l.assessmentTitle||'')+' · 壓力'+(l.stressIndex||'—')+'/活力'+(l.vitalityIndex||'—')},
     Activity:{ic:'🎪',lab:'活動',c:'#FF8A00',b:(l.activityName||'')+(l.org?(' · '+l.org):'')},
     WenYi:{ic:'☯',lab:'問易',c:'#6B4F9E',b:(l.mainHex||'')+(l.toneLabel?(' · '+l.toneLabel):'')+(l.topic?(' · '+l.topic):'')},
-    BuYi:{ic:'☯',lab:'卜易',c:'#6B4F9E',b:(l.ben||'')+(l.bian?('→'+l.bian):'')+(l.question?(' · '+l.question):'')},
-    WriteSpace:{ic:'✍️',lab:'書寫',c:'#5C7A9E',b:(l.topic||'')+(l.excerpt?(' · '+l.excerpt):'')},
+    BuYi:{ic:'☯',lab:'卜易',c:'#6B4F9E',b:(l.ben||'')+(l.bian?('→'+l.bian):'')+(l.changingLabel?(' · '+l.changingLabel):'')},
+    WriteSpace:{ic:'✍️',lab:'書寫',c:'#5C7A9E',b:(l.label||'心理位移書寫')},
     TWCT:{ic:'💬',lab:'溝通類型',c:'#003D7C',b:(l.typeName||'')}
   };
   var m=M[l.source]||{ic:'•',lab:l.source||'紀錄',c:'#888',b:''};
-  return '<div style="border-left:3px solid '+m.c+';padding:6px 10px;margin:5px 0;background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,61,124,.05)"><span style="font-size:11px;font-weight:600;color:'+m.c+'">'+m.ic+' '+m.lab+'</span> <span style="font-size:11px;color:var(--t2)">'+m.b+'</span>'+(l.note?'<div style="font-size:10px;color:var(--t3,#9aa);margin-top:2px">📝 '+l.note+'</div>':'')+'</div>';
+  // 後台只呈現可分析層；私密內容（問題/筆記/書寫全文）一律不顯示。
+  var privNote=(l.priv||l.note)?'<div style="font-size:10px;color:var(--t3,#9aa);margin-top:2px">🔒 私密內容（不顯示）</div>':'';
+  return '<div style="border-left:3px solid '+m.c+';padding:6px 10px;margin:5px 0;background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,61,124,.05)"><span style="font-size:11px;font-weight:600;color:'+m.c+'">'+m.ic+' '+m.lab+'</span> <span style="font-size:11px;color:var(--t2)">'+m.b+'</span>'+privNote+'</div>';
 }
 async function openUserDetail(email){
   var listCard=document.getElementById('users-list-card');
