@@ -108,9 +108,11 @@ async function run(){
   });
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
-  window.__done = true;
-  // 回報最終結果給測試伺服器（headless --dump-dom 會在 async 完成前就抓 DOM，
-  // 故改由 server 端收結果＋bash 輪詢，確保拿到「跑完後」的 DONE 行）。忽略 404（用純 http.server 直開時）。
+  window.__done = true; // 完成旗標（runner 之外，亦可在 console 直接檢查）
+  // 回報最終結果給測試 runner：jte-crypto-testrun.py 會起一個 http server 接 POST /__result，
+  // 用真實時間跑 headless Chrome（不可用 --virtual-time-budget，會在 WebCrypto async 完成前退出），
+  // 再輪詢這裡 POST 來的 DONE 行。用純 http.server / 直接開檔時此 fetch 會 404，忽略即可。
+  // 用法：python3 jte-crypto-testrun.py
   try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
 }
 window.__done = false;

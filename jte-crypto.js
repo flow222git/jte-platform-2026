@@ -13,7 +13,8 @@
   'use strict';
   const TE = new TextEncoder();
   const TD = new TextDecoder();
-  const ITER = 250000;
+  const ITER = 600000;          // OWASP 2023 對 PBKDF2-SHA256 的建議；無既有資料，升級零遷移成本
+  const HASH = 'SHA-256';
 
   function rand(n){ return crypto.getRandomValues(new Uint8Array(n)); }
   function b64(bytes){ let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); }
@@ -44,10 +45,12 @@
     return s;
   }
 
-  async function deriveWrapKey(secret, saltBytes){
+  // 前向相容：iterations/hash 由呼叫端傳入（解鎖時取自 blob.kdf），
+  // 故未來調高 ITER 後，用舊參數加密的 blob 仍解得開。
+  async function deriveWrapKey(secret, saltBytes, iterations, hash){
     const base = await crypto.subtle.importKey('raw', TE.encode(secret), 'PBKDF2', false, ['deriveKey']);
     return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: saltBytes, iterations: ITER, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt: saltBytes, iterations: iterations, hash: hash },
       base,
       { name: 'AES-GCM', length: 256 },
       false,
@@ -68,27 +71,37 @@
     const dek = rand(32);
     const salt = rand(16);
     const recoveryCode = generateRecoveryCode();
-    const passKey = await deriveWrapKey(passphrase, salt);
-    const recKey  = await deriveWrapKey(normalizeCode(recoveryCode), salt);
+    // 刻意用同一個 salt 同時導出密語 wrap key 與恢復碼 wrap key：兩者 input secret 不同，
+    // PBKDF2 仍輸出兩把獨立金鑰；per-user 隨機 salt 已達成防跨使用者預算彩虹表的目的，安全。
+    const passKey = await deriveWrapKey(passphrase, salt, ITER, HASH);
+    const recKey  = await deriveWrapKey(normalizeCode(recoveryCode), salt, ITER, HASH);
     const blob = {
       v: 1,
       salt: b64(salt),
-      kdf: { name: 'PBKDF2', iterations: ITER, hash: 'SHA-256' },
+      kdf: { name: 'PBKDF2', iterations: ITER, hash: HASH },
       wrapPass: await wrapDEK(dek, passKey),
       wrapRec:  await wrapDEK(dek, recKey)
     };
     return { blob, recoveryCode, dek };
   }
+  // 自 blob 讀回當初導出金鑰用的 KDF 參數（無 blob.kdf 的舊資料 fallback 至目前常數，向後相容）。
+  function kdfParams(blob){
+    const k = blob && blob.kdf;
+    return { iterations: (k && k.iterations) || ITER, hash: (k && k.hash) || HASH };
+  }
   async function unlockWithPassphrase(passphrase, blob){
-    const key = await deriveWrapKey(passphrase, ub64(blob.salt));
+    const p = kdfParams(blob);
+    const key = await deriveWrapKey(passphrase, ub64(blob.salt), p.iterations, p.hash);
     return unwrapDEK(blob.wrapPass, key);
   }
   async function unlockWithRecovery(recoveryCode, blob){
-    const key = await deriveWrapKey(normalizeCode(recoveryCode), ub64(blob.salt));
+    const p = kdfParams(blob);
+    const key = await deriveWrapKey(normalizeCode(recoveryCode), ub64(blob.salt), p.iterations, p.hash);
     return unwrapDEK(blob.wrapRec, key);
   }
   async function rewrapPassphrase(dekBytes, newPassphrase, blob){
-    const passKey = await deriveWrapKey(newPassphrase, ub64(blob.salt));
+    const p = kdfParams(blob);
+    const passKey = await deriveWrapKey(newPassphrase, ub64(blob.salt), p.iterations, p.hash);
     return Object.assign({}, blob, { wrapPass: await wrapDEK(dekBytes, passKey) });
   }
 
