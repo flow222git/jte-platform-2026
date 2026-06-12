@@ -405,32 +405,173 @@ function stopCamera(){
   session.track=null; _video=null; _grabCtx=null; _grabCanvas=null; session.measuring=false;
 }
 
-/* —— 結果頁（Task 4 填入）—— */
+/* —— 結果頁 —— */
 function renderResult(samples){
-  clearAll();
+  session.mode='result'; clearAll();
+  samples=samples||[];
+  const A=window.HrvAnalyze;
+  // 用既有純函式算指標與品質
+  const beats=A?A.detectBeats(samples):[];
+  const rr=A?A.rrFromBeats(beats):[];
+  const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
+  const quality=A?A.signalQuality(samples):'red';
+  // 誠實降級：訊號太差→不顯示任何數字、不存記錄、引導重量
+  const tooNoisy = !A || m.n<8 || quality==='red' || !(m.hr>=30&&m.hr<=220);
+
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead">量測完成（結果與儲存將於下一步加入）。樣本數：'+Number(samples.length)+'</p>');
+
+  if(tooNoisy){
+    const c=document.createElement('div');c.className='err-card';
+    c.innerHTML='<h3>這次沒量好</h3><p>請在光線充足處，手指輕貼鏡頭（含旁邊的閃光燈），保持靜止，再量一次。</p>';
+    d.appendChild(c);
+    d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+    app.appendChild(d);
+    const inner=document.createElement('div');inner.className='bar-inner';
+    const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+    again.onclick=function(){ renderMeasure(); };
+    inner.appendChild(again);
+    bar.appendChild(inner);
+    return;
+  }
+
+  const cls=A.classify(m);
+  const state=cls.state;                       // relaxed / balanced / tense
+  const stateZh=STATE_LABEL[state]||state;
+  const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
+
+  // 狀態大字卡（中文狀態 + advice），文字用 textContent 避免注入
+  const card=document.createElement('div');card.className='state-card s-'+state;
+  const lab=document.createElement('div');lab.className='lab';lab.textContent='現在的身體狀態';
+  const big=document.createElement('div');big.className='big';big.textContent=stateZh;
+  const adv=document.createElement('div');adv.className='adv';adv.textContent=cls.advice;
+  card.appendChild(lab);card.appendChild(big);card.appendChild(adv);
+  d.appendChild(card);
+
+  // 可展開：心率 / RMSSD / SDNN
+  const det=document.createElement('details');det.className='metrics';
+  det.innerHTML='<summary>看詳細數字</summary>'+
+    '<div class="panel" style="margin-top:8px">'+
+      '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
+      '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
+      '<div class="metric-row"><span class="mt">心率變異 <small>SDNN</small></span><span class="mv" id="mSd"></span></div>'+
+    '</div>';
+  d.appendChild(det);
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
   app.appendChild(d);
+  // 數值化注入（textContent）
+  det.querySelector('#mHr').textContent=String(hr)+' bpm';
+  det.querySelector('#mRm').textContent=String(rmssd)+' ms';
+  det.querySelector('#mSd').textContent=String(sdnn)+' ms';
+
+  // 存記錄：只在量到有效結果時存；走既有 helper（本機 + 登入時上雲，HRV 明文不加密）
+  const now=new Date();
+  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
+  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
+    hr:hr, rmssd:rmssd, sdnn:sdnn, state:state });
+
   const inner=document.createElement('div');inner.className='bar-inner';
+  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
+  trend.onclick=function(){ renderTrend(); };
   const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
   again.onclick=function(){ renderMeasure(); };
-  inner.appendChild(again);
+  inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
 }
 
-/* —— 趨勢頁（Task 4 填入）—— */
+/* —— 趨勢頁 —— */
 function renderTrend(){
   session.mode='trend'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead">趨勢頁將於下一步加入。</p>');
+  d.insertAdjacentHTML('beforeend','<p class="lead">最近的量測趨勢。看 RMSSD（心率變異）隨時間的變化，越高通常越放鬆。</p>');
+  const body=document.createElement('div');body.id='trendBody';
+  body.innerHTML='<p class="cam-hint">讀取中…</p>';
+  d.appendChild(body);
   app.appendChild(d);
+
   const inner=document.createElement('div');inner.className='bar-inner';
-  const home=document.createElement('button');home.className='btn btn-primary';home.textContent='回開始';
+  const home=document.createElement('button');home.className='btn btn-ghost';home.style.flex='1';home.textContent='回開始';
   home.onclick=function(){ renderIntro(); };
-  inner.appendChild(home);
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='量一次';
+  again.onclick=function(){ renderMeasure(); };
+  inner.appendChild(home);inner.appendChild(again);
   bar.appendChild(inner);
+
+  // 走既有讀回 helper：本機 + 登入時併回雲端，攤平所有 HRV 記錄（時間正序）
+  Promise.resolve(jteListRecordsMerged()).then(function(list){
+    if(session.mode!=='trend')return;        // 已離開趨勢頁則不渲染
+    drawTrend(list||[]);
+  }).catch(function(){
+    if(session.mode!=='trend')return;
+    drawTrend([]);
+  });
+}
+
+function drawTrend(list){
+  const body=document.getElementById('trendBody'); if(!body)return;
+  // 只取有 RMSSD 數值的 HRV 記錄，依 ts 正序（helper 已排序，這裡再保險一次）
+  const recs=(list||[]).filter(function(r){ return r&&r.source==='HRV'&&isFinite(Number(r.rmssd)); })
+    .sort(function(a,b){ return String(a.ts||'').localeCompare(String(b.ts||'')); });
+  body.innerHTML='';
+  if(!recs.length){
+    const c=document.createElement('div');c.className='guide-card';
+    c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有記錄</h3>'+
+      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">量過一次之後，這裡會出現你的 RMSSD 趨勢折線。先量一次看看吧。</p>';
+    body.appendChild(c);
+    return;
+  }
+
+  // —— SVG RMSSD 折線 ——
+  const W=520, H=170, padL=8, padR=8, padT=14, padB=18;
+  const vals=recs.map(function(r){ return Number(r.rmssd); });
+  let mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  if(mn===mx){ mn=mn-5; mx=mx+5; }
+  const span=(mx-mn)||1;
+  const n=recs.length;
+  function px(i){ return n===1 ? W/2 : padL + (W-padL-padR)*i/(n-1); }
+  function py(v){ return padT + (H-padT-padB)*(1-(v-mn)/span); }
+
+  const stateColor={ relaxed:'#2e8b57', balanced:'#b8860b', tense:'#c2631f' };
+  let path='';
+  for(let i=0;i<n;i++){ path += (i===0?'M':'L')+px(i).toFixed(1)+' '+py(vals[i]).toFixed(1)+' '; }
+  let dots='';
+  for(let i=0;i<n;i++){
+    const r=recs[i]; const col=stateColor[r.state]||'#003D7C';
+    const whenT=String(r.ts||''); // 供 title 顯示
+    const stZh=STATE_LABEL[r.state]||r.state||'';
+    dots+='<circle cx="'+px(i).toFixed(1)+'" cy="'+py(vals[i]).toFixed(1)+'" r="4.5" fill="'+col+'">'+
+      '<title>'+_h(stZh)+' · RMSSD '+Number(vals[i])+' · '+_h(whenT.slice(0,16).replace('T',' '))+'</title></circle>';
+  }
+  const wrap=document.createElement('div');wrap.className='trend-wrap';
+  wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    dots+'</svg>';
+  body.appendChild(wrap);
+
+  // —— 列表（新到舊）——
+  for(let i=recs.length-1;i>=0;i--){
+    const r=recs[i];
+    const card=document.createElement('div');card.className='hist-card';
+    const stZh=STATE_LABEL[r.state]||r.state||'';
+    const when=String(r.ts||'').slice(0,16).replace('T',' ');
+    const head=document.createElement('div');head.className='hist-head';
+    const badge=document.createElement('span');badge.className='hist-badge s-'+(r.state||'balanced');badge.textContent=stZh;
+    const hr=document.createElement('span');hr.className='hist-hr';hr.textContent=String(Number(r.hr))+' bpm';
+    const small=document.createElement('span');small.style.fontSize='12px';small.style.color='var(--ink-soft)';
+    small.textContent='RMSSD '+String(Number(r.rmssd))+' ms';
+    const whenEl=document.createElement('span');whenEl.className='hist-when';whenEl.textContent=when;
+    head.appendChild(badge);head.appendChild(hr);head.appendChild(small);head.appendChild(whenEl);
+    card.appendChild(head);
+
+    const ops=document.createElement('div');ops.className='hist-ops';
+    const del=document.createElement('button');del.className='hist-del';del.textContent='刪除';
+    const keyId=r.recordId||r.id;
+    del.onclick=function(){ jteDeleteRecord(keyId); renderTrend(); };
+    ops.appendChild(del);
+    card.appendChild(ops);
+    body.appendChild(card);
+  }
 }
 
 window.addEventListener('pagehide',stopCamera);
@@ -505,7 +646,7 @@ function jteDeleteRecord(id){
   Object.keys(all).forEach(function(dk){
     if(!all[dk].linked)return;
     const before=all[dk].linked.length;
-    all[dk].linked=all[dk].linked.filter(function(l){return l.id!==id;});
+    all[dk].linked=all[dk].linked.filter(function(l){return (l.recordId||l.id)!==id;});
     if(all[dk].linked.length!==before)touched=dk;
   });
   if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
