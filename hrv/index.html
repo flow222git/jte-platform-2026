@@ -299,18 +299,16 @@ async function startCamera(){
   session.stream=stream;
   const track=stream.getVideoTracks()[0];
   session.track=track;
-  // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）
+  // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）。
+  // z-index 蓋過使用者列；每欄各自 try 以免一處出錯整個不顯示。
   if(/debug/.test(location.search)||/debug/.test(location.hash)){
-    try{
-      const devs2=await navigator.mediaDevices.enumerateDevices();
-      const labels=devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空label)';});
-      const st=(track&&track.getSettings)?track.getSettings():{};
-      const caps=(track&&track.getCapabilities)?track.getCapabilities():{};
-      const capKeys=Object.keys(caps).filter(function(k){return /zoom|focus|torch|whiteBalance|exposure/i.test(k);});
-      let box=document.getElementById('hrvCamDbg');
-      if(!box){ box=document.createElement('div'); box.id='hrvCamDbg'; box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,.85);color:#0ff;font:11px/1.4 monospace;padding:6px 8px;white-space:pre-wrap;word-break:break-all;pointer-events:none'; document.body.appendChild(box); }
-      box.textContent='[鏡頭診斷]\ncams: '+labels.join('  ||  ')+'\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?')+'\ncaps: '+(capKeys.join(', ')||'(無)');
-    }catch(e){}
+    let box=document.getElementById('hrvCamDbg');
+    if(!box){ box=document.createElement('div'); box.id='hrvCamDbg'; box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483646;background:rgba(0,0,0,.9);color:#0ff;font:11px/1.45 monospace;padding:8px 10px;white-space:pre-wrap;word-break:break-all;pointer-events:none'; document.body.appendChild(box); }
+    let info='[鏡頭診斷]';
+    try{ const devs2=await navigator.mediaDevices.enumerateDevices(); info+='\ncams: '+devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空)';}).join('  ||  '); }catch(e){ info+='\ncams: 列舉失敗 '+(e&&e.name); }
+    try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?'); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
+    try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
+    box.textContent=info;
   }
   // iPhone：閃光燈（torch）常不支援，applyConstraints 會丟例外 → 吞掉，改用環境光。
   try{
