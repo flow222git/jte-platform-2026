@@ -1,5 +1,14 @@
 // jte-crypto.js — 全平台私密書寫共用加密核心（信封加密）
-// 純函式：只在 bytes/strings 間運算，不碰 localStorage/Firestore/DOM。
+// 載入：<script defer src="https://flow222git.github.io/jte-platform-2026/jte-crypto.js"></script>
+// 純函式：只在 bytes/strings 間運算，不碰 localStorage/Firestore/DOM（整合屬 Plan 2）。
+// API（皆 async，掛 window.JteCrypto）：
+//   setup(passphrase) -> { blob, recoveryCode, dek }
+//   unlockWithPassphrase(passphrase, blob) -> Uint8Array(32)   // 錯密語拋例外
+//   unlockWithRecovery(recoveryCode, blob) -> Uint8Array(32)   // 碼可含/不含分隔線
+//   rewrapPassphrase(dek, newPassphrase, blob) -> blob'
+//   encryptField(dek, str) -> { iv, ct }   // 每次隨機 iv
+//   decryptField(dek, {iv,ct}) -> str
+// blob 可 JSON 序列化，安全存 Firestore；DEK 與密語/恢復碼明文絕不離開瀏覽器。
 (function (root) {
   'use strict';
   const TE = new TextEncoder();

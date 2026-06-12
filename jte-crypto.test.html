@@ -94,6 +94,18 @@ async function run(){
     const dekRec = await JteCrypto.unlockWithRecovery(_rec, blob2);
     eq(await JteCrypto.decryptField(dekRec, enc), 'survives-rewrap', '恢復碼換密語後仍可用');
   });
+  await check('decryptField 對被竄改的 ct 拋例外（GCM 驗證）', async () => {
+    const s = await JteCrypto.setup('pw');
+    const enc = await JteCrypto.encryptField(s.dek, 'tamper-check');
+    const bad = Object.assign({}, enc, { ct: enc.ct.slice(0, -4) + (enc.ct.slice(-4) === 'AAAA' ? 'BBBB' : 'AAAA') });
+    let threw = false;
+    try { await JteCrypto.decryptField(s.dek, bad); } catch(e){ threw = true; }
+    assert(threw, '竄改密文應被 GCM 驗證擋下');
+  });
+  await check('版本標記 v=1 存在', async () => {
+    const s = await JteCrypto.setup('pw');
+    eq(s.blob.v, 1, 'blob.v');
+  });
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
