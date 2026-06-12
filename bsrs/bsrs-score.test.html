@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>bsrs-score tests</title>
+<script src="bsrs-score.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+async function run(){
+  assert(typeof BsrsScore === 'object', 'BsrsScore 應載入');
+
+  await check('score 邊界：總分與分級', async () => {
+    eq(BsrsScore.score([0,0,0,0,0,0]).total, 0, '全 0 總分');
+    eq(BsrsScore.score([1,1,1,1,1,0]).level, 'good', '5 分 good');
+    eq(BsrsScore.score([2,1,1,1,1,0]).level, 'mild', '6 分 mild');
+    eq(BsrsScore.score([2,2,2,2,1,0]).level, 'mild', '9 分 mild（6-9 上邊界）');
+    eq(BsrsScore.score([2,2,2,2,2,0]).level, 'moderate', '10 分 moderate');
+    eq(BsrsScore.score([3,3,3,3,2,0]).level, 'moderate', '14 分 moderate');
+    eq(BsrsScore.score([3,3,3,3,3,0]).level, 'severe', '15 分 severe');
+    eq(BsrsScore.score([4,4,4,4,4,0]).total, 20, '全 4 總分 20');
+    eq(BsrsScore.score([4,4,4,4,4,0]).level, 'severe', '20 分 severe');
+  });
+  await check('score 第6題不計入總分', async () => {
+    eq(BsrsScore.score([1,1,1,1,1,4]).total, 5, '附加題不計總分');
+  });
+  await check('crisis 旗標：總分≥15 或 item6≥2', async () => {
+    eq(BsrsScore.score([3,3,3,3,3,0]).crisis, true, '總分15→crisis');
+    eq(BsrsScore.score([0,0,0,0,0,2]).crisis, true, 'item6=2→crisis');
+    eq(BsrsScore.score([0,0,0,0,0,1]).crisis, false, 'item6=1 不觸發');
+    eq(BsrsScore.score([1,1,1,1,1,0]).crisis, false, '低分不觸發');
+  });
+  await check('score 回傳 levelLabel/advice/item6', async () => {
+    const r = BsrsScore.score([3,3,3,3,3,3]);
+    assert(r.levelLabel && r.advice, '有分級標籤與建議'); eq(r.item6, 3, 'item6 帶回');
+  });
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
