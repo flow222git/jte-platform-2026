@@ -24,6 +24,19 @@ function synthPpg(bpm, durSec, fs, noise){
   for(var i=0;i<n;i++){ var t=i*1000/fs; var v=Math.sin(2*Math.PI*f*t/1000) + (noise?(Math.random()-0.5)*noise:0); s.push({t:t,v:v}); }
   return s;
 }
+// 合成 PPG：開頭一個大暫態（手指安定的凹陷，幅度遠大於脈搏）＋穩定脈搏 —— 重現真機「波形開頭大凹陷」狀況
+function synthArtifact(bpm, durSec, fs){
+  fs=fs||30; var s=[], f=bpm/60, n=Math.round(durSec*fs);
+  for(var i=0;i<n;i++){
+    var t=i*1000/fs;
+    var pulse=Math.sin(2*Math.PI*f*t/1000);
+    var settle = t<1200 ? -7*Math.exp(-t/350) : 0;       // 開頭安定凹陷
+    var spike = (t>3000 && t<3130) ? 9 : 0;              // 中途尖銳大正向動作雜訊 → 撐高全域最大值
+    var noise=(Math.random()-0.5)*0.12;
+    s.push({t:t, v: 50 + pulse + settle + spike + noise});
+  }
+  return s;
+}
 
 async function run(){
   assert(typeof HrvAnalyze === 'object', 'HrvAnalyze 應載入');
@@ -65,6 +78,14 @@ async function run(){
     eq(HrvAnalyze.signalQuality(synthPpg(60,8,30,0.05)),'green','乾淨');
     var flat=[]; for(var i=0;i<240;i++) flat.push({t:i*33.3,v:(Math.random()-0.5)*0.02});
     eq(HrvAnalyze.signalQuality(flat),'red','平坦雜訊');
+  });
+  await check('開頭大擾動＋64bpm：仍偵測多數心跳、hr≈64、品質非紅（重現真機）', async () => {
+    var s=synthArtifact(64,16,30);
+    var beats=HrvAnalyze.detectBeats(s);
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(beats));
+    assert(beats.length>=12, '應偵測 >=12 拍，實得 '+beats.length);
+    near(m.hr,64,6,'hr≈64');
+    assert(HrvAnalyze.signalQuality(s)!=='red','品質不應紅，實得 '+HrvAnalyze.signalQuality(s));
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);

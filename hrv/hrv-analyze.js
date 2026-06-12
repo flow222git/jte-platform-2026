@@ -23,20 +23,32 @@
     return STATES[key];
   }
 
-  // 移動平均去基線 → 取 AC，找局部極大（脈搏峰），自適應門檻 + 不應期。
-  // 回傳 { beats:[t...], heights:[ac峰高...] }（heights 供品質判斷用）。
-  function _detect(samples){
+  // 修剪開頭約 1.5 秒手指安定期 + 移動平均去基線 → 回傳 { ac, t, fs }
+  function _prep(samples){
     samples = samples||[];
-    if (samples.length < 10) return { beats:[], heights:[] };
-    var v = samples.map(function(s){ return s.v; }), t = samples.map(function(s){ return s.t; });
-    var win = 15, ac = [];
+    if (samples.length < 10) return null;
+    var t0 = samples[0].t, trimmed = [];
+    for (var z=0;z<samples.length;z++){ if (samples[z].t - t0 >= 1500) trimmed.push(samples[z]); }
+    if (trimmed.length < 10) trimmed = samples; // 資料太短就不修剪
+    var v = trimmed.map(function(s){ return s.v; }), t = trimmed.map(function(s){ return s.t; });
+    var dur = t[t.length-1]-t[0], fs = dur>0 ? (v.length-1)/(dur/1000) : 30;
+    var win = Math.max(5, Math.round(fs*0.6)), ac = [];
     for (var i=0;i<v.length;i++){
       var a=Math.max(0,i-win), b=Math.min(v.length-1,i+win), s=0,c=0;
       for(var k=a;k<=b;k++){ s+=v[k]; c++; }
-      ac.push(v[i]-s/c); // 去趨勢
+      ac.push(v[i]-s/c);
     }
-    var mx=0; for(var j=0;j<ac.length;j++) if(ac[j]>mx) mx=ac[j];
-    var thr = mx*0.4;
+    return { ac:ac, t:t, fs:fs };
+  }
+  // 找脈搏峰：穩健門檻＝正向 AC 的 90 百分位之半（單一動作尖峰拉不動百分位、雜訊也壓不低它，
+  // 取代原本「全域最大值×0.4」會被一個尖峰綁架而漏掉大部分心跳）。回傳 { beats, heights }。
+  function _detect(samples){
+    var pr=_prep(samples); if(!pr) return { beats:[], heights:[] };
+    var ac=pr.ac, t=pr.t;
+    var pos=[]; for(var j=0;j<ac.length;j++){ if(ac[j]>0) pos.push(ac[j]); }
+    pos.sort(function(x,y){ return x-y; });
+    var p90 = pos.length ? pos[Math.min(pos.length-1, Math.floor(pos.length*0.9))] : 0;
+    var thr = p90*0.5;
     var beats=[], heights=[], lastT=-1e9;
     for(var p=1;p<ac.length-1;p++){
       if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1] && (t[p]-lastT)>=300){
@@ -44,6 +56,18 @@
       }
     }
     return { beats:beats, heights:heights };
+  }
+  // 自相關週期性分數(0~1)：真脈搏在 40-150bpm 對應 lag 有強自相關；雜訊接近 0。
+  function _periodicity(ac, fs){
+    var n=ac.length; if(n<20) return 0;
+    var m=mean(ac), x=new Array(n); for(var i=0;i<n;i++) x[i]=ac[i]-m;
+    var c0=0; for(i=0;i<n;i++) c0+=x[i]*x[i]; if(c0<=0) return 0;
+    var lagMin=Math.max(1,Math.round(fs*0.4)), lagMax=Math.round(fs*1.5), best=0;
+    for(var lag=lagMin; lag<=lagMax && lag<n; lag++){
+      var c=0; for(var j=0;j+lag<n;j++) c+=x[j]*x[j+lag];
+      var r=c/c0; if(r>best) best=r;
+    }
+    return best;
   }
   function detectBeats(samples){ return _detect(samples).beats; }
   function rrFromBeats(beats){
@@ -61,15 +85,17 @@
     var vs=0; for(var i=0;i<a.length;i++){ var d=a[i]-m; vs+=d*d; }
     return Math.sqrt(vs/a.length)/m;
   }
-  // 訊號品質 green/yellow/red：乾淨脈搏同時具備「RR 規律」與「脈衝高度一致」；
-  // 雜訊兩者皆亂。任一明顯偏離→誠實降級，不硬給數字。
+  // 訊號品質 green/yellow/red：核心是「有沒有真的週期性脈搏」（自相關），
+  // 再看 RR 規律性與生理合理性。相機 PPG 脈衝高度本來就浮動，故不再用峰高一致性（太嚴苛→永遠紅）。
   function signalQuality(samples){
+    var pr=_prep(samples); if(!pr) return 'red';
+    var per=_periodicity(pr.ac, pr.fs);
     var d=_detect(samples), rr=rrFromBeats(d.beats);
-    if (rr.length < 3) return 'red';
-    var rrCv = _cv(rr);          // 人體短時 RR CV 一般 <0.1；雜訊偏高
-    var htCv = _cv(d.heights);   // 乾淨脈衝高度一致(<0.1)；雜訊峰高散亂(>0.15)
-    if (rrCv < 0.12 && htCv < 0.12) return 'green';
-    if (rrCv < 0.22 && htCv < 0.18) return 'yellow';
+    if (rr.length < 4 || per < 0.30) return 'red'; // 心跳太少 / 沒週期性＝雜訊
+    var rrCv = _cv(rr), hr = 60000/mean(rr);
+    if (hr < 40 || hr > 150) return 'red';         // 不合生理／雜訊湊出的過快節律
+    if (per >= 0.50 && rrCv < 0.20) return 'green';
+    if (per >= 0.35 && rrCv < 0.40) return 'yellow';
     return 'red';
   }
 
