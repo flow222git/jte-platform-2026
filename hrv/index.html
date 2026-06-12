@@ -299,6 +299,19 @@ async function startCamera(){
   session.stream=stream;
   const track=stream.getVideoTracks()[0];
   session.track=track;
+  // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）
+  if(/debug/.test(location.search)||/debug/.test(location.hash)){
+    try{
+      const devs2=await navigator.mediaDevices.enumerateDevices();
+      const labels=devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空label)';});
+      const st=(track&&track.getSettings)?track.getSettings():{};
+      const caps=(track&&track.getCapabilities)?track.getCapabilities():{};
+      const capKeys=Object.keys(caps).filter(function(k){return /zoom|focus|torch|whiteBalance|exposure/i.test(k);});
+      let box=document.getElementById('hrvCamDbg');
+      if(!box){ box=document.createElement('div'); box.id='hrvCamDbg'; box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:rgba(0,0,0,.85);color:#0ff;font:11px/1.4 monospace;padding:6px 8px;white-space:pre-wrap;word-break:break-all;pointer-events:none'; document.body.appendChild(box); }
+      box.textContent='[鏡頭診斷]\ncams: '+labels.join('  ||  ')+'\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?')+'\ncaps: '+(capKeys.join(', ')||'(無)');
+    }catch(e){}
+  }
   // iPhone：閃光燈（torch）常不支援，applyConstraints 會丟例外 → 吞掉，改用環境光。
   try{
     if(track&&track.applyConstraints){
