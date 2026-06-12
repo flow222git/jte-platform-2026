@@ -48,9 +48,60 @@ async function run(){
     try { await JteCrypto.decryptField(_dek2, blob); } catch(e){ threw = true; }
     assert(threw, '用錯 dek 應拋例外');
   });
+  // --- 信封加密：setup / unlock ---
+  let _blob, _rec, _setupDek;
+  await check('setup() 產出可序列化 blob ＋ 恢復碼', async () => {
+    const s = await JteCrypto.setup('my-passphrase');
+    _blob = JSON.parse(JSON.stringify(s.blob)); // 模擬存進 Firestore 再讀回
+    _rec = s.recoveryCode; _setupDek = s.dek;
+    assert(_blob.salt && _blob.wrapPass && _blob.wrapRec, 'blob 應含 salt/wrapPass/wrapRec');
+    assert(/^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/.test(_rec), '恢復碼格式 XXXXX-XXXXX-XXXXX-XXXXX，實得 ' + _rec);
+  });
+  await check('正確密語解鎖 → 能解開 setup 當下加密的內容', async () => {
+    const enc = await JteCrypto.encryptField(_setupDek, '只有我看得到');
+    const dek = await JteCrypto.unlockWithPassphrase('my-passphrase', _blob);
+    eq(await JteCrypto.decryptField(dek, enc), '只有我看得到', '跨 session 還原');
+  });
+  await check('錯誤密語解鎖 → 拋例外', async () => {
+    let threw = false;
+    try { await JteCrypto.unlockWithPassphrase('wrong-pass', _blob); } catch(e){ threw = true; }
+    assert(threw, '錯密語應拋例外');
+  });
+  await check('恢復碼解鎖（含分隔線）→ 可用', async () => {
+    const enc = await JteCrypto.encryptField(_setupDek, 'recover-me');
+    const dek = await JteCrypto.unlockWithRecovery(_rec, _blob);
+    eq(await JteCrypto.decryptField(dek, enc), 'recover-me', '恢復碼還原');
+  });
+  await check('恢復碼解鎖（去分隔線/小寫）→ 仍可用', async () => {
+    const messy = _rec.replace(/-/g, '').toLowerCase();
+    const dek = await JteCrypto.unlockWithRecovery(messy, _blob);
+    assert(dek instanceof Uint8Array && dek.length === 32, '正規化後仍解得開');
+  });
+  await check('錯誤恢復碼 → 拋例外', async () => {
+    let threw = false;
+    try { await JteCrypto.unlockWithRecovery('AAAAA-BBBBB-CCCCC-DDDDD', _blob); } catch(e){ threw = true; }
+    assert(threw, '錯恢復碼應拋例外');
+  });
+  await check('換密語：新密語可解、舊密語失效、恢復碼仍可用', async () => {
+    const enc = await JteCrypto.encryptField(_setupDek, 'survives-rewrap');
+    const dek0 = await JteCrypto.unlockWithPassphrase('my-passphrase', _blob);
+    const blob2 = await JteCrypto.rewrapPassphrase(dek0, 'new-passphrase', _blob);
+    const dekNew = await JteCrypto.unlockWithPassphrase('new-passphrase', blob2);
+    eq(await JteCrypto.decryptField(dekNew, enc), 'survives-rewrap', '新密語可解');
+    let oldThrew = false;
+    try { await JteCrypto.unlockWithPassphrase('my-passphrase', blob2); } catch(e){ oldThrew = true; }
+    assert(oldThrew, '舊密語應失效');
+    const dekRec = await JteCrypto.unlockWithRecovery(_rec, blob2);
+    eq(await JteCrypto.decryptField(dekRec, enc), 'survives-rewrap', '恢復碼換密語後仍可用');
+  });
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  // 回報最終結果給測試伺服器（headless --dump-dom 會在 async 完成前就抓 DOM，
+  // 故改由 server 端收結果＋bash 輪詢，確保拿到「跑完後」的 DONE 行）。忽略 404（用純 http.server 直開時）。
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
 }
+window.__done = false;
 run();
 </script>
 </body></html>

@@ -25,10 +25,67 @@
     return TD.decode(pt);
   }
 
-  // setup 暫時版（Task 3 補完整 blob）：先只回傳 dek 供欄位測試
-  async function setup(passphrase){
-    return { dek: rand(32) };
+  function normalizeCode(code){ return String(code).replace(/[^A-Za-z0-9]/g, '').toUpperCase(); }
+
+  function generateRecoveryCode(){
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 字元、去除易混的 I O 0 1；32 整除 256 故無 modulo bias
+    const r = rand(20);
+    let s = '';
+    for (let i = 0; i < 20; i++){ s += A[r[i] % A.length]; if (i % 5 === 4 && i < 19) s += '-'; }
+    return s;
   }
 
-  root.JteCrypto = { setup, encryptField, decryptField, _b64: b64, _ub64: ub64, _ITER: ITER, _rand: rand };
+  async function deriveWrapKey(secret, saltBytes){
+    const base = await crypto.subtle.importKey('raw', TE.encode(secret), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: saltBytes, iterations: ITER, hash: 'SHA-256' },
+      base,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+  async function wrapDEK(dekBytes, wrapKey){
+    const iv = rand(12);
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrapKey, dekBytes);
+    return { iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+  }
+  async function unwrapDEK(wrap, wrapKey){
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64(wrap.iv) }, wrapKey, ub64(wrap.ct));
+    return new Uint8Array(pt); // 錯鑰匙時 decrypt 直接拋 OperationError
+  }
+
+  async function setup(passphrase){
+    const dek = rand(32);
+    const salt = rand(16);
+    const recoveryCode = generateRecoveryCode();
+    const passKey = await deriveWrapKey(passphrase, salt);
+    const recKey  = await deriveWrapKey(normalizeCode(recoveryCode), salt);
+    const blob = {
+      v: 1,
+      salt: b64(salt),
+      kdf: { name: 'PBKDF2', iterations: ITER, hash: 'SHA-256' },
+      wrapPass: await wrapDEK(dek, passKey),
+      wrapRec:  await wrapDEK(dek, recKey)
+    };
+    return { blob, recoveryCode, dek };
+  }
+  async function unlockWithPassphrase(passphrase, blob){
+    const key = await deriveWrapKey(passphrase, ub64(blob.salt));
+    return unwrapDEK(blob.wrapPass, key);
+  }
+  async function unlockWithRecovery(recoveryCode, blob){
+    const key = await deriveWrapKey(normalizeCode(recoveryCode), ub64(blob.salt));
+    return unwrapDEK(blob.wrapRec, key);
+  }
+  async function rewrapPassphrase(dekBytes, newPassphrase, blob){
+    const passKey = await deriveWrapKey(newPassphrase, ub64(blob.salt));
+    return Object.assign({}, blob, { wrapPass: await wrapDEK(dekBytes, passKey) });
+  }
+
+  root.JteCrypto = {
+    setup, unlockWithPassphrase, unlockWithRecovery, rewrapPassphrase,
+    encryptField, decryptField, generateRecoveryCode,
+    _normalizeCode: normalizeCode
+  };
 })(typeof window !== 'undefined' ? window : this);
