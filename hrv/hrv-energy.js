@@ -2,17 +2,12 @@
 // Bayesian 混合弱母體先驗，讓第一次量測就有合理分數、隨次數越來越個人化。相對參考、非醫療。
 (function (root) {
   'use strict';
-  var POP_LN_MEAN=3.6, POP_LN_SD=0.55, POP_HR_MEAN=70, POP_HR_SD=10, K=4, RECENT=14, CONF_N=7;
+  var POP_LN_MEAN=3.6, POP_LN_SD=0.55, POP_HR_MEAN=70, POP_HR_SD=10, K=2, RECENT=14, CONF_N=7;
   function clamp(x,lo,hi){ return x<lo?lo:(x>hi?hi:x); }
   function sum(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return s; }
-  function mean(a){ return a.length? sum(a)/a.length : 0; }
-  function blendSd(vals, popSd){ // 個人樣本變異與母體先驗變異混合（權重 個人 n-1、先驗 K）
-    var n=vals.length; if(n<2) return popSd;
-    var m=mean(vals), v=0; for(var i=0;i<n;i++){ var d=vals[i]-m; v+=d*d; }
-    var pv=v/(n-1);
-    return Math.sqrt((pv*(n-1)+popSd*popSd*K)/((n-1)+K));
-  }
   // history：[{rmssd,hr,ts}...]（本次之前的過去量測）。取近 RECENT 次。
+  // 平均＝個人與弱母體先驗混合（K 小→快速個人化，「你的平常」落在分數中間）。
+  // SD＝用固定母體 SD：不去估資料少時不穩的個人 SD（會被縮小而放大 z、害「平常」誤判成高）。
   function baselineFrom(history){
     var h=(history||[]).filter(function(r){ return r && r.rmssd>0; }).slice(-RECENT);
     var lns=h.map(function(r){ return Math.log(r.rmssd); });
@@ -20,9 +15,9 @@
     var n=lns.length;
     return {
       effLnMean:(sum(lns)+K*POP_LN_MEAN)/(n+K),
-      effLnSd: blendSd(lns, POP_LN_SD) || POP_LN_SD,
+      effLnSd: POP_LN_SD,
       effHrMean:(sum(hrs)+K*POP_HR_MEAN)/(hrs.length+K),
-      effHrSd: blendSd(hrs, POP_HR_SD) || POP_HR_SD,
+      effHrSd: POP_HR_SD,
       n:n
     };
   }

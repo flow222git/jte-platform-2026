@@ -46,9 +46,16 @@ async function run(){
   await check('baseline 個人化：常態高的人、量到同樣高值→約中（相對自己）', async () => {
     var hi=[]; for(var i=0;i<14;i++) hi.push({rmssd:80,hr:60});
     var b=HrvEnergy.baselineFrom(hi);
-    assert(b.effLnMean>3.9,'baseline 向個人靠攏，實得 '+b.effLnMean.toFixed(2));
+    assert(b.effLnMean>4.0,'baseline 向個人靠攏，實得 '+b.effLnMean.toFixed(2));
     var e=HrvEnergy.energyScore({rmssd:80,hr:60}, b);
-    near(e.score,60,13,'對自己常態≈中，實得 '+e.score);
+    near(e.score,60,8,'對自己常態≈中，實得 '+e.score);
+    eq(e.recovery.level,'mid','恢復力細項也應≈中（不是高），實得 '+e.recovery.level);
+  });
+  await check('baseline 個人化：常態高的人、量到明顯高於自己→仍給高分', async () => {
+    var hi=[]; for(var i=0;i<14;i++) hi.push({rmssd:80,hr:60});
+    var b=HrvEnergy.baselineFrom(hi);
+    var e=HrvEnergy.energyScore({rmssd:160,hr:54}, b);
+    assert(e.score>=75,'明顯高於自己常態→高分，實得 '+e.score);
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
