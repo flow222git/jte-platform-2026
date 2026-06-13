@@ -93,6 +93,24 @@
   .legend-txt p{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin:3px 0 0}
   .legend-row.on .legend-txt .you{display:inline-block;font-size:10.5px;color:#fff;background:var(--accent);border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
 
+  /* —— 自覺狀態標記 —— */
+  .tagpick{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
+  .tagpick-head{display:flex;flex-direction:column;gap:2px;margin-bottom:11px}
+  .tagpick-head b{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:600;color:var(--ink)}
+  .tagpick-head span{font-size:12px;color:var(--ink-faint)}
+  .tagrow{display:flex;flex-wrap:wrap;gap:8px}
+  .tagchip{font-family:inherit;font-size:13.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;line-height:1.2;transition:background .12s,color .12s,border-color .12s}
+  .tagchip:active{transform:scale(.96)}
+  .tagchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tagchip.add{color:var(--accent);border-style:dashed}
+  .tagpick-done{font-size:12.5px;color:var(--accent);margin-top:10px;min-height:1em;line-height:1.5}
+  /* 趨勢頁標記 */
+  .trend-filter{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+  .trend-filter .tagchip{font-size:12.5px;padding:5px 11px}
+  .trend-filter-note{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.6}
+  .hist-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+  .hist-tags span{font-size:11.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+
   /* —— 量測 —— */
   .cam-stage{position:relative;background:#11151c;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;aspect-ratio:1/1;max-height:42vh;display:flex;align-items:center;justify-content:center}
   .cam-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
@@ -598,6 +616,54 @@ function renderResult(samples){
 
 // 顏色：能量 high→綠(relaxed)、mid→金(balanced)、low→暖(tense)
 const ENERGY_TONE={ high:'relaxed', mid:'balanced', low:'tense' };
+
+/* —— 自覺狀態標記 —— 量完揭曉分數後，可快速貼情境標記（選填、可多選）。
+   預設 8 顆＋使用者自訂（存個人標籤庫，之後變成可選的一顆）。 */
+const TAG_PRESETS=['🌅 剛起床','☀️ 中午','🌙 睡前','🏃 運動後','😮‍💨 有點累','🧘 放鬆','😣 壓力大','✨ 靈感來了'];
+const TAG_USER_KEY='hrv_tags_user';
+function tagUserList(){ try{ return JSON.parse(localStorage.getItem(TAG_USER_KEY)||'[]'); }catch(e){ return []; } }
+function tagUserAdd(t){
+  t=String(t||'').trim().slice(0,16); if(!t) return '';
+  const list=tagUserList();
+  if(TAG_PRESETS.indexOf(t)===-1 && list.indexOf(t)===-1){ list.push(t); try{ localStorage.setItem(TAG_USER_KEY,JSON.stringify(list)); }catch(e){} }
+  return t;
+}
+// 回傳一張「狀態標記」卡；點選即時補丁更新該筆記錄的 tags
+function buildTagPicker(recId){
+  const wrap=document.createElement('div'); wrap.className='tagpick';
+  const sel={};                                  // 已選標記集合
+  const head=document.createElement('div'); head.className='tagpick-head';
+  head.innerHTML='<b>這次的狀態？</b><span>選填，可多選 — 之後能依標記看趨勢</span>';
+  wrap.appendChild(head);
+  const row=document.createElement('div'); row.className='tagrow';
+  wrap.appendChild(row);
+  const done=document.createElement('div'); done.className='tagpick-done'; done.textContent=''; wrap.appendChild(done);
+
+  function save(){
+    const tags=Object.keys(sel).filter(function(t){ return sel[t]; });
+    jteUpdateRecord(recId,{ tags:tags });
+    done.textContent = tags.length ? '已記下：'+tags.join('、') : '';
+  }
+  function makeChip(label){
+    const b=document.createElement('button'); b.type='button'; b.className='tagchip'; b.textContent=label;
+    b.onclick=function(){ sel[label]=!sel[label]; b.classList.toggle('on',!!sel[label]); save(); };
+    return b;
+  }
+  function rebuild(){
+    row.innerHTML='';
+    TAG_PRESETS.concat(tagUserList()).forEach(function(t){ const c=makeChip(t); if(sel[t])c.classList.add('on'); row.appendChild(c); });
+    // ＋自己寫
+    const add=document.createElement('button'); add.type='button'; add.className='tagchip add'; add.textContent='＋ 自己寫';
+    add.onclick=function(){
+      const t=tagUserAdd(window.prompt('輸入一個狀態標記（之後會記住，方便下次直接選）：',''));
+      if(t){ sel[t]=true; rebuild(); save(); }
+    };
+    row.appendChild(add);
+  }
+  rebuild();
+  return wrap;
+}
+
 function renderEnergyResult(d, card, list, m, rec){
   const E=window.HrvEnergy;
   // 過去 HRV 記錄（已含本次？本次尚未寫入，故 list 即為「過去」）：過濾 source==='HRV' 且有 rmssd
@@ -623,8 +689,17 @@ function renderEnergyResult(d, card, list, m, rec){
     card.appendChild(note);
   }
 
-  // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
+  // —— 儲存（只在通過誠實把關才到這裡）：能量/等級＋空標記，下面可即時補貼 ——
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
+  const now=new Date();
+  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
+  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
+    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[] });
+
+  // —— 自覺狀態標記（量完即可貼，選填、可多選）——
+  d.appendChild(buildTagPicker(recId));
+
+  // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
   const det=document.createElement('details');det.className='metrics';
   det.innerHTML='<summary>看細項</summary>'+
     '<div class="idx-card" style="margin-top:8px">'+
@@ -668,12 +743,6 @@ function renderEnergyResult(d, card, list, m, rec){
   // —— 常駐免責（相對參考、非醫療）——
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(ENERGY_DISCLAIMER)+'</p>');
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
-
-  // —— 儲存（只在通過誠實把關時才到這裡）：加 energy / level ——
-  const now=new Date();
-  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
-  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state });
 }
 /* —— 趨勢頁 —— */
 function renderTrend(){
@@ -709,18 +778,43 @@ const ENERGY_COLOR={ high:'#2e8b57', mid:'#b8860b', low:'#c2631f' };
 const STATE_COLOR={ relaxed:'#2e8b57', balanced:'#b8860b', tense:'#c2631f' };
 const ENERGY_LABEL={ high:'充足', mid:'平穩', low:'偏低' };
 function recColor(r){ return ENERGY_COLOR[r.level]||STATE_COLOR[r.state]||'#003D7C'; }
+var _trendFilter=null;
+function recTags(r){ return Array.isArray(r.tags)?r.tags:[]; }
 function drawTrend(list){
   const body=document.getElementById('trendBody'); if(!body)return;
-  // 所有 HRV 記錄（供列表），依 ts 正序
-  const all=(list||[]).filter(function(r){ return r&&r.source==='HRV'; })
-    .sort(function(a,b){ return String(a.ts||'').localeCompare(String(b.ts||'')); });
-  // 折線只取有 energy 分數的記錄（舊記錄無 energy 者退出折線，仍進列表）
-  const recs=all.filter(function(r){ return isFinite(Number(r.energy)); });
   body.innerHTML='';
-  if(!all.length){
+  // 所有 HRV 記錄，依 ts 正序
+  const everything=(list||[]).filter(function(r){ return r&&r.source==='HRV'; })
+    .sort(function(a,b){ return String(a.ts||'').localeCompare(String(b.ts||'')); });
+  if(!everything.length){
     const c=document.createElement('div');c.className='guide-card';
     c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有記錄</h3>'+
       '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">量過一次之後，這裡會出現你的身體能量趨勢。先量一次看看吧。</p>';
+    body.appendChild(c);
+    return;
+  }
+  // —— 依標記篩選（用過的標記才出現，可比較不同情境）——
+  const usedTags=[]; everything.forEach(function(r){ recTags(r).forEach(function(t){ if(usedTags.indexOf(t)===-1)usedTags.push(t); }); });
+  if(_trendFilter && usedTags.indexOf(_trendFilter)===-1) _trendFilter=null;
+  if(usedTags.length){
+    const fb=document.createElement('div');fb.className='trend-filter';
+    function fchip(label,val){ const b=document.createElement('button');b.type='button';b.className='tagchip'+(_trendFilter===val?' on':'');b.textContent=label;b.onclick=function(){ _trendFilter=val; drawTrend(list); };return b; }
+    fb.appendChild(fchip('全部',null));
+    usedTags.forEach(function(t){ fb.appendChild(fchip(t,t)); });
+    body.appendChild(fb);
+  }
+  // 依篩選取子集
+  const all = _trendFilter ? everything.filter(function(r){ return recTags(r).indexOf(_trendFilter)!==-1; }) : everything;
+  // 折線只取有 energy 分數的記錄（舊記錄無 energy 者退出折線，仍進列表）
+  const recs=all.filter(function(r){ return isFinite(Number(r.energy)); });
+  if(_trendFilter){
+    const avg = recs.length ? Math.round(recs.reduce(function(s,r){return s+Number(r.energy);},0)/recs.length) : null;
+    const note=document.createElement('div');note.className='trend-filter-note';
+    note.textContent='「'+_trendFilter+'」：'+all.length+' 次'+(avg!=null?('，平均身體能量 '+avg):'');
+    body.appendChild(note);
+  }
+  if(!all.length){
+    const c=document.createElement('div');c.className='cam-hint';c.textContent='這個標記下還沒有記錄。';
     body.appendChild(c);
     return;
   }
@@ -770,6 +864,9 @@ function drawTrend(list){
     const whenEl=document.createElement('span');whenEl.className='hist-when';whenEl.textContent=when;
     head.appendChild(badge);head.appendChild(hr);head.appendChild(small);head.appendChild(whenEl);
     card.appendChild(head);
+
+    const tgs=recTags(r);
+    if(tgs.length){ const tw=document.createElement('div');tw.className='hist-tags'; tgs.forEach(function(t){ const sp=document.createElement('span');sp.textContent=t;tw.appendChild(sp); }); card.appendChild(tw); }
 
     const ops=document.createElement('div');ops.className='hist-ops';
     const del=document.createElement('button');del.className='hist-del';del.textContent='刪除';
@@ -855,6 +952,16 @@ function jteDeleteRecord(id){
     const before=all[dk].linked.length;
     all[dk].linked=all[dk].linked.filter(function(l){return (l.recordId||l.id)!==id;});
     if(all[dk].linked.length!==before)touched=dk;
+  });
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
+}
+// 依 recordId 補丁更新一筆記錄（用於量完後補貼狀態標記）。本機＋雲端同步。
+function jteUpdateRecord(id, patch){
+  const k=jteKey(),all=jteAll();let touched=null;
+  Object.keys(all).forEach(function(dk){
+    (all[dk].linked||[]).forEach(function(l){
+      if((l.recordId||l.id)===id){ Object.assign(l, patch); touched=dk; }
+    });
   });
   if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
 }

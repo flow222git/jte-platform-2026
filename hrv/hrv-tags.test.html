@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-tags tests</title></head>
+<body>
+<pre id="out">running...</pre>
+<iframe id="f" src="index.html" style="width:1px;height:1px;opacity:0;position:absolute;left:-9999px"></iframe>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function assert(c,m){if(!c)throw new Error(m||'assert failed');}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+' got['+a+'] want['+b+']');}
+function check(name,fn){try{fn();pass++;log('PASS '+name);}catch(e){fail++;log('FAIL '+name+' :: '+(e&&e.message||e));}}
+
+function finish(){
+  log('---');log('DONE pass='+pass+' fail='+fail);
+  document.title=fail?('FAIL '+fail):'OK';
+  window.__done=true;
+  try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e){}
+}
+window.__done=false;
+
+// 等 iframe 內 index.html 的全域函式就緒（不等外部 CDN 全載）
+let n=0;
+const t=setInterval(function(){
+  n++;
+  const win=document.getElementById('f').contentWindow;
+  if(win && typeof win.jteUpdateRecord==='function' && typeof win.jteWriteRecord==='function' && typeof win.tagUserAdd==='function'){
+    clearInterval(t); run(win);
+  } else if(n>120){ clearInterval(t); log('FAIL 逾時：index.html 全域函式未就緒'); fail++; finish(); }
+},100);
+
+function run(win){
+  win.localStorage.removeItem('jte_daily_v1');
+  win.localStorage.removeItem('hrv_tags_user');
+
+  check('jteUpdateRecord：寫入後補貼 tags 會存進記錄',()=>{
+    win.jteWriteRecord({source:'HRV',id:'t1',recordId:'t1',ts:'2026-06-13T08:00',hr:60,rmssd:40,sdnn:50,energy:70,level:'mid',tags:[]});
+    win.jteUpdateRecord('t1',{tags:['🧘 放鬆','🌅 剛起床']});
+    const all=win.jteAll();
+    let found=null;Object.keys(all).forEach(dk=>{(all[dk].linked||[]).forEach(l=>{if((l.recordId||l.id)==='t1')found=l;});});
+    assert(found,'找得到記錄'); eq((found.tags||[]).length,2,'兩個標記'); assert(found.tags.indexOf('🧘 放鬆')!==-1,'含放鬆');
+  });
+
+  check('jteUpdateRecord：再次補貼會覆蓋為新集合',()=>{
+    win.jteUpdateRecord('t1',{tags:['✨ 靈感來了']});
+    const all=win.jteAll();let found=null;Object.keys(all).forEach(dk=>{(all[dk].linked||[]).forEach(l=>{if((l.recordId||l.id)==='t1')found=l;});});
+    eq((found.tags||[]).join(','),'✨ 靈感來了','覆蓋成新集合');
+  });
+
+  check('tagUserAdd：自訂標記會存、去空白、上限16字',()=>{
+    win.localStorage.removeItem('hrv_tags_user');
+    const r=win.tagUserAdd('  冥想完  '); eq(r,'冥想完','去空白');
+    assert(win.tagUserList().indexOf('冥想完')!==-1,'存進個人庫');
+  });
+  check('tagUserAdd：重複不重覆加、與預設重覆不加',()=>{
+    win.localStorage.removeItem('hrv_tags_user');
+    win.tagUserAdd('喝咖啡後'); win.tagUserAdd('喝咖啡後');
+    eq(win.tagUserList().filter(x=>x==='喝咖啡後').length,1,'不重覆');
+    win.tagUserAdd('🧘 放鬆'); // 與預設重覆
+    eq(win.tagUserList().indexOf('🧘 放鬆'),-1,'與預設重覆不入個人庫');
+  });
+  check('tagUserAdd：空字串不加、回空',()=>{
+    win.localStorage.removeItem('hrv_tags_user');
+    eq(win.tagUserAdd('   '),'','空字串回空');
+    eq(win.tagUserList().length,0,'沒加東西');
+  });
+
+  check('recTags：無 tags 回空陣列、有則回陣列',()=>{
+    eq(win.recTags({}).length,0,'無→空');
+    eq(win.recTags({tags:['a','b']}).length,2,'有→2');
+  });
+
+  check('buildTagPicker：回傳 .tagpick 卡、含預設與「＋自己寫」',()=>{
+    win.localStorage.removeItem('hrv_tags_user');
+    const el=win.buildTagPicker('t1');
+    eq(el.className,'tagpick','是 tagpick 卡');
+    const chips=el.querySelectorAll('.tagchip');
+    assert(chips.length>=9,'至少 8 預設＋1 自訂，實得 '+chips.length);
+    const addBtn=el.querySelector('.tagchip.add');
+    assert(addBtn,'有＋自己寫');
+  });
+
+  finish();
+}
+</script>
+</body></html>
