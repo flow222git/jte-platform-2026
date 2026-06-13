@@ -63,6 +63,34 @@
   .guide-list li:last-child{margin-bottom:0}
   .guide-list i{color:var(--accent);font-size:18px;flex:none;margin-top:2px}
 
+  /* —— 這是什麼（說明卡）—— */
+  .intro-lead{background:var(--accent-soft);border:1px solid #d6e2f0;border-radius:var(--radius);padding:18px 19px;margin-bottom:14px}
+  .intro-lead h3{font-family:"Noto Serif TC",serif;font-weight:600;font-size:16px;margin:0 0 9px;color:var(--accent)}
+  .intro-lead p{font-size:14px;color:var(--ink-soft);line-height:1.85;margin:0}
+  .intro-lead p b{color:var(--ink);font-weight:600}
+  .intro-lead .tag{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-faint);margin-top:12px;padding-top:11px;border-top:1px solid #d6e2f0}
+  .intro-lead .tag i{font-size:16px}
+  /* —— 量測步驟（編號）—— */
+  .step-list{list-style:none;counter-reset:s;margin:2px 0 0;padding:0}
+  .step-list li{display:flex;gap:13px;align-items:flex-start;font-size:14px;line-height:1.7;color:var(--ink-soft);padding:12px 0;border-bottom:1px solid var(--line)}
+  .step-list li:last-child{border-bottom:none;padding-bottom:0}
+  .step-list li b{color:var(--ink);font-weight:600}
+  .step-list li::before{counter-increment:s;content:counter(s);flex:none;width:27px;height:27px;border-radius:50%;background:var(--accent);color:#fff;font-family:"Noto Serif TC",serif;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  /* —— 狀態圖例（結果頁）—— */
+  .legend{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+  .legend h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:14.5px;margin:0 0 4px;color:var(--accent)}
+  .legend .sub{font-size:12px;color:var(--ink-faint);margin:0 0 12px;line-height:1.6}
+  .legend-row{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .legend-row:last-child{border-bottom:none}
+  .legend-row.on{background:var(--accent-soft);margin:0 -10px;padding:10px;border-radius:10px;border-bottom:none}
+  .legend-row.on+.legend-row{border-top:1px solid var(--line)}
+  .legend-dot{flex:none;width:13px;height:13px;border-radius:50%;margin-top:4px}
+  .legend-dot.high{background:var(--relaxed)} .legend-dot.mid{background:var(--balanced)} .legend-dot.low{background:var(--tense)}
+  .legend-txt b{font-size:14px;color:var(--ink);font-weight:600}
+  .legend-txt b small{font-weight:400;color:var(--ink-faint);font-size:11.5px;margin-left:7px}
+  .legend-txt p{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin:3px 0 0}
+  .legend-row.on .legend-txt .you{display:inline-block;font-size:10.5px;color:#fff;background:var(--accent);border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
+
   /* —— 量測 —— */
   .cam-stage{position:relative;background:#11151c;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;aspect-ratio:1/1;max-height:42vh;display:flex;align-items:center;justify-content:center}
   .cam-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
@@ -165,7 +193,7 @@ const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return QUICK_SEC; }
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
-  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null };
+  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null };
 
 function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
 function backHomeLink(){
@@ -187,16 +215,23 @@ function renderIntro(){
   session.mode='intro'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead">用手機後鏡頭量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。<br>需要約一分鐘，找個能坐穩、放鬆的地方。</p>');
+  // 這是什麼 —— 進來先說明偵測什麼
+  d.insertAdjacentHTML('beforeend',
+    '<div class="intro-lead">'+
+      '<h3>這是在量什麼？</h3>'+
+      '<p>用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。</p>'+
+      '<div class="tag"><i class="ti ti-clock-hour-4"></i>約一分鐘 · 找個能坐穩、放鬆的地方</div>'+
+    '</div>');
 
+  // 量測步驟 —— 條列、編號、清楚好讀
   const g=document.createElement('div');g.className='guide-card';
-  g.innerHTML='<h3><i class="ti ti-hand-finger"></i>怎麼量</h3>'+
-    '<ul class="guide-list">'+
-    '<li><i class="ti ti-camera"></i>手指輕輕蓋住手機<b>後鏡頭</b>（含旁邊的閃光燈），不要壓太用力。</li>'+
-    '<li><i class="ti ti-armchair"></i>手與身體保持靜止，正常呼吸，不要說話。</li>'+
-    '<li><i class="ti ti-bulb"></i>iPhone 若無法開閃光燈，請在<b>光線充足</b>的地方量。</li>'+
-    '<li><i class="ti ti-clock-hour-4"></i>畫面品質燈轉綠後，會開始約一分鐘的倒數。</li>'+
-    '</ul>';
+  g.innerHTML='<h3><i class="ti ti-list-numbers"></i>量測步驟</h3>'+
+    '<ol class="step-list">'+
+    '<li>手指輕輕蓋住手機<b>後鏡頭</b>（連旁邊的閃光燈一起蓋），不要壓太用力。</li>'+
+    '<li>手和身體保持<b>靜止</b>，正常呼吸，不要說話。</li>'+
+    '<li>光線要<b>充足</b>（iPhone 沒辦法開閃光燈時尤其重要）。</li>'+
+    '<li>等畫面<b>品質燈轉綠</b>，會開始約一分鐘倒數，量完自動顯示結果。</li>'+
+    '</ol>';
   d.appendChild(g);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
@@ -215,7 +250,7 @@ function renderIntro(){
 let waveCanvas=null, waveCtx=null;
 function renderMeasure(){
   session.mode='measure'; clearAll();
-  session.samples=[]; session.measuring=false; session.countdownStart=0;
+  session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null;
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
 
@@ -409,12 +444,15 @@ function updateLiveUi(now){
   const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
   if(dot){ dot.className='qdot '+q; }
   if(ql){ ql.textContent = q==='green'?'訊號良好':(q==='yellow'?'訊號普通，盡量別動':'請調整手指與光線'); }
-  // 即時心率
+  // 即時心率：訊號穩定（綠燈）後才顯示，並做平滑——避免一開始偵測未穩時把雜訊當心跳、
+  // 算出偏高的數字（一百多）嚇到使用者。穩定後從第一筆可信值起跑、緩緩貼近真實值。
   const beats=HrvAnalyze.detectBeats(recent);
   const rr=HrvAnalyze.rrFromBeats(beats);
   const m=HrvAnalyze.metricsFromRr(rr);
   const hrEl=document.getElementById('hrLive');
-  if(hrEl) hrEl.textContent = (m.hr>=30&&m.hr<=220) ? String(Math.round(m.hr)) : '--';
+  const hrOk = q==='green' && m.hr>=40 && m.hr<=180;
+  if(hrOk){ session.hrSmooth = (session.hrSmooth==null) ? m.hr : (session.hrSmooth*0.7 + m.hr*0.3); }
+  if(hrEl) hrEl.textContent = (session.hrSmooth!=null) ? String(Math.round(session.hrSmooth)) : '--';
   if(isDebug()) updateDebug(recent, beats, rr, q);
 
   const hint=document.getElementById('camHint');
@@ -585,6 +623,24 @@ function renderEnergyResult(d, card, list, m, rec){
   else { calmEl.classList.add('mid'); calmEl.textContent='—'; }
   det.querySelector('#mHr').textContent=String(hr)+' bpm';
   det.querySelector('#mRm').textContent=String(rmssd)+' ms';
+
+  // —— 狀態怎麼分（三段，標出你這次落在哪一段）——
+  const STATES=[
+    {lv:'high',name:'充足',range:'75–100',desc:'恢復得不錯、能量飽滿，好好把握今天。'},
+    {lv:'mid', name:'平穩',range:'45–74', desc:'和你平常差不多，穩穩的。'},
+    {lv:'low', name:'偏低',range:'0–44',  desc:'能量偏低，今天多留點空間給自己休息。'}
+  ];
+  const leg=document.createElement('div');leg.className='legend';
+  let lrows='<h3>身體能量怎麼分</h3><p class="sub">分數是你跟自己平常比的相對位置（不是跟別人比），分三段：</p>';
+  STATES.forEach(function(s){
+    lrows+='<div class="legend-row'+(s.lv===en.level?' on':'')+'">'+
+      '<span class="legend-dot '+s.lv+'"></span>'+
+      '<span class="legend-txt"><b>'+s.name+'<small>'+s.range+' 分</small>'+(s.lv===en.level?'<span class="you">你這次</span>':'')+'</b>'+
+      '<p>'+s.desc+'</p></span>'+
+    '</div>';
+  });
+  leg.innerHTML=lrows;
+  d.appendChild(leg);
 
   // —— 常駐免責（相對參考、非醫療）——
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(ENERGY_DISCLAIMER)+'</p>');
