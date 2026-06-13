@@ -518,40 +518,16 @@ function renderResult(samples){
   }
 
   const cls=A.classify(m);
-  const state=cls.state;                       // relaxed / balanced / tense
-  const stateZh=STATE_LABEL[state]||state;
+  const state=cls.state;                       // relaxed / balanced / tense（仍記錄供舊資料相容）
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
 
-  // 狀態大字卡（中文狀態 + advice），文字用 textContent 避免注入
-  const card=document.createElement('div');card.className='state-card s-'+state;
-  const lab=document.createElement('div');lab.className='lab';lab.textContent='現在的身體狀態';
-  const big=document.createElement('div');big.className='big';big.textContent=stateZh;
-  const adv=document.createElement('div');adv.className='adv';adv.textContent=cls.advice;
-  card.appendChild(lab);card.appendChild(big);card.appendChild(adv);
+  // 先放一個讀取中的身體能量卡（取過去記錄算 baseline 是非同步）
+  const card=document.createElement('div');card.className='state-card s-balanced';
+  card.innerHTML='<div class="lab">身體能量</div><div class="big" id="enBig">…</div>';
   d.appendChild(card);
-
-  // 可展開：心率 / RMSSD / SDNN
-  const det=document.createElement('details');det.className='metrics';
-  det.innerHTML='<summary>看詳細數字</summary>'+
-    '<div class="panel" style="margin-top:8px">'+
-      '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
-      '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
-      '<div class="metric-row"><span class="mt">心率變異 <small>SDNN</small></span><span class="mv" id="mSd"></span></div>'+
-    '</div>';
-  d.appendChild(det);
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
   app.appendChild(d);
-  // 數值化注入（textContent）
-  det.querySelector('#mHr').textContent=String(hr)+' bpm';
-  det.querySelector('#mRm').textContent=String(rmssd)+' ms';
-  det.querySelector('#mSd').textContent=String(sdnn)+' ms';
 
-  // 存記錄：只在量到有效結果時存；走既有 helper（本機 + 登入時上雲，HRV 明文不加密）
-  const now=new Date();
-  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
-  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, state:state });
-
+  // 量測底部列（看趨勢／再量一次）先放上，渲染不卡在讀記錄
   const inner=document.createElement('div');inner.className='bar-inner';
   const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
   trend.onclick=function(){ renderTrend(); };
@@ -559,6 +535,77 @@ function renderResult(samples){
   again.onclick=function(){ renderMeasure(); };
   inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
+
+  // 取「過去」HRV 記錄（不含本次）→ baseline → 身體能量分數，再渲染 hero
+  Promise.resolve(jteListRecordsMerged()).then(function(list){
+    if(session.mode!=='result')return;         // 已離開結果頁就不渲染
+    renderEnergyResult(d, card, list||[], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state});
+  }).catch(function(){
+    if(session.mode!=='result')return;
+    renderEnergyResult(d, card, [], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state});
+  });
+}
+
+// 顏色：能量 high→綠(relaxed)、mid→金(balanced)、low→暖(tense)
+const ENERGY_TONE={ high:'relaxed', mid:'balanced', low:'tense' };
+function renderEnergyResult(d, card, list, m, rec){
+  const E=window.HrvEnergy;
+  // 過去 HRV 記錄（已含本次？本次尚未寫入，故 list 即為「過去」）：過濾 source==='HRV' 且有 rmssd
+  const hist=(list||[]).filter(function(r){ return r&&r.source==='HRV'&&Number(r.rmssd)>0; })
+    .map(function(r){ return { rmssd:Number(r.rmssd), hr:Number(r.hr)||0, ts:r.ts }; });
+  const base=E?E.baselineFrom(hist):null;
+  const en=E?E.energyScore({rmssd:m.rmssd,hr:m.hr}, base):{score:0,level:'mid',label:'平穩',advice:'',confidence:'building',n:0,recovery:null,calm:null};
+
+  // —— 身體能量 hero 卡（重建，避免閃爍殘留）——
+  card.className='state-card s-'+(ENERGY_TONE[en.level]||'balanced');
+  card.innerHTML='';
+  const lab=document.createElement('div');lab.className='lab';lab.textContent='身體能量';
+  const big=document.createElement('div');big.className='big';big.textContent=String(Number(en.score));
+  const labelEl=document.createElement('div');labelEl.className='adv';
+  labelEl.style.cssText='font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;margin-top:4px;opacity:1';
+  labelEl.textContent=String(en.label);
+  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=String(en.advice||'');
+  card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
+  if(en.confidence==='building'){
+    const note=document.createElement('div');note.className='adv';
+    note.style.cssText='font-size:12.5px;opacity:.9;margin-top:8px';
+    note.textContent='信心建立中（'+String(Number(en.n))+'/'+String(Number(E?E._CONF_N:7))+'）— 多量幾次會越來越貼近你自己。';
+    card.appendChild(note);
+  }
+
+  // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
+  const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
+  const det=document.createElement('details');det.className='metrics';
+  det.innerHTML='<summary>看細項</summary>'+
+    '<div class="idx-card" style="margin-top:8px">'+
+      '<div class="metric-row"><span class="mt">恢復力 <small>vs 你的常態</small></span><span class="idx-lv" id="enRec"></span></div>'+
+      '<div class="metric-row"><span class="mt">平靜 <small>靜息心率</small></span><span class="idx-lv" id="enCalm"></span></div>'+
+    '</div>'+
+    '<div class="panel" style="margin-top:8px">'+
+      '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
+      '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
+    '</div>';
+  d.appendChild(det);
+  // 細項膠囊（顏色用既有 idx-lv high/mid/low）
+  function tone3(lv){ return lv==='high'?'high':(lv==='low'?'low':'mid'); }
+  const recEl=det.querySelector('#enRec');
+  if(en.recovery){ recEl.classList.add(tone3(en.recovery.level)); recEl.textContent=String(en.recovery.label); }
+  else { recEl.classList.add('mid'); recEl.textContent='—'; }
+  const calmEl=det.querySelector('#enCalm');
+  if(en.calm){ calmEl.classList.add(tone3(en.calm.level)); calmEl.textContent=String(en.calm.label); }
+  else { calmEl.classList.add('mid'); calmEl.textContent='—'; }
+  det.querySelector('#mHr').textContent=String(hr)+' bpm';
+  det.querySelector('#mRm').textContent=String(rmssd)+' ms';
+
+  // —— 常駐免責（相對參考、非醫療）——
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(ENERGY_DISCLAIMER)+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+
+  // —— 儲存（只在通過誠實把關時才到這裡）：加 energy / level ——
+  const now=new Date();
+  const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
+  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
+    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state });
 }
 /* —— 趨勢頁 —— */
 function renderTrend(){
