@@ -733,7 +733,13 @@ var HOME_LINES=[
   {t:'science',x:'HRV（心率變異度）越有彈性，代表你越能在壓力後回得來。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
   {t:'science',x:'呼吸的彈性，就是生命的彈性。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
   {t:'science',x:'每天一點點的覺察，時間久了會在數據上看見變化。',cta:'查看我的記錄 →',href:'cal'},
-  {t:'science',x:'吐氣比吸氣長，是給神經系統最簡單的安撫。',cta:'做一次呼吸練習 →',href:'xiaoqi/'}
+  {t:'science',x:'吐氣比吸氣長，是給神經系統最簡單的安撫。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
+  {t:'hrv',x:'HRV 沒有「正常值」，只有「你的常態」——所以跟自己比、看趨勢最準。',cta:'量一次身體能量 →',href:'hrv/'},
+  {t:'hrv',x:'放慢吐氣，當下就能拉高 HRV，是給神經系統最簡單的煞車。',cta:'量一次身體能量 →',href:'hrv/'},
+  {t:'hrv',x:'剛起床量，最能看見你的基準；不同時間量，會看見不同的你。',cta:'量一次身體能量 →',href:'hrv/'},
+  {t:'hrv',x:'覺得累，身體不一定真的低——把感覺和身體訊號對照，更認識自己。',cta:'量一次身體能量 →',href:'hrv/'},
+  {t:'hrv',x:'HRV 不是越高越好的比賽，是看你今天的恢復與放鬆夠不夠。',cta:'量一次身體能量 →',href:'hrv/'},
+  {t:'hrv',x:'睡眠、壓力、咖啡、運動都會牽動 HRV——它像身體此刻的天氣。',cta:'量一次身體能量 →',href:'hrv/'}
 ];
 (function(){
   var el=document.getElementById('home-quote');
@@ -743,7 +749,7 @@ var HOME_LINES=[
   var order=HOME_LINES.map(function(_,i){return i;});
   for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}
   var p=0;
-  function lab(t){return t==='science'?'RESEARCH · 科學':'DAILY REFLECTION';}
+  function lab(t){return t==='science'?'RESEARCH · 科學':(t==='hrv'?'HRV · 身體小知識':'DAILY REFLECTION');}
   function mk(h){return h==='cal'?function(){show('cal');}:function(){location.href=h;};}
   function step(){
     var it=HOME_LINES[order[p]];
