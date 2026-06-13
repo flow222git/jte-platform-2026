@@ -195,9 +195,10 @@ const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return QUICK_SEC; }
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
-  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null };
+  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null };
 
-function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
+// 切換畫面時回到頁面最上方，讓站台標題列也露出來（不會停在被捲到一半的位置）
+function clearAll(){ app.innerHTML=''; bar.innerHTML=''; try{ window.scrollTo(0,0); }catch(e){} }
 function backHomeLink(){
   const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
   b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
@@ -264,7 +265,7 @@ function renderIntro(){
 let waveCanvas=null, waveCtx=null;
 function renderMeasure(){
   session.mode='measure'; clearAll();
-  session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null;
+  session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null;
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
 
@@ -452,12 +453,13 @@ function updateDebug(recent, beats, rr, q){
 
 function updateLiveUi(now){
   if(!window.HrvAnalyze)return;
+  if(session.measureStart==null) session.measureStart=now;
   const recent=recentSamples(now, KEEP_SEC);
   drawWave(recent);
   const q=HrvAnalyze.signalQuality(recent);
   const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
   if(dot){ dot.className='qdot '+q; }
-  if(ql){ ql.textContent = q==='green'?'訊號良好':(q==='yellow'?'訊號普通，盡量別動':'請調整手指與光線'); }
+  if(ql){ ql.textContent = q==='green'?'訊號良好':(q==='yellow'?'訊號普通，盡量別動':'正在抓穩訊號…'); }
   // 即時心率：訊號穩定（綠燈）後才顯示，並做平滑——避免一開始偵測未穩時把雜訊當心跳、
   // 算出偏高的數字（一百多）嚇到使用者。穩定後從第一筆可信值起跑、緩緩貼近真實值。
   const beats=HrvAnalyze.detectBeats(recent);
@@ -491,7 +493,14 @@ function updateLiveUi(now){
     if(remain<=0){ finishMeasure(); }
   }else{
     if(hint && !hint.classList.contains('warn')){
-      hint.textContent = q==='red' ? '把手指輕蓋後鏡頭、保持靜止…' : '快好了，穩住，等品質燈轉綠…';
+      const waited=(now-session.measureStart)/1000;
+      if(q!=='red'){
+        hint.textContent='快好了，穩住，等品質燈轉綠…';            // 黃燈：接近了
+      }else if(waited<7){
+        hint.textContent='先放鬆，手指穩穩蓋著後鏡頭，觀察幾秒鐘…';   // 紅燈前 7 秒：別焦慮，等一下
+      }else{
+        hint.textContent='還抓不到穩定心跳，再換個方式：手指蓋滿後鏡頭（含閃光燈）、找亮一點的地方，放鬆再等幾秒。';
+      }
     }
   }
 }
@@ -546,7 +555,7 @@ function renderResult(samples){
 
   if(tooNoisy){
     const c=document.createElement('div');c.className='err-card';
-    c.innerHTML='<h3>這次沒量好</h3><p>請在光線充足處，手指輕貼鏡頭（含旁邊的閃光燈），保持靜止，再量一次。</p>';
+    c.innerHTML='<h3>這次沒量好</h3><p>別緊張，這很常見。找個光線充足的地方坐穩，手指輕輕蓋滿後鏡頭（含旁邊的閃光燈），放鬆、保持靜止，再量一次就好。</p>';
     d.appendChild(c);
     d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
     app.appendChild(d);
