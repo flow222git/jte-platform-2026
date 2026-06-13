@@ -396,8 +396,8 @@ function nav(page){
 }
 
 // ── DASHBOARD ──
-var SRC_COLOR={XiaoQi:'#4CAF19',BreatheAware:'#4CAF19',BreathAware:'#4CAF19',HRVRecord:'#FF8A00',Activity:'#FF8A00',WenYi:'#6B4F9E',BuYi:'#6B4F9E',WriteSpace:'#5C7A9E',TWCT:'#003D7C'};
-var SRC_LABEL={XiaoQi:'小憩',BreatheAware:'呼吸覺察',BreathAware:'呼吸覺察',HRVRecord:'HRV',Activity:'活動',WenYi:'問易',BuYi:'卜易',WriteSpace:'書寫',TWCT:'溝通測驗'};
+var SRC_COLOR={XiaoQi:'#4CAF19',BreatheAware:'#4CAF19',BreathAware:'#4CAF19',HRVRecord:'#FF8A00',HRV:'#4CAF19',Activity:'#FF8A00',WenYi:'#6B4F9E',BuYi:'#6B4F9E',WriteSpace:'#5C7A9E',TWCT:'#003D7C'};
+var SRC_LABEL={XiaoQi:'小憩',BreatheAware:'呼吸覺察',BreathAware:'呼吸覺察',HRVRecord:'HRV',HRV:'身體能量',Activity:'活動',WenYi:'問易',BuYi:'卜易',WriteSpace:'書寫',TWCT:'溝通測驗'};
 function daysAgoStr(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function topN(map,n){return Object.keys(map).map(function(k){return {label:k,value:map[k]};}).sort(function(a,b){return b.value-a.value;}).slice(0,n);}
 function hbars(items,opt){opt=opt||{};if(!items.length)return '<div style="font-size:11px;color:var(--t3,#9aa)">尚無資料</div>';var max=1;items.forEach(function(i){if(i.value>max)max=i.value;});return items.map(function(i){var p=Math.round(i.value/max*100);return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11px"><div style="width:'+(opt.lw||92)+'px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+i.label+'</div><div style="flex:1;background:#eef2f7;border-radius:999px;height:13px;overflow:hidden"><div style="width:'+Math.max(2,p)+'%;height:100%;background:'+(i.color||'#003D7C')+'"></div></div><div style="width:40px;text-align:right;font-weight:600">'+i.value+'</div></div>';}).join('');}
@@ -423,7 +423,7 @@ async function loadDashboard(){
     var all=await loadAllDaily(true);
     var bStart=(rs==='2000-01-01')?(minDate(all)||re):rs;
     var recB=buildBuckets(bStart,re),emoB=buildBuckets(bStart,re);
-    var totalRecords=0,srcCount={},activeR={},topicMap={},emoMap={},datesAll={},hrvByUser={};
+    var totalRecords=0,srcCount={},activeR={},topicMap={},emoMap={},datesAll={},hrvByUser={},hrvNewByUser={};
     all.forEach(function(o){
       (datesAll[o.email]=datesAll[o.email]||{})[o.date]=1;
       if(inR(o.date)){activeR[o.email]=1;
@@ -435,7 +435,8 @@ async function loadDashboard(){
         if(l.source==='WriteSpace')topicMap['心理位移書寫']=(topicMap['心理位移書寫']||0)+1; // 書寫：只計數、不讀使用者文字
         if(l.source==='BuYi'&&l.ben)topicMap[l.ben]=(topicMap[l.ben]||0)+1;               // 卜易：卦象（最常出現的卦），不讀問題原文
         (l.feelings||[]).forEach(function(fe){emoMap[fe]=(emoMap[fe]||0)+1;emoB.add(ld);});
-        if(l.source==='HRVRecord'){if(!hrvByUser[o.email]||ld>hrvByUser[o.email].date)hrvByUser[o.email]={email:o.email,name:o.name,date:ld,l:l};}});
+        if(l.source==='HRVRecord'){if(!hrvByUser[o.email]||ld>hrvByUser[o.email].date)hrvByUser[o.email]={email:o.email,name:o.name,date:ld,l:l};}
+        if(l.source==='HRV'){var nd=l.ts?l.ts.slice(0,10):ld;if(!hrvNewByUser[o.email]||nd>hrvNewByUser[o.email].date)hrvNewByUser[o.email]={email:o.email,name:o.name,date:nd,l:l};}});
     });
     // A 概況
     statEl.innerHTML=statCard(users.length,'總使用者')+statCard(Object.keys(activeR).length,'區間活躍')+statCard(totalRecords,'區間記錄數')+statCard(actCount,'區間活動')+statCard(partSum,'參與人次');
@@ -445,12 +446,38 @@ async function loadDashboard(){
     var toolBars=topN(srcCount,9).map(function(i){return {label:SRC_LABEL[i.label]||i.label,value:i.value,color:SRC_COLOR[i.label]||'#888'};});
     document.getElementById('dash-engage').innerHTML='<div style="font-size:11px;color:var(--t2);margin-bottom:2px">記錄趨勢（'+recB.gran+'）</div>'+vbars(recB.buckets)+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">各工具使用次數</div>'+hbars(toolBars)+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">平均連續天數：<strong style="color:var(--p)">'+avgStreak+' 天</strong>（全期）　Top</div>'+hbars(streaks.sort(function(a,b){return b.value-a.value;}).slice(0,5));
     // C HRV
+    var HRV_NEW_COLOR={high:'#4CAF19',mid:'#003D7C',low:'#FF8A00'};
+    var HRV_NEW_LABEL={high:'充足',mid:'平穩',low:'偏低'};
+    // C1 新相機：身體能量（source:'HRV'）
+    var newRows=Object.keys(hrvNewByUser).map(function(k){return hrvNewByUser[k];});
+    var nh='';
+    if(newRows.length){
+      var eSum=0,eN=0,newLvl={};
+      newRows.forEach(function(r){if(r.l.energy!=null){eSum+=r.l.energy;eN++;}var lk=r.l.level||'mid';newLvl[lk]=(newLvl[lk]||0)+1;});
+      var newLvlBars=['high','mid','low'].filter(function(k){return newLvl[k];}).map(function(k){return {label:HRV_NEW_LABEL[k],value:newLvl[k],color:HRV_NEW_COLOR[k]};});
+      var newWatch=newRows.filter(function(r){return r.l.level==='low';}).sort(function(a,b){return (a.l.energy||0)-(b.l.energy||0);});
+      nh='<div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:6px">📱 身體能量（相機量測）</div>';
+      nh+='<div style="font-size:12px;margin-bottom:8px">平均身體能量 <strong style="color:#4CAF19">'+(eN?Math.round(eSum/eN):'—')+'</strong></div>';
+      nh+=hbars(newLvlBars,{lw:52});
+      nh+='<div style="font-size:11px;color:var(--t2);margin:10px 0 4px">需要關注（偏低，'+newWatch.length+' 人）</div>';
+      if(!newWatch.length)nh+='<div style="font-size:11px;color:#4CAF19">此區間沒有偏低 ✓</div>';
+      else newWatch.slice(0,8).forEach(function(r){nh+='<div style="font-size:11px;margin:3px 0"><span class="badge" style="background:#FF8A00;color:#fff">偏低</span> '+(r.name||r.email)+' · 能量'+(r.l.energy!=null?r.l.energy:'—')+' · '+r.date+'</div>';});
+      nh+='<div style="border-top:1px solid #eef2f7;margin:12px 0 10px"></div>';
+      nh+='<div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:6px">🔬 HRV 機器量測</div>';
+    }
+    // C2 舊機器：HRVRecord
     var hrvRows=Object.keys(hrvByUser).map(function(k){return hrvByUser[k];});
     var lvl={};hrvRows.forEach(function(r){var t=r.l.assessmentTitle||'未評估';lvl[t]=(lvl[t]||0)+1;});
     var lvlBars=['黃金狀態','穩定可用','煞車失靈','紅色警戒','未評估'].filter(function(t){return lvl[t];}).map(function(t){return {label:t,value:lvl[t],color:HRV_COLOR[t]||'#888'};});
     var sSum=0,sN=0,vSum=0,vN=0;hrvRows.forEach(function(r){if(r.l.stressIndex!=null){sSum+=r.l.stressIndex;sN++;}if(r.l.vitalityIndex!=null){vSum+=r.l.vitalityIndex;vN++;}});
     var watch=hrvRows.filter(function(r){return r.l.assessmentTitle==='紅色警戒'||r.l.assessmentTitle==='煞車失靈';}).sort(function(a,b){return (b.l.stressIndex||0)-(a.l.stressIndex||0);});
-    var hh='';if(!hrvRows.length)hh='<div style="font-size:11px;color:var(--t3,#9aa)">此區間尚無 HRV 記錄</div>';else{hh='<div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px"><div>平均壓力 <strong style="color:#e03a3a">'+(sN?Math.round(sSum/sN):'—')+'</strong></div><div>平均活力 <strong style="color:#4CAF19">'+(vN?Math.round(vSum/vN):'—')+'</strong></div></div>'+hbars(lvlBars,{lw:80})+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">需要關注（'+watch.length+' 人）</div>';if(!watch.length)hh+='<div style="font-size:11px;color:#4CAF19">此區間沒有警示 ✓</div>';else watch.slice(0,8).forEach(function(r){var c=HRV_COLOR[r.l.assessmentTitle];hh+='<div style="font-size:11px;margin:3px 0"><span class="badge" style="background:'+c+';color:#fff">'+r.l.assessmentTitle+'</span> '+(r.name||r.email)+' · 壓力'+(r.l.stressIndex||'—')+' · '+(r.l.measureDate||r.date)+'</div>';});}
+    var hh='';
+    if(!newRows.length&&!hrvRows.length){hh='<div style="font-size:11px;color:var(--t3,#9aa)">此區間尚無 HRV 記錄</div>';}
+    else{
+      hh=nh;
+      if(!hrvRows.length){hh+='<div style="font-size:11px;color:var(--t3,#9aa)">此區間尚無機器 HRV 記錄</div>';}
+      else{hh+='<div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px"><div>平均壓力 <strong style="color:#e03a3a">'+(sN?Math.round(sSum/sN):'—')+'</strong></div><div>平均活力 <strong style="color:#4CAF19">'+(vN?Math.round(vSum/vN):'—')+'</strong></div></div>'+hbars(lvlBars,{lw:80})+'<div style="font-size:11px;color:var(--t2);margin:14px 0 4px">需要關注（'+watch.length+' 人）</div>';if(!watch.length)hh+='<div style="font-size:11px;color:#4CAF19">此區間沒有警示 ✓</div>';else watch.slice(0,8).forEach(function(r){var c=HRV_COLOR[r.l.assessmentTitle];hh+='<div style="font-size:11px;margin:3px 0"><span class="badge" style="background:'+c+';color:#fff">'+r.l.assessmentTitle+'</span> '+(r.name||r.email)+' · 壓力'+(r.l.stressIndex||'—')+' · '+(r.l.measureDate||r.date)+'</div>';});}
+    }
     document.getElementById('dash-hrv').innerHTML=hh;
     // E 議題與情緒
     var topicBars=topN(topicMap,8),emoBars=topN(emoMap,10).map(function(i){return {label:i.label,value:i.value,color:'#5C7A9E'};});
@@ -609,6 +636,7 @@ function jteLinkedCard(l){
     BreatheAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.patternLabel||'')+(l.breathRate?(' · '+l.breathRate+'次/分'):'')},
     BreathAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.stateLabel||'')+(l.bpm?(' · '+l.bpm+'BPM'):'')},
     HRVRecord:{ic:'💓',lab:'HRV',c:'#FF8A00',b:(l.assessmentTitle||'')+' · 壓力'+(l.stressIndex||'—')+'/活力'+(l.vitalityIndex||'—')},
+    HRV:{ic:'💓',lab:'身體能量',c:({'high':'#4CAF19','mid':'#003D7C','low':'#FF8A00'}[l.level]||'#4CAF19'),b:(l.energy!=null?l.energy:'—')+' · '+({'high':'充足','mid':'平穩','low':'偏低'}[l.level]||l.level||'')+(l.tags&&l.tags.length?' · '+l.tags.join('、'):'')},
     Activity:{ic:'🎪',lab:'活動',c:'#FF8A00',b:(l.activityName||'')+(l.org?(' · '+l.org):'')},
     WenYi:{ic:'☯',lab:'問易',c:'#6B4F9E',b:(l.mainHex||'')+(l.toneLabel?(' · '+l.toneLabel):'')+(l.topic?(' · '+l.topic):'')},
     BuYi:{ic:'☯',lab:'卜易',c:'#6B4F9E',b:(l.ben||'')+(l.bian?('→'+l.bian):'')+(l.changingLabel?(' · '+l.changingLabel):'')},
@@ -700,16 +728,40 @@ async function loadHrvOverview(){
   var listEl=document.getElementById('hrv-list'),statEl=document.getElementById('hrv-stats');
   listEl.innerHTML='<div class="loading">掃描所有使用者…</div>';
   try{
-    var all=await loadAllDaily();var byUser={};
-    all.forEach(function(o){(o.data.linked||[]).forEach(function(l){if(l.source==='HRVRecord'){var d=l.measureDate||o.date;if(!byUser[o.email]||d>byUser[o.email].date)byUser[o.email]={email:o.email,name:o.name,date:d,l:l};}});});
+    var HRV_PAGE_COLOR={high:'#4CAF19',mid:'#003D7C',low:'#FF8A00'};
+    var HRV_PAGE_LABEL={high:'充足',mid:'平穩',low:'偏低'};
+    var all=await loadAllDaily();var byUser={},byUserNew={};
+    all.forEach(function(o){(o.data.linked||[]).forEach(function(l){
+      if(l.source==='HRVRecord'){var d=l.measureDate||o.date;if(!byUser[o.email]||d>byUser[o.email].date)byUser[o.email]={email:o.email,name:o.name,date:d,l:l};}
+      if(l.source==='HRV'){var nd=l.ts?l.ts.slice(0,10):(l.date||o.date);if(!byUserNew[o.email]||nd>byUserNew[o.email].date)byUserNew[o.email]={email:o.email,name:o.name,date:nd,l:l};}
+    });});
     var rows=Object.keys(byUser).map(function(k){return byUser[k];}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    var newRows=Object.keys(byUserNew).map(function(k){return byUserNew[k];}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    // stats bar: old counts
     var counts={};rows.forEach(function(r){var t=r.l.assessmentTitle||'未評估';counts[t]=(counts[t]||0)+1;});
-    var sh='';['黃金狀態','穩定可用','煞車失靈','紅色警戒'].forEach(function(t){sh+='<div style="text-align:center;padding:12px 6px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,61,124,.06)"><div style="font-size:22px;font-weight:700;color:'+(HRV_COLOR[t]||'#888')+'">'+(counts[t]||0)+'</div><div style="font-size:10px;color:var(--t2);margin-top:2px">'+t+'</div></div>';});
+    var newCounts={};newRows.forEach(function(r){var lk=r.l.level||'mid';newCounts[lk]=(newCounts[lk]||0)+1;});
+    var sh='<div style="font-size:10px;color:var(--t2);margin-bottom:4px;grid-column:1/-1">🔬 機器量測</div>';
+    ['黃金狀態','穩定可用','煞車失靈','紅色警戒'].forEach(function(t){sh+='<div style="text-align:center;padding:12px 6px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,61,124,.06)"><div style="font-size:22px;font-weight:700;color:'+(HRV_COLOR[t]||'#888')+'">'+(counts[t]||0)+'</div><div style="font-size:10px;color:var(--t2);margin-top:2px">'+t+'</div></div>';});
+    sh+='<div style="font-size:10px;color:var(--t2);margin:8px 0 4px;grid-column:1/-1">📱 身體能量（相機）</div>';
+    ['high','mid','low'].forEach(function(k){sh+='<div style="text-align:center;padding:12px 6px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,61,124,.06)"><div style="font-size:22px;font-weight:700;color:'+HRV_PAGE_COLOR[k]+'">'+(newCounts[k]||0)+'</div><div style="font-size:10px;color:var(--t2);margin-top:2px">'+HRV_PAGE_LABEL[k]+'</div></div>';});
     statEl.innerHTML=sh;
-    if(!rows.length){listEl.innerHTML='<div class="empty">尚無 HRV 記錄</div>';return;}
-    var html='<table class="tbl"><thead><tr><th>使用者</th><th>最新日期</th><th>評估</th><th>壓力</th><th>活力</th><th>情緒靈活</th></tr></thead><tbody>';
-    rows.forEach(function(r){var l=r.l,c=HRV_COLOR[l.assessmentTitle]||'#888';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.measureDate||r.date)+'</td><td>'+(l.assessmentTitle?'<span class="badge" style="background:'+c+';color:#fff">'+l.assessmentTitle+'</span>':'—')+'</td><td>'+(l.stressIndex!=null?l.stressIndex:'—')+'</td><td>'+(l.vitalityIndex!=null?l.vitalityIndex:'—')+'</td><td>'+(l.emotionalFlexibility!=null?l.emotionalFlexibility:'—')+'</td></tr>';});
-    html+='</tbody></table>';listEl.innerHTML=html;
+    var html='';
+    // 身體能量 table (new camera)
+    if(newRows.length){
+      html+='<div style="font-size:12px;font-weight:600;color:var(--p);margin:0 0 8px">📱 身體能量（相機量測）— '+newRows.length+' 人</div>';
+      html+='<table class="tbl"><thead><tr><th>使用者</th><th>時間</th><th>身體能量</th><th>等級</th><th>標記</th></tr></thead><tbody>';
+      newRows.forEach(function(r){var l=r.l,lk=l.level||'mid',lc=HRV_PAGE_COLOR[lk],ll=HRV_PAGE_LABEL[lk];var tagStr=(l.tags&&l.tags.length)?l.tags.map(function(t){return t.replace(/</g,'&lt;').replace(/>/g,'&gt;');}).join('、'):'—';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.ts?l.ts.slice(0,16).replace('T',' '):r.date)+'</td><td style="font-weight:700;color:'+lc+'">'+(l.energy!=null?l.energy:'—')+'</td><td><span class="badge" style="background:'+lc+';color:#fff">'+ll+'</span></td><td style="font-size:10px;color:var(--t2)">'+tagStr+'</td></tr>';});
+      html+='</tbody></table>';
+    }
+    // HRVRecord table (old machine)
+    if(rows.length){
+      html+='<div style="font-size:12px;font-weight:600;color:var(--p);margin:16px 0 8px">🔬 HRV 機器量測 — '+rows.length+' 人</div>';
+      html+='<table class="tbl"><thead><tr><th>使用者</th><th>最新日期</th><th>評估</th><th>壓力</th><th>活力</th><th>情緒靈活</th></tr></thead><tbody>';
+      rows.forEach(function(r){var l=r.l,c=HRV_COLOR[l.assessmentTitle]||'#888';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.measureDate||r.date)+'</td><td>'+(l.assessmentTitle?'<span class="badge" style="background:'+c+';color:#fff">'+l.assessmentTitle+'</span>':'—')+'</td><td>'+(l.stressIndex!=null?l.stressIndex:'—')+'</td><td>'+(l.vitalityIndex!=null?l.vitalityIndex:'—')+'</td><td>'+(l.emotionalFlexibility!=null?l.emotionalFlexibility:'—')+'</td></tr>';});
+      html+='</tbody></table>';
+    }
+    if(!rows.length&&!newRows.length){listEl.innerHTML='<div class="empty">尚無 HRV 記錄</div>';return;}
+    listEl.innerHTML=html;
   }catch(e){listEl.innerHTML='<div class="empty">載入失敗：'+e.message+'</div>';}
 }
 function toggleHrvUpload(){var c=document.getElementById('hrv-upload-card');c.style.display=c.style.display==='none'?'block':'none';}
