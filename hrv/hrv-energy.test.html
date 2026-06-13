@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-energy tests</title>
+<script src="hrv-energy.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+function near(a,b,tol,m){ if(Math.abs(a-b)>tol) throw new Error((m||'near')+' got '+a+' want '+b+'±'+tol); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+async function run(){
+  assert(typeof HrvEnergy === 'object', 'HrvEnergy 應載入');
+
+  await check('baselineFrom 空歷史→回母體先驗、n=0', async () => {
+    var b=HrvEnergy.baselineFrom([]);
+    near(b.effLnMean,3.6,0.01,'effLnMean'); near(b.effLnSd,0.55,0.01,'effLnSd'); eq(b.n,0,'n');
+  });
+  await check('energyScore：RMSSD 遠高於常態→高分、recovery 高', async () => {
+    var e=HrvEnergy.energyScore({rmssd:100,hr:60}, HrvEnergy.baselineFrom([]));
+    assert(e.score>=75,'高分，實得 '+e.score); eq(e.recovery.level,'high','recovery 高');
+  });
+  await check('energyScore：RMSSD 遠低→低分', async () => {
+    var e=HrvEnergy.energyScore({rmssd:15,hr:80}, HrvEnergy.baselineFrom([]));
+    assert(e.score<=45,'低分，實得 '+e.score);
+  });
+  await check('energyScore：約等於常態→~60 平穩', async () => {
+    var e=HrvEnergy.energyScore({rmssd:37,hr:70}, HrvEnergy.baselineFrom([]));
+    near(e.score,60,8,'~60'); eq(e.level,'mid','平穩');
+  });
+  await check('confidence 隨 n：<7 building、>=7 ok', async () => {
+    var few=[],many=[],i;
+    for(i=0;i<3;i++) few.push({rmssd:40,hr:68});
+    for(i=0;i<8;i++) many.push({rmssd:40,hr:68});
+    eq(HrvEnergy.energyScore({rmssd:40,hr:68},HrvEnergy.baselineFrom(few)).confidence,'building','<7');
+    eq(HrvEnergy.energyScore({rmssd:40,hr:68},HrvEnergy.baselineFrom(many)).confidence,'ok','>=7');
+  });
+  await check('baseline 個人化：常態高的人、量到同樣高值→約中（相對自己）', async () => {
+    var hi=[]; for(var i=0;i<14;i++) hi.push({rmssd:80,hr:60});
+    var b=HrvEnergy.baselineFrom(hi);
+    assert(b.effLnMean>3.9,'baseline 向個人靠攏，實得 '+b.effLnMean.toFixed(2));
+    var e=HrvEnergy.energyScore({rmssd:80,hr:60}, b);
+    near(e.score,60,13,'對自己常態≈中，實得 '+e.score);
+  });
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
