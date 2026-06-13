@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>BreatheAware i18n test harness</title>
+<style>
+  body { font-family: 'DM Sans', sans-serif; padding: 24px; background: #f5f3ef; color: #1a1a1a; }
+  #log { font-size: 13px; line-height: 1.9; }
+  .pass { color: #2a6b5a; }
+  .fail { color: #c85d3a; font-weight: 600; }
+  .info { color: #555; }
+  iframe { display: none; }
+</style>
+</head>
+<body>
+<h2 style="font-family:'DM Serif Display',serif">BreatheAware i18n test</h2>
+<div id="log"></div>
+<iframe id="frame" src="./index.html"></iframe>
+
+<script>
+var log = document.getElementById('log');
+var pass = 0, fail = 0;
+
+function logLine(cls, msg) {
+  var d = document.createElement('div');
+  d.className = cls;
+  d.textContent = msg;
+  log.appendChild(d);
+}
+
+function assert(condition, desc) {
+  if (condition) {
+    pass++;
+    logLine('pass', '✓ ' + desc);
+  } else {
+    fail++;
+    logLine('fail', '✗ ' + desc);
+  }
+}
+
+function postResult() {
+  logLine('info', '');
+  logLine('info', 'Total: pass=' + pass + ' fail=' + fail);
+  // POST result to /__result if available (jte-testrun.py harness)
+  fetch('/__result', {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: 'DONE pass=' + pass + ' fail=' + fail
+  }).catch(function() {
+    // Not running under test server — that's fine
+    logLine('info', '(POST to /__result skipped — not in test runner)');
+  });
+}
+
+var frame = document.getElementById('frame');
+var startTime = Date.now();
+
+// Wait for iframe to load and i18n engine to be ready
+function waitForReady(cb, timeout) {
+  if (Date.now() - startTime > (timeout || 10000)) {
+    logLine('fail', 'TIMEOUT waiting for __jteI18nLoaded');
+    fail++;
+    postResult();
+    return;
+  }
+  try {
+    var iw = frame.contentWindow;
+    if (iw && iw.__jteI18nLoaded && iw.document.readyState === 'complete') {
+      // Also wait for a known zh string to be in DOM
+      var slogan = iw.document.querySelector('[data-i18n="home_slogan"]');
+      if (slogan && slogan.textContent.trim().length > 0) {
+        cb(iw);
+        return;
+      }
+    }
+  } catch(e) {}
+  setTimeout(function() { waitForReady(cb, timeout); }, 150);
+}
+
+frame.addEventListener('load', function() {
+  waitForReady(function(iw) {
+    runTests(iw);
+  });
+});
+
+function runTests(iw) {
+  logLine('info', '— iframe loaded, i18n engine ready —');
+
+  // ── TEST 1: Default language is zh ──
+  var lang = iw.jteLang ? iw.jteLang() : iw.localStorage.getItem('jte_lang') || 'zh';
+  assert(lang === 'zh', 'Default language is zh');
+
+  // ── TEST 2: zh slogan is present ──
+  var slogan = iw.document.querySelector('[data-i18n="home_slogan"]');
+  assert(slogan && slogan.textContent.trim() === '用呼吸了解自己', 'zh: home_slogan shows original Chinese');
+
+  // ── TEST 3: #jte-langbar exists with 3 buttons ──
+  var bar = iw.document.getElementById('jte-langbar');
+  assert(bar !== null, '#jte-langbar is injected');
+  var btns = bar ? bar.querySelectorAll('button') : [];
+  assert(btns.length === 3, '#jte-langbar has 3 buttons (中 / EN / 日)');
+
+  // ── TEST 4: Switch to EN ──
+  iw.jteSetLang('en');
+  setTimeout(function() {
+    var sloganEn = iw.document.querySelector('[data-i18n="home_slogan"]');
+    assert(sloganEn && sloganEn.textContent.trim() === 'Know yourself through breath', 'EN: home_slogan translated correctly');
+
+    var stopBtn = iw.document.querySelector('[data-i18n="btn_stop"]');
+    assert(stopBtn && stopBtn.textContent.trim() === 'End session', 'EN: btn_stop translated');
+
+    var navSense = iw.document.querySelector('[data-i18n="nav_sense"]');
+    assert(navSense && navSense.textContent.trim() === 'Sense', 'EN: nav_sense translated');
+
+    var orbIdle = iw.document.querySelector('[data-i18n="orb_idle_inhale"]');
+    assert(orbIdle && orbIdle.textContent.trim() === 'Hold left — Inhale', 'EN: orb_idle_inhale translated');
+
+    // ── TEST 5: Switch to JA ──
+    iw.jteSetLang('ja');
+    setTimeout(function() {
+      var sloganJa = iw.document.querySelector('[data-i18n="home_slogan"]');
+      assert(sloganJa && sloganJa.textContent.trim() === '呼吸で自分を知る', 'JA: home_slogan translated');
+
+      var navHistJa = iw.document.querySelector('[data-i18n="nav_history"]');
+      assert(navHistJa && navHistJa.textContent.trim() === '軌跡', 'JA: nav_history translated');
+
+      var stopJa = iw.document.querySelector('[data-i18n="btn_stop"]');
+      assert(stopJa && stopJa.textContent.trim() === 'セッションを終了', 'JA: btn_stop translated');
+
+      // ── TEST 6: Switch back to zh ──
+      iw.jteSetLang('zh');
+      setTimeout(function() {
+        var sloganZh = iw.document.querySelector('[data-i18n="home_slogan"]');
+        assert(sloganZh && sloganZh.textContent.trim() === '用呼吸了解自己', 'ZH restore: home_slogan back to Chinese');
+
+        var navZh = iw.document.querySelector('[data-i18n="nav_sense"]');
+        assert(navZh && navZh.textContent.trim() === '覺察', 'ZH restore: nav_sense back to Chinese');
+
+        // ── TEST 7: JTE_I18N exists and has correct structure ──
+        var dict = iw.JTE_I18N;
+        assert(typeof dict === 'object' && dict !== null, 'JTE_I18N is defined');
+        assert(typeof dict.en === 'object' && typeof dict.ja === 'object', 'JTE_I18N has en and ja keys');
+        assert(typeof dict.en.home_slogan === 'string', 'JTE_I18N.en has home_slogan');
+        assert(typeof dict.ja.home_slogan === 'string', 'JTE_I18N.ja has home_slogan');
+
+        // ── TEST 8: jteT stub fallback works ──
+        // When zh, jteT should return the zh fallback
+        var result = iw.jteT('nav_sense', '覺察');
+        assert(result === '覺察', 'jteT("nav_sense","覺察") returns zh fallback in zh mode');
+
+        // ── TEST 9: Active langbar button is zh (on button label) ──
+        var barFinal = iw.document.getElementById('jte-langbar');
+        var activeBtns = barFinal ? barFinal.querySelectorAll('button.on') : [];
+        assert(activeBtns.length === 1 && activeBtns[0].getAttribute('data-lang') === 'zh', 'Langbar active button is zh after restoring');
+
+        // ── TEST 10: Feeling opts have data-zh canonical values ──
+        var feelingOpts = iw.document.querySelectorAll('[data-i18n^="feeling_"]');
+        var allHaveDataZh = Array.from(feelingOpts).every(function(el) {
+          return el.getAttribute('data-zh') && el.getAttribute('data-zh').length > 0;
+        });
+        assert(allHaveDataZh, 'All feeling-opt elements have data-zh canonical zh value');
+
+        postResult();
+      }, 300);
+    }, 300);
+  }, 300);
+}
+</script>
+</body>
+</html>

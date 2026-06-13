@@ -212,6 +212,10 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
 </style>
 <script src="https://accounts.google.com/gsi/client"></script>
+<!-- i18n stub (runs before deferred engine) -->
+<script>window.jteT=window.jteT||function(k,z){return z!=null?z:k;};</script>
+<!-- i18n engine -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-i18n.js"></script>
 </head>
 <body>
 
@@ -221,8 +225,8 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
 <nav id="mainNav" style="display:none">
   <div class="logo"><span>Breeeeeathe~</span></div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('sense')">覺察</button>
-    <button class="nav-tab" onclick="showPage('history')">軌跡</button>
+    <button class="nav-tab active" onclick="showPage('sense')" data-i18n="nav_sense">覺察</button>
+    <button class="nav-tab" onclick="showPage('history')" data-i18n="nav_history">軌跡</button>
   </div>
 </nav>
 
@@ -233,26 +237,26 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
     <!-- slide 1: 文案 -->
     <div class="home-slide">
       <div class="home-logo">Breeeeeathe~</div>
-      <div class="home-slogan">用呼吸了解自己</div>
+      <div class="home-slogan" data-i18n="home_slogan">用呼吸了解自己</div>
       <div class="home-intro">
-        <p class="home-intro-p">我們想先讓你知道，你怎麼呼吸。</p>
-        <p class="home-intro-p">呼吸的狀態，就是你的狀態。<br>而當你開始有意識地呼吸，<br>狀態，就會悄悄改變。</p>
+        <p class="home-intro-p" data-i18n="home_intro1">我們想先讓你知道，你怎麼呼吸。</p>
+        <p class="home-intro-p" data-i18n-html="home_intro2">呼吸的狀態，就是你的狀態。<br>而當你開始有意識地呼吸，<br>狀態，就會悄悄改變。</p>
       </div>
-      <button class="home-nav-btn" onclick="homeSlide(1)">先覺察 · 操作說明</button>
+      <button class="home-nav-btn" onclick="homeSlide(1)" data-i18n="home_how_btn">先覺察 · 操作說明</button>
 
       <div class="practice-section" style="margin-top:36px;width:100%">
-        <div class="practice-label">或，跟著練習呼吸</div>
+        <div class="practice-label" data-i18n="home_practice_label">或，跟著練習呼吸</div>
         <div class="practice-list">
           <div class="practice-item" onclick="openGuidedSetup('resonance')">
-            <div><div class="practice-item-name">諧振呼吸</div><div class="practice-item-pattern">吸 5.5 秒 · 吐 5.5 秒</div></div>
+            <div><div class="practice-item-name" data-i18n="guided_resonance_name">諧振呼吸</div><div class="practice-item-pattern" data-i18n="guided_resonance_pattern">吸 5.5 秒 · 吐 5.5 秒</div></div>
             <i class="ti ti-chevron-right">›</i>
           </div>
           <div class="practice-item" onclick="openGuidedSetup('box')">
-            <div><div class="practice-item-name">箱式呼吸</div><div class="practice-item-pattern">吸 4 · 屏 4 · 吐 4 · 屏 4 秒</div></div>
+            <div><div class="practice-item-name" data-i18n="guided_box_name">箱式呼吸</div><div class="practice-item-pattern" data-i18n="guided_box_pattern">吸 4 · 屏 4 · 吐 4 · 屏 4 秒</div></div>
             <i class="ti ti-chevron-right">›</i>
           </div>
           <div class="practice-item" onclick="openGuidedSetup('counting')">
-            <div><div class="practice-item-name">數息法</div><div class="practice-item-pattern">吸 4 秒 · 吐 6 秒</div></div>
+            <div><div class="practice-item-name" data-i18n="guided_counting_name">數息法</div><div class="practice-item-pattern" data-i18n="guided_counting_pattern">吸 4 秒 · 吐 6 秒</div></div>
             <i class="ti ti-chevron-right">›</i>
           </div>
         </div>
@@ -261,7 +265,7 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
 
     <!-- slide 2: 操作示範 -->
     <div class="home-slide">
-      <div class="demo-slide-title">HOW TO USE</div>
+      <div class="demo-slide-title" data-i18n="demo_title">HOW TO USE</div>
       <div class="demo-wrap">
         <div class="demo-orb-outer">
           <div class="demo-orb-ring"></div>
@@ -270,12 +274,12 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
             <div class="demo-half left" id="demoLeft"></div>
             <div class="demo-half right" id="demoRight"></div>
             <div class="demo-orb-text">
-              <div class="demo-orb-main" id="demoMain">吸氣</div>
-              <div class="demo-orb-sub" id="demoSub">按左邊</div>
+              <div class="demo-orb-main" id="demoMain" data-i18n="demo_inhale">吸氣</div>
+              <div class="demo-orb-sub" id="demoSub" data-i18n="demo_press_left">按左邊</div>
             </div>
           </div>
         </div>
-        <div class="demo-caption" id="demoCaption">左半邊按住 = 吸氣</div>
+        <div class="demo-caption" id="demoCaption" data-i18n="demo_caption_inhale">左半邊按住 = 吸氣</div>
       </div>
       <button class="go-btn" onclick="showPage('sense')">GO</button>
     </div>
@@ -294,10 +298,10 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
     <div class="orb" id="orb">
       <!-- 初始說明 -->
       <div class="orb-idle" id="orbIdle">
-        <div class="orb-idle-main">左邊按住 吸氣</div>
+        <div class="orb-idle-main" data-i18n="orb_idle_inhale">左邊按住 吸氣</div>
         <div class="orb-idle-divider"></div>
-        <div class="orb-idle-sub">右邊按住 吐氣</div>
-        <div class="orb-idle-sub" style="margin-top:4px;opacity:.6">放開 屏息</div>
+        <div class="orb-idle-sub" data-i18n="orb_idle_exhale">右邊按住 吐氣</div>
+        <div class="orb-idle-sub" style="margin-top:4px;opacity:.6" data-i18n="orb_idle_hold">放開 屏息</div>
       </div>
       <!-- 練習中：波形置中 + 相位文字 + 狀態標題 -->
       <div class="orb-active" id="orbActive" style="display:none">
@@ -313,32 +317,32 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
   <!-- 計時 + 結束 -->
   <div class="session-bar">
     <div class="timer-display" id="timerDisplay">0:00</div>
-    <button class="stop-btn" id="stopBtn" onclick="endSession()">結束練習</button>
+    <button class="stop-btn" id="stopBtn" onclick="endSession()" data-i18n="btn_stop">結束練習</button>
   </div>
 
   <!-- 狀態說明（圓圈下方）-->
   <div class="state-desc-block" id="stateDescBlock" style="display:none">
     <div class="state-tag" id="stateTag">—</div>
     <div class="state-desc" id="stateDesc">—</div>
-    <div class="recommend-title">建議呼吸法</div>
+    <div class="recommend-title" data-i18n="recommend_title">建議呼吸法</div>
     <div class="method-tags" id="methodTags"></div>
   </div>
 
   <!-- 數據在最下方 -->
   <div class="live-stats">
     <div class="stat-box"><div class="stat-val" id="statBPM">—</div><div class="stat-key">BPM</div></div>
-    <div class="stat-box"><div class="stat-val" id="statIE">—</div><div class="stat-key">吸：吐</div></div>
-    <div class="stat-box"><div class="stat-val" id="statCount">0</div><div class="stat-key">呼吸次數</div></div>
+    <div class="stat-box"><div class="stat-val" id="statIE">—</div><div class="stat-key" data-i18n="stat_ie">吸：吐</div></div>
+    <div class="stat-box"><div class="stat-val" id="statCount">0</div><div class="stat-key" data-i18n="stat_count">呼吸次數</div></div>
   </div>
 </div>
 
 <div id="page-history" class="page">
   <div class="history-header">
-    <div class="history-title">呼吸軌跡</div>
-    <div class="history-sub" id="histSub">載入中…</div>
+    <div class="history-title" data-i18n="history_title">呼吸軌跡</div>
+    <div class="history-sub" id="histSub" data-i18n="history_loading">載入中…</div>
   </div>
   <div class="compare-section" id="compareSection" style="display:none">
-    <div class="compare-title">BPM 軌跡（近 10 次）</div>
+    <div class="compare-title" data-i18n="compare_title">BPM 軌跡（近 10 次）</div>
     <canvas id="compareChart"></canvas>
   </div>
   <div id="sessionList"></div>
@@ -350,10 +354,10 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
     <div class="gs-title" id="gsTitle">諧振呼吸</div>
     <div class="gs-sub" id="gsSub">調節自主神經系統</div>
     <div class="gs-info" id="gsInfo"></div>
-    <div class="gs-dur-row"><span class="gs-dur-label">練習時長</span><span class="gs-dur-val"><span id="gsDurVal">5</span> 分鐘</span></div>
+    <div class="gs-dur-row"><span class="gs-dur-label" data-i18n="gs_dur_label">練習時長</span><span class="gs-dur-val"><span id="gsDurVal">5</span> <span data-i18n="gs_dur_unit">分鐘</span></span></div>
     <input type="range" class="gs-slider" id="gsSlider" min="1" max="10" value="5" oninput="updateGuidedDuration(this.value)">
-    <button class="gs-start" onclick="startGuided()">開　始</button>
-    <button class="gs-back" onclick="showPage('home')">← 返回</button>
+    <button class="gs-start" onclick="startGuided()" data-i18n="gs_start">開　始</button>
+    <button class="gs-back" onclick="showPage('home')" data-i18n="gs_back">← 返回</button>
   </div>
 </div>
 
@@ -376,20 +380,20 @@ canvas#compareChart{width:100%;height:140px;display:block;border-radius:var(--ra
 
 <div class="modal-overlay" id="feelingModal">
   <div class="modal-sheet">
-    <div class="modal-title">練習結束了</div>
-    <div class="modal-sub">說說你現在的感受？</div>
+    <div class="modal-title" data-i18n="modal_title">練習結束了</div>
+    <div class="modal-sub" data-i18n="modal_sub">說說你現在的感受？</div>
     <div class="feeling-options" id="feelingOptions">
-      <div class="feeling-opt" onclick="toggleFeeling(this)">輕鬆很多</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">稍微放鬆</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">沒什麼變化</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">還是緊繃</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">有點疲倦</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">更清醒了</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">心跳變慢</div>
-      <div class="feeling-opt" onclick="toggleFeeling(this)">頭腦清晰</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="輕鬆很多" data-i18n="feeling_much_better">輕鬆很多</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="稍微放鬆" data-i18n="feeling_a_bit_relaxed">稍微放鬆</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="沒什麼變化" data-i18n="feeling_no_change">沒什麼變化</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="還是緊繃" data-i18n="feeling_still_tense">還是緊繃</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="有點疲倦" data-i18n="feeling_a_bit_tired">有點疲倦</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="更清醒了" data-i18n="feeling_more_alert">更清醒了</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="心跳變慢" data-i18n="feeling_slower_heart">心跳變慢</div>
+      <div class="feeling-opt" onclick="toggleFeeling(this)" data-zh="頭腦清晰" data-i18n="feeling_clear_mind">頭腦清晰</div>
     </div>
-    <textarea class="feeling-note" id="feelingNote" rows="3" placeholder="還有什麼想記錄的？（選填）"></textarea>
-    <button class="save-btn" onclick="jteCheckLoginThenSave(saveSession)">儲存這次練習</button>
+    <textarea class="feeling-note" id="feelingNote" rows="3" placeholder="還有什麼想記錄的？（選填）" data-i18n-ph="feeling_note_ph"></textarea>
+    <button class="save-btn" onclick="jteCheckLoginThenSave(saveSession)" data-i18n="btn_save">儲存這次練習</button>
   </div>
 </div>
 
@@ -478,23 +482,36 @@ function analyzeTrajectory(breaths){
   // ── FINDING RULES ──
   const findings=[];
 
+  // i18n helper for trajectory findings (interpolate values into translated template)
+  function jteTrajFmt(key,zhTpl,vals){
+    var tpl=jteT(key,zhTpl);
+    // replace {0},{1},... with vals
+    return tpl.replace(/\{(\d+)\}/g,function(_,i){return vals[i]!=null?vals[i]:''});
+  }
+
   // 1. BPM trend: early vs late
   const bpmDrop=e.bpm-l.bpm;
   const bpmRise=l.bpm-e.bpm;
   if(bpmDrop>=3){
     findings.push({
       icon:'↘',
-      text:`你的呼吸頻率從開始的 <strong>${e.bpm} BPM</strong> 下降到後段的 <strong>${l.bpm} BPM</strong>，減少了 ${bpmDrop.toFixed(1)} 次／分——這是自律神經開始調節的清楚訊號。`
+      text:jteTrajFmt('traj_f_bpm_drop',
+        '你的呼吸頻率從開始的 <strong>{0} BPM</strong> 下降到後段的 <strong>{1} BPM</strong>，減少了 {2} 次／分——這是自律神經開始調節的清楚訊號。',
+        [e.bpm,l.bpm,bpmDrop.toFixed(1)])
     });
   } else if(bpmRise>=3){
     findings.push({
       icon:'↗',
-      text:`呼吸頻率從 <strong>${e.bpm} BPM</strong> 上升到 <strong>${l.bpm} BPM</strong>，練習後段反而加快了。可能是專注力分散，或身體正在適應新的節奏。`
+      text:jteTrajFmt('traj_f_bpm_rise',
+        '呼吸頻率從 <strong>{0} BPM</strong> 上升到 <strong>{1} BPM</strong>，練習後段反而加快了。可能是專注力分散，或身體正在適應新的節奏。',
+        [e.bpm,l.bpm])
     });
   } else {
     findings.push({
       icon:'→',
-      text:`整體呼吸頻率相當穩定，前段 <strong>${e.bpm} BPM</strong>、後段 <strong>${l.bpm} BPM</strong>，變化幅度在 3 次以內。`
+      text:jteTrajFmt('traj_f_bpm_stable',
+        '整體呼吸頻率相當穩定，前段 <strong>{0} BPM</strong>、後段 <strong>{1} BPM</strong>，變化幅度在 3 次以內。',
+        [e.bpm,l.bpm])
     });
   }
 
@@ -503,17 +520,23 @@ function analyzeTrajectory(breaths){
   if(stabChange>=15){
     findings.push({
       icon:'◎',
-      text:`節律穩定度明顯提升：前段 ${e.stability}%，後段 ${l.stability}%。你的呼吸在練習過程中越來越有規律。`
+      text:jteTrajFmt('traj_f_stab_up',
+        '節律穩定度明顯提升：前段 {0}%，後段 {1}%。你的呼吸在練習過程中越來越有規律。',
+        [e.stability,l.stability])
     });
   } else if(stabChange<=-15){
     findings.push({
       icon:'◌',
-      text:`節律在後段出現較大波動（前段 ${e.stability}%，後段 ${l.stability}%）。這可能是注意力轉移，或呼吸肌開始疲勞的訊號。`
+      text:jteTrajFmt('traj_f_stab_down',
+        '節律在後段出現較大波動（前段 {0}%，後段 {1}%）。這可能是注意力轉移，或呼吸肌開始疲勞的訊號。',
+        [e.stability,l.stability])
     });
   } else if(globalCV>0.3){
     findings.push({
       icon:'〜',
-      text:`整體節律變異較大（穩定度 ${Math.round((1-globalCV)*100)}%），每次呼吸的長度起伏明顯。這很常見——呼吸本來就不是機器，覺察本身就是練習。`
+      text:jteTrajFmt('traj_f_stab_var',
+        '整體節律變異較大（穩定度 {0}%），每次呼吸的長度起伏明顯。這很常見——呼吸本來就不是機器，覺察本身就是練習。',
+        [Math.round((1-globalCV)*100)])
     });
   }
 
@@ -523,12 +546,16 @@ function analyzeTrajectory(breaths){
   if(ieDrop>=0.2){
     findings.push({
       icon:'☽',
-      text:`吐氣比例逐漸增加：吸吐比從前段 ${e.ie} 改善到後段 ${l.ie}。延長的吐氣正在幫助副交感神經活化。`
+      text:jteTrajFmt('traj_f_ie_drop',
+        '吐氣比例逐漸增加：吸吐比從前段 {0} 改善到後段 {1}。延長的吐氣正在幫助副交感神經活化。',
+        [e.ie,l.ie])
     });
   } else if(ieRise>=0.2){
     findings.push({
       icon:'☀',
-      text:`吸氣比例在後段偏重（吸吐比 ${l.ie}），這可能反映輕度的喚醒或緊張感。下次可以試著有意識地把吐氣拉得比吸氣長一些。`
+      text:jteTrajFmt('traj_f_ie_rise',
+        '吸氣比例在後段偏重（吸吐比 {0}），這可能反映輕度的喚醒或緊張感。下次可以試著有意識地把吐氣拉得比吸氣長一些。',
+        [l.ie])
     });
   }
 
@@ -541,7 +568,9 @@ function analyzeTrajectory(breaths){
     const minI=Math.min(...inhales)/1000;
     findings.push({
       icon:'↕',
-      text:`吸氣深淺變化明顯，最長達 ${maxI.toFixed(1)} 秒、最短只有 ${minI.toFixed(1)} 秒，落差 ${(maxI-minI).toFixed(1)} 秒。這可能是在摸索舒適深度，也可能是專注力偶爾分散。`
+      text:jteTrajFmt('traj_f_inhale_var',
+        '吸氣深淺變化明顯，最長達 {0} 秒、最短只有 {1} 秒，落差 {2} 秒。這可能是在摸索舒適深度，也可能是專注力偶爾分散。',
+        [maxI.toFixed(1),minI.toFixed(1),(maxI-minI).toFixed(1)])
     });
   }
 
@@ -551,12 +580,16 @@ function analyzeTrajectory(breaths){
     if(midBPM<e.bpm-2&&midBPM<l.bpm-2){
       findings.push({
         icon:'⌢',
-        text:`中段呼吸最慢（${midBPM} BPM），前後段都較快。有時候是身體在中間短暫進入很深的狀態，然後注意力稍微拉回。`
+        text:jteTrajFmt('traj_f_mid_dip',
+          '中段呼吸最慢（{0} BPM），前後段都較快。有時候是身體在中間短暫進入很深的狀態，然後注意力稍微拉回。',
+          [midBPM])
       });
     } else if(midBPM>e.bpm+2&&midBPM>l.bpm+2){
       findings.push({
         icon:'⌣',
-        text:`中段呼吸出現短暫加速（${midBPM} BPM），前後段都較平穩。可能有一個外部干擾，或是身體在重新調整節奏。`
+        text:jteTrajFmt('traj_f_mid_peak',
+          '中段呼吸出現短暫加速（{0} BPM），前後段都較平穩。可能有一個外部干擾，或是身體在重新調整節奏。',
+          [midBPM])
       });
     }
   }
@@ -702,7 +735,7 @@ function handleInhaleStart(){
   wavePoints.push({t:Date.now()-sessionStart,phase:1});
   activePhaseInterval=setInterval(()=>{if(sessionActive)wavePoints.push({t:Date.now()-sessionStart,phase:1})},120);
   if(!waveRAF)drawWave();
-  setOrbPhase('吸氣中');
+  setOrbPhaseI18n('phase_inhale','吸氣中');
   animateOrbColor('inhale');
   playOrgan(FREQ_G4,280);
 }
@@ -719,7 +752,7 @@ function handleExhaleStart(){
   wavePoints.push({t:Date.now()-sessionStart,phase:0});
   activePhaseInterval=setInterval(()=>{if(sessionActive)wavePoints.push({t:Date.now()-sessionStart,phase:0})},120);
   if(!waveRAF)drawWave();
-  setOrbPhase('吐氣中');
+  setOrbPhaseI18n('phase_exhale','吐氣中');
   animateOrbColor('exhale');
   playOrgan(FREQ_C4,350);
 }
@@ -738,7 +771,7 @@ function handleRelease(){
   currentSide=null;
   wavePoints.push({t:now-sessionStart,phase:0.5});
   startHoldTracking();
-  setOrbPhase('屏息中');
+  setOrbPhaseI18n('phase_hold','屏息中');
   animateOrbColor('hold');
   playOrgan(FREQ_E4,200);
 }
@@ -755,6 +788,10 @@ function beginSession(){
 function setOrbPhase(text){
   const el=document.getElementById('orbMain');
   if(el.style.display!=='none'){el.textContent=text;}
+}
+// i18n-aware orb phase setter
+function setOrbPhaseI18n(key,zhText){
+  setOrbPhase(jteT(key,zhText));
 }
 
 function startInhale(){}
@@ -828,35 +865,39 @@ function updateLiveStats(){
   if(breaths.length>=3){
     const key=classify(bpm,ie,stability);
     const s=STATES[key];
-    const orbStateEl=document.getElementById('orbStateName');
     const orbMainEl=document.getElementById('orbMain');
-    orbStateEl.textContent=s.label;
     orbMainEl.style.display='none';
 
     const block=document.getElementById('stateDescBlock');
-    document.getElementById('stateTag').textContent=s.label;
-    document.getElementById('stateTag').className='state-tag '+s.cls;
+
+    // i18n state label for display (stored stateKey stays canonical zh)
+    const stateDisplayLabel=jteT('state_'+key+'_label',s.label);
+    const orbStateEl=document.getElementById('orbStateName');
+    orbStateEl.textContent=stateDisplayLabel;
+    const stateTagEl=document.getElementById('stateTag');
+    stateTagEl.textContent=stateDisplayLabel;
+    stateTagEl.className='state-tag '+s.cls;
 
     // 加入屏息分析文字
     let holdNote='';
     if(avgH>300){
       const holdSec=(avgH/1000).toFixed(1);
-      holdNote=`你的屏息平均約 ${holdSec} 秒，佔整體呼吸的 ${Math.round(holdRatio*100)}%。`;
-      if(holdRatio>0.25) holdNote+='屏息比例較高，有助於深化副交感反應。';
-      else if(holdRatio<0.1) holdNote+='屏息時間較短，身體可能仍在調整節律。';
+      holdNote=jteT('hold_note_base','你的屏息平均約 ')+holdSec+jteT('hold_note_sec_pct',' 秒，佔整體呼吸的 ')+Math.round(holdRatio*100)+jteT('hold_note_pct_sfx','%。');
+      if(holdRatio>0.25) holdNote+=jteT('hold_note_high','屏息比例較高，有助於深化副交感反應。');
+      else if(holdRatio<0.1) holdNote+=jteT('hold_note_low','屏息時間較短，身體可能仍在調整節律。');
     }
 
     // 加入呼吸法比對文字
     let patternNote='';
     if(matchedPattern){
-      patternNote=`你目前的呼吸節律接近「${matchedPattern.name}」——${matchedPattern.desc}。`;
+      patternNote=jteT('pattern_note_pre','你目前的呼吸節律接近「')+matchedPattern.name+jteT('pattern_note_sfx','」——')+matchedPattern.desc+jteT('pattern_note_end','。');
     }
 
-    const descBase=s.desc;
+    const descBase=jteT('state_'+key+'_desc',s.desc);
     const fullDesc=[descBase, holdNote, patternNote].filter(Boolean).join(' ');
     document.getElementById('stateDesc').textContent=fullDesc;
 
-    document.getElementById('methodTags').innerHTML=s.methods.map(m=>`<span class="method-tag">${m}</span>`).join('');
+    document.getElementById('methodTags').innerHTML=s.methods.map((m,i)=>`<span class="method-tag">${jteT('state_'+key+'_method'+i,m)}</span>`).join('');
     const existingLink=document.querySelector('.practice-link');
     if(existingLink) existingLink.remove();
 
@@ -866,7 +907,7 @@ function updateLiveStats(){
     const xiaoqiURL=`https://flow222git.github.io/jte-xiaoqi-2026/?practice=${practiceKey}`;
     document.getElementById('methodTags').insertAdjacentHTML('afterend',
       `<a class="practice-link" href="${xiaoqiURL}" target="_blank">
-        <span>現在就去練習</span>
+        <span>${jteT('practice_link_cta','現在就去練習')}</span>
         <span class="practice-link-label">${practiceName} →</span>
       </a>`
     );
@@ -946,7 +987,7 @@ function endSession(){
   cancelAnimationFrame(waveRAF);waveRAF=null;
   document.getElementById('orb').classList.remove('pressed');
   document.getElementById('statusChip').className='status-chip';
-  document.getElementById('statusChip').textContent='練習完成';
+  document.getElementById('statusChip').textContent=jteT('session_done','練習完成');
   stopOrgan(600);
   document.getElementById('feelingModal').classList.add('open');
 }
@@ -954,7 +995,8 @@ function endSession(){
 function toggleFeeling(el){el.classList.toggle('selected')}
 
 function saveSession(){
-  const feelings=[...document.querySelectorAll('.feeling-opt.selected')].map(el=>el.textContent);
+  // always save canonical zh value (data-zh attr); falls back to textContent for backward compat
+  const feelings=[...document.querySelectorAll('.feeling-opt.selected')].map(el=>el.getAttribute('data-zh')||el.textContent);
   const note=document.getElementById('feelingNote').value;
   if(breaths.length===0){closeModal();resetSession();return}
 
@@ -1037,7 +1079,7 @@ function resetSession(){
   // 恢復圓圈初始狀態
   document.getElementById('orbIdle').style.display='flex';
   document.getElementById('orbActive').style.display='none';
-  document.getElementById('orbMain').textContent='吸氣中';
+  document.getElementById('orbMain').textContent=jteT('phase_inhale','吸氣中');
   document.getElementById('orbMain').style.display='';
   waveCtx.clearRect(0,0,waveCanvas.width,waveCanvas.height);
   resetOrbColor();
@@ -1056,31 +1098,31 @@ function trajHTML(traj){
   const bpmArrow=l.bpm<e.bpm-1?'↓':l.bpm>e.bpm+1?'↑':'→';
   const bpmColor=l.bpm<e.bpm-1?'#2a6b5a':l.bpm>e.bpm+1?'#c85d3a':'#555';
   const arrowLabel=l.bpm<e.bpm-1
-    ?`BPM 下降 ${(e.bpm-l.bpm).toFixed(1)}`
+    ?(jteT('traj_bpm_drop','BPM 下降 ')+(e.bpm-l.bpm).toFixed(1))
     :l.bpm>e.bpm+1
-    ?`BPM 上升 ${(l.bpm-e.bpm).toFixed(1)}`
-    :'BPM 大致穩定';
+    ?(jteT('traj_bpm_rise','BPM 上升 ')+(l.bpm-e.bpm).toFixed(1))
+    :jteT('traj_bpm_stable','BPM 大致穩定');
 
   return`<div class="traj-box">
-    <div class="traj-title">TRAJECTORY ANALYSIS · 呼吸軌跡分析</div>
+    <div class="traj-title">${jteT('traj_title','TRAJECTORY ANALYSIS · 呼吸軌跡分析')}</div>
     <div class="traj-phases">
       <div class="traj-phase">
-        <div class="traj-phase-label">前段</div>
+        <div class="traj-phase-label">${jteT('traj_early','前段')}</div>
         <div class="traj-phase-bpm">${e.bpm}</div>
         <div class="traj-phase-ie">${e.avgInhaleS}s : ${e.avgExhaleS}s</div>
-        <div class="traj-phase-ie">穩定 ${e.stability}%</div>
+        <div class="traj-phase-ie">${jteT('traj_stability','穩定 ')}${e.stability}%</div>
       </div>
       <div class="traj-phase">
-        <div class="traj-phase-label">中段</div>
+        <div class="traj-phase-label">${jteT('traj_mid','中段')}</div>
         <div class="traj-phase-bpm">${m.bpm}</div>
         <div class="traj-phase-ie">${m.avgInhaleS}s : ${m.avgExhaleS}s</div>
-        <div class="traj-phase-ie">穩定 ${m.stability}%</div>
+        <div class="traj-phase-ie">${jteT('traj_stability','穩定 ')}${m.stability}%</div>
       </div>
       <div class="traj-phase">
-        <div class="traj-phase-label">後段</div>
+        <div class="traj-phase-label">${jteT('traj_late','後段')}</div>
         <div class="traj-phase-bpm" style="color:${bpmColor}">${l.bpm}</div>
         <div class="traj-phase-ie">${l.avgInhaleS}s : ${l.avgExhaleS}s</div>
-        <div class="traj-phase-ie">穩定 ${l.stability}%</div>
+        <div class="traj-phase-ie">${jteT('traj_stability','穩定 ')}${l.stability}%</div>
       </div>
     </div>
     <div class="traj-arrow">
@@ -1102,12 +1144,14 @@ function trajHTML(traj){
 function renderHistory(){
   const history=getHistory();
   document.getElementById('histSub').textContent=
-    history.length>0?`共 ${history.length} 次練習軌跡`:'還沒有練習紀錄';
+    history.length>0
+      ?(jteT('history_count_pre','共 ')+history.length+jteT('history_count_sfx',' 次練習軌跡'))
+      :jteT('history_empty_sub','還沒有練習紀錄');
   const list=document.getElementById('sessionList');
   const cmp=document.getElementById('compareSection');
 
   if(history.length===0){
-    list.innerHTML=`<div class="empty-state"><div class="empty-icon">◯</div><div>去覺察頁面開始你的第一次練習</div></div>`;
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">◯</div><div>${jteT('history_empty_cta','去覺察頁面開始你的第一次練習')}</div></div>`;
     cmp.style.display='none';return;
   }
 
@@ -1116,9 +1160,13 @@ function renderHistory(){
 
   list.innerHTML=history.map(r=>{
     const date=new Date(r.ts||r.timestamp);
-    const dateStr=date.toLocaleDateString('zh-TW',{month:'short',day:'numeric'})+' '+
-      date.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
-    const dur=r.durationSec>=60?Math.floor(r.durationSec/60)+'分'+(r.durationSec%60?r.durationSec%60+'秒':''):r.durationSec+'秒';
+    const locale=jteLang()==='zh'?'zh-TW':jteLang()==='ja'?'ja-JP':'en-US';
+    const dateStr=date.toLocaleDateString(locale,{month:'short',day:'numeric'})+' '+
+      date.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'});
+    const durMin=Math.floor(r.durationSec/60),durSec=r.durationSec%60;
+    const dur=r.durationSec>=60
+      ?(durMin+jteT('dur_min','分')+(durSec?durSec+jteT('dur_sec','秒'):''))
+      :(r.durationSec+jteT('dur_sec','秒'));
     const feelingStr=r.feelings&&r.feelings.length>0?r.feelings.join('・'):'';
 
     // 指定呼吸法（跟練）紀錄
@@ -1126,23 +1174,24 @@ function renderHistory(){
       return`<div class="session-card">
         <div class="sc-top">
           <div><div class="sc-date">${dateStr}・${dur}</div><div class="sc-state">${r.modeLabel}</div></div>
-          <span class="state-tag" style="font-size:11px;padding:2px 9px;background:rgba(42,107,90,.12);color:#2a6b5a">跟練</span>
+          <span class="state-tag" style="font-size:11px;padding:2px 9px;background:rgba(42,107,90,.12);color:#2a6b5a">${jteT('tag_guided','跟練')}</span>
         </div>
         ${feelingStr?`<div class="sc-feeling">${feelingStr}</div>`:''}
       </div>`;
     }
 
     const s=STATES[r.stateKey]||STATES.neutral;
+    const sLabel=jteT('state_'+(r.stateKey||'neutral')+'_label',s.label);
     return`<div class="session-card">
       <div class="sc-top">
-        <div><div class="sc-date">${dateStr}・${dur}</div><div class="sc-state">${s.label}</div></div>
-        <span class="state-tag ${s.cls}" style="font-size:11px;padding:2px 9px">${s.label}</span>
+        <div><div class="sc-date">${dateStr}・${dur}</div><div class="sc-state">${sLabel}</div></div>
+        <span class="state-tag ${s.cls}" style="font-size:11px;padding:2px 9px">${sLabel}</span>
       </div>
       <div class="sc-metrics">
         <div class="sc-metric">BPM <span>${r.bpm}</span></div>
-        <div class="sc-metric">吸：吐 <span>${(r.avgInhale/1000).toFixed(1)}:${(r.avgExhale/1000).toFixed(1)}s</span></div>
-        <div class="sc-metric">次數 <span>${r.breathCount}</span></div>
-        <div class="sc-metric">穩定度 <span>${r.stability}%</span></div>
+        <div class="sc-metric">${jteT('stat_ie','吸：吐')} <span>${(r.avgInhale/1000).toFixed(1)}:${(r.avgExhale/1000).toFixed(1)}s</span></div>
+        <div class="sc-metric">${jteT('stat_count','呼吸次數')} <span>${r.breathCount}</span></div>
+        <div class="sc-metric">${jteT('metric_stability','穩定度')} <span>${r.stability}%</span></div>
       </div>
       ${r.waveSnap?`<canvas class="mini-wave" id="mw-${r.id}"></canvas>`:''}
       ${feelingStr?`<div class="sc-feeling">${feelingStr}</div>`:''}
@@ -1257,9 +1306,9 @@ var guidedMode=null,guidedDuration=5,guidedStart=0,guidedTimer=null,guidedPhaseT
 function openGuidedSetup(key){
   guidedMode=key;
   var g=GUIDED[key];
-  document.getElementById('gsTitle').textContent=g.name;
-  document.getElementById('gsSub').textContent=g.sub;
-  document.getElementById('gsInfo').textContent=g.info;
+  document.getElementById('gsTitle').textContent=jteT('guided_'+key+'_name',g.name);
+  document.getElementById('gsSub').textContent=jteT('guided_'+key+'_sub',g.sub);
+  document.getElementById('gsInfo').textContent=jteT('guided_'+key+'_info',g.info);
   document.getElementById('gsSlider').value=5;
   document.getElementById('gsDurVal').textContent=5;
   guidedDuration=5;
@@ -1272,7 +1321,7 @@ function startGuided(){
   getAudioCtx();
   var g=GUIDED[guidedMode];
   guidedStart=Date.now();
-  document.getElementById('grMode').textContent=g.name;
+  document.getElementById('grMode').textContent=jteT('guided_'+guidedMode+'_name',g.name);
   document.getElementById('grGuide').textContent='';
 
   var totalMs=guidedDuration*60*1000;
@@ -1283,10 +1332,10 @@ function startGuided(){
   },200);
 
   var phases=[
-    {name:'吸',dur:g.inhale,orb:'expand',freq:FREQ_G4,guide:g.gIn,bg:'inhale'},
-    {name:'屏',dur:g.holdIn,orb:'',freq:FREQ_E4,guide:g.gHold||'讓氣停留',bg:''},
-    {name:'吐',dur:g.exhale,orb:'contract',freq:FREQ_C4,guide:g.gEx,bg:'exhale'},
-    {name:'屏',dur:g.holdOut,orb:'',freq:FREQ_E4,guide:g.gHold||'感受身體的空',bg:''}
+    {name:jteT('cue_inhale','吸'),dur:g.inhale,orb:'expand',freq:FREQ_G4,guide:jteT('guided_'+guidedMode+'_gin',g.gIn),bg:'inhale'},
+    {name:jteT('cue_hold','屏'),dur:g.holdIn,orb:'',freq:FREQ_E4,guide:g.gHold?jteT('guided_'+guidedMode+'_ghold',g.gHold):jteT('guided_ghold_default','讓氣停留'),bg:''},
+    {name:jteT('cue_exhale','吐'),dur:g.exhale,orb:'contract',freq:FREQ_C4,guide:jteT('guided_'+guidedMode+'_gex',g.gEx),bg:'exhale'},
+    {name:jteT('cue_hold','屏'),dur:g.holdOut,orb:'',freq:FREQ_E4,guide:g.gHold?jteT('guided_'+guidedMode+'_ghold',g.gHold):jteT('guided_ghold_empty','感受身體的空'),bg:''}
   ].filter(function(p){return p.dur>0;});
 
   var idx=0;
@@ -1335,7 +1384,7 @@ function saveGuided(totalSec){
     localStorage.setItem(_jteKey,JSON.stringify(jteAll));
   }catch(e){console.warn('guided writeback failed',e);}
   var mins=Math.floor(totalSec/60),secs=totalSec%60;
-  alert(g.name+' 完成！\n練習時長 '+mins+' 分 '+secs+' 秒');
+  alert(g.name+' '+jteT('guided_done','完成！')+'\n'+jteT('guided_done_dur','練習時長 ')+mins+jteT('dur_min','分')+' '+secs+jteT('dur_sec','秒'));
   showPage('history');
 }
 
@@ -1355,34 +1404,34 @@ window.addEventListener('contextmenu',e=>e.preventDefault());
     {
       leftBg:'rgba(42,107,90,.88)', rightBg:'rgba(42,107,90,.22)',
       leftOp:1, rightOp:.25,
-      mainTxt:'吸氣', subTxt:'按左邊',
-      caption:'左半邊按住 = 吸氣',
+      mainTxt:jteT('demo_inhale','吸氣'), subTxt:jteT('demo_press_left','按左邊'),
+      caption:jteT('demo_caption_inhale','左半邊按住 = 吸氣'),
       shadow:'0 8px 40px rgba(42,107,90,.28)',
-      dur:3500  // 吸氣 3.5s
+      dur:3500
     },
     {
       leftBg:'rgba(180,150,60,.65)', rightBg:'rgba(180,150,60,.65)',
       leftOp:.7, rightOp:.7,
-      mainTxt:'屏息', subTxt:'放開',
-      caption:'放開 = 屏息',
+      mainTxt:jteT('demo_hold','屏息'), subTxt:jteT('demo_release','放開'),
+      caption:jteT('demo_caption_hold','放開 = 屏息'),
       shadow:'0 8px 40px rgba(160,130,50,.2)',
-      dur:2500  // 屏息 2.5s
+      dur:2500
     },
     {
       leftBg:'rgba(45,95,138,.22)', rightBg:'rgba(45,95,138,.88)',
       leftOp:.25, rightOp:1,
-      mainTxt:'吐氣', subTxt:'按右邊',
-      caption:'右半邊按住 = 吐氣',
+      mainTxt:jteT('demo_exhale','吐氣'), subTxt:jteT('demo_press_right','按右邊'),
+      caption:jteT('demo_caption_exhale','右半邊按住 = 吐氣'),
       shadow:'0 8px 40px rgba(45,95,138,.28)',
-      dur:3500  // 吐氣 3.5s
+      dur:3500
     },
     {
       leftBg:'rgba(180,150,60,.65)', rightBg:'rgba(180,150,60,.65)',
       leftOp:.7, rightOp:.7,
-      mainTxt:'屏息', subTxt:'放開',
-      caption:'放開 = 屏息',
+      mainTxt:jteT('demo_hold','屏息'), subTxt:jteT('demo_release','放開'),
+      caption:jteT('demo_caption_hold','放開 = 屏息'),
       shadow:'0 8px 40px rgba(160,130,50,.2)',
-      dur:2500  // 屏息 2.5s
+      dur:2500
     },
   ];
 
@@ -1612,15 +1661,394 @@ function jteSkipLogin(){
   document.getElementById('jte-login-modal').style.display='none';
   if(_jtePendingSave){_jtePendingSave();_jtePendingSave=null;}
 }
+
+// ══════════════════════════════════════════════════════
+// i18n — 字典 + 動態重繪
+// ══════════════════════════════════════════════════════
+window.JTE_I18N = {
+  en: {
+    // Nav
+    nav_sense: 'Sense',
+    nav_history: 'History',
+    // Home
+    home_slogan: 'Know yourself through breath',
+    home_intro1: 'We want you to first discover how you breathe.',
+    home_intro2: 'Your breath reflects your state of being.<br>When you breathe with awareness,<br>your state quietly begins to shift.',
+    home_how_btn: 'How it works',
+    home_practice_label: 'Or, follow a guided practice',
+    // Guided practice names on home
+    guided_resonance_name: 'Resonance Breathing',
+    guided_resonance_pattern: 'Inhale 5.5 s · Exhale 5.5 s',
+    guided_box_name: 'Box Breathing',
+    guided_box_pattern: 'In 4 · Hold 4 · Out 4 · Hold 4 s',
+    guided_counting_name: 'Counting Breath',
+    guided_counting_pattern: 'Inhale 4 s · Exhale 6 s',
+    // Demo slide
+    demo_title: 'HOW TO USE',
+    demo_inhale: 'Inhale',
+    demo_exhale: 'Exhale',
+    demo_hold: 'Hold',
+    demo_press_left: 'Press left',
+    demo_press_right: 'Press right',
+    demo_release: 'Release',
+    demo_caption_inhale: 'Hold left = Inhale',
+    demo_caption_exhale: 'Hold right = Exhale',
+    demo_caption_hold: 'Release = Hold',
+    // Orb idle
+    orb_idle_inhale: 'Hold left — Inhale',
+    orb_idle_exhale: 'Hold right — Exhale',
+    orb_idle_hold: 'Release — Hold',
+    // Live phase labels
+    phase_inhale: 'Inhaling',
+    phase_exhale: 'Exhaling',
+    phase_hold: 'Holding',
+    // Stats
+    stat_ie: 'In : Out',
+    stat_count: 'Breaths',
+    metric_stability: 'Stability',
+    // Stop button
+    btn_stop: 'End session',
+    // State description
+    recommend_title: 'Suggested practices',
+    practice_link_cta: 'Practice now',
+    // State labels
+    state_deep_label: 'Deep calm',
+    state_calm_label: 'Steady calm',
+    state_neutral_label: 'Balanced',
+    state_tense_label: 'Slightly quick',
+    state_anxiety_label: 'Noticeably quick',
+    state_fatigue_label: 'Irregular rhythm',
+    // State descriptions
+    state_deep_desc: 'Your breathing is slow with prolonged exhales. This pattern invites the body into a restful state — stay with it, or take a moment to notice how you feel.',
+    state_calm_desc: 'Your breathing rate and rhythm are in a steady range, with exhales slightly longer than inhales. This pattern supports relaxation — a good starting point.',
+    state_neutral_desc: 'Your breath rate and inhale/exhale ratio are balanced. This is a neutral baseline — a good moment to begin a more intentional practice.',
+    state_tense_desc: 'Your breathing is a bit fast, or inhales are slightly dominant. This may reflect mild tension or focused attention — not a problem. Try gently lengthening your exhale.',
+    state_anxiety_desc: 'Your breath rate is elevated with heavier inhales. This is common under stress or focus. No need to force change — start with one long, slow exhale.',
+    state_fatigue_desc: 'Your breath is fast with inconsistent lengths. This often appears with fatigue or distraction. No deep breaths needed — just try to make each breath a little more even.',
+    // State methods
+    state_deep_method0: 'Stay with this rhythm',
+    state_deep_method1: 'Extend: 4-7-8 breathing',
+    state_deep_method2: 'Note how you feel',
+    state_calm_method0: 'Resonance breathing (6 BPM)',
+    state_calm_method1: 'Lengthen the exhale',
+    state_calm_method2: 'Keep your current pace',
+    state_neutral_method0: 'Equal breathing (4:4:4:4)',
+    state_neutral_method1: 'Resonance breathing guide',
+    state_neutral_method2: 'Free choice',
+    state_tense_method0: '4-7-8 breathing',
+    state_tense_method1: 'Lengthen exhale (1:2 ratio)',
+    state_tense_method2: 'Stabilize, then slow down',
+    state_anxiety_method0: 'Cyclic sighing (double inhale, long exhale)',
+    state_anxiety_method1: '4-7-8 (gentle start)',
+    state_anxiety_method2: 'One long exhale first',
+    state_fatigue_method0: 'Equal breathing (4:4:4:4)',
+    state_fatigue_method1: 'Box breathing for rhythm',
+    state_fatigue_method2: 'Avoid over-breathing',
+    // Hold note
+    hold_note_base: 'Your average breath hold is about ',
+    hold_note_sec_pct: ' seconds, ',
+    hold_note_pct_sfx: '% of each cycle.',
+    hold_note_high: 'A longer hold supports deeper parasympathetic activation.',
+    hold_note_low: 'Your hold is brief — your body may still be settling into a rhythm.',
+    // Pattern note
+    pattern_note_pre: 'Your breathing pattern resembles "',
+    pattern_note_sfx: '" — ',
+    pattern_note_end: '.',
+    // History
+    history_title: 'Breath history',
+    history_loading: 'Loading…',
+    history_count_pre: '',
+    history_count_sfx: ' sessions recorded',
+    history_empty_sub: 'No sessions yet',
+    history_empty_cta: 'Go to the Sense tab to start your first session',
+    compare_title: 'BPM trend (last 10)',
+    tag_guided: 'Guided',
+    // Duration
+    dur_min: 'min ',
+    dur_sec: 's',
+    // Guided setup page
+    gs_dur_label: 'Duration',
+    gs_dur_unit: 'min',
+    gs_start: 'Begin',
+    gs_back: '← Back',
+    // Guided mode names/subs/info
+    guided_resonance_sub: 'Balance your autonomic nervous system',
+    guided_resonance_info: 'Research shows that breathing at ~6 cycles per minute (0.1 Hz) most effectively regulates the autonomic nervous system, improves HRV, and brings body and mind into coherence.',
+    guided_resonance_gin: 'Let the air flow in naturally',
+    guided_resonance_gex: 'No effort needed — let the breath lengthen on its own',
+    guided_box_sub: 'A resilience tool from military & sport psychology',
+    guided_box_info: 'Inhale 4 s, hold 4 s, exhale 4 s, hold 4 s — forming a complete "breath box." Used in high-pressure situations to steady the mind and sharpen focus.',
+    guided_box_gin: 'Let the belly expand first, then the chest follows',
+    guided_box_gex: 'Release the tension in your shoulders as you breathe out',
+    guided_box_ghold: 'Let the breath rest quietly inside',
+    guided_counting_sub: 'Lengthen the exhale to activate calm',
+    guided_counting_info: 'Inhale 4 s, exhale 6 s. A longer exhale activates the parasympathetic nervous system, guiding the body into relaxation.',
+    guided_counting_gin: 'Breathe in quietly',
+    guided_counting_gex: 'Let the exhale flow slowly — count silently as you go',
+    // Guided run phase cues
+    cue_inhale: 'In',
+    cue_exhale: 'Out',
+    cue_hold: 'Hold',
+    guided_ghold_default: 'Let the breath rest',
+    guided_ghold_empty: 'Feel the stillness',
+    // Guided done
+    guided_done: 'complete!',
+    guided_done_dur: 'Duration: ',
+    // Modal
+    modal_title: 'Session complete',
+    modal_sub: 'How do you feel right now?',
+    feeling_much_better: 'Much lighter',
+    feeling_a_bit_relaxed: 'Slightly relaxed',
+    feeling_no_change: 'No change',
+    feeling_still_tense: 'Still tense',
+    feeling_a_bit_tired: 'A bit tired',
+    feeling_more_alert: 'More alert',
+    feeling_slower_heart: 'Slower heartbeat',
+    feeling_clear_mind: 'Clear mind',
+    feeling_note_ph: 'Anything else to note? (optional)',
+    btn_save: 'Save this session',
+    // Session done chip
+    session_done: 'Session complete',
+    // Login modal
+    login_title: 'Save & sync your record',
+    login_desc: 'Sign in with Google to sync your session to your Daily Check on the platform.',
+    login_skip: 'Skip — save locally only',
+    // Trajectory
+    traj_title: 'TRAJECTORY ANALYSIS',
+    traj_early: 'Early',
+    traj_mid: 'Mid',
+    traj_late: 'Late',
+    traj_stability: 'Stability ',
+    traj_bpm_drop: 'BPM dropped ',
+    traj_bpm_rise: 'BPM rose ',
+    traj_bpm_stable: 'BPM mostly stable',
+    traj_f_bpm_drop: 'Your breathing slowed from <strong>{0} BPM</strong> at the start to <strong>{1} BPM</strong> by the end — a drop of {2} breaths/min. A clear signal your nervous system is settling.',
+    traj_f_bpm_rise: 'Your breathing rate rose from <strong>{0} BPM</strong> to <strong>{1} BPM</strong> toward the end. You may have lost focus, or your body is adjusting to a new rhythm.',
+    traj_f_bpm_stable: 'Your breathing rate stayed steady — <strong>{0} BPM</strong> early, <strong>{1} BPM</strong> late — varying by fewer than 3 breaths/min.',
+    traj_f_stab_up: 'Rhythm stability improved noticeably: {0}% early, {1}% late. Your breathing became more regular as the session went on.',
+    traj_f_stab_down: 'Rhythm became more variable toward the end ({0}% early → {1}% late). This may signal a shift in attention or early respiratory fatigue.',
+    traj_f_stab_var: 'Overall rhythm variation is high (stability {0}%). This is common — breath doesn\'t need to be metronomic. Noticing is the practice.',
+    traj_f_ie_drop: 'Your exhale gradually lengthened: I:E ratio improved from {0} to {1}. Longer exhales are activating your parasympathetic system.',
+    traj_f_ie_rise: 'Inhales became more dominant in the later phase (I:E {0}). This may reflect mild arousal. Next time, try to consciously extend the exhale beyond the inhale.',
+    traj_f_inhale_var: 'Your inhale depth varied widely — longest {0} s, shortest {1} s, a gap of {2} s. You may be finding a comfortable depth, or attention drifted occasionally.',
+    traj_f_mid_dip: 'The middle of your session was slowest ({0} BPM), with both early and late phases faster. Sometimes the body briefly enters a deeper state mid-way, then attention gently returns.',
+    traj_f_mid_peak: 'A brief acceleration appeared mid-session ({0} BPM) while early and late were calmer. There may have been an external distraction, or your body was resetting its rhythm.',
+  },
+  ja: {
+    // Nav
+    nav_sense: '気づき',
+    nav_history: '軌跡',
+    // Home
+    home_slogan: '呼吸で自分を知る',
+    home_intro1: 'まず、あなたが今どう呼吸しているかを知ってほしい。',
+    home_intro2: '呼吸の状態は、あなたの状態です。<br>意識的に呼吸を始めると、<br>状態は静かに変わっていきます。',
+    home_how_btn: '使い方を見る',
+    home_practice_label: 'または、ガイドに合わせて練習する',
+    // Guided practice names on home
+    guided_resonance_name: '共鳴呼吸',
+    guided_resonance_pattern: '吸気 5.5 秒 · 呼気 5.5 秒',
+    guided_box_name: 'ボックス呼吸',
+    guided_box_pattern: '吸 4 · 保持 4 · 呼 4 · 保持 4 秒',
+    guided_counting_name: '数息法',
+    guided_counting_pattern: '吸気 4 秒 · 呼気 6 秒',
+    // Demo slide
+    demo_title: '使い方',
+    demo_inhale: '吸気',
+    demo_exhale: '呼気',
+    demo_hold: '保持',
+    demo_press_left: '左を押す',
+    demo_press_right: '右を押す',
+    demo_release: '離す',
+    demo_caption_inhale: '左を押したまま ＝ 吸気',
+    demo_caption_exhale: '右を押したまま ＝ 呼気',
+    demo_caption_hold: '離す ＝ 保持',
+    // Orb idle
+    orb_idle_inhale: '左を押しながら 吸気',
+    orb_idle_exhale: '右を押しながら 呼気',
+    orb_idle_hold: '離す 保持',
+    // Live phase labels
+    phase_inhale: '吸気中',
+    phase_exhale: '呼気中',
+    phase_hold: '保持中',
+    // Stats
+    stat_ie: '吸：呼',
+    stat_count: '呼吸回数',
+    metric_stability: '安定度',
+    // Stop button
+    btn_stop: 'セッションを終了',
+    // State description
+    recommend_title: 'おすすめの練習',
+    practice_link_cta: '今すぐ練習する',
+    // State labels
+    state_deep_label: '深いリラックス',
+    state_calm_label: '穏やかな安定',
+    state_neutral_label: 'バランスの取れた状態',
+    state_tense_label: 'やや速め',
+    state_anxiety_label: '明らかに速め',
+    state_fatigue_label: 'リズムが不安定',
+    // State descriptions
+    state_deep_desc: '呼吸がゆっくりで、呼気が長い傾向があります。このパターンは体を深いリラックス状態に誘います。そのまま続けるか、今この瞬間の感覚に意識を向けてみてください。',
+    state_calm_desc: '呼吸数とリズムが安定した範囲にあり、呼気が吸気よりやや長くなっています。リラックスを維持しやすい良い状態です。',
+    state_neutral_desc: '呼吸数と吸呼の比率がバランスよく整っています。中立的な基準状態です。意識的な練習を始めるのに良いタイミングです。',
+    state_tense_desc: '呼吸がやや速いか、吸気の割合が少し多めです。軽い緊張や集中の状態かもしれません。問題ではありませんので、呼気を意識的に少し長くしてみてください。',
+    state_anxiety_desc: '呼吸が速く、吸気が多めです。緊張・集中・ストレス下でよく見られます。無理に変えようとせず、まずゆっくりと長く息を吐いてみてください。',
+    state_fatigue_desc: '呼吸が速く、長さが不安定です。疲労や集中力の低下でよく起こります。深呼吸は不要です。呼吸の長さを少しずつ揃えることだけを意識してみてください。',
+    // State methods
+    state_deep_method0: 'このリズムを維持する',
+    state_deep_method1: '延長練習：4-7-8 法',
+    state_deep_method2: '今の感覚を記録する',
+    state_calm_method0: '共鳴呼吸（6 BPM）',
+    state_calm_method1: '呼気を伸ばす練習',
+    state_calm_method2: '現在のペースを維持',
+    state_neutral_method0: '等長呼吸（4:4:4:4）',
+    state_neutral_method1: '共鳴呼吸ガイド',
+    state_neutral_method2: '自由に選択',
+    state_tense_method0: '4-7-8 呼吸法',
+    state_tense_method1: '呼気を延ばす（1:2 の比率）',
+    state_tense_method2: 'まずリズムを安定させる',
+    state_anxiety_method0: 'サイクリック・シギング（二重吸気＋長呼気）',
+    state_anxiety_method1: '4-7-8（ゆっくり始める）',
+    state_anxiety_method2: 'まず長く息を吐く',
+    state_fatigue_method0: '等長呼吸（4:4:4:4）',
+    state_fatigue_method1: 'ボックス呼吸でリズムを整える',
+    state_fatigue_method2: '過度な深呼吸は避ける',
+    // Hold note
+    hold_note_base: '保持時間の平均は約 ',
+    hold_note_sec_pct: ' 秒で、全体の ',
+    hold_note_pct_sfx: '% を占めています。',
+    hold_note_high: '保持が長いほど、副交感神経の活性化を深めます。',
+    hold_note_low: '保持時間が短めです。体がリズムを掴んでいる途中かもしれません。',
+    // Pattern note
+    pattern_note_pre: 'あなたの呼吸パターンは「',
+    pattern_note_sfx: '」に近いです — ',
+    pattern_note_end: '。',
+    // History
+    history_title: '呼吸の記録',
+    history_loading: '読み込み中…',
+    history_count_pre: '合計 ',
+    history_count_sfx: ' セッションの記録',
+    history_empty_sub: 'まだ記録がありません',
+    history_empty_cta: '気づきタブに移動して最初のセッションを始めましょう',
+    compare_title: 'BPM の推移（直近 10 回）',
+    tag_guided: 'ガイド',
+    // Duration
+    dur_min: '分 ',
+    dur_sec: '秒',
+    // Guided setup page
+    gs_dur_label: '練習時間',
+    gs_dur_unit: '分',
+    gs_start: '開　始',
+    gs_back: '← 戻る',
+    // Guided mode names/subs/info
+    guided_resonance_sub: '自律神経を整える',
+    guided_resonance_info: '研究によると、1 分間に約 6 回（0.1 Hz）の呼吸が自律神経を最も効果的に整え、心拍変動（HRV）を高め、心身を共鳴状態に導くとされています。',
+    guided_resonance_gin: '空気を自然に取り込む',
+    guided_resonance_gex: '力まず、呼吸が自然に伸びるままに',
+    guided_box_sub: '軍事・スポーツ心理学のストレス耐性技術',
+    guided_box_info: '吸気 4 秒・保持 4 秒・呼気 4 秒・保持 4 秒で「呼吸の箱」を作ります。高ストレス下で心身を安定させ、集中力を高めるために広く使われています。',
+    guided_box_gin: 'まずお腹が膨らみ、次に胸が続く',
+    guided_box_gex: '肩の緊張も一緒に吐き出す',
+    guided_box_ghold: '息が体の中に静かに留まるのを感じる',
+    guided_counting_sub: '呼気を延ばしてリラックスを引き出す',
+    guided_counting_info: '吸気 4 秒・呼気 6 秒。呼気が長いと副交感神経が活性化され、体がリラックス状態に入ります。',
+    guided_counting_gin: '静かに息を吸う',
+    guided_counting_gex: 'ゆっくりと息を吐き、心の中で数える',
+    // Guided run phase cues
+    cue_inhale: '吸',
+    cue_exhale: '吐',
+    cue_hold: '保',
+    guided_ghold_default: '息をそっと留める',
+    guided_ghold_empty: '静けさを感じる',
+    // Guided done
+    guided_done: '完了！',
+    guided_done_dur: '練習時間：',
+    // Modal
+    modal_title: 'セッション終了',
+    modal_sub: '今の気持ちを教えてください',
+    feeling_much_better: 'とても楽になった',
+    feeling_a_bit_relaxed: '少しリラックスした',
+    feeling_no_change: '変化なし',
+    feeling_still_tense: 'まだ緊張している',
+    feeling_a_bit_tired: '少し疲れた',
+    feeling_more_alert: 'スッキリした',
+    feeling_slower_heart: '心拍が落ち着いた',
+    feeling_clear_mind: '頭がクリアになった',
+    feeling_note_ph: '他に記録したいことは？（任意）',
+    btn_save: 'このセッションを保存',
+    // Session done chip
+    session_done: 'セッション完了',
+    // Login modal
+    login_title: '記録を保存・同期する',
+    login_desc: 'Google アカウントでサインインすると、記録がプラットフォームの今日のデイリーチェックに自動同期されます。',
+    login_skip: 'スキップ — ローカルのみに保存',
+    // Trajectory
+    traj_title: 'トラジェクトリー分析',
+    traj_early: '前半',
+    traj_mid: '中盤',
+    traj_late: '後半',
+    traj_stability: '安定度 ',
+    traj_bpm_drop: 'BPM 低下 ',
+    traj_bpm_rise: 'BPM 上昇 ',
+    traj_bpm_stable: 'BPM ほぼ安定',
+    traj_f_bpm_drop: '呼吸数が開始時の <strong>{0} BPM</strong> から後半の <strong>{1} BPM</strong> に低下しました（{2} 回/分減少）。自律神経が整い始めているサインです。',
+    traj_f_bpm_rise: '呼吸数が <strong>{0} BPM</strong> から <strong>{1} BPM</strong> に上昇しました。集中が途切れたか、体が新しいリズムに適応している可能性があります。',
+    traj_f_bpm_stable: '呼吸数は全体を通じて安定していました — 前半 <strong>{0} BPM</strong>、後半 <strong>{1} BPM</strong>、3 回/分以内の変化です。',
+    traj_f_stab_up: 'リズムの安定度が向上しました：前半 {0}%、後半 {1}%。練習を続けるにつれ、呼吸が規則的になっています。',
+    traj_f_stab_down: '後半にリズムの乱れが見られました（前半 {0}%、後半 {1}%）。注意が移ったか、呼吸筋が疲れ始めているサインかもしれません。',
+    traj_f_stab_var: '全体的にリズムの変動が大きめです（安定度 {0}%）。これはよくあることです — 呼吸は機械ではありません。気づくこと自体が練習です。',
+    traj_f_ie_drop: '呼気の割合が徐々に増加：吸呼比が {0} から {1} に改善しました。延長された呼気が副交感神経の活性化を助けています。',
+    traj_f_ie_rise: '後半は吸気の割合が多くなりました（吸呼比 {0}）。軽い覚醒や緊張感が反映されている可能性があります。次回は呼気を吸気より長くすることを意識してみてください。',
+    traj_f_inhale_var: '吸気の深さに大きなばらつきがあります — 最長 {0} 秒、最短 {1} 秒、差は {2} 秒です。快適な深さを探っているか、時々集中が途切れているのかもしれません。',
+    traj_f_mid_dip: '中盤の呼吸が最も遅く（{0} BPM）、前後半は速めでした。体が一時的に深い状態に入り、その後注意が少し戻ってきた可能性があります。',
+    traj_f_mid_peak: '中盤に一時的な加速が見られました（{0} BPM）。外部の刺激があったか、体がリズムを再調整していた可能性があります。',
+  }
+};
+
+// ── 動態重繪（語言切換後重新繪製目前檢視）──
+// 記住目前顯示的頁面，切換語言時重繪
+window.jteI18nApply = function(lang) {
+  // 1. Re-render history page if visible
+  const histPage = document.getElementById('page-history');
+  if(histPage && histPage.classList.contains('active')) {
+    renderHistory();
+  }
+  // 2. Re-render guided-setup if visible (re-populate from current guidedMode)
+  const gsPage = document.getElementById('page-guided-setup');
+  if(gsPage && gsPage.classList.contains('active') && guidedMode) {
+    openGuidedSetup(guidedMode);
+    // restore duration selection
+    const slider = document.getElementById('gsSlider');
+    if(slider) {
+      slider.value = guidedDuration;
+      document.getElementById('gsDurVal').textContent = guidedDuration;
+    }
+  }
+  // 3. Re-render sense page live stats if a session state block is showing
+  const block = document.getElementById('stateDescBlock');
+  if(block && block.style.display !== 'none' && breaths.length >= 3) {
+    updateLiveStats();
+  }
+  // 4. Reset orb idle text if idle
+  const orbIdle = document.getElementById('orbIdle');
+  if(orbIdle && orbIdle.style.display !== 'none') {
+    document.getElementById('orbMain').textContent = jteT('phase_inhale','吸氣中');
+  }
+  // 5. Update histSub static data-i18n element (already handled by engine for static)
+  // but also update the dynamic count text if history is loaded
+  const histSub = document.getElementById('histSub');
+  if(histSub && !histPage.classList.contains('active')) {
+    // leave alone; will re-render on next showPage('history')
+  }
+};
 </script>
 
 <!-- JTE Google Login Modal -->
 <div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
   <div style="background:white;border-radius:20px;padding:28px 24px 32px;width:88%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.2)">
-    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif">儲存並同步紀錄</div>
-    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
+    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif" data-i18n="login_title">儲存並同步紀錄</div>
+    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6" data-i18n="login_desc">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
     <div id="jte-gsi-btn" style="margin-bottom:10px"></div>
-    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif">略過，只在本機儲存</button>
+    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif" data-i18n="login_skip">略過，只在本機儲存</button>
   </div>
 </div>
 </body>

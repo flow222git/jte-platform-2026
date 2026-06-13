@@ -16,6 +16,8 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<!-- i18n stub: 讓 jteT 在 jte-i18n.js 載入前也能安全呼叫 -->
+<script>window.jteT=window.jteT||function(k,z){return z!=null?z:k;};</script>
 <style>
   :root{
     --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
@@ -143,12 +145,253 @@
 </head>
 <body>
 <div class="wrap">
-  <header><span class="logo">心情溫度計</span><span class="sub">BSRS</span></header>
-  <p class="tagline">一分鐘，看看最近一星期的情緒溫度。</p>
+  <header><span class="logo" data-i18n="header.logo">心情溫度計</span><span class="sub">BSRS</span></header>
+  <p class="tagline" data-i18n="tagline">一分鐘，看看最近一星期的情緒溫度。</p>
   <div class="progress" id="progress"></div>
   <div id="app"></div>
 </div>
 <div class="bar" id="bar"></div>
+
+<!-- i18n 字典（只放 en/ja；zh 以 DOM 原文為準） -->
+<script>
+window.JTE_I18N = {
+  en: {
+    /* —— header / static —— */
+    'header.logo': 'Mood Thermometer',
+    'tagline': 'One minute to check your emotional temperature over the past week.',
+
+    /* —— nav —— */
+    'nav.back': '← Back to Platform',
+
+    /* —— intro —— */
+    'intro.lead': 'Over the past week (including today), have these issues caused you distress or upset?<br>Answer honestly — it only takes a minute. Only you can see your answers.',
+    'intro.start': 'Start',
+    'intro.history': 'View my mood trends →',
+    'intro.disclaimer': 'This scale is a screening reference for emotional distress, not a diagnostic tool. For guidance only — please seek professional help if distress persists.',
+
+    /* —— quiz —— */
+    'quiz.lead': '<b style="color:var(--ink)">Over the past week (including today)</b>, how much have these issues caused you distress or upset?',
+    'quiz.badge.supplementary': 'Additional item · not counted in total',
+    'quiz.btn.incomplete': 'Please answer all questions',
+    'quiz.btn.done': 'See results',
+
+    /* —— BSRS questions —— */
+    'q1': 'Feeling tense or anxious',
+    'q2': 'Feeling easily upset or irritated',
+    'q3': 'Feeling depressed or low in mood',
+    'q4': 'Feeling inferior to others',
+    'q5': 'Sleep difficulties, such as trouble falling asleep, frequent waking, or early waking',
+    'q6': 'Having thoughts of suicide',
+
+    /* —— BSRS options —— */
+    'opt.0': 'Not at all',
+    'opt.1': 'A little',
+    'opt.2': 'Moderately',
+    'opt.3': 'Quite a bit',
+    'opt.4': 'Extremely',
+
+    /* —— crisis card — FLAGGED FOR USER REVIEW —— */
+    'crisis.title': 'You are not alone — you can reach out right now',
+    'crisis.body': 'Your answers suggest you may have been going through a very difficult time recently. These feelings deserve to be taken seriously — please let a professional support you. You don\'t have to face this alone.',
+    'crisis.emergency': 'If you are in immediate danger, please call',
+
+    /* —— crisis resource names — FLAGGED FOR USER REVIEW —— */
+    'crisis.res.1925': 'Taiwan 24-hour Emotional Support Hotline (free)',
+    'crisis.res.1995': 'Lifeline Counselling Hotline',
+    'crisis.res.1980': 'Teacher Chang Foundation Hotline',
+
+    /* —— item6 note (non-crisis) — FLAGGED FOR USER REVIEW —— */
+    'item6.title': 'About question 6',
+    'item6.body': 'You selected a response on the "thoughts of suicide" question. Even if your overall score is low, these feelings are worth caring for. If these thoughts are troubling you, you can call the 24-hour support line <b>1925</b> any time — someone is there to listen.',
+
+    /* —— score card —— */
+    'score.lab': 'Emotional distress score — past week',
+    'score.max': '/ 20',
+
+    /* —— level labels & advice —— */
+    'level.good.label': 'Good overall wellbeing',
+    'level.good.advice': 'Your recent state seems good. Keep taking care of yourself.',
+    'level.mild.label': 'Mild emotional distress',
+    'level.mild.advice': 'Talking to someone you trust — a friend or family member — can really help. Give it a try.',
+    'level.moderate.label': 'Moderate emotional distress',
+    'level.moderate.advice': 'Consider reaching out to a counsellor or mental health professional for support on this journey.',
+    'level.severe.label': 'Severe emotional distress',
+    'level.severe.advice': 'Please seek psychiatric treatment or psychological counselling. You deserve to be fully supported.',
+
+    /* —— answer review panel —— */
+    'result.answers.title': 'Your answers',
+
+    /* —— result buttons —— */
+    'result.btn.again': 'Take the test again',
+    'result.btn.trend': 'View trends',
+
+    /* —— result disclaimer —— */
+    'result.disclaimer': 'This scale is a screening reference for emotional distress, not a diagnostic tool. For guidance only — please seek professional help if distress persists.',
+
+    /* —— save block —— */
+    'save.title': 'Would you like to save today\'s reading?',
+    'save.privacy': 'Only visible to you — even we cannot decrypt it',
+    'save.skip': 'Not this time',
+    'save.do': 'Save',
+    'save.done': 'Saved to your records ✓ ',
+    'save.view': 'View my mood trends →',
+    'save.skipped': 'OK, not saving this time.',
+
+    /* —— trend page —— */
+    'trend.title': 'My Mood Trends',
+    'trend.btn.test': 'Take the test',
+    'trend.login.lead': 'Sign in to see all your mood readings and track your changes over time.',
+    'trend.login.btn': 'Sign in to view',
+    'trend.local.label': 'Records on this device:',
+    'trend.loading': 'Loading…',
+    'trend.empty': 'No records yet. Take the test and save your reading to start tracking.',
+    'trend.no.scores': 'No scores available to display (unlock encryption to see private scores).',
+
+    /* —— history card —— */
+    'hist.crisis.flag': '⚠ This reading reached a level that warrants attention. The support line 1925 is always available.',
+    'hist.del': 'Delete',
+    'hist.del.confirm': 'Delete this record?',
+
+    /* —— level badges (trend) —— */
+    'badge.good': 'Good',
+    'badge.mild': 'Mild',
+    'badge.moderate': 'Moderate',
+    'badge.severe': 'Severe',
+
+    /* —— privacy bar —— */
+    'priv.checking': 'Private sync: checking…',
+    'priv.enable': '🔒 Enable cross-device encrypted sync',
+    'priv.learn': 'About privacy',
+    'priv.unlock': '🔓 Unlock',
+    'priv.change': 'Change passphrase',
+    'priv.locked': 'Lock',
+    'priv.synced': '✓ Encrypted sync active',
+
+    /* —— login modal —— */
+    'modal.title': 'Sign in to save',
+    'modal.desc': 'Sign in with Google to save this reading to your account and sync it across the platform.',
+    'modal.skip': 'Not now'
+  },
+
+  ja: {
+    /* —— header / static —— */
+    'header.logo': '気分温度計',
+    'tagline': '1分間で、この1週間の気持ちの温度を確認しましょう。',
+
+    /* —— nav —— */
+    'nav.back': '← プラットフォームに戻る',
+
+    /* —— intro —— */
+    'intro.lead': 'この1週間（今日を含む）、次のことがあなたを悩ませたり、苦しめたりしましたか？<br>正直に答えてください。1分もかかりません。あなたの答えはあなただけが見ることができます。',
+    'intro.start': '始める',
+    'intro.history': '自分の気分の変化を見る →',
+    'intro.disclaimer': 'この尺度は感情的苦痛のスクリーニングの参考であり、診断ツールではありません。参考情報としてのみご使用ください。苦痛が続く場合は、専門家にご相談ください。',
+
+    /* —— quiz —— */
+    'quiz.lead': '<b style="color:var(--ink)">この1週間（今日を含む）</b>、次のことがどの程度あなたを悩ませましたか？',
+    'quiz.badge.supplementary': '追加項目・合計点には含まれません',
+    'quiz.btn.incomplete': 'すべての質問にお答えください',
+    'quiz.btn.done': '結果を見る',
+
+    /* —— BSRS questions —— */
+    'q1': '緊張や不安を感じた',
+    'q2': 'いらいらしたり、怒りっぽくなった',
+    'q3': '気分が落ち込んだり、憂うつになった',
+    'q4': '自分が他の人より劣っていると感じた',
+    'q5': '眠りにくい、途中で目が覚める、早く目が覚めるなど、睡眠に問題があった',
+    'q6': '自殺について考えた',
+
+    /* —— BSRS options —— */
+    'opt.0': '全くない',
+    'opt.1': '少し',
+    'opt.2': '中程度',
+    'opt.3': 'かなり',
+    'opt.4': '非常に',
+
+    /* —— crisis card — FLAGGED FOR USER REVIEW —— */
+    'crisis.title': 'あなたは一人ではありません — 今すぐ話せる場所があります',
+    'crisis.body': 'あなたの回答から、最近とても辛い思いをされているかもしれないことが伝わります。その気持ちは真剣に受け止められるべきです。一人で抱え込まず、専門家に話を聞いてもらってください。',
+    'crisis.emergency': '今すぐ危険な状況にある場合は',
+
+    /* —— crisis resource names — FLAGGED FOR USER REVIEW —— */
+    'crisis.res.1925': '台湾こころの安心相談窓口（24時間・無料）1925',
+    'crisis.res.1995': 'ライフライン相談専用電話 1995',
+    'crisis.res.1980': '張老師専用電話 1980',
+
+    /* —— item6 note (non-crisis) — FLAGGED FOR USER REVIEW —— */
+    'item6.title': '質問6について',
+    'item6.body': '「自殺について考えた」という質問で回答がありました。全体のスコアが低くても、その気持ちはしっかりケアされるべきです。もしこのような考えが気になるようであれば、いつでもこころの安心相談窓口 <b>1925</b> にお電話ください。話を聞いてくれる人がいます。',
+
+    /* —— score card —— */
+    'score.lab': 'この1週間の感情的苦痛スコア',
+    'score.max': '/ 20',
+
+    /* —— level labels & advice —— */
+    'level.good.label': '心身の状態は良好です',
+    'level.good.advice': '最近の状態は良さそうです。引き続き自分を大切にしてください。',
+    'level.mild.label': '軽度の感情的苦痛',
+    'level.mild.advice': '信頼できる家族や友人と話してみてください。気持ちが楽になるでしょう。',
+    'level.moderate.label': '中程度の感情的苦痛',
+    'level.moderate.advice': 'カウンセラーや心理専門家への相談をお勧めします。一緒に歩んでいきましょう。',
+    'level.severe.label': '重度の感情的苦痛',
+    'level.severe.advice': '精神科の治療や心理カウンセリングを受けてください。あなたはしっかりサポートされる価値があります。',
+
+    /* —— answer review panel —— */
+    'result.answers.title': 'あなたの回答',
+
+    /* —— result buttons —— */
+    'result.btn.again': 'もう一度テストする',
+    'result.btn.trend': '変化を見る',
+
+    /* —— result disclaimer —— */
+    'result.disclaimer': 'この尺度は感情的苦痛のスクリーニングの参考であり、診断ツールではありません。参考情報としてのみご使用ください。苦痛が続く場合は、専門家にご相談ください。',
+
+    /* —— save block —— */
+    'save.title': '今回の記録を保存しますか？',
+    'save.privacy': 'あなただけが見られます。私たちも解読できません',
+    'save.skip': '今回は保存しない',
+    'save.do': '保存する',
+    'save.done': '記録に保存しました ✓ ',
+    'save.view': '気分の変化を見る →',
+    'save.skipped': 'わかりました。今回は保存しません。',
+
+    /* —— trend page —— */
+    'trend.title': '私の気分の変化',
+    'trend.btn.test': 'テストを受ける',
+    'trend.login.lead': 'サインインすると、これまでの気分の記録を確認し、変化を追うことができます。',
+    'trend.login.btn': 'サインインして確認',
+    'trend.local.label': 'このデバイスの記録：',
+    'trend.loading': '読み込み中…',
+    'trend.empty': 'まだ記録がありません。テストを受けて、今の気持ちを記録してみましょう。',
+    'trend.no.scores': '表示できるスコアがありません（非公開スコアを表示するには暗号化を解除してください）。',
+
+    /* —— history card —— */
+    'hist.crisis.flag': '⚠ この回答は注意が必要なレベルに達しています。こころの安心相談窓口 1925 にいつでもご連絡ください。',
+    'hist.del': '削除',
+    'hist.del.confirm': 'この記録を削除しますか？',
+
+    /* —— level badges (trend) —— */
+    'badge.good': '良好',
+    'badge.mild': '軽度',
+    'badge.moderate': '中程度',
+    'badge.severe': '重度',
+
+    /* —— privacy bar —— */
+    'priv.checking': 'プライベート同期：確認中…',
+    'priv.enable': '🔒 クロスデバイス暗号化同期を有効にする',
+    'priv.learn': 'プライバシーについて',
+    'priv.unlock': '🔓 ロック解除',
+    'priv.change': 'パスフレーズを変更',
+    'priv.locked': 'ロック',
+    'priv.synced': '✓ 暗号化同期中',
+
+    /* —— login modal —— */
+    'modal.title': 'サインインして保存',
+    'modal.desc': 'Googleでサインインすると、この結果をアカウントに保存し、プラットフォーム全体で同期できます。',
+    'modal.skip': '今はしない'
+  }
+};
+</script>
 
 <script>
 /* ============================================================
@@ -162,7 +405,8 @@ const state={ mode:'intro', answers:[null,null,null,null,null,null] };
 
 function clearAll(){ app.innerHTML=''; bar.innerHTML=''; }
 function backHomeLink(){
-  const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
+  const b=document.createElement('button');b.className='home-link';
+  b.textContent=jteT('nav.back','← 回練息場平台');
   b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
   return b;
 }
@@ -178,14 +422,16 @@ function renderIntro(){
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   d.insertAdjacentHTML('beforeend',
-    '<p class="lead">最近一星期（包括今天），這些問題讓你感到困擾或苦惱嗎？<br>誠實回答，只需要一分鐘。你寫的只有你看得到。</p>');
-  const start=document.createElement('button');start.className='btn btn-primary';start.style.width='100%';start.textContent='開始作答';
+    '<p class="lead">'+jteT('intro.lead','最近一星期（包括今天），這些問題讓你感到困擾或苦惱嗎？<br>誠實回答，只需要一分鐘。你寫的只有你看得到。')+'</p>');
+  const start=document.createElement('button');start.className='btn btn-primary';start.style.width='100%';
+  start.textContent=jteT('intro.start','開始作答');
   start.onclick=renderQuiz;
   d.appendChild(start);
-  const hist=document.createElement('button');hist.className='home-link';hist.style.cssText='display:block;margin:16px auto 0;text-align:center;width:100%';hist.textContent='看我的情緒趨勢 →';
+  const hist=document.createElement('button');hist.className='home-link';hist.style.cssText='display:block;margin:16px auto 0;text-align:center;width:100%';
+  hist.textContent=jteT('intro.history','看我的情緒趨勢 →');
   hist.onclick=function(){renderTrend();};
   d.appendChild(hist);
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer" style="margin-top:24px">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('intro.disclaimer','本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。'))+'</p>');
   app.appendChild(d);
 }
 
@@ -195,17 +441,20 @@ function renderQuiz(){
   clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-bottom:14px"><b style="color:var(--ink)">最近一星期（包括今天）</b>，這些問題讓你感到困擾或苦惱的程度？</p>');
+  d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-bottom:14px">'+jteT('quiz.lead','<b style="color:var(--ink)">最近一星期（包括今天）</b>，這些問題讓你感到困擾或苦惱的程度？')+'</p>');
   const Q=BsrsScore.QUESTIONS, OPTS=BsrsScore.OPTIONS;
+  // Translated questions (keyed q1–q6) and options (opt.0–opt.4)
+  const tQ=Q.map(function(q,qi){return jteT('q'+(qi+1),q.text);});
+  const tO=OPTS.map(function(o,oi){return jteT('opt.'+oi,o);});
   Q.forEach(function(q,qi){
     const card=document.createElement('div');card.className='qcard';
-    const badge=q.supplementary?'<span class="qbadge">附加題 · 不計入總分</span>':'';
+    const badge=q.supplementary?'<span class="qbadge">'+_h(jteT('quiz.badge.supplementary','附加題 · 不計入總分'))+'</span>':'';
     let opthtml='';
-    OPTS.forEach(function(o,oi){
+    tO.forEach(function(label,oi){
       const sel=state.answers[qi]===oi?' sel':'';
-      opthtml+='<button class="opt'+sel+'" data-q="'+qi+'" data-o="'+oi+'"><span class="on">'+oi+'</span>'+_h(o)+'</button>';
+      opthtml+='<button class="opt'+sel+'" data-q="'+qi+'" data-o="'+oi+'"><span class="on">'+oi+'</span>'+_h(label)+'</button>';
     });
-    card.innerHTML='<div class="qhead"><span class="qnum">'+(qi+1)+'.</span><span class="qtext">'+_h(q.text)+badge+'</span></div><div class="opts">'+opthtml+'</div>';
+    card.innerHTML='<div class="qhead"><span class="qnum">'+(qi+1)+'.</span><span class="qtext">'+_h(tQ[qi])+badge+'</span></div><div class="opts">'+opthtml+'</div>';
     card.querySelectorAll('.opt').forEach(function(btn){
       btn.onclick=function(){
         const qq=Number(btn.dataset.q),oo=Number(btn.dataset.o);
@@ -225,7 +474,9 @@ function updateQuizBar(){
   const done=state.answers.every(function(a){return a!==null;});
   bar.innerHTML='';
   const inner=document.createElement('div');inner.className='bar-inner';
-  const go=document.createElement('button');go.className='btn btn-primary';go.textContent=done?'看結果':'請完成所有題目';go.disabled=!done;
+  const go=document.createElement('button');go.className='btn btn-primary';
+  go.textContent=done?jteT('quiz.btn.done','看結果'):jteT('quiz.btn.incomplete','請完成所有題目');
+  go.disabled=!done;
   go.onclick=function(){if(done)renderResult();};
   inner.appendChild(go);
   bar.appendChild(inner);
@@ -233,9 +484,9 @@ function updateQuizBar(){
 
 /* —— 結果 + 危機把關 + 免責 —— */
 const CRISIS_RESOURCES=[
-  {num:'1925',nm:'安心專線（24 小時免付費）',tel:'1925'},
-  {num:'1995',nm:'生命線協談專線',tel:'1995'},
-  {num:'1980',nm:'張老師專線',tel:'1980'}
+  {num:'1925',nm:'安心專線（24 小時免付費）',nmKey:'crisis.res.1925',tel:'1925'},
+  {num:'1995',nm:'生命線協談專線',nmKey:'crisis.res.1995',tel:'1995'},
+  {num:'1980',nm:'張老師專線',nmKey:'crisis.res.1980',tel:'1980'}
 ];
 function renderResult(){
   state.mode='result';
@@ -250,42 +501,65 @@ function renderResult(){
     const c=document.createElement('div');c.className='crisis-card';
     let resHtml='';
     CRISIS_RESOURCES.forEach(function(x){
-      resHtml+='<li><a href="tel:'+x.tel+'"><span class="num">'+x.num+'</span><span class="nm">'+_h(x.nm)+'</span></a></li>';
+      const label=jteT(x.nmKey,x.nm);
+      // For EN/JA the label already includes number info; for ZH show num separately
+      const lang=typeof jteLang==='function'?jteLang():'zh';
+      if(lang==='zh'){
+        resHtml+='<li><a href="tel:'+x.tel+'"><span class="num">'+x.num+'</span><span class="nm">'+_h(label)+'</span></a></li>';
+      } else {
+        resHtml+='<li><a href="tel:'+x.tel+'"><span class="nm" style="font-size:14px">'+_h(label)+'</span></a></li>';
+      }
     });
-    c.innerHTML='<div class="ct"><i class="ti ti-heart-handshake"></i>你並不孤單，現在就可以找人說</div>'+
-      '<p>你的回答顯示，最近這段時間可能很不好受。這些感受值得被認真對待——請讓專業的人陪你一起面對，不用一個人撐。</p>'+
+    const emergencyText=jteT('crisis.emergency','若有立即危險，請立刻撥打');
+    c.innerHTML='<div class="ct"><i class="ti ti-heart-handshake"></i>'+_h(jteT('crisis.title','你並不孤單，現在就可以找人說'))+'</div>'+
+      '<p>'+_h(jteT('crisis.body','你的回答顯示，最近這段時間可能很不好受。這些感受值得被認真對待——請讓專業的人陪你一起面對，不用一個人撐。'))+'</p>'+
       '<ul class="crisis-res">'+resHtml+
-      '<li><a href="tel:119"><span class="num">119 / 110</span><span class="nm">若有立即危險，請立刻撥打</span></a></li></ul>';
+      '<li><a href="tel:119"><span class="num">119 / 110</span><span class="nm">'+_h(emergencyText)+'</span></a></li></ul>';
     d.appendChild(c);
   }
 
+  // 分數卡：使用 i18n 化的 levelLabel 與 advice
+  const levelLabelKey='level.'+r.level+'.label';
+  const levelAdviceKey='level.'+r.level+'.advice';
+  const LEVEL_ZH={
+    good:{label:'身心適應狀況良好',advice:'你最近的狀態還不錯，繼續照顧自己。'},
+    mild:{label:'輕度情緒困擾',advice:'找信任的家人朋友聊聊、抒發一下，會有幫助。'},
+    moderate:{label:'中度情緒困擾',advice:'建議尋求心理諮商或專業協助，陪自己走一段。'},
+    severe:{label:'重度情緒困擾',advice:'建議尋求精神科治療或心理諮商，你值得被好好接住。'}
+  };
+  const tLevelLabel=jteT(levelLabelKey,(LEVEL_ZH[r.level]||{}).label||r.levelLabel);
+  const tLevelAdvice=jteT(levelAdviceKey,(LEVEL_ZH[r.level]||{}).advice||r.advice);
+
   const sc=document.createElement('div');sc.className='score-card b-'+r.level;
-  sc.innerHTML='<div class="lab">最近一星期的情緒困擾分數</div>'+
-    '<div class="big"><span class="num">'+r.total+'</span><span class="max">／ 20</span></div>'+
-    '<div class="lvl">'+_h(r.levelLabel)+'</div>'+
-    '<div class="adv">'+_h(r.advice)+'</div>';
+  sc.innerHTML='<div class="lab">'+_h(jteT('score.lab','最近一星期的情緒困擾分數'))+'</div>'+
+    '<div class="big"><span class="num">'+r.total+'</span><span class="max">'+_h(jteT('score.max','／ 20'))+'</span></div>'+
+    '<div class="lvl">'+_h(tLevelLabel)+'</div>'+
+    '<div class="adv">'+_h(tLevelAdvice)+'</div>';
   d.appendChild(sc);
 
   // 附加題提醒（item6 ≥1 但未到 crisis 門檻時，也溫和提示）
   if(r.item6>=1 && !r.crisis){
     const note=document.createElement('div');note.className='panel';
     note.style.borderColor='var(--severe)';
-    note.innerHTML='<h3 style="color:var(--severe)">關於第 6 題</h3><p>你在「自殺的想法」這題有些勾選。即使分數不高，這份感受也值得被好好照顧。若這些念頭讓你困擾，隨時可以撥打安心專線 <b>1925</b>，有人願意聽你說。</p>';
+    note.innerHTML='<h3 style="color:var(--severe)">'+_h(jteT('item6.title','關於第 6 題'))+'</h3>'+
+      '<p>'+jteT('item6.body','你在「自殺的想法」這題有些勾選。即使分數不高，這份感受也值得被好好照顧。若這些念頭讓你困擾，隨時可以撥打安心專線 <b>1925</b>，有人願意聽你說。')+'</p>';
     d.appendChild(note);
   }
 
   // 各題作答回顧
   const detail=document.createElement('div');detail.className='panel';
-  let rows='<h3>你的作答</h3>';
+  const tQ_r=BsrsScore.QUESTIONS.map(function(q,qi){return jteT('q'+(qi+1),q.text);});
+  const tO_r=BsrsScore.OPTIONS.map(function(o,oi){return jteT('opt.'+oi,o);});
+  let rows='<h3>'+_h(jteT('result.answers.title','你的作答'))+'</h3>';
   BsrsScore.QUESTIONS.forEach(function(q,qi){
     const v=state.answers[qi];
-    rows+='<div class="ans-row'+(q.supplementary?' supp':'')+'"><span class="at">'+(qi+1)+'. '+_h(q.text)+'</span><span class="av">'+_h(BsrsScore.OPTIONS[v]||'')+'</span></div>';
+    rows+='<div class="ans-row'+(q.supplementary?' supp':'')+'"><span class="at">'+(qi+1)+'. '+_h(tQ_r[qi])+'</span><span class="av">'+_h(tO_r[v]||'')+'</span></div>';
   });
   detail.innerHTML=rows;
   d.appendChild(detail);
 
   // 免責常駐
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('result.disclaimer','本量表為情緒困擾的篩檢參考、非診斷工具，僅供參考；若持續困擾請尋求專業協助。'))+'</p>');
 
   // 保存區
   appendSaveBlock(d,r);
@@ -294,9 +568,11 @@ function renderResult(){
 
   // 動作列
   const inner=document.createElement('div');inner.className='bar-inner';
-  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再測一次';
+  const again=document.createElement('button');again.className='btn btn-primary';
+  again.textContent=jteT('result.btn.again','再測一次');
   again.onclick=function(){state.answers=[null,null,null,null,null,null];renderQuiz();};
-  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
+  const trend=document.createElement('button');trend.className='btn-ghost';
+  trend.textContent=jteT('result.btn.trend','看趨勢');
   trend.onclick=function(){renderTrend();};
   inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
@@ -305,10 +581,10 @@ function renderResult(){
 /* —— 保存區 —— */
 function appendSaveBlock(container,r){
   const wrap=document.createElement('div');wrap.className='save-block';
-  wrap.innerHTML='<div class="save-title">把這次的溫度記下來嗎？</div>'+
-    '<div class="save-sub"><span>🔒</span><span>只有你看得到，連我們也解不開</span></div>'+
-    '<div class="save-actions"><button class="save-skip">這次不存</button><button class="save-do">存這次</button></div>'+
-    '<div class="save-done" style="display:none">已存到你的記錄 ✓　<a class="save-view">看我的情緒趨勢 →</a></div>';
+  wrap.innerHTML='<div class="save-title">'+_h(jteT('save.title','把這次的溫度記下來嗎？'))+'</div>'+
+    '<div class="save-sub"><span>🔒</span><span>'+_h(jteT('save.privacy','只有你看得到，連我們也解不開'))+'</span></div>'+
+    '<div class="save-actions"><button class="save-skip">'+_h(jteT('save.skip','這次不存'))+'</button><button class="save-do">'+_h(jteT('save.do','存這次'))+'</button></div>'+
+    '<div class="save-done" style="display:none">'+_h(jteT('save.done','已存到你的記錄 ✓　'))+'<a class="save-view">'+_h(jteT('save.view','看我的情緒趨勢 →'))+'</a></div>';
   wrap.querySelector('.save-do').onclick=function(){
     jteCheckLoginThenSave(function(){
       const _id='bs-'+Date.now();
@@ -324,7 +600,7 @@ function appendSaveBlock(container,r){
   wrap.querySelector('.save-skip').onclick=function(){
     wrap.querySelector('.save-sub').style.display='none';
     wrap.querySelector('.save-actions').style.display='none';
-    wrap.querySelector('.save-title').textContent='好，這次先不存。';
+    wrap.querySelector('.save-title').textContent=jteT('save.skipped','好，這次先不存。');
   };
   wrap.querySelector('.save-view').onclick=function(){renderTrend();};
   container.appendChild(wrap);
@@ -454,27 +730,29 @@ function renderTrend(){
   clearAll();bar.innerHTML='';progressEl.innerHTML='';
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<h2 style="font-family:\'Noto Serif TC\',serif;font-weight:700;font-size:20px;color:var(--accent);margin:4px 0 14px">我的情緒趨勢</h2>');
+  d.insertAdjacentHTML('beforeend','<h2 style="font-family:\'Noto Serif TC\',serif;font-weight:700;font-size:20px;color:var(--accent);margin:4px 0 14px">'+_h(jteT('trend.title','我的情緒趨勢'))+'</h2>');
   // 動作列：回去再測
   const inner=document.createElement('div');inner.className='bar-inner';
-  const test=document.createElement('button');test.className='btn btn-primary';test.textContent='做一次測驗';
+  const test=document.createElement('button');test.className='btn btn-primary';
+  test.textContent=jteT('trend.btn.test','做一次測驗');
   test.onclick=function(){state.answers=[null,null,null,null,null,null];renderQuiz();};
   inner.appendChild(test);bar.appendChild(inner);
 
   if(!jteEmail()){
-    d.insertAdjacentHTML('beforeend','<p class="lead">登入後，你存過的每次心情溫度都會在這裡，看得到自己的變化。</p>');
-    const btn=document.createElement('button');btn.className='btn btn-primary';btn.style.width='100%';btn.textContent='登入查看';
+    d.insertAdjacentHTML('beforeend','<p class="lead">'+_h(jteT('trend.login.lead','登入後，你存過的每次心情溫度都會在這裡，看得到自己的變化。'))+'</p>');
+    const btn=document.createElement('button');btn.className='btn btn-primary';btn.style.width='100%';
+    btn.textContent=jteT('trend.login.btn','登入查看');
     btn.onclick=function(){jteCheckLoginThenSave(function(){renderTrend();});};
     d.appendChild(btn);
     // 本機若有記錄也顯示
     const localList=_flattenBsrs(jteAll());
-    if(localList.length){d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-top:18px">這個裝置上的記錄：</p>');_renderTrendBody(localList,d);}
+    if(localList.length){d.insertAdjacentHTML('beforeend','<p class="lead" style="margin-top:18px">'+_h(jteT('trend.local.label','這個裝置上的記錄：'))+'</p>');_renderTrendBody(localList,d);}
     app.appendChild(d);return;
   }
   const pbar=document.createElement('div');pbar.className='priv-bar';
   d.appendChild(pbar);
   _renderPrivacyBar(pbar);
-  const loading=document.createElement('p');loading.className='lead';loading.textContent='載入中…';
+  const loading=document.createElement('p');loading.className='lead';loading.textContent=jteT('trend.loading','載入中…');
   d.appendChild(loading);
   app.appendChild(d);
   jteListRecordsMerged().then(function(list){
@@ -485,22 +763,22 @@ function renderTrend(){
 }
 function _renderPrivacyBar(box){
   if(!window.JtePrivacy){box.innerHTML='';return;}
-  box.innerHTML='<span class="priv-ok" style="color:var(--ink-faint)">私密同步：檢查中…</span>';
+  box.innerHTML='<span class="priv-ok" style="color:var(--ink-faint)">'+_h(jteT('priv.checking','私密同步：檢查中…'))+'</span>';
   Promise.resolve(JtePrivacy.isEnabled()).then(function(enabled){
     if(!enabled){
-      box.innerHTML='<button class="priv-btn">🔒 開啟跨裝置加密同步</button> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+      box.innerHTML='<button class="priv-btn">'+_h(jteT('priv.enable','🔒 開啟跨裝置加密同步'))+'</button> <a href="#" class="priv-link priv-learn">'+_h(jteT('priv.learn','了解隱私'))+'</a>';
       box.querySelector('.priv-btn').onclick=function(){JtePrivacy.enable().then(function(){renderTrend();}).catch(function(){});};
       _bindLearn(box);
       return;
     }
     if(!JtePrivacy.isUnlocked()){
-      box.innerHTML='<button class="priv-btn">🔓 解鎖</button> <a href="#" class="priv-link priv-change">換密語</a> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+      box.innerHTML='<button class="priv-btn">'+_h(jteT('priv.unlock','🔓 解鎖'))+'</button> <a href="#" class="priv-link priv-change">'+_h(jteT('priv.change','換密語'))+'</a> <a href="#" class="priv-link priv-learn">'+_h(jteT('priv.learn','了解隱私'))+'</a>';
       box.querySelector('.priv-btn').onclick=function(){JtePrivacy.unlock().then(function(){renderTrend();}).catch(function(){});};
       box.querySelector('.priv-change').onclick=function(ev){ev.preventDefault();JtePrivacy.changePassphrase().then(function(){renderTrend();}).catch(function(){});};
       _bindLearn(box);
       return;
     }
-    box.innerHTML='<span class="priv-ok">✓ 已加密同步</span> <a href="#" class="priv-link priv-lock">鎖定</a> <a href="#" class="priv-link priv-learn">了解隱私</a>';
+    box.innerHTML='<span class="priv-ok">'+_h(jteT('priv.synced','✓ 已加密同步'))+'</span> <a href="#" class="priv-link priv-lock">'+_h(jteT('priv.locked','鎖定'))+'</a> <a href="#" class="priv-link priv-learn">'+_h(jteT('priv.learn','了解隱私'))+'</a>';
     box.querySelector('.priv-lock').onclick=function(ev){ev.preventDefault();JtePrivacy.lock();renderTrend();};
     _bindLearn(box);
   }).catch(function(){box.innerHTML='';});
@@ -509,10 +787,11 @@ function _bindLearn(box){
   var el=box.querySelector('.priv-learn');
   if(el)el.onclick=function(ev){ev.preventDefault();if(window.showPrivacyInfo)showPrivacyInfo();};
 }
-const LEVEL_BADGE={good:'良好',mild:'輕度',moderate:'中度',severe:'重度'};
+const LEVEL_BADGE_ZH={good:'良好',mild:'輕度',moderate:'中度',severe:'重度'};
+const LEVEL_BADGE_KEY={good:'badge.good',mild:'badge.mild',moderate:'badge.moderate',severe:'badge.severe'};
 function _renderTrendBody(list,d){
   if(!list||!list.length){
-    d.insertAdjacentHTML('beforeend','<p class="lead">還沒有記錄。做一次測驗，把這一刻的溫度存下來吧。</p>');
+    d.insertAdjacentHTML('beforeend','<p class="lead">'+_h(jteT('trend.empty','還沒有記錄。做一次測驗，把這一刻的溫度存下來吧。'))+'</p>');
     return;
   }
   // 折線圖（總分 0-20 over time）
@@ -524,15 +803,17 @@ function _renderTrendBody(list,d){
     const lvl=(l.level||'').toString();
     const when=(l.ts||'').slice(0,16).replace('T',' ');
     const sc=(l.score!=null)?l.score:'—';
-    const badgeLbl=LEVEL_BADGE[lvl]||'';
+    const badgeLbl=jteT(LEVEL_BADGE_KEY[lvl]||'badge.'+lvl, LEVEL_BADGE_ZH[lvl]||'');
     const i6=Number(l.item6||0);
     const crisisFlag=( (Number(l.score)||0)>=15 || i6>=2 );
     card.innerHTML='<div class="hist-head"><span class="hist-badge b-'+_h(lvl)+'">'+_h(badgeLbl)+'</span>'+
       '<span class="hist-score">'+_h(String(sc))+' / 20</span>'+
       '<span class="hist-when">'+_h(when)+'</span></div>'+
-      (crisisFlag?'<div class="hist-crisis">⚠ 這次達到需要關注的程度。安心專線 1925 隨時都在。</div>':'')+
-      '<div class="hist-ops"><button class="hist-del">刪除</button></div>';
-    card.querySelector('.hist-del').onclick=function(){if(confirm('確定刪除這筆記錄？')){jteDeleteRecord(l.id);renderTrend();}};
+      (crisisFlag?'<div class="hist-crisis">'+_h(jteT('hist.crisis.flag','⚠ 這次達到需要關注的程度。安心專線 1925 隨時都在。'))+'</div>':'')+
+      '<div class="hist-ops"><button class="hist-del">'+_h(jteT('hist.del','刪除'))+'</button></div>';
+    card.querySelector('.hist-del').onclick=function(){
+      if(confirm(jteT('hist.del.confirm','確定刪除這筆記錄？'))){jteDeleteRecord(l.id);renderTrend();}
+    };
     d.appendChild(card);
   });
 }
@@ -541,7 +822,7 @@ function _buildTrendSvg(listAsc){
   const wrap=document.createElement('div');wrap.className='trend-wrap';
   const W=520,H=160,padL=28,padR=14,padT=14,padB=22;
   const pts=listAsc.filter(function(l){return l.score!=null;}).map(function(l){return Number(l.score)||0;});
-  if(pts.length===0){wrap.innerHTML='<p class="lead" style="margin:0">尚無可繪製的分數（解鎖後可看見私密分數）。</p>';return wrap;}
+  if(pts.length===0){wrap.innerHTML='<p class="lead" style="margin:0">'+_h(jteT('trend.no.scores','尚無可繪製的分數（解鎖後可看見私密分數）。'))+'</p>';return wrap;}
   const n=pts.length;
   const innerW=W-padL-padR, innerH=H-padT-padB;
   function x(i){return padL + (n===1?innerW/2:innerW*i/(n-1));}
@@ -564,6 +845,15 @@ function _buildTrendSvg(listAsc){
   return wrap;
 }
 
+/* —— i18n 語言切換：重繪當前 view —— */
+window.jteI18nApply=function(lang){
+  // 保留當前 mode；重繪動態 view
+  if(state.mode==='intro') renderIntro();
+  else if(state.mode==='quiz') renderQuiz();
+  else if(state.mode==='result' && state.lastResult) renderResult();
+  else if(state.mode==='trend') renderTrend();
+};
+
 /* —— 啟動 —— */
 renderIntro();
 </script>
@@ -576,13 +866,16 @@ renderIntro();
 <!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
 
+<!-- 多語引擎（zh 預設，EN/日 切換） -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-i18n.js"></script>
+
 <!-- Google 登入 modal（按「存這次」未登入時跳出）-->
 <div id="jte-login-modal">
   <div class="jm-box">
-    <div class="jm-title">登入以儲存這次</div>
-    <div class="jm-desc">用 Google 登入，這次的心情溫度會存進你的帳號，並同步到練息場平台的記錄。</div>
+    <div class="jm-title" data-i18n="modal.title">登入以儲存這次</div>
+    <div class="jm-desc" data-i18n="modal.desc">用 Google 登入，這次的心情溫度會存進你的帳號，並同步到練息場平台的記錄。</div>
     <div id="jte-gsi-btn"></div>
-    <button class="jm-skip" onclick="jteCloseLogin()">先不要</button>
+    <button class="jm-skip" onclick="jteCloseLogin()" data-i18n="modal.skip">先不要</button>
   </div>
 </div>
 </body>

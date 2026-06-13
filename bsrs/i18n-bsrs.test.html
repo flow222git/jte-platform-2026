@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>i18n BSRS Test Harness</title>
+<style>
+  body{font-family:monospace;background:#1a1a2e;color:#e0e0e0;padding:20px;margin:0}
+  h1{color:#7ec8e3;font-size:16px;margin:0 0 14px}
+  #log{background:#0d0d1a;border:1px solid #333;border-radius:6px;padding:12px;min-height:120px;font-size:12px;line-height:1.7;white-space:pre-wrap}
+  .pass{color:#5cb85c} .fail{color:#d9534f} .info{color:#5bc0de} .warn{color:#f0ad4e}
+  iframe{display:none}
+</style>
+</head>
+<body>
+<h1>i18n BSRS Test — iframe harness</h1>
+<div id="log">Starting…&#10;</div>
+<iframe id="frame" src="index.html"></iframe>
+
+<script>
+/* ============================================================
+   iframe harness for bsrs/index.html i18n
+   Checks:
+     1. __jteI18nLoaded truthy
+     2. zh default: known zh string present
+     3. jteSetLang('en') → English string
+     4. jteSetLang('ja') → Japanese string
+     5. jteSetLang('zh') → back to Chinese
+     6. #jte-langbar has 3 buttons
+   Reports DONE pass=X fail=Y via HTTP POST
+   ============================================================ */
+const LOG = document.getElementById('log');
+let pass = 0, fail = 0;
+
+function log(cls, msg){ LOG.textContent += '[' + cls.toUpperCase() + '] ' + msg + '\n'; }
+function ok(label){ pass++; log('pass', '✓ ' + label); }
+function ko(label, detail){ fail++; log('fail', '✗ ' + label + (detail ? ' — ' + detail : '')); }
+function info(msg){ log('info', msg); }
+
+function sendReport(){
+  info('Done. pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { fetch('/__result', { method: 'POST', body: 'DONE pass=' + pass + ' fail=' + fail }); } catch(e){}
+  log(fail === 0 ? 'pass' : 'fail', 'DONE pass=' + pass + ' fail=' + fail);
+}
+
+const frame = document.getElementById('frame');
+let attempts = 0;
+const MAX_WAIT_MS = 8000;
+const POLL_MS = 300;
+
+function pollReady(){
+  attempts++;
+  if(attempts * POLL_MS > MAX_WAIT_MS){
+    ko('timeout', 'iframe not ready within ' + MAX_WAIT_MS + 'ms');
+    sendReport();
+    return;
+  }
+  let fw;
+  try { fw = frame.contentWindow; } catch(e){ setTimeout(pollReady, POLL_MS); return; }
+  if(!fw || !fw.__jteI18nLoaded){ setTimeout(pollReady, POLL_MS); return; }
+  // i18n engine loaded — give dynamic render one extra tick
+  setTimeout(function(){ runTests(fw); }, 200);
+}
+
+frame.addEventListener('load', function(){
+  info('iframe loaded, waiting for __jteI18nLoaded…');
+  setTimeout(pollReady, 500);
+});
+
+function getVisibleText(fw){
+  try { return fw.document.body.innerText || ''; } catch(e){ return ''; }
+}
+
+function runTests(fw){
+  info('Running tests…');
+
+  // 1. __jteI18nLoaded
+  if(fw.__jteI18nLoaded) ok('__jteI18nLoaded is true');
+  else ko('__jteI18nLoaded', 'not set');
+
+  // 2. zh default — check known zh string in DOM
+  const zhText = getVisibleText(fw);
+  if(zhText.indexOf('最近一星期') >= 0 || zhText.indexOf('心情溫度計') >= 0 || zhText.indexOf('開始作答') >= 0)
+    ok('zh default: zh string present in DOM');
+  else
+    ko('zh default', 'no expected zh string found. Got: ' + zhText.slice(0,200));
+
+  // 3. jteSetLang('en')
+  try {
+    fw.jteSetLang('en');
+    // give dynamic re-render a tick
+    setTimeout(function(){
+      const enText = getVisibleText(fw);
+      if(enText.indexOf('Start') >= 0 || enText.indexOf('Mood Thermometer') >= 0 || enText.indexOf('One minute') >= 0)
+        ok("jteSetLang('en'): English string present");
+      else
+        ko("jteSetLang('en')", 'no English string found. Got: ' + enText.slice(0,200));
+
+      // 4. jteSetLang('ja')
+      fw.jteSetLang('ja');
+      setTimeout(function(){
+        const jaText = getVisibleText(fw);
+        if(jaText.indexOf('気分温度計') >= 0 || jaText.indexOf('始める') >= 0 || jaText.indexOf('1分間') >= 0)
+          ok("jteSetLang('ja'): Japanese string present");
+        else
+          ko("jteSetLang('ja')", 'no Japanese string found. Got: ' + jaText.slice(0,200));
+
+        // 5. jteSetLang('zh') — back to Chinese
+        fw.jteSetLang('zh');
+        setTimeout(function(){
+          const zhBack = getVisibleText(fw);
+          if(zhBack.indexOf('開始作答') >= 0 || zhBack.indexOf('心情溫度計') >= 0 || zhBack.indexOf('最近一星期') >= 0)
+            ok("jteSetLang('zh'): back to Chinese");
+          else
+            ko("jteSetLang('zh')", 'zh not restored. Got: ' + zhBack.slice(0,200));
+
+          // 6. #jte-langbar has 3 buttons
+          try {
+            const langbar = fw.document.getElementById('jte-langbar');
+            if(!langbar){ ko('#jte-langbar', 'element not found'); }
+            else {
+              const btns = langbar.querySelectorAll('button');
+              if(btns.length === 3) ok('#jte-langbar has 3 buttons');
+              else ko('#jte-langbar buttons', 'expected 3, got ' + btns.length);
+            }
+          } catch(e){ ko('#jte-langbar', String(e)); }
+
+          sendReport();
+        }, 400);
+      }, 400);
+    }, 400);
+  } catch(e){
+    ko('jteSetLang', String(e));
+    sendReport();
+  }
+}
+</script>
+</body>
+</html>
