@@ -1,0 +1,88 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>京房一卦 · 局勢卡（示範）</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;--bamboo:#6f7f4f;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;padding:24px;display:flex;justify-content:center}
+  .card{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 18px 44px rgba(74,62,44,.13);padding:26px 28px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold);opacity:.8}
+  .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.22em;color:var(--bamboo);text-transform:uppercase;font-weight:700}
+  h1{font-size:20px;color:var(--ink);margin:3px 0 2px;letter-spacing:.04em}
+  .q{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .hexhead{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 6px}
+  .hexhead .h{text-align:center}
+  .hexhead .sym{font-size:34px;line-height:1;color:var(--pine)}
+  .hexhead .nm{font-size:15px;color:var(--ink);margin-top:4px;font-weight:600}
+  .hexhead .arrow{font-size:22px;color:var(--gold)}
+  .meta{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;font-family:ui-sans-serif,sans-serif}
+  .stack{display:flex;flex-direction:column;gap:9px;margin:6px 0 14px}
+  .row{display:flex;align-items:center;gap:12px}
+  .pos{width:26px;font-size:11px;color:var(--muted);text-align:center;flex:none;font-family:ui-sans-serif,sans-serif}
+  .yao{width:150px;display:flex;gap:14px;flex:none}
+  .seg{height:13px;background:var(--ink);border-radius:3px;flex:1}
+  .yao.yin .seg{flex:none;width:64px}
+  .yao .gap{flex:none;width:22px}
+  .role{font-size:13px;color:var(--ink);flex:1;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .chip{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;font-family:ui-sans-serif,sans-serif;color:#fff}
+  .c-guan{background:var(--cinnabar)} .c-fu{background:var(--blue)} .c-xiong{background:var(--gold)}
+  .najia{font-size:11.5px;color:var(--muted)}
+  .tag{font-size:10.5px;padding:1px 7px;border-radius:999px;font-family:ui-sans-serif,sans-serif;border:1px solid}
+  .t-yong{color:var(--cinnabar);border-color:var(--cinnabar);font-weight:700}
+  .t-shi{color:var(--pine);border-color:var(--pine)} .t-ying{color:var(--muted);border-color:var(--line)}
+  .t-move{color:var(--gold);border-color:var(--gold)} .t-void{color:var(--muted);border-color:var(--line)}
+  .t-wang{color:var(--pine);border-color:var(--pine)}
+  .row.shi{background:var(--surface2);border-radius:10px;margin:0 -8px;padding:4px 8px}
+  .hidden-note{background:var(--surface2);border-radius:10px;padding:10px 13px;font-size:12px;color:var(--ink);margin-bottom:14px;line-height:1.6}
+  .hidden-note b{color:var(--cinnabar)}
+  .signal{display:flex;align-items:center;gap:12px;background:#fbf2dd;border:1px solid #e7d6ad;border-radius:12px;padding:13px 15px;margin-bottom:12px}
+  .lamp{width:34px;height:34px;border-radius:50%;background:var(--gold);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+  .signal .st b{font-size:15px;color:var(--ink)} .signal .st div{font-size:12px;color:var(--muted);margin-top:2px}
+  .oneliner{font-size:14px;color:var(--ink);line-height:1.85;border-top:1px dashed var(--line);padding-top:13px}
+  .oneliner b{color:var(--pine)}
+  .foot{font-size:10.5px;color:var(--muted);margin-top:14px;font-family:ui-sans-serif,sans-serif;text-align:center}
+</style></head><body>
+<div class="card">
+  <div class="eyebrow">Jing Fang Yi Gua · 局勢圖</div>
+  <h1>京房一卦</h1>
+  <div class="q">問：練息場身心品牌，接下來的發展走勢</div>
+
+  <div class="hexhead">
+    <div class="h"><div class="sym">&#x4DFC;</div><div class="nm">風澤中孚</div></div>
+    <div class="arrow">&#9654;</div>
+    <div class="h"><div class="sym">&#x4DFB;</div><div class="nm">水澤節</div></div>
+  </div>
+  <div class="meta">艮宮 · 游魂　|　午月 · 戊午日（火旺）　|　子丑空亡</div>
+
+  <div class="stack">
+    <div class="row"><div class="pos">上</div><div class="yao yang"><div class="seg"></div></div>
+      <div class="role"><span class="chip c-guan">官鬼</span><span class="najia">卯木</span>
+        <span class="tag t-yong">用神</span><span class="tag t-move">動</span></div></div>
+    <div class="row"><div class="pos">五</div><div class="yao yang"><div class="seg"></div></div>
+      <div class="role"><span class="chip c-fu">父母</span><span class="najia">巳火</span></div></div>
+    <div class="row shi"><div class="pos">四</div><div class="yao yin"><div class="seg"></div><div class="gap"></div><div class="seg"></div></div>
+      <div class="role"><span class="chip c-xiong">兄弟</span><span class="najia">未土</span>
+        <span class="tag t-shi">世</span><span class="tag t-wang">旺</span></div></div>
+    <div class="row"><div class="pos">三</div><div class="yao yin"><div class="seg"></div><div class="gap"></div><div class="seg"></div></div>
+      <div class="role"><span class="chip c-xiong">兄弟</span><span class="najia">丑土</span>
+        <span class="tag t-void">空</span></div></div>
+    <div class="row"><div class="pos">二</div><div class="yao yang"><div class="seg"></div></div>
+      <div class="role"><span class="chip c-guan">官鬼</span><span class="najia">卯木</span></div></div>
+    <div class="row"><div class="pos">初</div><div class="yao yang"><div class="seg"></div></div>
+      <div class="role"><span class="chip c-fu">父母</span><span class="najia">巳火</span>
+        <span class="tag t-ying">應</span></div></div>
+  </div>
+
+  <div class="hidden-note">伏（藏著未現）：<b>妻財</b>＝營收/客源　·　<b>子孫</b>＝成果/口碑<br>潛力都在底下，要主動引出來（先有成果與口碑，財才跟上）。</div>
+
+  <div class="signal">
+    <div class="lamp">補</div>
+    <div class="st"><b>補強</b><div>支撐還不夠——先把條件補好再放大。</div></div>
+  </div>
+
+  <div class="oneliner">你的「心」很對（中孚＝真心），你也夠拚（世旺）；現在缺的是把真心<b>變成看得見的成果與可持續的結構</b>（中孚→節）。財與口碑會從「伏」轉「現」。</div>
+
+  <div class="foot">反思鏡 · 相對參考、非預言　|　哪句打中你？下一步你想怎麼走？</div>
+</div>
+</body></html>
