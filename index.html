@@ -7,6 +7,120 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script defer src="jte-i18n.js"></script>
+<script>
+/* i18n dictionary — zh is the original DOM text; only en/ja needed */
+window.JTE_I18N = {
+  en: {
+    /* site header */
+    'site.name': 'Join to Enjoy',
+    'site.sub': 'JOIN TO ENJOY',
+    'site.tagline': 'Science × Sensory',
+    'site.tagline.sub': 'Science makes healing more grounded.',
+
+    /* nav */
+    'nav.home': 'Home',
+    'nav.cal': 'Calendar',
+    'nav.myrec': 'My Journal',
+    'nav.settings': 'Settings',
+
+    /* carousel tag */
+    'carousel.tag': 'DAILY REFLECTION',
+
+    /* hero CTA */
+    'hero.cta': 'View My Records →',
+
+    /* section labels */
+    'section.tools.num': '01 / TOOLS',
+    'section.tools.h2': 'Start wherever you are right now.',
+    'section.tools.sub': "You don't need many tools — each one meets you where you are.",
+    'group.breath': 'Breath · Return to Now',
+    'group.inner': 'Inner · Know Yourself',
+    'group.discover': 'Discover Yourself',
+
+    /* tool cards */
+    'card.breathaware.name': 'Breath Awareness',
+    'card.breathaware.desc': 'See your breathing pattern in real time.',
+    'card.xiaoqi.name': 'Rest & Breathe',
+    'card.xiaoqi.desc': '15 breathing methods — pick one and do it now.',
+    'card.hrv.name': 'Heart Rate Variability',
+    'card.hrv.desc': 'Finger on camera, one minute to read your body.',
+    'card.wenyi.name': 'I Ching · Divination',
+    'card.wenyi.desc': 'Use the I Ching to come back to yourself.',
+    'card.writespace.name': 'Perspective Writing',
+    'card.writespace.desc': "Shift your point of view, write what’s in your heart.",
+    'card.twct.name': 'Communication Style Quiz',
+    'card.twct.desc': '5 minutes to see how you communicate under pressure.',
+    'card.bsrs.name': 'Mood Thermometer',
+    'card.bsrs.desc': 'One minute to check in on your recent emotions.',
+
+    /* bottom CTA block */
+    'cta.band': 'WEEKLY SIGNAL',
+    'cta.title': 'Not chasing perfect — finding the path back.',
+    'cta.sub': 'When records, practice, writing, and HRV are on one page, you start to read your own rhythm.',
+    'cta.btn': 'View My Records →',
+
+    /* bottom nav */
+    'bnav.home': 'Home',
+    'bnav.cal': 'Calendar',
+    'bnav.settings': 'Settings',
+  },
+  ja: {
+    /* site header */
+    'site.name': '練息場',
+    'site.sub': 'JOIN TO ENJOY',
+    'site.tagline': 'サイエンス × センサリー',
+    'site.tagline.sub': '科学が、癒しをより確かにする。',
+
+    /* nav */
+    'nav.home': 'ホーム',
+    'nav.cal': 'カレンダー',
+    'nav.myrec': 'マイ記録',
+    'nav.settings': '設定',
+
+    /* carousel tag */
+    'carousel.tag': 'DAILY REFLECTION',
+
+    /* hero CTA */
+    'hero.cta': '記録を見る →',
+
+    /* section labels */
+    'section.tools.num': '01 / TOOLS',
+    'section.tools.h2': 'やりたいことから、始めよう。',
+    'section.tools.sub': 'ツールはたくさんなくていい。今の自分に合うものを。',
+    'group.breath': '呼吸 · 今に戻る',
+    'group.inner': '内面 · 自分を知る',
+    'group.discover': '自分を発見する',
+
+    /* tool cards */
+    'card.breathaware.name': '呼吸の気づき',
+    'card.breathaware.desc': '今の呼吸の状態をリアルタイムで確認。',
+    'card.xiaoqi.name': '小休憩 · 練息',
+    'card.xiaoqi.desc': '15種類の呼吸法から、今すぐ一つ選んで。',
+    'card.hrv.name': '心拍変動 HRV',
+    'card.hrv.desc': '指をカメラに当てて、1分で体の状態を測定。',
+    'card.wenyi.name': '易経 · 卜占',
+    'card.wenyi.desc': '易経を通じて、自分自身に立ち返る。',
+    'card.writespace.name': '視点転換ライティング',
+    'card.writespace.desc': '視点を変えて、心の声を書き出す。',
+    'card.twct.name': 'コミュニケーションタイプ診断',
+    'card.twct.desc': '5分で、プレッシャー下のコミュニケーションを確認。',
+    'card.bsrs.name': '気分温度計',
+    'card.bsrs.desc': '1分で、最近の感情をチェック。',
+
+    /* bottom CTA block */
+    'cta.band': 'WEEKLY SIGNAL',
+    'cta.title': '完璧な状態を追うのではなく、回復への道を見つける。',
+    'cta.sub': '記録、練習、書き込み、HRVを一つの画面にまとめることで、自分のリズムが見えてくる。',
+    'cta.btn': '記録を見る →',
+
+    /* bottom nav */
+    'bnav.home': 'ホーム',
+    'bnav.cal': 'カレンダー',
+    'bnav.settings': '設定',
+  }
+};
+</script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -135,13 +249,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 </head>
 <body>
 <nav class="nav">
-  <div><span class="nav-brand">練息場</span><span class="nav-sub">JOIN TO ENJOY</span></div>
+  <div><span class="nav-brand" data-i18n="site.name">練息場</span><span class="nav-sub" data-i18n="site.sub">JOIN TO ENJOY</span></div>
   <div class="nav-links">
-    <button class="nav-btn active" onclick="show('landing')">首頁</button>
-    <button class="nav-btn" onclick="show('cal')">日曆</button>
+    <button class="nav-btn active" onclick="show('landing')" data-i18n="nav.home">首頁</button>
+    <button class="nav-btn" onclick="show('cal')" data-i18n="nav.cal">日曆</button>
   </div>
   <div id="nav-user-area">
-    <button class="nav-cta" onclick="show('cal')">我的記錄</button>
+    <button class="nav-cta" onclick="show('cal')" data-i18n="nav.myrec">我的記錄</button>
   </div>
 </nav>
 
@@ -159,60 +273,60 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <div id="home-quote-tag" style="font-size:9px;letter-spacing:0.22em;color:rgba(168,201,238,0.7);text-transform:uppercase;font-family:'Inter',sans-serif;margin-bottom:14px;transition:opacity .5s">DAILY REFLECTION</div>
     <div id="home-quote" style="font-family:'Noto Serif TC',serif;font-size:clamp(1.3rem,5.2vw,1.85rem);font-weight:700;color:#fff;letter-spacing:0.04em;line-height:1.55;min-height:2.8em;transition:opacity .5s">　</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px;justify-content:flex-end;padding-right:6%">
-      <button id="home-cta" onclick="show('cal')" style="background:none;border:none;padding:0;color:#FFB052;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.03em;border-bottom:1px solid rgba(255,176,82,0.5);padding-bottom:2px;transition:color .2s,opacity .5s" onmouseover="this.style.color='#FF8A00'" onmouseout="this.style.color='#FFB052'">查看我的記錄 →</button>
+      <button id="home-cta" onclick="show('cal')" style="background:none;border:none;padding:0;color:#FFB052;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.03em;border-bottom:1px solid rgba(255,176,82,0.5);padding-bottom:2px;transition:color .2s,opacity .5s" onmouseover="this.style.color='#FF8A00'" onmouseout="this.style.color='#FFB052'"><!-- carousel CTA set by JS --></button>
     </div>
   </div>
 
   <!-- SCIENCE BAND -->
   <div style="background:#FAFAF7;padding:14px 20px;border-bottom:1px solid rgba(0,61,124,0.06);display:flex;align-items:center;justify-content:space-between">
-    <div style="font-size:9px;letter-spacing:0.2em;color:#003D7C;font-weight:600;font-family:'Inter',sans-serif">SCIENCE × SENSORY</div>
-    <div style="font-size:10px;color:#8A95A5;font-style:italic">科學，讓療癒更有據。</div>
+    <div style="font-size:9px;letter-spacing:0.2em;color:#003D7C;font-weight:600;font-family:'Inter',sans-serif" data-i18n="site.tagline">SCIENCE × SENSORY</div>
+    <div style="font-size:10px;color:#8A95A5;font-style:italic" data-i18n="site.tagline.sub">科學，讓療癒更有據。</div>
   </div>
 
   <!-- TOOLS SECTION -->
   <div style="padding:26px 16px 8px">
-    <div style="font-size:9px;letter-spacing:0.2em;color:#A8C9EE;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:6px">01 / TOOLS</div>
-    <h2 style="font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:#003D7C;letter-spacing:0.06em;line-height:1.5;margin-bottom:4px">想做什麼，就從哪裡開始。</h2>
-    <p style="font-size:11px;color:#8A95A5;line-height:1.6;margin-bottom:18px">工具不用多，每一個都接得上現在的你。</p>
+    <div style="font-size:9px;letter-spacing:0.2em;color:#A8C9EE;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:6px" data-i18n="section.tools.num">01 / TOOLS</div>
+    <h2 style="font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:#003D7C;letter-spacing:0.06em;line-height:1.5;margin-bottom:4px" data-i18n="section.tools.h2">想做什麼，就從哪裡開始。</h2>
+    <p style="font-size:11px;color:#8A95A5;line-height:1.6;margin-bottom:18px" data-i18n="section.tools.sub">工具不用多，每一個都接得上現在的你。</p>
 
-    <div style="font-size:10px;font-weight:600;color:#4CAF19;letter-spacing:0.1em;margin:0 2px 8px">呼吸 · 回到當下</div>
+    <div style="font-size:10px;font-weight:600;color:#4CAF19;letter-spacing:0.1em;margin:0 2px 8px" data-i18n="group.breath">呼吸 · 回到當下</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
       <div onclick="location.href='BreatheAware/'" class="v2card">
         <div class="v2ic" style="background:#EEF3F9"><i class="ti ti-wind" style="color:#003D7C"></i></div>
-        <div class="v2nm">呼吸覺察</div><div class="v2ds">即時看見你的呼吸狀態。</div>
+        <div class="v2nm" data-i18n="card.breathaware.name">呼吸覺察</div><div class="v2ds" data-i18n="card.breathaware.desc">即時看見你的呼吸狀態。</div>
       </div>
       <div onclick="location.href='xiaoqi/'" class="v2card">
         <div class="v2ic" style="background:#E6F4EA"><i class="ti ti-leaf" style="color:#4CAF19"></i></div>
-        <div class="v2nm">小憩 · 練息</div><div class="v2ds">15 種呼吸法，選一個現在做。</div>
+        <div class="v2nm" data-i18n="card.xiaoqi.name">小憩 · 練息</div><div class="v2ds" data-i18n="card.xiaoqi.desc">15 種呼吸法，選一個現在做。</div>
       </div>
       <div onclick="location.href='hrv/'" class="v2card">
         <div class="v2ic" style="background:#FDEBEE"><i class="ti ti-heart-rate-monitor" style="color:#D14D5A"></i></div>
-        <div class="v2nm">心率變異 HRV</div><div class="v2ds">手指貼鏡頭，一分鐘量身體狀態。</div>
+        <div class="v2nm" data-i18n="card.hrv.name">心率變異 HRV</div><div class="v2ds" data-i18n="card.hrv.desc">手指貼鏡頭，一分鐘量身體狀態。</div>
       </div>
     </div>
 
-    <div style="font-size:10px;font-weight:600;color:#6B4F9E;letter-spacing:0.1em;margin:0 2px 8px">內在 · 讀懂自己</div>
+    <div style="font-size:10px;font-weight:600;color:#6B4F9E;letter-spacing:0.1em;margin:0 2px 8px" data-i18n="group.inner">內在 · 讀懂自己</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
       <div onclick="location.href='ven-i/'" class="v2card">
         <div class="v2ic" style="background:#F3EEF9"><i class="ti ti-yin-yang" style="color:#6B4F9E"></i></div>
-        <div class="v2nm">問易 · 卜卦</div><div class="v2ds">從易經，回來看自己。</div>
+        <div class="v2nm" data-i18n="card.wenyi.name">問易 · 卜卦</div><div class="v2ds" data-i18n="card.wenyi.desc">從易經，回來看自己。</div>
       </div>
       <div onclick="location.href='https://flow222git.github.io/writespace/'" class="v2card">
         <div class="v2ic" style="background:#EEF3F9"><i class="ti ti-pencil" style="color:#003D7C"></i></div>
-        <div class="v2nm">心理位移書寫</div><div class="v2ds">換個位置，把心裡的話寫出來。</div>
+        <div class="v2nm" data-i18n="card.writespace.name">心理位移書寫</div><div class="v2ds" data-i18n="card.writespace.desc">換個位置，把心裡的話寫出來。</div>
       </div>
     </div>
 
-    <div style="font-size:10px;font-weight:600;color:#003D7C;letter-spacing:0.1em;margin:0 2px 8px">認識自己</div>
+    <div style="font-size:10px;font-weight:600;color:#003D7C;letter-spacing:0.1em;margin:0 2px 8px" data-i18n="group.discover">認識自己</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">
       <div onclick="location.href='https://flow222git.github.io/twct/'" class="v2card">
         <div class="v2ic" style="background:#EAF0F7"><i class="ti ti-messages" style="color:#003D7C"></i></div>
-        <div class="v2nm">溝通類型測驗</div><div class="v2ds">5 分鐘，看你在壓力下怎麼溝通。</div>
+        <div class="v2nm" data-i18n="card.twct.name">溝通類型測驗</div><div class="v2ds" data-i18n="card.twct.desc">5 分鐘，看你在壓力下怎麼溝通。</div>
         <span id="twct-result-badge" style="display:none"></span>
       </div>
       <div onclick="location.href='bsrs/'" class="v2card">
         <div class="v2ic" style="background:#FDEEF0"><i class="ti ti-temperature" style="color:#D14D5A"></i></div>
-        <div class="v2nm">心情溫度計</div><div class="v2ds">一分鐘，看看最近的情緒。</div>
+        <div class="v2nm" data-i18n="card.bsrs.name">心情溫度計</div><div class="v2ds" data-i18n="card.bsrs.desc">一分鐘，看看最近的情緒。</div>
       </div>
     </div>
   </div>
@@ -221,10 +335,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
   <div style="padding:20px 16px 32px">
     <div style="background:#003D7C;border-radius:20px;padding:24px 20px;position:relative;overflow:hidden">
       <img src="https://flow222git.github.io/jte-assets/assets/shapes/colorful/donut.png" style="position:absolute;right:-20px;bottom:-20px;width:100px;opacity:0.08;pointer-events:none;filter:brightness(0) invert(1)" alt="">
-      <div style="font-size:9px;letter-spacing:0.18em;color:rgba(168,201,238,0.6);font-family:'Inter',sans-serif;margin-bottom:8px">WEEKLY SIGNAL</div>
-      <div style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:white;line-height:1.5;margin-bottom:8px">不是追求完美狀態，<br>而是看見恢復的路徑。</div>
-      <div style="font-size:11px;color:rgba(168,201,238,0.8);line-height:1.6;margin-bottom:18px">把紀錄、練習、書寫與 HRV 放在同一個頁面後，你能慢慢讀懂自己的節奏。</div>
-      <button onclick="show('cal')" style="background:#FF8A00;color:white;border:none;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">查看我的記錄 →</button>
+      <div style="font-size:9px;letter-spacing:0.18em;color:rgba(168,201,238,0.6);font-family:'Inter',sans-serif;margin-bottom:8px" data-i18n="cta.band">WEEKLY SIGNAL</div>
+      <div style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:white;line-height:1.5;margin-bottom:8px" data-i18n="cta.title">不是追求完美狀態，<br>而是看見恢復的路徑。</div>
+      <div style="font-size:11px;color:rgba(168,201,238,0.8);line-height:1.6;margin-bottom:18px" data-i18n="cta.sub">把紀錄、練習、書寫與 HRV 放在同一個頁面後，你能慢慢讀懂自己的節奏。</div>
+      <button onclick="show('cal')" style="background:#FF8A00;color:white;border:none;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" data-i18n="cta.btn">查看我的記錄 →</button>
     </div>
   </div>
 
@@ -266,9 +380,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
 </div>
 
 <nav class="bnav">
-  <button class="bnav-btn active" id="bnav-landing" onclick="show('landing')"><i class="ti ti-home"></i>首頁</button>
-  <button class="bnav-btn" id="bnav-cal" onclick="show('cal')"><i class="ti ti-calendar"></i>日曆</button>
-  <button class="bnav-btn" id="bnav-settings" onclick="showSettings()"><i class="ti ti-settings"></i>設定</button>
+  <button class="bnav-btn active" id="bnav-landing" onclick="show('landing')"><i class="ti ti-home"></i><span data-i18n="bnav.home">首頁</span></button>
+  <button class="bnav-btn" id="bnav-cal" onclick="show('cal')"><i class="ti ti-calendar"></i><span data-i18n="bnav.cal">日曆</span></button>
+  <button class="bnav-btn" id="bnav-settings" onclick="showSettings()"><i class="ti ti-settings"></i><span data-i18n="bnav.settings">設定</span></button>
 </nav>
 
 <div class="toast" id="toast-el"></div>
@@ -718,63 +832,154 @@ document.addEventListener('visibilitychange', function(){
 });
 </script>
 <script>
-/* 最上方金句 / 研究文案輪播 — 每句連動對應練習，CTA 跟著換 */
+/* 最上方金句 / 研究文案輪播 — 每句連動對應練習，CTA 跟著換
+   三語：zh 用 x/cta；en 用 x_en/cta_en；ja 用 x_ja/cta_ja */
 var HOME_LINES=[
-  {t:'reflection',x:'練習，是溫柔地把自己接回來。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'看見發生的，而不是你想看到的。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
-  {t:'reflection',x:'身體比腦袋誠實，先聽身體說。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'穩定，不是不動；是動了，還回得來。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'重點不是你跑掉幾次，是你回來了幾次。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'呼吸不是用力堵住情緒，是讓它流動。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'覺察，就是不評價地看著。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
-  {t:'reflection',x:'完美不是目標，真實才是。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
-  {t:'reflection',x:'你不必修好自己，你已經夠好。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
-  {t:'reflection',x:'你不是這些念頭，你是看著念頭的人。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
-  {t:'reflection',x:'今天三分鐘，勝過完美的三十分鐘。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'情緒會過去，但你必須先讓它經過。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
-  {t:'reflection',x:'緊繃在哪裡，就把呼吸送到哪裡。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'焦慮，是腦袋已經跑到下個小時。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'看清楚壓力的樣子，你就有空間。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
-  {t:'reflection',x:'別跟情緒打架，跟它坐下來。',cta:'寫下來 →',href:'https://flow222git.github.io/writespace/'},
-  {t:'reflection',x:'每一口呼吸，都是新的開始。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'滑手機前，先問：我現在需要什麼？',cta:'問問自己 →',href:'ven-i/'},
-  {t:'reflection',x:'別等到撐不住才呼吸。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'reflection',x:'只有現在，是真實的。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
-  {t:'science',x:'放慢吐氣，會啟動副交感神經，讓身體踩下煞車。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'science',x:'HRV（心率變異度）越有彈性，代表你越能在壓力後回得來。',cta:'覺察我的呼吸 →',href:'BreatheAware/'},
-  {t:'science',x:'呼吸的彈性，就是生命的彈性。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'science',x:'每天一點點的覺察，時間久了會在數據上看見變化。',cta:'查看我的記錄 →',href:'cal'},
-  {t:'science',x:'吐氣比吸氣長，是給神經系統最簡單的安撫。',cta:'做一次呼吸練習 →',href:'xiaoqi/'},
-  {t:'hrv',x:'HRV 沒有「正常值」，只有「你的常態」——所以跟自己比、看趨勢最準。',cta:'量一次身體能量 →',href:'hrv/'},
-  {t:'hrv',x:'放慢吐氣，當下就能拉高 HRV，是給神經系統最簡單的煞車。',cta:'量一次身體能量 →',href:'hrv/'},
-  {t:'hrv',x:'剛起床量，最能看見你的基準；不同時間量，會看見不同的你。',cta:'量一次身體能量 →',href:'hrv/'},
-  {t:'hrv',x:'覺得累，身體不一定真的低——把感覺和身體訊號對照，更認識自己。',cta:'量一次身體能量 →',href:'hrv/'},
-  {t:'hrv',x:'HRV 不是越高越好的比賽，是看你今天的恢復與放鬆夠不夠。',cta:'量一次身體能量 →',href:'hrv/'},
-  {t:'hrv',x:'睡眠、壓力、咖啡、運動都會牽動 HRV——它像身體此刻的天氣。',cta:'量一次身體能量 →',href:'hrv/'}
+  {t:'reflection',
+   x:'練習，是溫柔地把自己接回來。',                x_en:'Practice is the gentle act of coming back to yourself.',                x_ja:'練習とは、やさしく自分を取り戻すこと。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'看見發生的，而不是你想看到的。',               x_en:'See what is, not what you wish it were.',                             x_ja:'見たいものではなく、起きていることを見よう。',
+   cta:'覺察我的呼吸 →',                            cta_en:'Observe my breathing →',                                            cta_ja:'呼吸を観察する →',                   href:'BreatheAware/'},
+  {t:'reflection',
+   x:'身體比腦袋誠實，先聽身體說。',                 x_en:'The body is more honest than the mind. Listen to it first.',          x_ja:'体は心より正直。まず体の声を聴こう。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'穩定，不是不動；是動了，還回得來。',            x_en:"Stability isn't stillness — it's the ability to return.",             x_ja:'安定とは動かないことではなく、戻ってこられること。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'重點不是你跑掉幾次，是你回來了幾次。',          x_en:"It's not how many times you drift — it's how many times you return.",  x_ja:'大切なのは何回逃げたかではなく、何回戻ってきたか。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'呼吸不是用力堵住情緒，是讓它流動。',            x_en:"Breath doesn't block emotion — it lets it flow.",                     x_ja:'呼吸は感情を押さえるのではなく、流すためにある。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'覺察，就是不評價地看著。',                     x_en:'Awareness is watching without judgment.',                             x_ja:'気づきとは、評価せずにただ見ること。',
+   cta:'覺察我的呼吸 →',                            cta_en:'Observe my breathing →',                                            cta_ja:'呼吸を観察する →',                   href:'BreatheAware/'},
+  {t:'reflection',
+   x:'完美不是目標，真實才是。',                     x_en:'Perfection is not the goal. Authenticity is.',                       x_ja:'完璧が目標ではない。本物であることが目標。',
+   cta:'寫下來 →',                                  cta_en:'Write it down →',                                                   cta_ja:'書き出す →',                         href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',
+   x:'你不必修好自己，你已經夠好。',                  x_en:"You don't need to be fixed. You're already enough.",                  x_ja:'自分を直す必要はない。あなたはもう十分。',
+   cta:'寫下來 →',                                  cta_en:'Write it down →',                                                   cta_ja:'書き出す →',                         href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',
+   x:'你不是這些念頭，你是看著念頭的人。',            x_en:"You are not your thoughts — you're the one watching them.",           x_ja:'あなたは思考ではなく、思考を見ている人。',
+   cta:'覺察我的呼吸 →',                            cta_en:'Observe my breathing →',                                            cta_ja:'呼吸を観察する →',                   href:'BreatheAware/'},
+  {t:'reflection',
+   x:'今天三分鐘，勝過完美的三十分鐘。',              x_en:'Three minutes today beats a perfect thirty minutes never.',           x_ja:'今日の3分は、完璧な30分に勝る。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'情緒會過去，但你必須先讓它經過。',              x_en:'Emotions pass — but first you have to let them through.',            x_ja:'感情は過ぎ去る。でも、まず通過させてあげよう。',
+   cta:'寫下來 →',                                  cta_en:'Write it down →',                                                   cta_ja:'書き出す →',                         href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',
+   x:'緊繃在哪裡，就把呼吸送到哪裡。',               x_en:"Wherever there's tension, send your breath there.",                  x_ja:'緊張しているところへ、呼吸を届けよう。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'焦慮，是腦袋已經跑到下個小時。',               x_en:"Anxiety is your mind racing an hour ahead.",                         x_ja:'不安とは、頭がすでに一時間先を走っている状態。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'看清楚壓力的樣子，你就有空間。',               x_en:'See stress clearly, and space opens up.',                            x_ja:'ストレスの形を見極めると、余白が生まれる。',
+   cta:'寫下來 →',                                  cta_en:'Write it down →',                                                   cta_ja:'書き出す →',                         href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',
+   x:'別跟情緒打架，跟它坐下來。',                   x_en:"Don't fight your emotions — sit with them.",                         x_ja:'感情と戦わず、隣に座ろう。',
+   cta:'寫下來 →',                                  cta_en:'Write it down →',                                                   cta_ja:'書き出す →',                         href:'https://flow222git.github.io/writespace/'},
+  {t:'reflection',
+   x:'每一口呼吸，都是新的開始。',                   x_en:'Every breath is a fresh start.',                                     x_ja:'一息ごとが、新しい始まり。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'滑手機前，先問：我現在需要什麼？',              x_en:'Before scrolling, ask: what do I actually need right now?',          x_ja:'スマホを見る前に、今自分に本当に必要なものは何か問おう。',
+   cta:'問問自己 →',                                cta_en:'Reflect on yourself →',                                             cta_ja:'自分に問いかける →',                 href:'ven-i/'},
+  {t:'reflection',
+   x:'別等到撐不住才呼吸。',                         x_en:"Don't wait until you're at the edge to breathe.",                    x_ja:'限界になる前に呼吸しよう。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'reflection',
+   x:'只有現在，是真實的。',                         x_en:'Only now is real.',                                                  x_ja:'今この瞬間だけが、本当のもの。',
+   cta:'覺察我的呼吸 →',                            cta_en:'Observe my breathing →',                                            cta_ja:'呼吸を観察する →',                   href:'BreatheAware/'},
+  {t:'science',
+   x:'放慢吐氣，會啟動副交感神經，讓身體踩下煞車。',  x_en:'Slowing your exhale activates the parasympathetic nervous system — your body\'s natural brake.', x_ja:'吐く息を遅くすると副交感神経が活性化し、体にブレーキがかかる。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'science',
+   x:'HRV（心率変異度）越有彈性，代表你越能在壓力後回得來。', x_en:'Greater HRV flexibility means a greater ability to recover after stress.', x_ja:'HRVの柔軟性が高いほど、ストレス後の回復力も高い。',
+   cta:'覺察我的呼吸 →',                            cta_en:'Observe my breathing →',                                            cta_ja:'呼吸を観察する →',                   href:'BreatheAware/'},
+  {t:'science',
+   x:'呼吸的彈性，就是生命的彈性。',                  x_en:'Flexibility in breath is flexibility in life.',                      x_ja:'呼吸の柔軟性は、生命の柔軟性。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'science',
+   x:'每天一點點的覺察，時間久了會在數據上看見變化。',  x_en:'A little awareness each day shows up in your data over time.',       x_ja:'毎日少しの気づきが、やがてデータに変化として現れる。',
+   cta:'查看我的記錄 →',                            cta_en:'View My Records →',                                                cta_ja:'記録を見る →',                       href:'cal'},
+  {t:'science',
+   x:'吐氣比吸氣長，是給神經系統最簡單的安撫。',       x_en:'A longer exhale than inhale is the simplest way to soothe your nervous system.', x_ja:'吐く息を吸う息より長くするのが、神経系を落ち着かせる最もシンプルな方法。',
+   cta:'做一次呼吸練習 →',                          cta_en:'Try a breathing exercise →',                                          cta_ja:'呼吸練習をしてみる →',                href:'xiaoqi/'},
+  {t:'hrv',
+   x:'HRV 沒有「正常值」，只有「你的常態」——所以跟自己比、看趨勢最準。', x_en:"HRV has no 'normal' — only your normal. Compare to yourself and track trends.", x_ja:'HRVに「正常値」はない。あるのは「自分の平常」。自分と比べ、傾向を見よう。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'},
+  {t:'hrv',
+   x:'放慢吐氣，當下就能拉高 HRV，是給神經系統最簡單的煞車。', x_en:'Slowing your exhale raises HRV instantly — the easiest brake for your nervous system.', x_ja:'吐く息を遅くすることでHRVが即座に上昇。神経系への最も簡単なブレーキ。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'},
+  {t:'hrv',
+   x:'剛起床量，最能看見你的基準；不同時間量，會看見不同的你。', x_en:'Measure just after waking for your baseline; measure at different times to see different sides of yourself.', x_ja:'起床直後の測定でベースラインがわかる。時間帯を変えると違う自分が見える。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'},
+  {t:'hrv',
+   x:'覺得累，身體不一定真的低——把感覺和身體訊號對照，更認識自己。', x_en:"Feeling tired doesn't always mean your body is low. Compare feelings with signals to know yourself better.", x_ja:'疲れを感じても体が低くない場合も。感覚と体のサインを照らし合わせよう。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'},
+  {t:'hrv',
+   x:'HRV 不是越高越好的比賽，是看你今天的恢復與放鬆夠不夠。', x_en:"HRV isn't a competition to score higher — it's about whether today's recovery and relaxation are sufficient.", x_ja:'HRVは高ければいいというものではなく、今日の回復とリラックスが十分かどうかを見るもの。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'},
+  {t:'hrv',
+   x:'睡眠、壓力、咖啡、運動都會牽動 HRV——它像身體此刻的天氣。', x_en:"Sleep, stress, caffeine, exercise — all move HRV. It's like the weather of your body right now.", x_ja:'睡眠、ストレス、カフェイン、運動すべてがHRVに影響する。今の体の天気のようなもの。',
+   cta:'量一次身體能量 →',                          cta_en:'Measure my body energy →',                                          cta_ja:'体のエネルギーを測る →',               href:'hrv/'}
 ];
+
+/* 輪播引擎 — 支援三語 */
 (function(){
   var el=document.getElementById('home-quote');
   var tag=document.getElementById('home-quote-tag');
   var cta=document.getElementById('home-cta');
   if(!el)return;
   var order=HOME_LINES.map(function(_,i){return i;});
-  for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}
+  for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=order[i];order[i]=order[j];order[j]=tmp;}
   var p=0;
-  function lab(t){return t==='science'?'RESEARCH · 科學':(t==='hrv'?'HRV · 身體小知識':'DAILY REFLECTION');}
+  var _currentItem=null;
+
+  function lab(t,lang){
+    if(lang==='en') return t==='science'?'RESEARCH':'HRV · BODY INSIGHT';
+    if(lang==='ja') return t==='science'?'リサーチ':'HRV · 体の知識';
+    return t==='science'?'RESEARCH · 科學':(t==='hrv'?'HRV · 身體小知識':'DAILY REFLECTION');
+  }
   function mk(h){return h==='cal'?function(){show('cal');}:function(){location.href=h;};}
+  function getX(it,lang){return lang==='en'?(it.x_en||it.x):(lang==='ja'?(it.x_ja||it.x):it.x);}
+  function getCta(it,lang){return lang==='en'?(it.cta_en||it.cta):(lang==='ja'?(it.cta_ja||it.cta):it.cta);}
+
+  function renderItem(it,fade){
+    var lang=typeof jteLang==='function'?jteLang():'zh';
+    if(fade){
+      el.style.opacity='0';if(tag)tag.style.opacity='0';if(cta)cta.style.opacity='0';
+      setTimeout(function(){
+        el.textContent=getX(it,lang);
+        if(tag)tag.textContent=lab(it.t,lang);
+        if(cta){cta.textContent=getCta(it,lang);cta.onclick=mk(it.href);}
+        el.style.opacity='1';if(tag)tag.style.opacity='1';if(cta)cta.style.opacity='1';
+      },320);
+    } else {
+      el.textContent=getX(it,lang);
+      if(tag)tag.textContent=lab(it.t,lang);
+      if(cta){cta.textContent=getCta(it,lang);cta.onclick=mk(it.href);}
+    }
+  }
+
   function step(){
-    var it=HOME_LINES[order[p]];
-    el.style.opacity='0';if(tag)tag.style.opacity='0';if(cta)cta.style.opacity='0';
-    setTimeout(function(){
-      el.textContent=it.x;
-      if(tag)tag.textContent=lab(it.t);
-      if(cta){cta.textContent=it.cta;cta.onclick=mk(it.href);}
-      el.style.opacity='1';if(tag)tag.style.opacity='1';if(cta)cta.style.opacity='1';
-    },320);
+    _currentItem=HOME_LINES[order[p]];
+    renderItem(_currentItem,true);
     p=(p+1)%order.length;
   }
+
   step();
   setInterval(step,6500);
+
+  /* 語言切換時立即更新輪播文字（i18n 引擎會呼叫這個） */
+  window.jteI18nApply=function(lang){
+    if(_currentItem) renderItem(_currentItem,false);
+  };
 })();
 </script>
 </body>

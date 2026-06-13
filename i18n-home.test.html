@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>i18n-home tests</title>
+<style>
+  body{font-family:monospace;padding:16px;background:#f5f5f5}
+  iframe{display:none}
+  pre{white-space:pre-wrap;background:#fff;border:1px solid #ccc;padding:12px;border-radius:6px}
+</style>
+</head><body>
+<h2>i18n-home.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html"></iframe>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+'\n  got : '+a+'\n  want: '+b);}
+
+const fr=document.getElementById('fr');
+let iw=null;
+
+function waitFor(fn,timeout){
+  return new Promise(function(resolve,reject){
+    var start=Date.now();
+    var t=setInterval(function(){
+      try{if(fn()){clearInterval(t);resolve();}}catch(e){}
+      if(Date.now()-start>timeout){clearInterval(t);reject(new Error('waitFor timeout'));}
+    },100);
+  });
+}
+
+fr.addEventListener('load',function(){
+  iw=fr.contentWindow;
+  // 等 i18n 引擎與已知 DOM 元素就緒
+  waitFor(function(){
+    return iw.__jteI18nLoaded &&
+           iw.document.querySelector('.v2nm') &&
+           iw.document.querySelector('#home-quote').textContent.trim().length > 1;
+  }, 20000).then(runTests).catch(function(e){
+    log('SETUP FAILED: '+e.message);
+    log('---');
+    log('DONE pass='+pass+' fail='+fail);
+    try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e2){}
+  });
+});
+
+function firstCardName(){
+  // first .v2nm in landing — 呼吸覺察 section
+  return iw.document.querySelector('#page-landing .v2nm');
+}
+
+function runTests(){
+  log('iframe loaded, i18n ready');
+
+  // ── TEST 1: zh default, no change for existing users ──
+  check('清除 jte_lang → 預設 zh', function(){
+    try{ iw.localStorage.removeItem('jte_lang'); }catch(e){}
+    iw.jteSetLang('zh');
+    var nm=firstCardName();
+    eq(nm!==null, true, 'card .v2nm exists');
+    // zh text should be Chinese characters
+    var txt=nm.textContent;
+    eq(/[一-鿿]/.test(txt), true, 'card name is Chinese in zh mode, got: '+txt);
+  });
+
+  // ── TEST 2: 切 en → card name is English ──
+  check('切 en → 卡片名變英文', function(){
+    iw.jteSetLang('en');
+    var nm=firstCardName();
+    var txt=nm.textContent;
+    // after switching to en, should NOT be the original Chinese (有 data-i18n 且字典有值)
+    eq(/[一-鿿]/.test(txt), false, 'card name should be English in en mode, got: '+txt);
+  });
+
+  // ── TEST 3: 切 ja → card name is Japanese ──
+  check('切 ja → 卡片名變日文', function(){
+    iw.jteSetLang('ja');
+    var nm=firstCardName();
+    var txt=nm.textContent;
+    // Japanese text should contain hiragana/katakana/CJK
+    var hasJa=/[぀-ヿ一-鿿]/.test(txt);
+    eq(hasJa, true, 'card name should be Japanese in ja mode, got: '+txt);
+    // should differ from original Chinese (覚察) — we check it's not original
+    // (could contain kanji, so check it has hiragana/katakana OR is different from zh)
+    // best check: it's not exactly the Chinese original
+    eq(txt!=='呼吸覺察', true, 'ja card name differs from zh original, got: '+txt);
+  });
+
+  // ── TEST 4: 切回 zh → 回中文 ──
+  check('切回 zh → 回原文', function(){
+    iw.jteSetLang('zh');
+    var nm=firstCardName();
+    var txt=nm.textContent;
+    eq(txt, '呼吸覺察', 'zh: card name back to original');
+  });
+
+  // ── TEST 5: langbar 三顆鈕 ──
+  check('#jte-langbar 有三顆按鈕', function(){
+    var bar=iw.document.getElementById('jte-langbar');
+    eq(bar!==null, true, '#jte-langbar exists');
+    eq(bar.querySelectorAll('button').length, 3, 'langbar has 3 buttons');
+  });
+
+  // ── TEST 6: nav 首頁 label changes ──
+  check('nav 首頁按鈕 en 變 Home', function(){
+    iw.jteSetLang('en');
+    // find the nav button with data-i18n="nav.home"
+    var navHome=iw.document.querySelector('[data-i18n="nav.home"]');
+    eq(navHome!==null, true, 'nav home button has data-i18n');
+    eq(navHome.textContent, 'Home', 'nav home = Home in en');
+    iw.jteSetLang('zh');
+  });
+
+  // ── TEST 7: carousel #home-quote populates in zh ──
+  check('zh 時 #home-quote 有文字（中文）', function(){
+    iw.jteSetLang('zh');
+    var q=iw.document.getElementById('home-quote');
+    eq(q!==null, true, '#home-quote exists');
+    var txt=q.textContent.trim();
+    eq(txt.length>3, true, 'home-quote has content, got: "'+txt+'"');
+    eq(/[一-鿿]/.test(txt), true, 'home-quote is Chinese in zh mode, got: '+txt);
+  });
+
+  // ── TEST 8: carousel updates on lang change ──
+  check('切 en → #home-quote 變英文', function(){
+    iw.jteSetLang('en');
+    var q=iw.document.getElementById('home-quote');
+    var txt=q.textContent.trim();
+    eq(txt.length>3, true, 'home-quote not empty in en, got: "'+txt+'"');
+    // English carousel should NOT be all Chinese characters
+    // (some quotes may have no Chinese when in en)
+    eq(/[一-鿿]/.test(txt), false, 'home-quote should be English in en mode, got: '+txt);
+    iw.jteSetLang('zh');
+  });
+
+  // ── TEST 9: section headings translate ──
+  check('section heading 有 data-i18n', function(){
+    // There should be at least one section heading with data-i18n
+    var heads=iw.document.querySelectorAll('[data-i18n]');
+    eq(heads.length>5, true, 'at least 5 data-i18n elements, got: '+heads.length);
+  });
+
+  // ── TEST 10: site name / tagline ──
+  check('nav-brand / nav-sub 有 data-i18n', function(){
+    var brand=iw.document.querySelector('[data-i18n="site.name"]');
+    eq(brand!==null, true, 'site.name element exists');
+  });
+
+  // ── DONE ──
+  log('---');
+  log('DONE pass='+pass+' fail='+fail);
+  document.title=fail?('FAIL '+fail):'OK';
+  window.__done=true;
+  try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e){}
+}
+</script>
+</body></html>
