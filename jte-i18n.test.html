@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>jte-i18n tests</title>
+<script>
+  window.JTE_I18N = {
+    en: { greet: 'Hello', ask: 'Ask one thing', go: 'Start' },
+    ja: { greet: 'こんにちは', ask: '一つ質問', go: '開始' }
+  };
+</script>
+<script src="jte-i18n.js"></script>
+</head><body>
+<h1 id="h" data-i18n="greet">你好</h1>
+<input id="inp" data-i18n-ph="ask" placeholder="問一件事">
+<div id="d" data-i18n-html="go">開始量測</div>
+<pre id="out">running...</pre>
+<script>
+const out=document.getElementById('out');let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+' got['+a+'] want['+b+']');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+
+try{ localStorage.removeItem('jte_lang'); }catch(e){}
+const H=document.getElementById('h'), I=document.getElementById('inp'), D=document.getElementById('d');
+
+check('預設 zh：保留原文',()=>{ window.jteSetLang('zh'); eq(H.textContent,'你好'); eq(I.getAttribute('placeholder'),'問一件事'); });
+check('切 en：textContent/placeholder/html 都換',()=>{ window.jteSetLang('en'); eq(H.textContent,'Hello'); eq(I.getAttribute('placeholder'),'Ask one thing'); eq(D.innerHTML,'Start'); });
+check('切 ja：換日文',()=>{ window.jteSetLang('ja'); eq(H.textContent,'こんにちは'); eq(I.getAttribute('placeholder'),'一つ質問'); });
+check('切回 zh：還原中文原文',()=>{ window.jteSetLang('zh'); eq(H.textContent,'你好'); eq(D.innerHTML,'開始量測'); });
+check('jteT 動態取字：en 回譯文',()=>{ window.jteSetLang('en'); eq(window.jteT('greet','你好'),'Hello'); });
+check('jteT 查無 key：回中文原文',()=>{ eq(window.jteT('nokey','原文X'),'原文X'); });
+check('jteT 在 zh：回中文原文',()=>{ window.jteSetLang('zh'); eq(window.jteT('greet','你好'),'你好'); });
+check('jte_lang 寫入 localStorage',()=>{ window.jteSetLang('ja'); eq(localStorage.getItem('jte_lang'),'ja'); window.jteSetLang('zh'); });
+check('切換鈕已注入（#jte-langbar 三顆）',()=>{ var b=document.getElementById('jte-langbar'); eq(!!b,true); eq(b.querySelectorAll('button').length,3); });
+
+log('---');log('DONE pass='+pass+' fail='+fail);document.title=fail?('FAIL '+fail):'OK';window.__done=true;
+try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
+</script>
+</body></html>
