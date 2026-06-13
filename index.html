@@ -247,7 +247,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
   </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-val" id="s-checkin" style="color:var(--o)">0</div><div class="stat-lbl">本月打卡</div></div>
-    <div class="stat-card"><div class="stat-val" id="s-hrv" style="color:var(--p)">0</div><div class="stat-lbl">HRV 掛載</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-hrv" style="color:var(--p)">0</div><div class="stat-lbl">HRV 量測</div></div>
     <div class="stat-card"><div class="stat-val" id="s-streak" style="color:var(--g)">0</div><div class="stat-lbl">連續天數</div></div>
   </div>
   <div id="cal-detail" class="detail-sec"></div>
@@ -480,7 +480,7 @@ function renderCal(){
     var rec=all[key];
     if(isToday)el.classList.add('today');
     if(rec){el.classList.add('has-rec');checkins++;}
-    if(rec&&rec.linked&&rec.linked.find(function(l){return l.source==='HRVRecord';}))hrvCount++;
+    if(rec&&rec.linked&&rec.linked.find(function(l){return l.source==='HRV'||l.source==='HRVRecord';}))hrvCount++;
     el.textContent=d;
     el.onclick=(function(k2,r){return function(){showDayDetail(k2,r);};})(key,rec);
     c.appendChild(el);
@@ -542,6 +542,17 @@ function showDayDetail(k,rec){
         var hc={'黃金狀態':'#4CAF19','穩定可用':'#003D7C','煞車失靈':'#FF8A00','紅色警戒':'#e03a3a'};
         var hcc=hc[l.assessmentTitle]||'#003D7C';
         html+='<div style="'+cardStyle(hcc)+'">'+delBtn(k,rid)+'<div style="font-size:10px;font-weight:600;color:'+hcc+';margin-bottom:6px">💓 HRVRecord'+nth+'</div><div style="font-size:12px;font-weight:600;color:var(--p);margin-bottom:2px">'+(l.assessmentTitle||'')+'</div><div style="font-size:10px;color:var(--m);margin-bottom:6px">'+(l.assessmentLevel||'')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.stressIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">壓力指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.emotionalFlexibility||'—')+'</div><div style="font-size:9px;color:var(--m)">情緒靈活度</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.relaxationIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">放鬆指數</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--p)">'+(l.vitalityIndex||'—')+'</div><div style="font-size:9px;color:var(--m)">活力指數</div></div></div>'+(l.note?'<div style="font-size:10px;color:var(--m);margin-top:6px;font-style:italic">'+l.note+'</div>':'')+'</div>';
+      } else if(l.source==='HRV'){
+        var ehc={high:'#4CAF19',mid:'#003D7C',low:'#FF8A00'};
+        var ehcc=ehc[l.level]||'#003D7C';
+        var ehlab={high:'充足',mid:'平穩',low:'偏低'};
+        var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+        html+='<div style="'+cardStyle(ehcc)+'">'+delBtn(k,rid)+
+          '<div style="font-size:10px;font-weight:600;color:'+ehcc+';margin-bottom:6px">💓 身體能量'+nth+'</div>'+
+          '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><div style="font-size:26px;font-weight:700;color:'+ehcc+';font-family:\'Noto Serif TC\',serif;line-height:1">'+(l.energy!=null?l.energy:'—')+'</div><div style="font-size:12px;color:var(--p);font-weight:600">'+(ehlab[l.level]||'')+'</div></div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--o)">'+(l.hr||'—')+'</div><div style="font-size:9px;color:var(--m)">心率 bpm</div></div><div style="background:var(--pp);border-radius:8px;padding:6px 8px"><div style="font-size:14px;font-weight:700;color:var(--g)">'+(l.rmssd||'—')+'</div><div style="font-size:9px;color:var(--m)">RMSSD ms</div></div></div>'+
+          (l.tags&&l.tags.length?'<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+l.tags.map(function(t){return '<span style="background:var(--gp);color:var(--g);padding:2px 8px;border-radius:999px;font-size:9px">'+esc(t)+'</span>';}).join('')+'</div>':'')+
+          '</div>';
       } else if(l.source==='BreatheAware'){
         var bc={'overcontrol':'#e03a3a','shallow':'#FF8A00','fast':'#FF8A00','shortexhale':'#003D7C','inhaledom':'#003D7C','unstable':'#FF8A00','resonance':'#4CAF19','stable':'#4CAF19','observe':'#003D7C'};
         var bcc=bc[l.patternKey]||'#4CAF19';
