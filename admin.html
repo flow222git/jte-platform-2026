@@ -636,7 +636,7 @@ function jteLinkedCard(l){
     BreatheAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.patternLabel||'')+(l.breathRate?(' · '+l.breathRate+'次/分'):'')},
     BreathAware:{ic:'🌬',lab:'呼吸覺察',c:'#4CAF19',b:(l.stateLabel||'')+(l.bpm?(' · '+l.bpm+'BPM'):'')},
     HRVRecord:{ic:'💓',lab:'HRV',c:'#FF8A00',b:(l.assessmentTitle||'')+' · 壓力'+(l.stressIndex||'—')+'/活力'+(l.vitalityIndex||'—')},
-    HRV:{ic:'💓',lab:'身體能量',c:({'high':'#4CAF19','mid':'#003D7C','low':'#FF8A00'}[l.level]||'#4CAF19'),b:(l.energy!=null?l.energy:'—')+' · '+({'high':'充足','mid':'平穩','low':'偏低'}[l.level]||l.level||'')+(l.tags&&l.tags.length?' · '+l.tags.join('、'):'')},
+    HRV:{ic:'💓',lab:'身體能量',c:({'high':'#4CAF19','mid':'#003D7C','low':'#FF8A00'}[l.level]||'#4CAF19'),b:(l.energy!=null?l.energy:'—')+' · '+({'high':'充足','mid':'平穩','low':'偏低'}[l.level]||l.level||'')+(l.tags&&l.tags.length?' · '+l.tags.map(function(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}).join('、'):'')},
     Activity:{ic:'🎪',lab:'活動',c:'#FF8A00',b:(l.activityName||'')+(l.org?(' · '+l.org):'')},
     WenYi:{ic:'☯',lab:'問易',c:'#6B4F9E',b:(l.mainHex||'')+(l.toneLabel?(' · '+l.toneLabel):'')+(l.topic?(' · '+l.topic):'')},
     BuYi:{ic:'☯',lab:'卜易',c:'#6B4F9E',b:(l.ben||'')+(l.bian?('→'+l.bian):'')+(l.changingLabel?(' · '+l.changingLabel):'')},
@@ -750,7 +750,7 @@ async function loadHrvOverview(){
     if(newRows.length){
       html+='<div style="font-size:12px;font-weight:600;color:var(--p);margin:0 0 8px">📱 身體能量（相機量測）— '+newRows.length+' 人</div>';
       html+='<table class="tbl"><thead><tr><th>使用者</th><th>時間</th><th>身體能量</th><th>等級</th><th>標記</th></tr></thead><tbody>';
-      newRows.forEach(function(r){var l=r.l,lk=l.level||'mid',lc=HRV_PAGE_COLOR[lk],ll=HRV_PAGE_LABEL[lk];var tagStr=(l.tags&&l.tags.length)?l.tags.map(function(t){return t.replace(/</g,'&lt;').replace(/>/g,'&gt;');}).join('、'):'—';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.ts?l.ts.slice(0,16).replace('T',' '):r.date)+'</td><td style="font-weight:700;color:'+lc+'">'+(l.energy!=null?l.energy:'—')+'</td><td><span class="badge" style="background:'+lc+';color:#fff">'+ll+'</span></td><td style="font-size:10px;color:var(--t2)">'+tagStr+'</td></tr>';});
+      newRows.forEach(function(r){var l=r.l,lk=l.level||'mid',lc=HRV_PAGE_COLOR[lk],ll=HRV_PAGE_LABEL[lk];var tagStr=(l.tags&&l.tags.length)?l.tags.map(function(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}).join('、'):'—';html+='<tr><td class="name">'+(r.name||r.email)+'</td><td>'+(l.ts?l.ts.slice(0,16).replace('T',' '):r.date)+'</td><td style="font-weight:700;color:'+lc+'">'+(l.energy!=null?l.energy:'—')+'</td><td><span class="badge" style="background:'+lc+';color:#fff">'+ll+'</span></td><td style="font-size:10px;color:var(--t2)">'+tagStr+'</td></tr>';});
       html+='</tbody></table>';
     }
     // HRVRecord table (old machine)
