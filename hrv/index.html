@@ -70,12 +70,14 @@
   .intro-lead p b{color:var(--ink);font-weight:600}
   .intro-lead .tag{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-faint);margin-top:12px;padding-top:11px;border-top:1px solid #d6e2f0}
   .intro-lead .tag i{font-size:16px}
-  /* —— 量測步驟（編號）—— */
-  .step-list{list-style:none;counter-reset:s;margin:2px 0 0;padding:0}
-  .step-list li{display:flex;gap:13px;align-items:flex-start;font-size:14px;line-height:1.7;color:var(--ink-soft);padding:12px 0;border-bottom:1px solid var(--line)}
-  .step-list li:last-child{border-bottom:none;padding-bottom:0}
-  .step-list li b{color:var(--ink);font-weight:600}
-  .step-list li::before{counter-increment:s;content:counter(s);flex:none;width:27px;height:27px;border-radius:50%;background:var(--accent);color:#fff;font-family:"Noto Serif TC",serif;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  /* —— 量測步驟（每步一個區塊＋插圖）—— */
+  .steps{display:flex;flex-direction:column;gap:11px;margin-top:2px}
+  .step-block{display:flex;gap:13px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+  .step-n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:"Noto Serif TC",serif;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center}
+  .step-body{flex:1 1 auto;min-width:0}
+  .step-title{font-size:15px;font-weight:600;color:var(--ink);line-height:1.5;margin-bottom:3px}
+  .step-desc{font-size:13px;color:var(--ink-soft);line-height:1.65}
+  .step-ic{flex:none;font-size:30px;color:var(--accent);opacity:.5}
   /* —— 狀態圖例（結果頁）—— */
   .legend{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
   .legend h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:14.5px;margin:0 0 4px;color:var(--accent)}
@@ -226,12 +228,24 @@ function renderIntro(){
   // 量測步驟 —— 條列、編號、清楚好讀
   const g=document.createElement('div');g.className='guide-card';
   g.innerHTML='<h3><i class="ti ti-list-numbers"></i>量測步驟</h3>'+
-    '<ol class="step-list">'+
-    '<li>手指輕輕蓋住手機<b>後鏡頭</b>（連旁邊的閃光燈一起蓋），不要壓太用力。</li>'+
-    '<li>手和身體保持<b>靜止</b>，正常呼吸，不要說話。</li>'+
-    '<li>光線要<b>充足</b>（iPhone 沒辦法開閃光燈時尤其重要）。</li>'+
-    '<li>等畫面<b>品質燈轉綠</b>，會開始約一分鐘倒數，量完自動顯示結果。</li>'+
-    '</ol>';
+    '<div class="steps">'+
+    '<div class="step-block"><span class="step-n">1</span>'+
+      '<div class="step-body"><div class="step-title">手指輕蓋後鏡頭</div>'+
+      '<div class="step-desc">連旁邊的閃光燈一起蓋住，不要壓太用力。</div></div>'+
+      '<i class="ti ti-hand-finger step-ic"></i></div>'+
+    '<div class="step-block"><span class="step-n">2</span>'+
+      '<div class="step-body"><div class="step-title">手和身體保持靜止</div>'+
+      '<div class="step-desc">正常呼吸，不要說話。</div></div>'+
+      '<i class="ti ti-armchair-2 step-ic"></i></div>'+
+    '<div class="step-block"><span class="step-n">3</span>'+
+      '<div class="step-body"><div class="step-title">光線要充足</div>'+
+      '<div class="step-desc">iPhone 沒辦法開閃光燈時尤其重要。</div></div>'+
+      '<i class="ti ti-sun step-ic"></i></div>'+
+    '<div class="step-block"><span class="step-n">4</span>'+
+      '<div class="step-body"><div class="step-title">等品質燈轉綠</div>'+
+      '<div class="step-desc">會開始約一分鐘倒數，量完自動顯示結果。</div></div>'+
+      '<i class="ti ti-clock-hour-4 step-ic"></i></div>'+
+    '</div>';
   d.appendChild(g);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
