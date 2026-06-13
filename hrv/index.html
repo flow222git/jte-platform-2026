@@ -205,6 +205,8 @@
    訊號處理純邏輯在 hrv-analyze.js（window.HrvAnalyze）
    記錄走平台 users/{email}/daily linked[]，source:'HRV'，明文一般記錄（不加密）。
    ============================================================ */
+// jteT stub：jte-i18n.js（defer）未載完前先回傳 zh fallback，載完後被正式實作覆蓋。
+if(typeof window.jteT!=='function'){ window.jteT=function(k,fb){ return fb!==undefined?fb:k; }; }
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
@@ -214,11 +216,12 @@ function measureSec(){ return QUICK_SEC; }
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null };
+var _lastResultSamples=null; // stored for jteI18nApply re-render on lang switch
 
 // 切換畫面時回到頁面最上方，讓站台標題列也露出來（不會停在被捲到一半的位置）
 function clearAll(){ app.innerHTML=''; bar.innerHTML=''; try{ window.scrollTo(0,0); }catch(e){} }
 function backHomeLink(){
-  const b=document.createElement('button');b.className='home-link';b.textContent='← 回練息場平台';
+  const b=document.createElement('button');b.className='home-link';b.textContent=jteT('btn.back','← 回練息場平台');
   b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
   return b;
 }
@@ -236,44 +239,42 @@ function renderIntro(){
   session.mode='intro'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  // 這是什麼 —— 進來先說明偵測什麼
-  d.insertAdjacentHTML('beforeend',
-    '<div class="intro-lead">'+
-      '<h3>這是在量什麼？</h3>'+
-      '<p>用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。</p>'+
-      '<div class="tag"><i class="ti ti-clock-hour-4"></i>約一分鐘 · 找個能坐穩、放鬆的地方</div>'+
-    '</div>');
+  // 這是什麼 card
+  const lead=document.createElement('div');lead.className='intro-lead';
+  const leadH=document.createElement('h3');leadH.textContent=jteT('intro.what.title','這是在量什麼？');
+  const leadP=document.createElement('p');
+  leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。');
+  const leadTag=document.createElement('div');leadTag.className='tag';
+  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
+  lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
+  d.appendChild(lead);
 
-  // 量測步驟 —— 條列、編號、清楚好讀
+  // 量測步驟
   const g=document.createElement('div');g.className='guide-card';
-  g.innerHTML='<h3><i class="ti ti-list-numbers"></i>量測步驟</h3>'+
-    '<div class="steps">'+
-    '<div class="step-block"><span class="step-n">1</span>'+
-      '<div class="step-body"><div class="step-title">手指輕蓋後鏡頭</div>'+
-      '<div class="step-desc">連旁邊的閃光燈一起蓋住，不要壓太用力。</div></div>'+
-      '<i class="ti ti-hand-finger step-ic"></i></div>'+
-    '<div class="step-block"><span class="step-n">2</span>'+
-      '<div class="step-body"><div class="step-title">手和身體保持靜止</div>'+
-      '<div class="step-desc">正常呼吸，不要說話。</div></div>'+
-      '<i class="ti ti-armchair-2 step-ic"></i></div>'+
-    '<div class="step-block"><span class="step-n">3</span>'+
-      '<div class="step-body"><div class="step-title">光線要充足</div>'+
-      '<div class="step-desc">iPhone 沒辦法開閃光燈時尤其重要。</div></div>'+
-      '<i class="ti ti-sun step-ic"></i></div>'+
-    '<div class="step-block"><span class="step-n">4</span>'+
-      '<div class="step-body"><div class="step-title">等品質燈轉綠</div>'+
-      '<div class="step-desc">會開始約一分鐘倒數，量完自動顯示結果。</div></div>'+
-      '<i class="ti ti-clock-hour-4 step-ic"></i></div>'+
-    '</div>';
+  const stepsData=[
+    {title:jteT('intro.step1.title','手指輕蓋後鏡頭'),desc:jteT('intro.step1.desc','連旁邊的閃光燈一起蓋住，不要壓太用力。'),icon:'ti-hand-finger'},
+    {title:jteT('intro.step2.title','手和身體保持靜止'),desc:jteT('intro.step2.desc','正常呼吸，不要說話。'),icon:'ti-armchair-2'},
+    {title:jteT('intro.step3.title','光線要充足'),desc:jteT('intro.step3.desc','iPhone 沒辦法開閃光燈時尤其重要。'),icon:'ti-sun'},
+    {title:jteT('intro.step4.title','等品質燈轉綠'),desc:jteT('intro.step4.desc','會開始約一分鐘倒數，量完自動顯示結果。'),icon:'ti-clock-hour-4'},
+  ];
+  let stepsHtml='<h3><i class="ti ti-list-numbers"></i>'+_h(jteT('intro.steps.title','量測步驟'))+'</h3><div class="steps">';
+  stepsData.forEach(function(s,i){
+    stepsHtml+='<div class="step-block"><span class="step-n">'+(i+1)+'</span>'+
+      '<div class="step-body"><div class="step-title">'+_h(s.title)+'</div>'+
+      '<div class="step-desc">'+_h(s.desc)+'</div></div>'+
+      '<i class="ti '+s.icon+' step-ic"></i></div>';
+  });
+  stepsHtml+='</div>';
+  g.innerHTML=stepsHtml;
   d.appendChild(g);
 
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
 
   const inner=document.createElement('div');inner.className='bar-inner';
-  const start=document.createElement('button');start.className='btn btn-primary';start.textContent='開始量測';
+  const start=document.createElement('button');start.className='btn btn-primary';start.textContent=jteT('btn.start','開始量測');
   start.onclick=function(){ renderMeasure(); };
-  const hist=document.createElement('button');hist.className='btn-ghost';hist.textContent='看趨勢';
+  const hist=document.createElement('button');hist.className='btn-ghost';hist.textContent=jteT('btn.trend','看趨勢');
   hist.onclick=function(){ renderTrend(); };
   inner.appendChild(hist);inner.appendChild(start);
   bar.appendChild(inner);
@@ -296,21 +297,21 @@ function renderMeasure(){
             '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>'+
             '<circle id="ringProg" cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>'+
           '</svg>'+
-          '<div class="ring-num"><span class="n" id="ringSec">'+measureSec()+'</span><span class="u">秒</span></div>'+
+          '<div class="ring-num"><span class="n" id="ringSec">'+measureSec()+'</span><span class="u">'+jteT('unit.sec','秒')+'</span></div>'+
         '</div>'+
-        '<div class="quality"><span class="qdot red" id="qdot"></span><span id="qlabel">偵測訊號中…</span></div>'+
+        '<div class="quality"><span class="qdot red" id="qdot"></span><span id="qlabel">'+jteT('quality.red','偵測訊號中…')+'</span></div>'+
         '<div class="hr-live"><span class="hb">♥</span><span class="v" id="hrLive">--</span><span class="u">bpm</span></div>'+
       '</div>'+
     '</div>');
 
   d.insertAdjacentHTML('beforeend','<div class="wave-card"><canvas id="wave"></canvas></div>');
-  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">把手指輕輕蓋住後鏡頭，保持靜止…</p>');
+  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">'+_h(jteT('hint.initial','把手指輕輕蓋住後鏡頭，保持靜止…'))+'</p>');
   d.insertAdjacentHTML('beforeend','<div id="camErr"></div>');
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
 
   const inner=document.createElement('div');inner.className='bar-inner';
-  const cancel=document.createElement('button');cancel.className='btn btn-ghost';cancel.style.flex='1';cancel.textContent='取消';
+  const cancel=document.createElement('button');cancel.className='btn btn-ghost';cancel.style.flex='1';cancel.textContent=jteT('btn.cancel','取消');
   cancel.onclick=function(){ renderIntro(); };
   inner.appendChild(cancel);
   bar.appendChild(inner);
@@ -477,7 +478,7 @@ function updateLiveUi(now){
   const q=HrvAnalyze.signalQuality(recent);
   const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
   if(dot){ dot.className='qdot '+q; }
-  if(ql){ ql.textContent = q==='green'?'訊號良好':(q==='yellow'?'訊號普通，盡量別動':'正在抓穩訊號…'); }
+  if(ql){ ql.textContent = q==='green'?jteT('quality.green','訊號良好'):(q==='yellow'?jteT('quality.yellow','訊號普通，盡量別動'):jteT('quality.red','正在抓穩訊號…')); }
   // 即時心率：訊號穩定（綠燈）後才顯示，並做平滑——避免一開始偵測未穩時把雜訊當心跳、
   // 算出偏高的數字（一百多）嚇到使用者。穩定後從第一筆可信值起跑、緩緩貼近真實值。
   const beats=HrvAnalyze.detectBeats(recent);
@@ -493,7 +494,7 @@ function updateLiveUi(now){
   // 品質轉 green 才開始倒數
   if(q==='green' && !session.measuring){
     session.measuring=true; session.countdownStart=now; session.samples=[];
-    if(hint){ hint.className='cam-hint'; hint.textContent='開始量測，保持靜止，正常呼吸…'; }
+    if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
   }
   if(session.measuring){
     const total=measureSec();
@@ -504,20 +505,20 @@ function updateLiveUi(now){
     if(prog){ const C=2*Math.PI*52; prog.setAttribute('stroke-dashoffset', String(C*(1-Math.min(1,elapsed/total)))); }
     if(q==='red'){
       // 中途轉紅：提示調整（不重置倒數，避免一直歸零）
-      if(hint){ hint.className='cam-hint warn'; hint.textContent='訊號變差了，手指別移開、放輕鬆…'; }
+      if(hint){ hint.className='cam-hint warn'; hint.textContent=jteT('hint.warn','訊號變差了，手指別移開、放輕鬆…'); }
     }else if(hint && hint.classList.contains('warn')){
-      hint.className='cam-hint'; hint.textContent='很好，保持住…';
+      hint.className='cam-hint'; hint.textContent=jteT('hint.recovering','很好，保持住…');
     }
     if(remain<=0){ finishMeasure(); }
   }else{
     if(hint && !hint.classList.contains('warn')){
       const waited=(now-session.measureStart)/1000;
       if(q!=='red'){
-        hint.textContent='快好了，穩住，等品質燈轉綠…';            // 黃燈：接近了
+        hint.textContent=jteT('hint.yellow','快好了，穩住，等品質燈轉綠…');
       }else if(waited<7){
-        hint.textContent='先放鬆，手指穩穩蓋著後鏡頭，觀察幾秒鐘…';   // 紅燈前 7 秒：別焦慮，等一下
+        hint.textContent=jteT('hint.acquiring.early','先放鬆，手指穩穩蓋著後鏡頭，觀察幾秒鐘…');
       }else{
-        hint.textContent='還抓不到穩定心跳，再換個方式：手指蓋滿後鏡頭（含閃光燈）、找亮一點的地方，放鬆再等幾秒。';
+        hint.textContent=jteT('hint.acquiring.late','還抓不到穩定心跳，再換個方式：手指蓋滿後鏡頭（含閃光燈）、找亮一點的地方，放鬆再等幾秒。');
       }
     }
   }
@@ -543,6 +544,7 @@ function drawWave(samples){
 
 function finishMeasure(){
   const collected=session.samples.slice();
+  _lastResultSamples=collected;
   stopCamera();
   session.mode='result';
   renderResult(collected);
@@ -573,12 +575,12 @@ function renderResult(samples){
 
   if(tooNoisy){
     const c=document.createElement('div');c.className='err-card';
-    c.innerHTML='<h3>這次沒量好</h3><p>別緊張，這很常見。找個光線充足的地方坐穩，手指輕輕蓋滿後鏡頭（含旁邊的閃光燈），放鬆、保持靜止，再量一次就好。</p>';
+    c.innerHTML='<h3>'+_h(jteT('result.err.title','這次沒量好'))+'</h3><p>'+_h(jteT('result.err.body','別緊張，這很常見。找個光線充足的地方坐穩，手指輕輕蓋滿後鏡頭（含旁邊的閃光燈），放鬆、保持靜止，再量一次就好。'))+'</p>';
     d.appendChild(c);
     d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
     app.appendChild(d);
     const inner=document.createElement('div');inner.className='bar-inner';
-    const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+    const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.again','再量一次');
     again.onclick=function(){ renderMeasure(); };
     inner.appendChild(again);
     bar.appendChild(inner);
@@ -597,9 +599,9 @@ function renderResult(samples){
 
   // 量測底部列（看趨勢／再量一次）先放上，渲染不卡在讀記錄
   const inner=document.createElement('div');inner.className='bar-inner';
-  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent='看趨勢';
+  const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent=jteT('btn.trend','看趨勢');
   trend.onclick=function(){ renderTrend(); };
-  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='再量一次';
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.again','再量一次');
   again.onclick=function(){ renderMeasure(); };
   inner.appendChild(trend);inner.appendChild(again);
   bar.appendChild(inner);
@@ -620,6 +622,7 @@ const ENERGY_TONE={ high:'relaxed', mid:'balanced', low:'tense' };
 /* —— 自覺狀態標記 —— 量完揭曉分數後，可快速貼情境標記（選填、可多選）。
    預設 8 顆＋使用者自訂（存個人標籤庫，之後變成可選的一顆）。 */
 const TAG_PRESETS=['🌅 剛起床','☀️ 中午','🌙 睡前','🏃 運動後','😮‍💨 有點累','🧘 放鬆','😣 壓力大','✨ 靈感來了'];
+window.TAG_PRESETS=TAG_PRESETS; // expose for test access (values always zh per spec)
 const TAG_USER_KEY='hrv_tags_user';
 function tagUserList(){ try{ return JSON.parse(localStorage.getItem(TAG_USER_KEY)||'[]'); }catch(e){ return []; } }
 function tagUserAdd(t){
@@ -633,7 +636,7 @@ function buildTagPicker(recId){
   const wrap=document.createElement('div'); wrap.className='tagpick';
   const sel={};                                  // 已選標記集合
   const head=document.createElement('div'); head.className='tagpick-head';
-  head.innerHTML='<b>這次的狀態？</b><span>選填，可多選 — 之後能依標記看趨勢</span>';
+  head.innerHTML='<b>'+jteT('tag.head','這次的狀態？')+'</b><span>'+jteT('tag.sub','選填，可多選 — 之後能依標記看趨勢')+'</span>';
   wrap.appendChild(head);
   const row=document.createElement('div'); row.className='tagrow';
   wrap.appendChild(row);
@@ -675,17 +678,19 @@ function renderEnergyResult(d, card, list, m, rec){
   // —— 身體能量 hero 卡（重建，避免閃爍殘留）——
   card.className='state-card s-'+(ENERGY_TONE[en.level]||'balanced');
   card.innerHTML='';
-  const lab=document.createElement('div');lab.className='lab';lab.textContent='身體能量';
+  const lab=document.createElement('div');lab.className='lab';lab.textContent=jteT('result.energy.label','身體能量');
   const big=document.createElement('div');big.className='big';big.textContent=String(Number(en.score));
   const labelEl=document.createElement('div');labelEl.className='adv';
   labelEl.style.cssText='font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;margin-top:4px;opacity:1';
-  labelEl.textContent=String(en.label);
-  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=String(en.advice||'');
+  const LEVEL_LABEL_MAP={high:jteT('result.level.high','充足'),mid:jteT('result.level.mid','平穩'),low:jteT('result.level.low','偏低')};
+  labelEl.textContent=LEVEL_LABEL_MAP[en.level]||String(en.label);
+  const LEVEL_ADVICE={high:jteT('advice.high','今天恢復得很好，身體狀態不錯，好好把握。'),mid:jteT('advice.mid','今天狀態和你平常差不多，穩穩的。'),low:jteT('advice.low','今天能量偏低，多留點空間給自己休息和恢復。')};
+  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=LEVEL_ADVICE[en.level]||String(en.advice||'');
   card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
   if(en.confidence==='building'){
     const note=document.createElement('div');note.className='adv';
     note.style.cssText='font-size:12.5px;opacity:.9;margin-top:8px';
-    note.textContent='信心建立中（'+String(Number(en.n))+'/'+String(Number(E?E._CONF_N:7))+'）— 多量幾次會越來越貼近你自己。';
+    note.textContent=jteT('result.confidence','信心建立中（%1/%2）— 多量幾次會越來越貼近你自己。').replace('%1',String(Number(en.n))).replace('%2',String(Number(E?E._CONF_N:7)));
     card.appendChild(note);
   }
 
@@ -701,14 +706,14 @@ function renderEnergyResult(d, card, list, m, rec){
 
   // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
   const det=document.createElement('details');det.className='metrics';
-  det.innerHTML='<summary>看細項</summary>'+
+  det.innerHTML='<summary>'+jteT('result.see.detail','看細項')+'</summary>'+
     '<div class="idx-card" style="margin-top:8px">'+
-      '<div class="metric-row"><span class="mt">恢復力 <small>vs 你的常態</small></span><span class="idx-lv" id="enRec"></span></div>'+
-      '<div class="metric-row"><span class="mt">平靜 <small>靜息心率</small></span><span class="idx-lv" id="enCalm"></span></div>'+
+      '<div class="metric-row"><span class="mt">'+jteT('result.recovery','恢復力')+' <small>'+jteT('result.recovery.note','vs 你的常態')+'</small></span><span class="idx-lv" id="enRec"></span></div>'+
+      '<div class="metric-row"><span class="mt">'+jteT('result.calm','平靜')+' <small>'+jteT('result.calm.note','靜息心率')+'</small></span><span class="idx-lv" id="enCalm"></span></div>'+
     '</div>'+
     '<div class="panel" style="margin-top:8px">'+
-      '<div class="metric-row"><span class="mt">心率 <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
-      '<div class="metric-row"><span class="mt">心率變異 <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
+      '<div class="metric-row"><span class="mt">'+jteT('result.hr','心率')+' <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
+      '<div class="metric-row"><span class="mt">'+jteT('result.rmssd','心率變異')+' <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
     '</div>';
   d.appendChild(det);
   // 細項膠囊（顏色用既有 idx-lv high/mid/low）
@@ -724,41 +729,41 @@ function renderEnergyResult(d, card, list, m, rec){
 
   // —— 狀態怎麼分（三段，標出你這次落在哪一段）——
   const STATES=[
-    {lv:'high',name:'充足',range:'75–100',desc:'恢復得不錯、能量飽滿，好好把握今天。'},
-    {lv:'mid', name:'平穩',range:'45–74', desc:'和你平常差不多，穩穩的。'},
-    {lv:'low', name:'偏低',range:'0–44',  desc:'能量偏低，今天多留點空間給自己休息。'}
+    {lv:'high',name:jteT('result.legend.high.name','充足'),range:'75–100',desc:jteT('result.legend.high.desc','恢復得不錯、能量飽滿，好好把握今天。')},
+    {lv:'mid', name:jteT('result.legend.mid.name','平穩'), range:'45–74', desc:jteT('result.legend.mid.desc','和你平常差不多，穩穩的。')},
+    {lv:'low', name:jteT('result.legend.low.name','偏低'), range:'0–44',  desc:jteT('result.legend.low.desc','能量偏低，今天多留點空間給自己休息。')}
   ];
   const leg=document.createElement('div');leg.className='legend';
-  let lrows='<h3>身體能量怎麼分</h3><p class="sub">分數是你跟自己平常比的相對位置（不是跟別人比），分三段：</p>';
+  let lrows='<h3>'+jteT('result.legend.title','身體能量怎麼分')+'</h3><p class="sub">'+jteT('result.legend.sub','分數是你跟自己平常比的相對位置（不是跟別人比），分三段：')+'</p>';
   STATES.forEach(function(s){
     lrows+='<div class="legend-row'+(s.lv===en.level?' on':'')+'">'+
       '<span class="legend-dot '+s.lv+'"></span>'+
-      '<span class="legend-txt"><b>'+s.name+'<small>'+s.range+' 分</small>'+(s.lv===en.level?'<span class="you">你這次</span>':'')+'</b>'+
-      '<p>'+s.desc+'</p></span>'+
+      '<span class="legend-txt"><b>'+_h(s.name)+'<small>'+s.range+' 分</small>'+(s.lv===en.level?'<span class="you">'+jteT('result.you','你這次')+'</span>':'')+'</b>'+
+      '<p>'+_h(s.desc)+'</p></span>'+
     '</div>';
   });
   leg.innerHTML=lrows;
   d.appendChild(leg);
 
   // —— 常駐免責（相對參考、非醫療）——
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(ENERGY_DISCLAIMER)+'</p>');
-  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(DISCLAIMER)+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('energy.disclaimer',ENERGY_DISCLAIMER))+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
 }
 /* —— 趨勢頁 —— */
 function renderTrend(){
   session.mode='trend'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead">你的身體能量趨勢。分數是跟你自己平常比的相對參考，多量幾次會越來越貼近你。</p>');
+  d.insertAdjacentHTML('beforeend','<p class="lead">'+jteT('trend.lead','你的身體能量趨勢。分數是跟你自己平常比的相對參考，多量幾次會越來越貼近你。')+'</p>');
   const body=document.createElement('div');body.id='trendBody';
   body.innerHTML='<p class="cam-hint">讀取中…</p>';
   d.appendChild(body);
   app.appendChild(d);
 
   const inner=document.createElement('div');inner.className='bar-inner';
-  const home=document.createElement('button');home.className='btn btn-ghost';home.style.flex='1';home.textContent='回開始';
+  const home=document.createElement('button');home.className='btn btn-ghost';home.style.flex='1';home.textContent=jteT('btn.home','回開始');
   home.onclick=function(){ renderIntro(); };
-  const again=document.createElement('button');again.className='btn btn-primary';again.textContent='量一次';
+  const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.measure.once','量一次');
   again.onclick=function(){ renderMeasure(); };
   inner.appendChild(home);inner.appendChild(again);
   bar.appendChild(inner);
@@ -788,8 +793,8 @@ function drawTrend(list){
     .sort(function(a,b){ return String(a.ts||'').localeCompare(String(b.ts||'')); });
   if(!everything.length){
     const c=document.createElement('div');c.className='guide-card';
-    c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有記錄</h3>'+
-      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">量過一次之後，這裡會出現你的身體能量趨勢。先量一次看看吧。</p>';
+    c.innerHTML='<h3><i class="ti ti-chart-line"></i>'+jteT('trend.empty.title','還沒有記錄')+'</h3>'+
+      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">'+jteT('trend.empty.body','量過一次之後，這裡會出現你的身體能量趨勢。先量一次看看吧。')+'</p>';
     body.appendChild(c);
     return;
   }
@@ -799,7 +804,7 @@ function drawTrend(list){
   if(usedTags.length){
     const fb=document.createElement('div');fb.className='trend-filter';
     function fchip(label,val){ const b=document.createElement('button');b.type='button';b.className='tagchip'+(_trendFilter===val?' on':'');b.textContent=label;b.onclick=function(){ _trendFilter=val; drawTrend(list); };return b; }
-    fb.appendChild(fchip('全部',null));
+    fb.appendChild(fchip(jteT('trend.filter.all','全部'),null));
     usedTags.forEach(function(t){ fb.appendChild(fchip(t,t)); });
     body.appendChild(fb);
   }
@@ -810,11 +815,12 @@ function drawTrend(list){
   if(_trendFilter){
     const avg = recs.length ? Math.round(recs.reduce(function(s,r){return s+Number(r.energy);},0)/recs.length) : null;
     const note=document.createElement('div');note.className='trend-filter-note';
-    note.textContent='「'+_trendFilter+'」：'+all.length+' 次'+(avg!=null?('，平均身體能量 '+avg):'');
+    const filterAvgPart=avg!=null?(jteT('trend.filter.avg','，平均身體能量 ')+avg):'';
+    note.textContent='「'+_trendFilter+'」：'+jteT('trend.filter.note','%1 次%2').replace('%1',String(all.length)).replace('%2',filterAvgPart);
     body.appendChild(note);
   }
   if(!all.length){
-    const c=document.createElement('div');c.className='cam-hint';c.textContent='這個標記下還沒有記錄。';
+    const c=document.createElement('div');c.className='cam-hint';c.textContent=jteT('trend.no.tag.records','這個標記下還沒有記錄。');
     body.appendChild(c);
     return;
   }
@@ -843,8 +849,8 @@ function drawTrend(list){
     body.appendChild(wrap);
   }else{
     const c=document.createElement('div');c.className='guide-card';
-    c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有身體能量分數</h3>'+
-      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">再量一次，這裡就會畫出你的身體能量趨勢。</p>';
+    c.innerHTML='<h3><i class="ti ti-chart-line"></i>'+jteT('trend.empty.no.score','還沒有身體能量分數')+'</h3>'+
+      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">'+jteT('trend.empty.no.score.body','再量一次，這裡就會畫出你的身體能量趨勢。')+'</p>';
     body.appendChild(c);
   }
 
@@ -877,6 +883,18 @@ function drawTrend(list){
     body.appendChild(card);
   }
 }
+
+/* —— i18n：語言切換時重繪當前畫面 —— */
+window.jteI18nApply = function(lang){
+  var m=session.mode;
+  if(m==='intro'){ renderIntro(); }
+  else if(m==='trend'){ renderTrend(); }
+  else if(m==='result'){
+    if(_lastResultSamples){ renderResult(_lastResultSamples); }
+  }
+  // m==='measure': camera is live; updateLiveUi runs every 500ms using jteT,
+  // so labels update automatically on next tick. No camera restart needed.
+};
 
 window.addEventListener('pagehide',stopCamera);
 window.addEventListener('beforeunload',stopCamera);
@@ -1014,6 +1032,157 @@ renderIntro();
 
 <!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
+
+<!-- 多語（zh 預設 / en / ja）-->
+<script>
+window.JTE_I18N = {
+  en: {
+    'intro.what.title': 'What is this measuring?',
+    'intro.what.body': 'Your phone\'s rear camera reads your <b>heart rhythm variations</b> (HRV) and converts them into today\'s <b>Body Energy</b>—your current recovery and relaxation level. The score is compared to <b>your own baseline</b>, so focus on your trend.',
+    'intro.what.tag': 'About 1 minute · Find a place to sit still and relax',
+    'intro.steps.title': 'How to measure',
+    'intro.step1.title': 'Cover the rear camera with your finger',
+    'intro.step1.desc': 'Cover the flash too — don\'t press too hard.',
+    'intro.step2.title': 'Keep your hand and body still',
+    'intro.step2.desc': 'Breathe normally, don\'t talk.',
+    'intro.step3.title': 'Make sure there\'s enough light',
+    'intro.step3.desc': 'Especially important when iPhone can\'t use the flash.',
+    'intro.step4.title': 'Wait for the signal light to turn green',
+    'intro.step4.desc': 'A ~1 minute countdown begins, and results appear automatically.',
+    'btn.start': 'Start Measuring',
+    'btn.trend': 'View Trend',
+    'btn.cancel': 'Cancel',
+    'btn.again': 'Measure Again',
+    'btn.back': '← Back to Platform',
+    'btn.home': 'Back to Start',
+    'btn.measure.once': 'Measure',
+    'disclaimer': 'This tool estimates heart rate and HRV using your phone camera as a health and relaxation reference. Results may vary due to lighting, posture, and device. This is not a medical diagnosis. If you have health concerns, please consult a medical professional.',
+    'energy.disclaimer': '"Body Energy" is a relative score compared to your own baseline — track your own trend, not a medical diagnosis. Camera measurements fluctuate with lighting and movement.',
+    'quality.green': 'Signal Good',
+    'quality.yellow': 'Weak signal — stay still',
+    'quality.red': 'Acquiring signal…',
+    'hint.initial': 'Gently cover the rear camera with your finger and stay still…',
+    'hint.acquiring.early': 'Relax — hold your finger steady over the rear camera and wait a few seconds…',
+    'hint.acquiring.late': 'Still can\'t get a stable heartbeat. Try: cover the full lens (including flash), find a brighter spot, relax and wait.',
+    'hint.yellow': 'Almost there — hold steady, wait for the signal to turn green…',
+    'hint.started': 'Measuring — stay still and breathe normally…',
+    'hint.warn': 'Signal dropped — keep your finger in place and relax…',
+    'hint.recovering': 'Good — hold it…',
+    'unit.sec': 'sec',
+    'unit.bpm': 'bpm',
+    'result.energy.label': 'Body Energy',
+    'result.level.high': 'Strong',
+    'result.level.mid': 'Steady',
+    'result.level.low': 'Low',
+    'advice.high': 'Your recovery is strong today — energy is good. Make the most of it.',
+    'advice.mid': 'You\'re about average for you — solid and steady.',
+    'advice.low': 'Energy is lower today — give yourself space to rest and recover.',
+    'result.confidence': 'Building confidence (%1/%2) — a few more sessions and it will reflect your personal baseline.',
+    'result.see.detail': 'View Details',
+    'result.recovery': 'Recovery',
+    'result.recovery.note': 'vs your baseline',
+    'result.calm': 'Calm',
+    'result.calm.note': 'resting heart rate',
+    'result.hr': 'Heart Rate',
+    'result.rmssd': 'HRV',
+    'result.legend.title': 'How Body Energy is scored',
+    'result.legend.sub': 'The score is your position relative to your own baseline (not compared to others), in three bands:',
+    'result.legend.high.name': 'Strong',
+    'result.legend.high.desc': 'Good recovery, full of energy — make the most of today.',
+    'result.legend.mid.name': 'Steady',
+    'result.legend.mid.desc': 'About your usual level — solid.',
+    'result.legend.low.name': 'Low',
+    'result.legend.low.desc': 'Energy is low today — give yourself some space to rest.',
+    'result.you': 'You',
+    'result.err.title': 'Measurement incomplete',
+    'result.err.body': 'No worries — this is common. Find a well-lit spot, sit still, gently cover the full rear lens (including flash), relax, and try again.',
+    'tag.head': 'How are you feeling?',
+    'tag.sub': 'Optional, multi-select — filter your trend later by tag',
+    'trend.lead': 'Your Body Energy trend. The score is relative to your own baseline — the more you measure, the closer it gets to you.',
+    'trend.empty.title': 'No records yet',
+    'trend.empty.body': 'After your first measurement, your Body Energy trend will appear here. Try one now.',
+    'trend.empty.no.score': 'No Body Energy score yet',
+    'trend.empty.no.score.body': 'Measure once more and your Body Energy trend will appear here.',
+    'trend.no.tag.records': 'No records with this tag yet.',
+    'trend.filter.all': 'All',
+    'trend.filter.note': '%1 times%2',
+    'trend.filter.avg': ', avg Body Energy '
+  },
+  ja: {
+    'intro.what.title': 'これは何を測っているの？',
+    'intro.what.body': 'スマホの背面カメラで<b>心拍リズムの変動</b>（HRV）を読み取り、今日の<b>からだのエネルギー</b>に換算します。スコアは<b>あなた自身の平均値</b>との比較なので、自分のトレンドを見ることが大切です。',
+    'intro.what.tag': '約1分 ・ 落ち着いて座れる場所で',
+    'intro.steps.title': '測り方',
+    'intro.step1.title': '背面カメラに指を軽く当てる',
+    'intro.step1.desc': 'フラッシュも一緒に覆ってください。強く押しすぎないように。',
+    'intro.step2.title': '手と体をそのまま静止',
+    'intro.step2.desc': '普通に呼吸してください。話さないように。',
+    'intro.step3.title': '明るい場所で行う',
+    'intro.step3.desc': 'iPhoneでフラッシュが使えない場合は特に重要です。',
+    'intro.step4.title': 'シグナルランプが緑になるまで待つ',
+    'intro.step4.desc': '約1分のカウントダウンが始まり、自動的に結果が表示されます。',
+    'btn.start': '測定を開始',
+    'btn.trend': 'トレンドを見る',
+    'btn.cancel': 'キャンセル',
+    'btn.again': 'もう一度測る',
+    'btn.back': '← プラットフォームに戻る',
+    'btn.home': '最初に戻る',
+    'btn.measure.once': '測定する',
+    'disclaimer': 'このツールはスマホカメラで心拍数とHRVを推定するものであり、健康・リラクゼーションの参考情報です。光量・姿勢・デバイスの影響を受けます。医療診断ではありません。健康上の憸念がある場合は、医療専門家にご相談ください。',
+    'energy.disclaimer': '「からだのエネルギー」はあなた自身の平均値との相対的な参考値です。自分のトレンドを見てください。医療診断ではありません。カメラ計測は光量や動きによって数値が変動します。',
+    'quality.green': '信号良好',
+    'quality.yellow': '信号弱め — 動かないで',
+    'quality.red': '信号取得中…',
+    'hint.initial': '背面カメラに指を軽く当てて、そのまま静止してください…',
+    'hint.acquiring.early': 'リラックスして — 指をカメラにしっかり当てて、数秒待ちましょう…',
+    'hint.acquiring.late': '安定した心拍が検出できません。カメラ全体（フラッシュも）を覆い、明るい場所でリラックスして待ってみてください。',
+    'hint.yellow': 'もう少し — そのまま、シグナルが緑になるまで待って…',
+    'hint.started': '測定中 — 静止して、普通に呼吸してください…',
+    'hint.warn': '信号が乱れています — 指を離さず、リラックスして…',
+    'hint.recovering': 'いいです、そのまま…',
+    'unit.sec': '秒',
+    'unit.bpm': 'bpm',
+    'result.energy.label': 'からだのエネルギー',
+    'result.level.high': '充実',
+    'result.level.mid': '安定',
+    'result.level.low': '低め',
+    'advice.high': '今日の回復は良好です — エネルギーが充実しています。有効に活かしましょう。',
+    'advice.mid': 'いつもどおりの状態です — 安定しています。',
+    'advice.low': '今日はエネルギーが低めです — 休息と回復の時間を取りましょう。',
+    'result.confidence': '信頼度構築中（%1/%2）— 何度か測るほど、あなた自身に合った値になっていきます。',
+    'result.see.detail': '詳細を見る',
+    'result.recovery': '回復力',
+    'result.recovery.note': 'vs あなたの平均',
+    'result.calm': '落ち着き',
+    'result.calm.note': '安静心拍数',
+    'result.hr': '心拍数',
+    'result.rmssd': 'HRV',
+    'result.legend.title': 'エネルギーの分け方',
+    'result.legend.sub': 'スコアはあなた自身の平均値との相対的な位置（他の人との比較ではありません）で3段階に分かれています：',
+    'result.legend.high.name': '充実',
+    'result.legend.high.desc': '回復良好、エネルギー満タン — 今日を活かしましょう。',
+    'result.legend.mid.name': '安定',
+    'result.legend.mid.desc': 'いつもどおりのレベル — 安定しています。',
+    'result.legend.low.name': '低め',
+    'result.legend.low.desc': '今日はエネルギーが低めです — 自分に休息の時間を。',
+    'result.you': 'あなた',
+    'result.err.title': '測定が完了しませんでした',
+    'result.err.body': '大丈夫です。よくあることです。明るい場所で座り、背面カメラ全体（フラッシュも）に指を当て、リラックスしてもう一度試してみてください。',
+    'tag.head': '今の状態は？',
+    'tag.sub': '任意・複数選択可 — タグ別にトレンドを見られます',
+    'trend.lead': 'からだのエネルギーのトレンド。スコアはあなた自身の平均値との相対値 — 測れば測るほどあなたに合った値になっていきます。',
+    'trend.empty.title': 'まだ記録がありません',
+    'trend.empty.body': '最初の測定後、からだのエネルギーのトレンドがここに表示されます。さっそく測ってみましょう。',
+    'trend.empty.no.score': 'まだエネルギースコアがありません',
+    'trend.empty.no.score.body': 'もう一度測れば、トレンドが表示されます。',
+    'trend.no.tag.records': 'このタグの記録はまだありません。',
+    'trend.filter.all': 'すべて',
+    'trend.filter.note': '%1 回%2',
+    'trend.filter.avg': '、平均エネルギー '
+  }
+};
+</script>
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-i18n.js"></script>
 
 <!-- Google 登入 modal（按「存這次」未登入時跳出）-->
 <div id="jte-login-modal">

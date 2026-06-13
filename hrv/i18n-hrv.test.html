@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>i18n-hrv tests</title>
+<style>
+  body{font-family:monospace;padding:16px;background:#f5f5f5}
+  iframe{display:none}
+  pre{white-space:pre-wrap;background:#fff;border:1px solid #ccc;padding:12px;border-radius:6px}
+</style>
+</head><body>
+<h2>i18n-hrv.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html"></iframe>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+'\n  got : '+a+'\n  want: '+b);}
+
+const fr=document.getElementById('fr');
+let iw=null;
+
+function waitFor(fn,timeout){
+  return new Promise(function(resolve,reject){
+    var start=Date.now();
+    var t=setInterval(function(){
+      try{if(fn()){clearInterval(t);resolve();}}catch(e){}
+      if(Date.now()-start>timeout){clearInterval(t);reject(new Error('waitFor timeout'));}
+    },150);
+  });
+}
+
+function getStartBtn(){
+  var barEl=iw.document.getElementById('bar');
+  if(!barEl)return null;
+  var btns=barEl.querySelectorAll('button');
+  for(var i=0;i<btns.length;i++){
+    var t=btns[i].textContent;
+    if(t==='開始量測'||t==='Start Measuring'||t==='測定を開始')return btns[i];
+  }
+  return null;
+}
+
+fr.addEventListener('load',function(){
+  iw=fr.contentWindow;
+  waitFor(function(){
+    return iw.__jteI18nLoaded &&
+           iw.document.getElementById('bar') &&
+           getStartBtn() !== null;
+  }, 25000).then(runTests).catch(function(e){
+    log('SETUP FAILED: '+e.message);
+    log('---');log('DONE pass='+pass+' fail='+fail);
+    try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e2){}
+  });
+});
+
+function runTests(){
+  log('iframe loaded, i18n ready');
+
+  // TEST 1: zh default
+  check('清除 jte_lang → 預設 zh，開始量測 button 是中文', function(){
+    try{ iw.localStorage.removeItem('jte_lang'); }catch(e){}
+    iw.jteSetLang('zh');
+    var btn=getStartBtn();
+    eq(btn!==null, true, 'start btn exists');
+    var txt=btn.textContent;
+    eq(txt, '開始量測', '開始量測 in zh, got: '+txt);
+  });
+
+  // TEST 2: switch to en
+  check('切 en → 開始量測 button 變 Start Measuring', function(){
+    iw.jteSetLang('en');
+    var btn=getStartBtn();
+    eq(btn!==null, true, 'start btn exists after en switch');
+    var txt=btn.textContent;
+    eq(txt, 'Start Measuring', 'Start Measuring in en, got: '+txt);
+  });
+
+  // TEST 3: switch to ja
+  check('切 ja → 開始量測 button 變 測定を開始', function(){
+    iw.jteSetLang('ja');
+    var btn=getStartBtn();
+    eq(btn!==null, true, 'start btn exists after ja switch');
+    var txt=btn.textContent;
+    eq(txt, '測定を開始', '測定を開始 in ja, got: '+txt);
+  });
+
+  // TEST 4: switch back to zh
+  check('切回 zh → 回中文', function(){
+    iw.jteSetLang('zh');
+    var btn=getStartBtn();
+    var txt=btn ? btn.textContent : '';
+    eq(txt, '開始量測', 'back to zh: 開始量測, got: '+txt);
+  });
+
+  // TEST 5: langbar has 3 buttons
+  check('#jte-langbar 有三顔按鈕', function(){
+    var bar=iw.document.getElementById('jte-langbar');
+    eq(bar!==null, true, '#jte-langbar exists');
+    eq(bar.querySelectorAll('button').length, 3, 'langbar has 3 buttons');
+  });
+
+  // TEST 6: intro title translates in en
+  check('en: intro-lead title 是英文', function(){
+    iw.jteSetLang('en');
+    var h3=iw.document.querySelector('.intro-lead h3');
+    eq(h3!==null, true, 'intro-lead h3 exists');
+    eq(h3.textContent, 'What is this measuring?', 'intro.what.title in en, got: '+h3.textContent);
+    iw.jteSetLang('zh');
+  });
+
+  // TEST 7: tag values unchanged
+  check('TAG_PRESETS 第一個仍是中文', function(){
+    var presets=iw.TAG_PRESETS;
+    eq(Array.isArray(presets), true, 'TAG_PRESETS is array');
+    eq(presets[0], '🌅 剛起床', 'first preset unchanged, got: '+presets[0]);
+  });
+
+  log('---');log('DONE pass='+pass+' fail='+fail);
+  document.title=fail?('FAIL '+fail):'OK';
+  window.__done=true;
+  try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e){}
+}
+</script>
+</body></html>
