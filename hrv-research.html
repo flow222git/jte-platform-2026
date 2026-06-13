@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HRV 指標重新設計 · 研究簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#23252b; --soft:#5b6270; --faint:#8a93a3;
+    --paper:#f4f6fa; --card:#fff; --line:#e6ebf2;
+    --accent:#003D7C; --accent-soft:#eaf0f7;
+    --good:#2e8b57; --good-soft:#e7f3ec;
+    --warn:#c2631f; --warn-soft:#fbeede;
+    --danger:#c0392b; --danger-soft:#fbeae8;
+    --gold:#b8860b; --gold-soft:#fbf3dd;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",sans-serif;
+    font-weight:300;line-height:1.8;letter-spacing:.01em;padding:0 18px 80px}
+  .wrap{max-width:680px;margin:0 auto;padding:40px 0}
+  .kicker{font-size:11px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase;margin-bottom:10px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:700;font-size:26px;line-height:1.35;color:var(--accent);margin:0 0 10px}
+  .date{font-size:12px;color:var(--faint);margin-bottom:18px}
+  .tldr{background:var(--accent);color:#fff;border-radius:16px;padding:20px 22px;margin:0 0 30px;
+    font-size:15px;line-height:1.85;box-shadow:0 6px 20px rgba(0,61,124,.18)}
+  .tldr b{font-weight:700}
+  h2{font-family:"Noto Serif TC",serif;font-weight:700;font-size:19px;color:var(--ink);margin:34px 0 14px;
+    padding-bottom:8px;border-bottom:2px solid var(--accent-soft)}
+  h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:16px;color:var(--accent);margin:18px 0 8px}
+  p{margin:0 0 12px;font-size:14.5px;color:var(--soft);line-height:1.85}
+  ul{margin:0 0 14px;padding-left:0;list-style:none}
+  li{position:relative;padding-left:20px;margin-bottom:9px;font-size:14.5px;color:var(--soft);line-height:1.8}
+  li::before{content:'';position:absolute;left:4px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  b,strong{color:var(--ink);font-weight:500}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;
+    box-shadow:0 2px 10px rgba(0,61,124,.04)}
+  .flag{border-radius:14px;padding:16px 18px;margin:0 0 14px}
+  .flag .ft{font-family:"Noto Serif TC",serif;font-weight:500;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .flag p{margin:0;font-size:14px}
+  .flag.danger{background:var(--danger-soft);border:1px solid #e8b6b0}
+  .flag.danger .ft{color:var(--danger)}
+  .flag.good{background:var(--good-soft);border:1px solid #b6dcc4}
+  .flag.good .ft{color:var(--good)}
+  .flag.gold{background:var(--gold-soft);border:1px solid #e8d49a}
+  .flag.gold .ft{color:var(--gold)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:13px;font-weight:700;flex:none;font-family:"Noto Sans TC"}
+  .dir{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;
+    box-shadow:0 2px 10px rgba(0,61,124,.04)}
+  .dir.pick{border:2px solid var(--accent);box-shadow:0 4px 16px rgba(0,61,124,.10)}
+  .dir h3{margin-top:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:2px 9px;letter-spacing:.04em}
+  .pro{color:var(--good);font-weight:500} .con{color:var(--warn);font-weight:500}
+  .quote{font-size:12.5px;color:var(--faint);font-style:italic;border-left:3px solid var(--line);padding-left:12px;margin:8px 0}
+  .rec{background:var(--accent-soft);border-radius:14px;padding:18px 20px;margin:6px 0 14px}
+  .rec h3{margin-top:0}
+  ol.q{counter-reset:q;list-style:none;padding-left:0}
+  ol.q li{padding-left:34px;margin-bottom:12px}
+  ol.q li::before{counter-increment:q;content:counter(q);background:var(--gold);color:#fff;width:24px;height:24px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;top:2px;left:0}
+  .foot{font-size:12px;color:var(--faint);line-height:1.8;border-top:1px solid var(--line);margin-top:30px;padding-top:18px}
+  .foot a{color:var(--accent);word-break:break-all}
+  .back{display:inline-block;font-size:13px;color:var(--faint);text-decoration:none;margin-bottom:24px}
+  .back:active{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="https://flow222git.github.io/jte-platform-2026/">← 回練息場</a>
+  <div class="kicker">Deep Research · 決策簡報</div>
+  <h1>HRV 指標重新設計</h1>
+  <div class="date">2026-06-13 · 多 agent 研究，21 來源、25 claim 對抗式查證、22 確認</div>
+
+  <div class="tldr">
+    <b>一句話：</b>丟掉舊儀器的「壓力/放鬆/活力/靈活度」四指數，改成「<b>一個跟自己比的溫暖 hero 分數，建立在 RMSSD ＋ 心率</b>」—— 既科學站得住，又最能讓人有感、想照顧自己。
+  </div>
+
+  <h2>1 · 最關鍵的發現</h2>
+  <div class="flag danger">
+    <div class="ft">⚠️ 「壓力指數 ← LF/HF」科學上被推翻，要拿掉</div>
+    <p>不是我們做壞，是這指標本身就不對：</p>
+  </div>
+  <ul>
+    <li>LF/HF <b>無法</b>量化交感/「自律平衡」（Billman 2013：證據壓倒性確認 LF/HF 無法準確量化心臟交感-迷走平衡）。</li>
+    <li>LF <b>約一半是副交感</b>；在真正的壓力（運動、疼痛）下 LF 甚至<b>下降</b>（von Rosenberg 2017）。</li>
+    <li>心臟造影顯示交感活性與 LF 功率<b>無關聯</b>，兩者甚至沒有可比較的數學基礎（Heathers 2014）。</li>
+    <li><b>頻域（LF/HF/總功率）在 2 分鐘不可靠</b>：HF 需 ≥60–90 秒、LF 需 ≥120–250 秒、傳統標準是 5 分鐘。</li>
+    <li><b>超短時 HRV（&lt;5min）≠ 臨床 HRV</b>：無標準協定、無常模 → 只能當「個人相對趨勢」，永遠不是臨床值。← 正好佐證我們「相對參考、非醫療」的定位。</li>
+  </ul>
+
+  <h2>2 · 我們做得到又可信的，只有兩個</h2>
+  <div class="flag good">
+    <div class="ft">✓ RMSSD（副交感/放鬆張力）＋ 心率 HR</div>
+    <p>這兩個就是我們的地基。</p>
+  </div>
+  <ul>
+    <li><b>RMSSD</b>：超短時最穩，<b>10 秒就有效</b>（r≈0.85，三段平均 r≈0.94），驗證訊號正是指尖脈搏（PPG-like），對呼吸也相對穩健 → 主成分。</li>
+    <li><b>靜息心率 HR</b>：穩、人人有感。</li>
+    <li>SDNN：1–2 分鐘技術上可用但弱於 RMSSD → 次要。</li>
+    <li><b>前提：</b>以上信度多來自乾淨 ECG/胸帶；相機 PPG 較雜，<b>偽差移除＋品質閘門必備</b>（我們已有 cleanRr／品質把關／鏡頭鎖定 —— 路是對的）。</li>
+  </ul>
+
+  <h2>3 · 競品都怎麼做（同一招）</h2>
+  <div class="card">
+    <ul style="margin-bottom:0">
+      <li><b>一個被詮釋過的「hero 分數」</b>，不是一牆原始數字：Whoop「恢復力 %」、Oura「Readiness」、Garmin「身體電量 0–100」、Welltory（HRV Score 由 <b>lnRMSSD</b> 算，明說選它而非 SDNN，因更反映副交感）。</li>
+      <li><b>跟「你自己的 baseline」比</b>，不是常模：Welltory 明說錨定個人 baseline，並把常模解讀標記為「<b>這些不是個人化數值</b>」。</li>
+      <li><b>顏色＋白話＋敘述＋趨勢</b>：情緒化、好懂、可行動（「今天適合休息／可以挑戰」）。</li>
+    </ul>
+  </div>
+
+  <h2>4 · 三個設計方向（挑一個或混搭）</h2>
+
+  <div class="dir pick">
+    <h3>方向 A · 單一溫暖 hero 分數 <span class="tag">推薦主軸</span></h3>
+    <p>一個 0–100「<b>今日身體狀態／恢復力／身體電量</b>」分數，由 RMSSD（主）＋靜息 HR，<b>跟你的個人 baseline 比</b>算出，配顏色＋一句敘述。</p>
+    <p><span class="pro">優：</span>情緒拉力最大、最易養成每天量的習慣、科學站得住；和 Whoop/Oura 同路。</p>
+    <p><span class="con">缺：</span>單一數字在「單次粗訊號」下可能顯得武斷 → 用 baseline ＋ 品質信心緩解。</p>
+  </div>
+
+  <div class="dir">
+    <h3>方向 B · 兩個好懂的面向</h3>
+    <p>「<b>恢復力／放鬆度</b>」（RMSSD vs baseline）＋「<b>平靜／活化</b>」（靜息 HR vs baseline）。</p>
+    <p><span class="pro">優：</span>剛好對上兩個最可信的量、各有溫暖敘述、<b>不發明被推翻的「壓力數字」</b>。</p>
+    <p><span class="con">缺：</span>兩個比一個多一點認知負擔。</p>
+  </div>
+
+  <div class="dir">
+    <h3>方向 C · 先建 baseline 的趨勢視角</h3>
+    <p>前幾次量先不給硬分數，顯示「<b>正在建立你的 baseline（第 n/N 次）</b>」＋趨勢線；累積夠了才給有信心的分數。</p>
+    <p><span class="pro">優：</span>直接善用「需要累積 baseline」這個限制、誠實、Welltory 同路。</p>
+    <p><span class="con">缺：</span>前幾次即時滿足感較低。</p>
+  </div>
+
+  <p style="font-size:13px;color:var(--faint)">共同原則（三者都要）：錨定個人 baseline（非常模）、<b>不拿 LF/HF 當壓力</b>、顏色＋溫暖身體狀態語言、常駐「相對參考、非醫療」。</p>
+
+  <h2>5 · 我的初步建議（待你拍板）</h2>
+  <div class="rec">
+    <h3>A 為主 ＋ C 的 baseline 機制 ＋ B 的一個輔助面向</h3>
+    <ul style="margin-bottom:0">
+      <li>主畫面：一個 hero「身體狀態」分數（RMSSD＋HR vs 個人 baseline）＋顏色＋一句話。</li>
+      <li>baseline 未足時走 C：「建立你的基準中（n/N）」＋趨勢，不硬給分。</li>
+      <li>想看細一點：展開「恢復力（RMSSD）」與「平靜（靜息 HR）」相對自己的高低 ＋ 數字。</li>
+      <li><b>拿掉四指數的 LF/HF 壓力宣稱</b>；頻域若要留，只當「低信心補充」或乾脆不做。</li>
+      <li>趨勢頁是動力核心：看自己一週/一月的變化。</li>
+    </ul>
+  </div>
+
+  <h2>6 · 早上你要決定的</h2>
+  <ol class="q">
+    <li>hero 分數要叫什麼比喻？（恢復力／身體電量／今日狀態／心率定靜…）</li>
+    <li>baseline 要幾次才給硬分數？（研究未定論；建議先 ~5–7 次、條件相近）</li>
+    <li>細項面向要不要（B 的恢復力＋平靜），還是只給 hero＋趨勢就好（更簡）？</li>
+    <li>現有「進階 2 分鐘四指數」要：直接換成新設計／保留為隱藏實驗／移除？</li>
+  </ol>
+
+  <div class="foot">
+    <b>主要來源：</b>Welltory 官方說明、Shaffer &amp; Ginsberg HRV 綜述、超短時信度研究(PMC4586373/7428904/5624990)、LF/HF 批判(Billman 2013、von Rosenberg 2017、Heathers 2014)、相機 PPG 驗證(PMC9611389、Altini)。<br>
+    <b>局限：</b>競品內部演算法多為專有，結論偏「模式層級」（單一詮釋分數＋個人 baseline＋RMSSD 家族）；相機 PPG 的 RMSSD 真實信度仍需靠我們的品質閘門守住。<br>
+    研究 task <code>wgnowf11n</code> · 原始簡報 <code>docs/superpowers/specs/2026-06-13-hrv-indices-research-briefing.md</code>
+  </div>
+</div>
+</body>
+</html>
