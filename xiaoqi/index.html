@@ -1473,6 +1473,10 @@
   }
 </style>
 <script src="https://accounts.google.com/gsi/client"></script>
+<!-- i18n stub (runs before jte-i18n.js is ready) -->
+<script>window.jteT=window.jteT||function(k,z){return z!=null?z:k;};</script>
+<!-- JTE i18n engine -->
+<script defer src="https://flow222git.github.io/jte-platform-2026/jte-i18n.js"></script>
 </head>
 <body>
 
@@ -1537,12 +1541,12 @@
 
   <!-- 進入提示 -->
   <div class="landing-hint">
-    <div class="landing-hint-text">輕 觸 進 入</div>
+    <div class="landing-hint-text" data-i18n="landing_tap">輕 觸 進 入</div>
     <div class="landing-hint-dot"></div>
   </div>
 
   <!-- 免責聲明 -->
-  <div class="landing-disclaimer">
+  <div class="landing-disclaimer" data-i18n-html="landing_disclaimer">
     本工具僅供放鬆與正念練習參考,不構成醫療建議。<br>
     若有身心不適,請諮詢專業人士。
   </div>
@@ -1552,7 +1556,7 @@
 <!-- === 首頁 === -->
 <div class="screen" id="screen-home">
   <div class="home-header">
-    <h1 class="home-title">小憩。練息</h1>
+    <h1 class="home-title" data-i18n="home_title">小憩。練息</h1>
     <div class="home-tagline">ONE&nbsp;PAUSE&nbsp;·&nbsp;ONE&nbsp;PEACE</div>
   </div>
 
@@ -1563,8 +1567,8 @@
       <div class="category-head" onclick="toggleCategory('reset')">
         <div class="category-emoji">🟢</div>
         <div class="category-info">
-          <div class="category-name">快速重啟</div>
-          <div class="category-desc">壓力大、卡住、需要轉換時</div>
+          <div class="category-name" data-i18n="cat_reset_name">快速重啟</div>
+          <div class="category-desc" data-i18n="cat_reset_desc">壓力大、卡住、需要轉換時</div>
         </div>
         <div class="category-arrow">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1572,16 +1576,16 @@
       </div>
       <div class="category-modes">
         <div class="mode-card-mini" onclick="selectMode('three')">
-          <div class="mode-name-mini">正念三口呼吸</div>
-          <div class="mode-desc-mini">快速切換,重新定位</div>
+          <div class="mode-name-mini" data-i18n="mode_three_name">正念三口呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_three_sub">快速切換,重新定位</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('sigh')">
-          <div class="mode-name-mini">生理嘆氣</div>
-          <div class="mode-desc-mini">90 秒降焦慮</div>
+          <div class="mode-name-mini" data-i18n="mode_sigh_name">生理嘆氣</div>
+          <div class="mode-desc-mini" data-i18n="mode_sigh_sub">90 秒降焦慮</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('box')">
-          <div class="mode-name-mini">箱式呼吸</div>
-          <div class="mode-desc-mini">抗壓專注,4-4-4-4</div>
+          <div class="mode-name-mini" data-i18n="mode_box_name">箱式呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_box_sub">抗壓專注,4-4-4-4</div>
         </div>
       </div>
     </div>
@@ -1591,8 +1595,8 @@
       <div class="category-head" onclick="toggleCategory('daily')">
         <div class="category-emoji">🟡</div>
         <div class="category-info">
-          <div class="category-name">日常修習</div>
-          <div class="category-desc">平衡、穩定、長期練習</div>
+          <div class="category-name" data-i18n="cat_daily_name">日常修習</div>
+          <div class="category-desc" data-i18n="cat_daily_desc">平衡、穩定、長期練習</div>
         </div>
         <div class="category-arrow">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1600,16 +1604,16 @@
       </div>
       <div class="category-modes">
         <div class="mode-card-mini" onclick="selectMode('baseline')">
-          <div class="mode-name-mini">諧振呼吸</div>
-          <div class="mode-desc-mini">調節自主神經系統</div>
+          <div class="mode-name-mini" data-i18n="mode_baseline_name">諧振呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_baseline_sub">調節自主神經系統</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('count')">
-          <div class="mode-name-mini">數息法</div>
-          <div class="mode-desc-mini">放鬆又專注</div>
+          <div class="mode-name-mini" data-i18n="mode_count_name">數息法</div>
+          <div class="mode-desc-mini" data-i18n="mode_count_sub">放鬆又專注</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('nadi')">
-          <div class="mode-name-mini">鼻孔交替呼吸</div>
-          <div class="mode-desc-mini">平衡左右,Nadi Shodhana</div>
+          <div class="mode-name-mini" data-i18n="mode_nadi_name">鼻孔交替呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_nadi_sub">平衡左右,Nadi Shodhana</div>
         </div>
       </div>
     </div>
@@ -1619,8 +1623,8 @@
       <div class="category-head" onclick="toggleCategory('energy')">
         <div class="category-emoji">🔴</div>
         <div class="category-info">
-          <div class="category-name">能量提振</div>
-          <div class="category-desc">疲憊、需要醒腦時</div>
+          <div class="category-name" data-i18n="cat_energy_name">能量提振</div>
+          <div class="category-desc" data-i18n="cat_energy_desc">疲憊、需要醒腦時</div>
         </div>
         <div class="category-arrow">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1628,16 +1632,16 @@
       </div>
       <div class="category-modes">
         <div class="mode-card-mini" onclick="selectMode('bhastrika')">
-          <div class="mode-name-mini">風箱呼吸</div>
-          <div class="mode-desc-mini">快速強烈,提神醒腦</div>
+          <div class="mode-name-mini" data-i18n="mode_bhastrika_name">風箱呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_bhastrika_sub">快速強烈,提神醒腦</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('lion')">
-          <div class="mode-name-mini">獅子吼</div>
-          <div class="mode-desc-mini">釋放下顎緊繃</div>
+          <div class="mode-name-mini" data-i18n="mode_lion_name">獅子吼</div>
+          <div class="mode-desc-mini" data-i18n="mode_lion_sub">釋放下顎緊繃</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('wimhof')">
-          <div class="mode-name-mini">冰人呼吸法</div>
-          <div class="mode-desc-mini">冷靜免疫,深度練習</div>
+          <div class="mode-name-mini" data-i18n="mode_wimhof_name">冰人呼吸法</div>
+          <div class="mode-desc-mini" data-i18n="mode_wimhof_sub">冷靜免疫,深度練習</div>
         </div>
       </div>
     </div>
@@ -1647,8 +1651,8 @@
       <div class="category-head" onclick="toggleCategory('deep')">
         <div class="category-emoji">🟣</div>
         <div class="category-info">
-          <div class="category-name">深度調節</div>
-          <div class="category-desc">情緒釋放、深層轉化</div>
+          <div class="category-name" data-i18n="cat_deep_name">深度調節</div>
+          <div class="category-desc" data-i18n="cat_deep_desc">情緒釋放、深層轉化</div>
         </div>
         <div class="category-arrow">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1656,12 +1660,12 @@
       </div>
       <div class="category-modes">
         <div class="mode-card-mini" onclick="selectMode('rebirth')">
-          <div class="mode-name-mini">重生呼吸</div>
-          <div class="mode-desc-mini">激烈釋放與轉化</div>
+          <div class="mode-name-mini" data-i18n="mode_rebirth_name">重生呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_rebirth_sub">激烈釋放與轉化</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('tonglen')">
-          <div class="mode-name-mini">慈心呼吸</div>
-          <div class="mode-desc-mini">吸入痛苦,吐出愛</div>
+          <div class="mode-name-mini" data-i18n="mode_tonglen_name">慈心呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_tonglen_sub">吸入痛苦,吐出愛</div>
         </div>
       </div>
     </div>
@@ -1671,8 +1675,8 @@
       <div class="category-head" onclick="toggleCategory('sleep')">
         <div class="category-emoji">💤</div>
         <div class="category-info">
-          <div class="category-name">助眠放鬆</div>
-          <div class="category-desc">睡前、放鬆</div>
+          <div class="category-name" data-i18n="cat_sleep_name">助眠放鬆</div>
+          <div class="category-desc" data-i18n="cat_sleep_desc">睡前、放鬆</div>
         </div>
         <div class="category-arrow">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1680,23 +1684,23 @@
       </div>
       <div class="category-modes">
         <div class="mode-card-mini" onclick="selectMode('sleep478')">
-          <div class="mode-name-mini">4-7-8 呼吸</div>
-          <div class="mode-desc-mini">助眠經典</div>
+          <div class="mode-name-mini" data-i18n="mode_sleep478_name">4-7-8 呼吸</div>
+          <div class="mode-desc-mini" data-i18n="mode_sleep478_sub">助眠經典</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('scan')">
-          <div class="mode-name-mini">身體掃描</div>
-          <div class="mode-desc-mini">深度放鬆,從頭到腳</div>
+          <div class="mode-name-mini" data-i18n="mode_scan_name">身體掃描</div>
+          <div class="mode-desc-mini" data-i18n="mode_scan_sub">深度放鬆,從頭到腳</div>
         </div>
         <div class="mode-card-mini" onclick="selectMode('exhale')">
-          <div class="mode-name-mini">延長吐氣</div>
-          <div class="mode-desc-mini">快速冷靜,4-8</div>
+          <div class="mode-name-mini" data-i18n="mode_exhale_name">延長吐氣</div>
+          <div class="mode-desc-mini" data-i18n="mode_exhale_sub">快速冷靜,4-8</div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <div class="home-quote-foot">呼吸,是回到自己的最快路徑</div>
+  <div class="home-quote-foot" data-i18n="home_footer_quote">呼吸,是回到自己的最快路徑</div>
 </div>
 
 <!-- === 設定頁 === -->
@@ -1711,8 +1715,8 @@
     <!-- BPM 滑桿(可選) -->
     <div class="setting-row" id="bpm-row" style="display:none;">
       <div class="setting-label">
-        <span id="bpm-label">呼吸頻率</span>
-        <span><span class="setting-value" id="bpm-val">6</span> 次 / 分</span>
+        <span id="bpm-label" data-i18n="set_bpm_label">呼吸頻率</span>
+        <span><span class="setting-value" id="bpm-val">6</span> <span data-i18n="set_bpm_unit">次 / 分</span></span>
       </div>
       <input type="range" id="bpm-slider" min="3" max="7" step="1" value="6">
       <div class="setting-tip" id="bpm-tip" style="display:none;"></div>
@@ -1721,8 +1725,8 @@
     <!-- 第二階段 BPM(僅重生呼吸) -->
     <div class="setting-row" id="bpm2-row" style="display:none;">
       <div class="setting-label">
-        <span>第二階段頻率</span>
-        <span><span class="setting-value" id="bpm2-val">4</span> 次 / 分</span>
+        <span data-i18n="set_bpm2_label">第二階段頻率</span>
+        <span><span class="setting-value" id="bpm2-val">4</span> <span data-i18n="set_bpm_unit">次 / 分</span></span>
       </div>
       <input type="range" id="bpm2-slider" min="3" max="5" step="1" value="4">
       <div class="setting-tip" id="bpm2-tip" style="display:none;"></div>
@@ -1731,35 +1735,35 @@
     <!-- 時長 / 回合 -->
     <div class="setting-row" id="dur-row" style="display:none;">
       <div class="setting-label">
-        <span id="dur-label">練習時長</span>
-        <span id="dur-unit"><span class="setting-value" id="dur-val">5</span> 分鐘</span>
+        <span id="dur-label" data-i18n="set_dur_label">練習時長</span>
+        <span id="dur-unit"><span class="setting-value" id="dur-val">5</span> <span data-i18n="set_dur_min">分鐘</span></span>
       </div>
       <input type="range" id="dur-slider" min="1" max="15" step="1" value="5">
     </div>
 
-    <button class="primary-btn" onclick="beginCountdown()">開　始</button>
+    <button class="primary-btn" onclick="beginCountdown()" data-i18n="btn_start">開　始</button>
   </div>
-  <button class="ghost-btn" onclick="goToHome()">← 返回</button>
+  <button class="ghost-btn" onclick="goToHome()" data-i18n="btn_back">← 返回</button>
 </div>
 
 <!-- === 安全核取頁(重生呼吸) === -->
 <div class="screen" id="screen-safety">
   <div class="settings-card" style="background:rgba(255,240,225,0.6); border-color:rgba(201,122,74,0.3);">
-    <div class="setting-title" style="color:#c97a4a;">⚠ <span id="safety-title-text">安全提醒</span></div>
+    <div class="setting-title" style="color:#c97a4a;">⚠ <span id="safety-title-text" data-i18n="safety_title">安全提醒</span></div>
     <ul id="safety-list" style="list-style:none; margin:18px 0;"></ul>
     <label style="display:flex; gap:10px; align-items:flex-start; padding:12px; background:rgba(255,255,255,0.5); border-radius:10px; cursor:pointer; margin-bottom:14px;">
       <input type="checkbox" id="safety-confirm" onchange="toggleSafetyConfirm()" style="margin-top:3px; width:16px; height:16px; accent-color:#c97a4a;">
-      <span style="font-size:13px; color:var(--ink); line-height:1.5;">我已閱讀以上提醒,並了解此練習的注意事項</span>
+      <span style="font-size:13px; color:var(--ink); line-height:1.5;" data-i18n="safety_confirm_text">我已閱讀以上提醒,並了解此練習的注意事項</span>
     </label>
-    <button class="primary-btn" id="safety-start-btn" disabled onclick="proceedToSettings()" style="background:#c97a4a;">同意並繼續</button>
+    <button class="primary-btn" id="safety-start-btn" disabled onclick="proceedToSettings()" style="background:#c97a4a;" data-i18n="safety_agree_btn">同意並繼續</button>
   </div>
-  <button class="ghost-btn" onclick="goToHome()">← 返回</button>
+  <button class="ghost-btn" onclick="goToHome()" data-i18n="btn_back">← 返回</button>
 </div>
 
 <!-- === 倒數頁 === -->
 <div class="screen" id="screen-countdown">
   <div id="countdown-number">3</div>
-  <div id="countdown-label">即 將 開 始</div>
+  <div id="countdown-label" data-i18n="countdown_label">即 將 開 始</div>
 </div>
 
 <!-- === 呼吸練習頁 === -->
@@ -1770,7 +1774,7 @@
   </div>
 
   <div class="breath-stage">
-    <div class="breath-cue-large" id="cue">準備</div>
+    <div class="breath-cue-large" id="cue" data-i18n="breathe_ready">準備</div>
     <div class="breath-progress-wrap">
       <div class="breath-progress" id="progress" style="width:0%"></div>
     </div>
@@ -1780,7 +1784,7 @@
   </div>
 
   <div class="breathe-footer">
-    <div class="phase-text" id="phase">準備</div>
+    <div class="phase-text" id="phase" data-i18n="breathe_ready">準備</div>
     <div class="control-row">
       <button class="icon-btn" onclick="endSession()" title="結束">
         <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
@@ -1796,21 +1800,21 @@
       此刻,你正回到自己的節奏。<br>每一次呼吸都剛剛好。
     </div>
 
-    <div class="feedback-question">此 刻 你 的 感 受</div>
-    <div class="tag-hint">可選 1-3 個</div>
+    <div class="feedback-question" data-i18n="end_feeling_q">此 刻 你 的 感 受</div>
+    <div class="tag-hint" data-i18n="end_tag_hint">可選 1-3 個</div>
     <div class="tag-grid" id="tag-grid"></div>
 
     <!-- 科學知識摺疊區 -->
     <div class="science-block" id="science-block" style="display:none;">
       <div class="science-toggle" onclick="toggleScience()">
-        <span id="science-title">為什麼有效?</span>
+        <span id="science-title" data-i18n="science_why">為什麼有效?</span>
         <svg class="science-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
       </div>
       <div class="science-content" id="science-content"></div>
     </div>
 
-    <div class="gentle-note">發覺分心是正常的。<br>溫柔地帶回來就好。</div>
-    <button class="primary-btn" style="margin-top:24px;" onclick="goToHome()">回 到 首 頁</button>
+    <div class="gentle-note" data-i18n-html="end_gentle_note">發覺分心是正常的。<br>溫柔地帶回來就好。</div>
+    <button class="primary-btn" style="margin-top:24px;" onclick="goToHome()" data-i18n="btn_home">回 到 首 頁</button>
   </div>
 </div>
 
@@ -1826,46 +1830,46 @@
     <div class="profile-stats">
       <div class="stat-block">
         <div class="stat-num" id="stat-sessions">0</div>
-        <div class="stat-unit">至今練習</div>
+        <div class="stat-unit" data-i18n="profile_sessions">至今練習</div>
       </div>
       <div class="stat-block">
         <div class="stat-num" id="stat-minutes">0</div>
-        <div class="stat-unit">累計分鐘</div>
+        <div class="stat-unit" data-i18n="profile_minutes">累計分鐘</div>
       </div>
     </div>
   </div>
 
   <!-- 模式排行 -->
   <div class="profile-card">
-    <div class="profile-card-title">最 常 練 習</div>
+    <div class="profile-card-title" data-i18n="profile_top_modes">最 常 練 習</div>
     <div id="mode-rank" class="mode-rank-list">
-      <div class="profile-empty">還沒有紀錄,<br>做完一次練習就會出現囉。</div>
+      <div class="profile-empty" data-i18n-html="profile_mode_empty">還沒有紀錄,<br>做完一次練習就會出現囉。</div>
     </div>
   </div>
 
   <!-- 月曆 -->
   <div class="profile-card">
-    <div class="profile-card-title">本 月 練 習</div>
+    <div class="profile-card-title" data-i18n="profile_this_month">本 月 練 習</div>
     <div class="calendar-month" id="calendar-month">2026 年 5 月</div>
     <div class="calendar-grid" id="calendar-grid"></div>
   </div>
 
   <!-- 感受標籤雲 -->
   <div class="profile-card">
-    <div class="profile-card-title">最 常 感 受</div>
+    <div class="profile-card-title" data-i18n="profile_top_feelings">最 常 感 受</div>
     <div id="feeling-cloud" class="feeling-cloud">
-      <div class="profile-empty">當你結束練習並選擇感受標籤,<br>會在這裡累積呈現。</div>
+      <div class="profile-empty" data-i18n-html="profile_feeling_empty">當你結束練習並選擇感受標籤,<br>會在這裡累積呈現。</div>
     </div>
   </div>
 
   <div class="data-actions">
-    <button class="data-btn" onclick="exportProfile()">匯 出 紀 錄</button>
-    <button class="data-btn" onclick="document.getElementById('import-input').click()">匯 入 紀 錄</button>
+    <button class="data-btn" onclick="exportProfile()" data-i18n="profile_export">匯 出 紀 錄</button>
+    <button class="data-btn" onclick="document.getElementById('import-input').click()" data-i18n="profile_import">匯 入 紀 錄</button>
     <input type="file" id="import-input" class="import-input" accept=".json" onchange="importProfile(event)">
   </div>
 
-  <button class="ghost-btn" onclick="goToHome()">← 返回</button>
-  <button class="danger-btn" onclick="confirmClearProfile()">清 除 我 的 紀 錄</button>
+  <button class="ghost-btn" onclick="goToHome()" data-i18n="btn_back">← 返回</button>
+  <button class="danger-btn" onclick="confirmClearProfile()" data-i18n="profile_clear">清 除 我 的 紀 錄</button>
 </div>
 
 <!-- === 加入主畫面 / 換瀏覽器 提示 === -->
@@ -1874,8 +1878,8 @@
   <div class="ios-hint-text" id="hint-text"></div>
   <div class="ios-hint-howto-detail" id="hint-steps"></div>
   <div class="ios-hint-actions">
-    <span class="ios-hint-close" onclick="dismissIosHint()">下次再說</span>
-    <span class="ios-hint-howto" onclick="toggleIosHowto()">怎麼做 →</span>
+    <span class="ios-hint-close" onclick="dismissIosHint()" data-i18n="hint_later">下次再說</span>
+    <span class="ios-hint-howto" onclick="toggleIosHowto()" data-i18n="hint_howto">怎麼做 →</span>
   </div>
 </div>
 
@@ -2053,20 +2057,20 @@ function showProfile() {
 
   // 模式排行(取前 3)
   const modeNames = {
-    three: '正念三口呼吸',
-    sigh: '生理嘆氣',
-    box: '箱式呼吸',
-    baseline: '諧振呼吸',
-    count: '數息法',
-    nadi: '鼻孔交替呼吸',
-    bhastrika: '風箱呼吸',
-    lion: '獅子吼',
-    wimhof: '冰人呼吸法',
-    rebirth: '重生呼吸',
-    tonglen: '慈心呼吸',
-    sleep478: '4-7-8 呼吸',
-    scan: '身體掃描',
-    exhale: '延長吐氣'
+    three: jteT('mode_three_name','正念三口呼吸'),
+    sigh: jteT('mode_sigh_name','生理嘆氣'),
+    box: jteT('mode_box_name','箱式呼吸'),
+    baseline: jteT('mode_baseline_name','諧振呼吸'),
+    count: jteT('mode_count_name','數息法'),
+    nadi: jteT('mode_nadi_name','鼻孔交替呼吸'),
+    bhastrika: jteT('mode_bhastrika_name','風箱呼吸'),
+    lion: jteT('mode_lion_name','獅子吼'),
+    wimhof: jteT('mode_wimhof_name','冰人呼吸法'),
+    rebirth: jteT('mode_rebirth_name','重生呼吸'),
+    tonglen: jteT('mode_tonglen_name','慈心呼吸'),
+    sleep478: jteT('mode_sleep478_name','4-7-8 呼吸'),
+    scan: jteT('mode_scan_name','身體掃描'),
+    exhale: jteT('mode_exhale_name','延長吐氣')
   };
   const modeRankEl = document.getElementById('mode-rank');
   const sortedModes = Object.entries(p.modeStats)
@@ -2074,7 +2078,7 @@ function showProfile() {
     .slice(0, 3);
 
   if (sortedModes.length === 0) {
-    modeRankEl.innerHTML = '<div class="profile-empty">還沒有紀錄,<br>做完一次練習就會出現囉。</div>';
+    modeRankEl.innerHTML = '<div class="profile-empty">' + jteT('profile_mode_empty','還沒有紀錄,<br>做完一次練習就會出現囉。') + '</div>';
   } else {
     const maxCount = sortedModes[0][1];
     modeRankEl.innerHTML = sortedModes.map(([key, count], i) => {
@@ -2100,7 +2104,7 @@ function showProfile() {
   const sortedFeelings = Object.entries(p.feelingStats)
     .sort((a, b) => b[1] - a[1]);
   if (sortedFeelings.length === 0) {
-    feelingEl.innerHTML = '<div class="profile-empty">當你結束練習並選擇感受標籤,<br>會在這裡累積呈現。</div>';
+    feelingEl.innerHTML = '<div class="profile-empty">' + jteT('profile_feeling_empty','當你結束練習並選擇感受標籤,<br>會在這裡累積呈現。') + '</div>';
   } else {
     feelingEl.innerHTML = sortedFeelings.map(([tag, count]) =>
       `<div class="feeling-tag">${tag}<span class="feeling-tag-count">×${count}</span></div>`
@@ -2118,12 +2122,13 @@ function renderCalendar(p) {
   const firstDay = new Date(year, month, 1).getDay();  // 0=日
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const todayDate = now.getDate();
-  const monthYearStr = `${year} 年 ${month + 1} 月`;
+  const monthYearStr = jteT('cal_month_fmt', '{y} 年 {m} 月')
+    .replace('{y}', year).replace('{m}', month + 1);
 
   document.getElementById('calendar-month').textContent = monthYearStr;
 
   const grid = document.getElementById('calendar-grid');
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+  const weekdays = jteT('cal_weekdays','日,一,二,三,四,五,六').split(',');
   let html = weekdays.map(w => `<div class="cal-weekday">${w}</div>`).join('');
 
   // 月初前的空格
@@ -2146,7 +2151,7 @@ function renderCalendar(p) {
 }
 
 function confirmClearProfile() {
-  if (confirm('確定要清除所有練習紀錄嗎?\n此動作無法復原。')) {
+  if (confirm(jteT('clear_confirm','確定要清除所有練習紀錄嗎?\n此動作無法復原。'))) {
     localStorage.removeItem(PROFILE_KEY);
     showProfile();  // 重新渲染為空狀態
   }
@@ -2156,7 +2161,7 @@ function confirmClearProfile() {
 function exportProfile() {
   const p = loadProfile();
   if (p.sessions === 0) {
-    alert('還沒有任何紀錄可以匯出。');
+    alert(jteT('export_empty','還沒有任何紀錄可以匯出。'));
     return;
   }
 
@@ -2213,9 +2218,7 @@ function importProfile(event) {
       let action = 'overwrite';
       if (current.sessions > 0) {
         const choice = confirm(
-          `目前已有 ${current.sessions} 次練習紀錄。\n\n` +
-          `按「確定」=覆蓋(只保留匯入的資料)\n` +
-          `按「取消」=合併(將兩邊資料相加)`
+          jteT('import_merge_q','目前已有 {n} 次練習紀錄。\n\n按「確定」=覆蓋(只保留匯入的資料)\n按「取消」=合併(將兩邊資料相加)').replace('{n}', current.sessions)
         );
         action = choice ? 'overwrite' : 'merge';
       }
@@ -2229,9 +2232,9 @@ function importProfile(event) {
 
       saveProfile(newProfile);
       showProfile();
-      alert(`匯入完成!\n累計練習 ${newProfile.sessions} 次。`);
+      alert(jteT('import_done','匯入完成!\n累計練習 {n} 次。').replace('{n}', newProfile.sessions));
     } catch (err) {
-      alert('匯入失敗:檔案格式不正確或已損壞。\n\n' + err.message);
+      alert(jteT('import_fail','匯入失敗:檔案格式不正確或已損壞。') + '\n\n' + err.message);
     }
     // 清空 input(讓使用者能重複匯入相同檔案)
     event.target.value = '';
@@ -2883,8 +2886,8 @@ function selectMode(mode) {
   state.duration = m.duration || 5;
   if (m.bpm2) state.bpm2 = m.bpm2;
 
-  document.getElementById('set-title').textContent = m.title;
-  document.getElementById('set-sub').textContent = m.sub;
+  document.getElementById('set-title').textContent = jteT('mode_' + mode + '_name', m.title);
+  document.getElementById('set-sub').textContent = jteT('mode_' + mode + '_sub', m.sub);
   document.getElementById('set-info').innerHTML = m.info;
 
   // === BPM 滑桿 ===
@@ -2898,7 +2901,7 @@ function selectMode(mode) {
     slider.value = m.bpmRange.default;
     state.bpm = m.bpmRange.default;
     document.getElementById('bpm-val').textContent = state.bpm;
-    document.getElementById('bpm-label').textContent = m.twoPhaseBpm ? '第一階段頻率' : '呼吸頻率';
+    document.getElementById('bpm-label').textContent = m.twoPhaseBpm ? jteT('set_bpm1_label','第一階段頻率') : jteT('set_bpm_label','呼吸頻率');
 
     const tipEl = document.getElementById('bpm-tip');
     if (m.bpmTip) {
@@ -2948,8 +2951,8 @@ function selectMode(mode) {
     durSlider.value = m.fixedBreathsRange.default;
     state.duration = m.fixedBreathsRange.default;
     m.fixedBreaths = m.fixedBreathsRange.default;
-    durLabel.textContent = '練習次數';
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 次';
+    durLabel.textContent = jteT('set_dur_times','練習次數');
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_times','次');
   } else if (m.bhastrikaRoundsRange) {
     // 風箱組數
     durRow.style.display = '';
@@ -2959,8 +2962,8 @@ function selectMode(mode) {
     durSlider.value = m.bhastrikaRoundsRange.default;
     state.duration = m.bhastrikaRoundsRange.default;
     m.bhastrikaRounds = m.bhastrikaRoundsRange.default;
-    durLabel.textContent = '練習組數';
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 組';
+    durLabel.textContent = jteT('set_dur_rounds','練習組數');
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_rounds','組');
   } else if (m.wimhofRoundsRange) {
     // 冰人呼吸法 輪數
     durRow.style.display = '';
@@ -2970,8 +2973,8 @@ function selectMode(mode) {
     durSlider.value = m.wimhofRoundsRange.default;
     state.duration = m.wimhofRoundsRange.default;
     m.wimhofRounds = m.wimhofRoundsRange.default;
-    durLabel.textContent = '練習輪數';
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 輪';
+    durLabel.textContent = jteT('set_dur_cycles','練習輪數');
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_cycles','輪');
   } else if (m.fixedBreaths || m.infoOnly) {
     // 固定不可調(三口呼吸)
     durRow.style.display = 'none';
@@ -2982,15 +2985,15 @@ function selectMode(mode) {
       durSlider.max = 20;
       durSlider.step = 1;
       durSlider.value = m.duration;
-      durLabel.textContent = '練習回合';
+      durLabel.textContent = jteT('set_dur_sets','練習回合');
       updateRoundsDisplay();
     } else {
       durSlider.min = 1;
       durSlider.max = 15;
       durSlider.step = 1;
       durSlider.value = m.duration;
-      durLabel.textContent = '練習時長';
-      durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 分鐘';
+      durLabel.textContent = jteT('set_dur_label','練習時長');
+      durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('set_dur_min','分鐘');
     }
   }
 
@@ -3027,8 +3030,8 @@ function proceedToSettings() {
 function updateRoundsDisplay() {
   const minutes = (state.duration * 10 / state.bpm).toFixed(1);
   document.getElementById('dur-unit').innerHTML =
-    '<span class="setting-value">' + state.duration + '</span> 回合 ' +
-    '<span style="color:var(--ink-light);font-size:11px;">≈ ' + minutes + ' 分</span>';
+    '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_sets','回合') + ' ' +
+    '<span style="color:var(--ink-light);font-size:11px;">≈ ' + minutes + ' ' + jteT('unit_min_abbr','分') + '</span>';
 }
 
 // 滑桿事件
@@ -3050,17 +3053,17 @@ document.getElementById('dur-slider').addEventListener('input', e => {
 
   if (m.fixedBreathsRange) {
     m.fixedBreaths = state.duration;
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 次';
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_times','次');
   } else if (m.bhastrikaRoundsRange) {
     m.bhastrikaRounds = state.duration;
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 組';
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_rounds','組');
   } else if (m.wimhofRoundsRange) {
     m.wimhofRounds = state.duration;
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 輪';
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('unit_cycles','輪');
   } else if (m.useRounds) {
     updateRoundsDisplay();
   } else {
-    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> 分鐘';
+    durUnit.innerHTML = '<span class="setting-value">' + state.duration + '</span> ' + jteT('set_dur_min','分鐘');
   }
 });
 
@@ -3177,7 +3180,7 @@ function getTotalCycleSec(phases) {
 function startBreathing() {
   showScreen('screen-breathe');
   const m = MODES[state.mode];
-  document.getElementById('bm-name').textContent = m.title;
+  document.getElementById('bm-name').textContent = jteT('mode_' + state.mode + '_name', m.title);
 
   document.getElementById('breath-glow').classList.add('active');
 
@@ -3375,7 +3378,7 @@ function loop() {
   // 計時器顯示
   if (m.fixedBreaths) {
     const currentBreath = Math.min(m.fixedBreaths, breathCount + 1);
-    document.getElementById('timer').textContent = `第 ${currentBreath} 口 / ${m.fixedBreaths}`;
+    document.getElementById('timer').textContent = jteT('timer_breath','{n} / {total} 口').replace('{n}', currentBreath).replace('{total}', m.fixedBreaths);
   } else {
     const sec = Math.ceil(remaining / 1000);
     const mm = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -3467,7 +3470,7 @@ function loop() {
         const num = (breathCount % m.countMax) + 1;
         cueEl.textContent = num;
       } else {
-        cueEl.textContent = '吸';
+        cueEl.textContent = jteT('cue_inhale','吸');
       }
     } else {
       cueEl.textContent = isInhale ? m.cues.in : m.cues.out;
@@ -3480,8 +3483,8 @@ function loop() {
     playChime(isInhale);
 
     // 階段文字
-    let phaseText = isInhale ? '吸 氣' : '吐 氣';
-    if (m.cues.out === '釋放' && !isInhale) phaseText = '釋 放';
+    let phaseText = isInhale ? jteT('phase_inhale','吸 氣') : jteT('phase_exhale','吐 氣');
+    if (m.cues.out === '釋放' && !isInhale) phaseText = jteT('phase_release','釋 放');
     document.getElementById('phase').textContent = phaseText;
   }
 
@@ -3504,7 +3507,7 @@ function runMultiPhase(m, elapsed, remaining, phases) {
   // 計時器
   if (m.fixedBreaths) {
     const currentBreath = Math.min(m.fixedBreaths, breathCount + 1);
-    document.getElementById('timer').textContent = `第 ${currentBreath} 口 / ${m.fixedBreaths}`;
+    document.getElementById('timer').textContent = jteT('timer_breath','{n} / {total} 口').replace('{n}', currentBreath).replace('{total}', m.fixedBreaths);
   } else {
     const sec = Math.ceil(remaining / 1000);
     const mm = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -3577,14 +3580,14 @@ function runMultiPhase(m, elapsed, remaining, phases) {
     playChime(isInhale || isHold && cur.idx === 0);
 
     // 階段文字
-    let phaseText = '吸 氣';
-    if (isExhale) phaseText = '吐 氣';
-    else if (isHold) phaseText = '屏 息';
-    if (cur.phase.label === '長吐') phaseText = '長 吐';
-    if (cur.phase.label === 'Haaa') phaseText = '張 嘴 吐';
-    if (cur.phase.label === '再吸') phaseText = '再 吸';
-    if (cur.phase.label === '吸入痛苦') phaseText = '吸 入';
-    if (cur.phase.label === '吐出愛') phaseText = '吐 出';
+    let phaseText = jteT('phase_inhale','吸 氣');
+    if (isExhale) phaseText = jteT('phase_exhale','吐 氣');
+    else if (isHold) phaseText = jteT('phase_hold','屏 息');
+    if (cur.phase.label === '長吐') phaseText = jteT('phase_long_exhale','長 吐');
+    if (cur.phase.label === 'Haaa') phaseText = jteT('phase_haaa','張 嘴 吐');
+    if (cur.phase.label === '再吸') phaseText = jteT('phase_inhale2','再 吸');
+    if (cur.phase.label === '吸入痛苦') phaseText = jteT('phase_tonglen_in','吸 入');
+    if (cur.phase.label === '吐出愛') phaseText = jteT('phase_tonglen_out','吐 出');
     document.getElementById('phase').textContent = phaseText;
   }
 }
@@ -3600,7 +3603,7 @@ function runBhastrika(m, elapsed, remaining) {
 
   // 計時器:顯示「第 N 組 / 共 X 組」
   document.getElementById('timer').textContent =
-    `第 ${Math.min(totalRounds, roundIdx + 1)} 組 / ${totalRounds}`;
+    jteT('timer_round','{n} / {total} 組').replace('{n}', Math.min(totalRounds, roundIdx + 1)).replace('{total}', totalRounds);
 
   // 階段判斷
   const isResting = inRoundSec >= m.bhastrikaPerRound * breathSec;
@@ -3611,8 +3614,8 @@ function runBhastrika(m, elapsed, remaining) {
 
   if (isResting) {
     // 休息階段:深呼吸 + 顯示一則指導語
-    cueEl.textContent = '深 呼 吸';
-    phaseEl.textContent = '組 間 休 息';
+    cueEl.textContent = jteT('cue_deep_breath','深 呼 吸');
+    phaseEl.textContent = jteT('phase_rest','組 間 休 息');
     bg.classList.remove('inhale', 'exhale');
     glowEl.style.transform = 'translate(-50%, -50%) scale(1)';
     if (state.lastPhaseIdx !== -99 - roundIdx) {
@@ -3622,7 +3625,7 @@ function runBhastrika(m, elapsed, remaining) {
         const idx = roundIdx % m.guidance.length;
         showGuidanceText(m.guidance[idx]);
       } else {
-        showGuide({ title: '組間休息', text: '深呼吸幾次<br>感受身體的能量' });
+        showGuide({ title: jteT('guide_rest_title','組間休息'), text: jteT('guide_rest_text','深呼吸幾次<br>感受身體的能量') });
       }
     }
   } else {
@@ -3634,12 +3637,12 @@ function runBhastrika(m, elapsed, remaining) {
     bg.classList.add(isInhale ? 'inhale' : 'exhale');
     const sineVal = Math.sin(tInBreath * Math.PI);
     glowEl.style.transform = `translate(-50%, -50%) scale(${0.7 + sineVal * 0.5})`;
-    cueEl.textContent = isInhale ? '吸' : '吐';
-    phaseEl.textContent = `第 ${breathInRound + 1} / ${m.bhastrikaPerRound} 次`;
+    cueEl.textContent = isInhale ? jteT('cue_inhale','吸') : jteT('cue_exhale','吐');
+    phaseEl.textContent = jteT('phase_bhastrika_count','{n} / {total} 次').replace('{n}', breathInRound + 1).replace('{total}', m.bhastrikaPerRound);
 
     if (state.lastPhaseIdx !== roundIdx) {
       state.lastPhaseIdx = roundIdx;
-      showGuide({ title: `第 ${roundIdx + 1} 組`, text: `快速 ${m.bhastrikaPerRound} 次<br>專注鼻吸鼻吐` });
+      showGuide({ title: jteT('guide_bhastrika_round','第 {n} 組').replace('{n}', roundIdx + 1), text: jteT('guide_bhastrika_text','快速 {n} 次<br>專注鼻吸鼻吐').replace('{n}', m.bhastrikaPerRound) });
     }
   }
 }
@@ -3656,7 +3659,7 @@ function runWimHof(m, elapsed, remaining) {
   const totalRounds = m.wimhofRounds || 3;
 
   document.getElementById('timer').textContent =
-    `第 ${Math.min(totalRounds, roundIdx + 1)} 輪 / ${totalRounds}`;
+    jteT('timer_cycle','{n} / {total} 輪').replace('{n}', Math.min(totalRounds, roundIdx + 1)).replace('{total}', totalRounds);
 
   const cueEl = document.getElementById('cue');
   const phaseEl = document.getElementById('phase');
@@ -3677,11 +3680,11 @@ function runWimHof(m, elapsed, remaining) {
     bg.classList.add(isInhale ? 'inhale' : 'exhale');
     const sineVal = Math.sin(tInBreath * Math.PI);
     glowEl.style.transform = `translate(-50%, -50%) scale(${0.6 + sineVal * 0.6})`;
-    cueEl.textContent = isInhale ? '深吸' : '吐';
-    phaseEl.textContent = `第 ${breathIdx + 1} / ${m.wimhofPerRound} 次`;
+    cueEl.textContent = isInhale ? jteT('cue_deep_inhale','深吸') : jteT('cue_exhale','吐');
+    phaseEl.textContent = jteT('phase_wimhof_count','{n} / {total} 次').replace('{n}', breathIdx + 1).replace('{total}', m.wimhofPerRound);
     if (state.lastPhaseIdx !== `breath-${roundIdx}`) {
       state.lastPhaseIdx = `breath-${roundIdx}`;
-      showGuide({ title: `第 ${roundIdx + 1} 輪 · 階段一`, text: `30 次深快呼吸<br>用力吸,放鬆吐` });
+      showGuide({ title: jteT('guide_wimhof_round','第 {n} 輪 · 階段一').replace('{n}', roundIdx + 1), text: jteT('guide_wimhof_text','30 次深快呼吸<br>用力吸,放鬆吐') });
     }
   } else if (stage === 'holdEmpty') {
     // 完全吐氣後憋氣
@@ -3689,10 +3692,10 @@ function runWimHof(m, elapsed, remaining) {
     bg.classList.remove('inhale', 'exhale');
     glowEl.style.transform = 'translate(-50%, -50%) scale(0.6)';
     cueEl.textContent = `${Math.floor(holdElapsed)}″`;
-    phaseEl.textContent = '吐 空 憋 氣';
+    phaseEl.textContent = jteT('phase_hold_empty','吐 空 憋 氣');
     if (state.lastPhaseIdx !== `hold-${roundIdx}`) {
       state.lastPhaseIdx = `hold-${roundIdx}`;
-      showGuide({ title: '階段二 · 憋氣', text: '完全吐氣後屏息<br>感受身體的寧靜' });
+      showGuide({ title: jteT('guide_hold_title','階段二 · 憋氣'), text: jteT('guide_hold_text','完全吐氣後屏息<br>感受身體的寧靜') });
     }
   } else {
     // 大吸後憋 15 秒
@@ -3701,10 +3704,10 @@ function runWimHof(m, elapsed, remaining) {
     bg.classList.add('inhale');
     glowEl.style.transform = 'translate(-50%, -50%) scale(1.2)';
     cueEl.textContent = `${Math.max(0, Math.ceil(recoverySec - recElapsed))}″`;
-    phaseEl.textContent = '大 吸 憋 氣';
+    phaseEl.textContent = jteT('phase_big_inhale','大 吸 憋 氣');
     if (state.lastPhaseIdx !== `recovery-${roundIdx}`) {
       state.lastPhaseIdx = `recovery-${roundIdx}`;
-      showGuide({ title: '階段三 · 大吸', text: '大吸一口氣,屏息 15 秒<br>感受能量充滿全身' });
+      showGuide({ title: jteT('guide_recovery_title','階段三 · 大吸'), text: jteT('guide_recovery_text','大吸一口氣,屏息 15 秒<br>感受能量充滿全身') });
       playPhaseTransition();
     }
   }
@@ -3809,7 +3812,7 @@ function endSession() {
     document.getElementById('science-title').textContent = m.science.title;
     let html = m.science.content;
     if (m.science.ref) {
-      html += `<div class="ref">參考:${m.science.ref}</div>`;
+      html += `<div class="ref">${jteT('science_ref','參考')}:${m.science.ref}</div>`;
     }
     document.getElementById('science-content').innerHTML = html;
     scienceBlock.style.display = '';
@@ -3837,6 +3840,359 @@ function unrecordFeeling(tag) {
     saveProfile(p);
   }
 }
+
+// ===== i18n 字典 =====
+window.JTE_I18N = {
+  en: {
+    // Landing
+    landing_tap: 'Tap to Enter',
+    landing_disclaimer: 'This tool is for relaxation and mindfulness practice only, and does not constitute medical advice.<br>If you experience any discomfort, please consult a professional.',
+
+    // Home
+    home_title: 'Pause · Breathe',
+    home_footer_quote: 'Breath is the fastest way back to yourself.',
+
+    // Categories
+    cat_reset_name: 'Quick Reset',
+    cat_reset_desc: 'When stressed, stuck, or needing a shift',
+    cat_daily_name: 'Daily Practice',
+    cat_daily_desc: 'Balance, stability, long-term training',
+    cat_energy_name: 'Energy Boost',
+    cat_energy_desc: 'When tired or needing to wake up',
+    cat_deep_name: 'Deep Regulation',
+    cat_deep_desc: 'Emotional release and transformation',
+    cat_sleep_name: 'Sleep & Relax',
+    cat_sleep_desc: 'Before sleep, winding down',
+
+    // Mode names
+    mode_three_name: 'Mindful 3 Breaths',
+    mode_three_sub: 'Quick reset, refocus',
+    mode_sigh_name: 'Physiological Sigh',
+    mode_sigh_sub: 'Reduce anxiety in 90 s',
+    mode_box_name: 'Box Breathing',
+    mode_box_sub: 'Stress relief & focus, 4-4-4-4',
+    mode_baseline_name: 'Coherent Breathing',
+    mode_baseline_sub: 'Regulate the autonomic nervous system',
+    mode_count_name: 'Counting Breath',
+    mode_count_sub: 'Relaxed and focused',
+    mode_nadi_name: 'Alternate Nostril',
+    mode_nadi_sub: 'Balance both sides, Nadi Shodhana',
+    mode_bhastrika_name: 'Bellows Breath',
+    mode_bhastrika_sub: 'Fast & intense, energize',
+    mode_lion_name: "Lion's Breath",
+    mode_lion_sub: 'Release jaw tension',
+    mode_wimhof_name: 'Wim Hof Method',
+    mode_wimhof_sub: 'Resilience & deep practice',
+    mode_rebirth_name: 'Rebirthing Breath',
+    mode_rebirth_sub: 'Intense release & transformation',
+    mode_tonglen_name: 'Loving-Kindness Breath',
+    mode_tonglen_sub: 'Breathe in pain, breathe out love',
+    mode_sleep478_name: '4-7-8 Breathing',
+    mode_sleep478_sub: 'Classic sleep aid',
+    mode_scan_name: 'Body Scan',
+    mode_scan_sub: 'Deep relaxation, head to toe',
+    mode_exhale_name: 'Extended Exhale',
+    mode_exhale_sub: 'Quick calm, 4-8',
+
+    // Settings
+    set_bpm_label: 'Breath Rate',
+    set_bpm1_label: 'Phase 1 Rate',
+    set_bpm2_label: 'Phase 2 Rate',
+    set_bpm_unit: 'bpm',
+    set_dur_label: 'Duration',
+    set_dur_times: 'Repetitions',
+    set_dur_rounds: 'Sets',
+    set_dur_cycles: 'Rounds',
+    set_dur_sets: 'Sets',
+    set_dur_min: 'min',
+    unit_times: 'times',
+    unit_rounds: 'sets',
+    unit_cycles: 'rounds',
+    unit_sets: 'sets',
+    unit_min_abbr: 'min',
+    btn_start: 'Begin',
+    btn_back: '← Back',
+    btn_home: 'Back to Home',
+
+    // Safety
+    safety_title: 'Safety Notice',
+    safety_confirm_text: 'I have read the above notices and understand the precautions for this practice.',
+    safety_agree_btn: 'Agree & Continue',
+
+    // Countdown
+    countdown_label: 'Starting Soon',
+
+    // Breathe screen
+    breathe_ready: 'Ready',
+
+    // Phase cues
+    phase_inhale: 'Inhale',
+    phase_exhale: 'Exhale',
+    phase_hold: 'Hold',
+    phase_release: 'Release',
+    phase_long_exhale: 'Long Exhale',
+    phase_haaa: 'Open & Exhale',
+    phase_inhale2: 'Inhale More',
+    phase_tonglen_in: 'Receive',
+    phase_tonglen_out: 'Give',
+    phase_rest: 'Rest',
+    phase_hold_empty: 'Hold Empty',
+    phase_big_inhale: 'Deep Inhale Hold',
+
+    // Cue words
+    cue_inhale: 'In',
+    cue_exhale: 'Out',
+    cue_deep_breath: 'Deep Breath',
+    cue_deep_inhale: 'Deep In',
+
+    // Timer formats
+    timer_breath: '{n} / {total}',
+    timer_round: '{n} / {total} sets',
+    timer_cycle: '{n} / {total} rounds',
+
+    // Guide texts
+    guide_rest_title: 'Rest',
+    guide_rest_text: 'Take a few deep breaths<br>Feel the energy in your body',
+    guide_bhastrika_round: 'Set {n}',
+    guide_bhastrika_text: '{n} quick breaths<br>Focus on nasal breathing',
+    guide_wimhof_round: 'Round {n} · Phase 1',
+    guide_wimhof_text: '30 deep fast breaths<br>Breathe in strong, relax on exhale',
+    guide_hold_title: 'Phase 2 · Hold',
+    guide_hold_text: 'Exhale fully then hold<br>Feel the stillness within',
+    guide_recovery_title: 'Phase 3 · Big Inhale',
+    guide_recovery_text: 'Take a deep breath, hold 15 s<br>Feel energy filling your whole body',
+
+    // End screen
+    end_feeling_q: 'How Do You Feel?',
+    end_tag_hint: 'Choose 1-3',
+    end_gentle_note: 'Noticing distraction is normal.<br>Gently bring yourself back.',
+    science_why: 'Why Does It Work?',
+    science_ref: 'Reference',
+
+    // Profile
+    profile_title: 'My Practice',
+    profile_sessions: 'Sessions',
+    profile_minutes: 'Minutes',
+    profile_top_modes: 'Most Practiced',
+    profile_mode_empty: 'No records yet.<br>Complete one session to get started.',
+    profile_this_month: 'This Month',
+    profile_top_feelings: 'Common Feelings',
+    profile_feeling_empty: 'After sessions, your feeling tags<br>will accumulate here.',
+    profile_export: 'Export Records',
+    profile_import: 'Import Records',
+    profile_clear: 'Clear My Records',
+
+    // Calendar
+    cal_weekdays: 'Sun,Mon,Tue,Wed,Thu,Fri,Sat',
+    cal_month_fmt: '{y} / {m}',
+
+    // iOS hint
+    hint_later: 'Later',
+    hint_howto: 'How to →',
+
+    // Login modal
+    login_title: 'Save & Sync Records',
+    login_desc: 'Sign in with Google to sync your records to your daily check-in on the JTE platform.',
+    login_skip: 'Skip — save locally only',
+
+    // Alerts
+    export_empty: 'No records to export yet.',
+    import_done: 'Import complete!\nTotal sessions: {n}.',
+    import_fail: 'Import failed: invalid or corrupted file.',
+    import_merge_q: 'You have {n} existing sessions.\n\nOK = Overwrite (keep imported data only)\nCancel = Merge (combine both)',
+    clear_confirm: 'Delete all practice records?\nThis cannot be undone.',
+  },
+  ja: {
+    // Landing
+    landing_tap: 'タップして始める',
+    landing_disclaimer: 'このツールはリラクゼーションとマインドフルネス練習のためのものであり、医療上のアドバイスを構成するものではありません。<br>不調を感じた場合は専門家にご相談ください。',
+
+    // Home
+    home_title: '小休み・呼吸法',
+    home_footer_quote: '呼吸は、自分に戻る一番の近道。',
+
+    // Categories
+    cat_reset_name: 'クイックリセット',
+    cat_reset_desc: 'ストレスや行き詰まりを感じるとき',
+    cat_daily_name: '日常の練習',
+    cat_daily_desc: 'バランス・安定・継続的な鍛錬',
+    cat_energy_name: 'エネルギー補給',
+    cat_energy_desc: '疲れたときや目覚めが必要なとき',
+    cat_deep_name: '深層調整',
+    cat_deep_desc: '感情の解放と変容のために',
+    cat_sleep_name: '睡眠とリラックス',
+    cat_sleep_desc: '就寝前・くつろぎのひとときに',
+
+    // Mode names
+    mode_three_name: 'マインドフル3呼吸',
+    mode_three_sub: '素早くリセット・再集中',
+    mode_sigh_name: '生理的ため息',
+    mode_sigh_sub: '90秒で不安を和らげる',
+    mode_box_name: 'ボックス呼吸',
+    mode_box_sub: '集中力とストレス対策、4-4-4-4',
+    mode_baseline_name: '共鳴呼吸',
+    mode_baseline_sub: '自律神経系を整える',
+    mode_count_name: '数息観',
+    mode_count_sub: 'リラックスしながら集中',
+    mode_nadi_name: '片鼻呼吸',
+    mode_nadi_sub: '左右バランス、ナーディショーダナ',
+    mode_bhastrika_name: 'ふいご呼吸',
+    mode_bhastrika_sub: '速くて力強い、目覚めに',
+    mode_lion_name: '獅子の呼吸',
+    mode_lion_sub: '顎のこわばりを解放する',
+    mode_wimhof_name: 'ウィム・ホフ法',
+    mode_wimhof_sub: '回復力を高める深い練習',
+    mode_rebirth_name: 'リバース呼吸',
+    mode_rebirth_sub: '激しい解放と変容',
+    mode_tonglen_name: '慈悲の呼吸',
+    mode_tonglen_sub: '苦しみを吸い込み、愛を吐き出す',
+    mode_sleep478_name: '4-7-8呼吸',
+    mode_sleep478_sub: '眠りを誘う定番メソッド',
+    mode_scan_name: 'ボディスキャン',
+    mode_scan_sub: '頭のてっぺんから足先まで深くリラックス',
+    mode_exhale_name: '長い吐き出し',
+    mode_exhale_sub: 'すぐに落ち着く、4-8',
+
+    // Settings
+    set_bpm_label: '呼吸数',
+    set_bpm1_label: 'フェーズ1のペース',
+    set_bpm2_label: 'フェーズ2のペース',
+    set_bpm_unit: '回 / 分',
+    set_dur_label: '練習時間',
+    set_dur_times: '回数',
+    set_dur_rounds: 'セット数',
+    set_dur_cycles: 'ラウンド数',
+    set_dur_sets: 'セット数',
+    set_dur_min: '分',
+    unit_times: '回',
+    unit_rounds: 'セット',
+    unit_cycles: 'ラウンド',
+    unit_sets: 'セット',
+    unit_min_abbr: '分',
+    btn_start: 'はじめる',
+    btn_back: '← 戻る',
+    btn_home: 'ホームへ戻る',
+
+    // Safety
+    safety_title: '安全上の注意',
+    safety_confirm_text: '上記の注意事項を読み、この練習の注意点を理解しました。',
+    safety_agree_btn: '同意して続ける',
+
+    // Countdown
+    countdown_label: 'まもなく開始',
+
+    // Breathe screen
+    breathe_ready: '準備',
+
+    // Phase cues
+    phase_inhale: '吸う',
+    phase_exhale: '吐く',
+    phase_hold: '保持',
+    phase_release: '解放',
+    phase_long_exhale: '長く吐く',
+    phase_haaa: '口を開けて吐く',
+    phase_inhale2: 'さらに吸う',
+    phase_tonglen_in: '受け取る',
+    phase_tonglen_out: '与える',
+    phase_rest: '休息',
+    phase_hold_empty: '息を止める',
+    phase_big_inhale: '大きく吸って保持',
+
+    // Cue words
+    cue_inhale: '吸',
+    cue_exhale: '吐',
+    cue_deep_breath: '深呼吸',
+    cue_deep_inhale: '深く吸う',
+
+    // Timer formats
+    timer_breath: '{n} / {total}',
+    timer_round: '{n} / {total} セット',
+    timer_cycle: '{n} / {total} ラウンド',
+
+    // Guide texts
+    guide_rest_title: '休憩',
+    guide_rest_text: '深呼吸を数回してください<br>体のエネルギーを感じましょう',
+    guide_bhastrika_round: '第{n}セット',
+    guide_bhastrika_text: '{n}回速い呼吸<br>鼻での呼吸に集中',
+    guide_wimhof_round: 'ラウンド{n}・フェーズ1',
+    guide_wimhof_text: '30回の深くて速い呼吸<br>力強く吸い、リラックスして吐く',
+    guide_hold_title: 'フェーズ2・息止め',
+    guide_hold_text: '完全に吐き出してから止める<br>体の静寂を感じましょう',
+    guide_recovery_title: 'フェーズ3・大きく吸う',
+    guide_recovery_text: '深呼吸して15秒保持<br>全身にエネルギーが満ちるのを感じます',
+
+    // End screen
+    end_feeling_q: '今どんな気持ちですか',
+    end_tag_hint: '1〜3個選べます',
+    end_gentle_note: '気が散ることは自然なことです。<br>そっと戻ってくるだけで大丈夫。',
+    science_why: 'なぜ効果があるの?',
+    science_ref: '参考',
+
+    // Profile
+    profile_title: '練習記録',
+    profile_sessions: '練習回数',
+    profile_minutes: '累計分数',
+    profile_top_modes: 'よく練習する',
+    profile_mode_empty: 'まだ記録がありません。<br>一回練習すると表示されます。',
+    profile_this_month: '今月の練習',
+    profile_top_feelings: 'よく感じること',
+    profile_feeling_empty: '練習後に感情タグを選ぶと、<br>ここに累積表示されます。',
+    profile_export: '記録を書き出す',
+    profile_import: '記録を読み込む',
+    profile_clear: '記録を削除する',
+
+    // Calendar
+    cal_weekdays: '日,月,火,水,木,金,土',
+    cal_month_fmt: '{y}年{m}月',
+
+    // iOS hint
+    hint_later: '後で',
+    hint_howto: 'やり方 →',
+
+    // Login modal
+    login_title: '記録を保存・同期する',
+    login_desc: 'Googleアカウントでサインインすると、記録がJTEプラットフォームのデイリーチェックに同期されます。',
+    login_skip: 'スキップ（端末のみに保存）',
+
+    // Alerts
+    export_empty: 'エクスポートできる記録がまだありません。',
+    import_done: 'インポート完了！\n累計練習数：{n}回。',
+    import_fail: 'インポート失敗：ファイルの形式が不正または破損しています。',
+    import_merge_q: '現在{n}回の練習記録があります。\n\nOK＝上書き（インポートデータのみ保持）\nキャンセル＝結合（両方を合算）',
+    clear_confirm: '練習記録をすべて削除しますか？\nこの操作は元に戻せません。',
+  }
+};
+
+// ===== jteI18nApply: re-render current screen on language switch =====
+window.jteI18nApply = function(lang) {
+  // Re-render the profile page if it is active
+  const profileScreen = document.getElementById('screen-profile');
+  if (profileScreen && profileScreen.classList.contains('active')) {
+    showProfile();
+  }
+
+  // Re-render settings page if active (mode title/sub/info are from MODES and need re-apply)
+  const settingsScreen = document.getElementById('screen-settings');
+  if (settingsScreen && settingsScreen.classList.contains('active')) {
+    // Re-call selectMode without resetting UI (just re-apply text)
+    const m = MODES[state.mode];
+    if (m) {
+      document.getElementById('set-title').textContent = jteT('mode_' + state.mode + '_name', m.title);
+      document.getElementById('set-sub').textContent = jteT('mode_' + state.mode + '_sub', m.sub);
+    }
+  }
+
+  // Re-render breathe screen mode name
+  const breatheScreen = document.getElementById('screen-breathe');
+  if (breatheScreen && breatheScreen.classList.contains('active')) {
+    const m = MODES[state.mode];
+    if (m) {
+      document.getElementById('bm-name').textContent = jteT('mode_' + state.mode + '_name', m.title);
+    }
+  }
+
+  // Calendar weekdays need re-render if profile is visible (done above)
+};
 
 // ===== Web Audio 系統 (單音 + 泛音 + 迴音版) =====
 function initAudio() {
@@ -4088,10 +4444,10 @@ window.jteLogout=function(){ localStorage.removeItem('jte_user_email');localStor
 <!-- JTE Google Login Modal -->
 <div id="jte-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
   <div style="background:white;border-radius:20px;padding:28px 24px 32px;width:88%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.2)">
-    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif">儲存並同步紀錄</div>
-    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
+    <div style="font-size:15px;font-weight:700;color:#003D7C;margin-bottom:6px;font-family:'Noto Serif TC',serif" data-i18n="login_title">儲存並同步紀錄</div>
+    <div style="font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.6" data-i18n="login_desc">登入 Google 帳號，紀錄會自動同步到練息場主平台的今日 Daily Check。</div>
     <div id="jte-gsi-btn" style="margin-bottom:10px"></div>
-    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif">略過，只在本機儲存</button>
+    <button onclick="jteSkipLogin()" style="width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:10px;font-size:12px;color:#6B7A8D;cursor:pointer;font-family:'Inter',sans-serif" data-i18n="login_skip">略過，只在本機儲存</button>
   </div>
 </div>
 </body>

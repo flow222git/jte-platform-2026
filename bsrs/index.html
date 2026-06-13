@@ -192,7 +192,7 @@ window.JTE_I18N = {
 
     /* —— crisis card — FLAGGED FOR USER REVIEW —— */
     'crisis.title': 'You are not alone — you can reach out right now',
-    'crisis.body': 'Your answers suggest you may have been going through a very difficult time recently. These feelings deserve to be taken seriously — please let a professional support you. You don\'t have to face this alone.',
+    'crisis.body': 'Your answers suggest you may have been going through a very difficult time recently. These feelings deserve to be taken seriously — please let a professional support you. You don\'t have to face this alone, or reach out to a medical facility near you that can help.',
     'crisis.emergency': 'If you are in immediate danger, please call',
 
     /* —— crisis resource names — FLAGGED FOR USER REVIEW —— */
@@ -202,7 +202,7 @@ window.JTE_I18N = {
 
     /* —— item6 note (non-crisis) — FLAGGED FOR USER REVIEW —— */
     'item6.title': 'About question 6',
-    'item6.body': 'You selected a response on the "thoughts of suicide" question. Even if your overall score is low, these feelings are worth caring for. If these thoughts are troubling you, you can call the 24-hour support line <b>1925</b> any time — someone is there to listen.',
+    'item6.body': 'You selected a response on the "thoughts of suicide" question. Even if your overall score is low, these feelings are worth caring for. If these thoughts are troubling you, you can call the 24-hour support line <b>1925</b> any time — someone is there to listen, or reach out to a medical facility near you that can help.',
 
     /* —— score card —— */
     'score.lab': 'Emotional distress score — past week',
@@ -310,7 +310,7 @@ window.JTE_I18N = {
 
     /* —— crisis card — FLAGGED FOR USER REVIEW —— */
     'crisis.title': 'あなたは一人ではありません — 今すぐ話せる場所があります',
-    'crisis.body': 'あなたの回答から、最近とても辛い思いをされているかもしれないことが伝わります。その気持ちは真剣に受け止められるべきです。一人で抱え込まず、専門家に話を聞いてもらってください。',
+    'crisis.body': 'あなたの回答から、最近とても辛い思いをされているかもしれないことが伝わります。その気持ちは真剣に受け止められるべきです。一人で抱え込まず、専門家に話を聞いてもらってください。または、お近くの医療機関にご相談ください。',
     'crisis.emergency': '今すぐ危険な状況にある場合は',
 
     /* —— crisis resource names — FLAGGED FOR USER REVIEW —— */
@@ -320,7 +320,7 @@ window.JTE_I18N = {
 
     /* —— item6 note (non-crisis) — FLAGGED FOR USER REVIEW —— */
     'item6.title': '質問6について',
-    'item6.body': '「自殺について考えた」という質問で回答がありました。全体のスコアが低くても、その気持ちはしっかりケアされるべきです。もしこのような考えが気になるようであれば、いつでもこころの安心相談窓口 <b>1925</b> にお電話ください。話を聞いてくれる人がいます。',
+    'item6.body': '「自殺について考えた」という質問で回答がありました。全体のスコアが低くても、その気持ちはしっかりケアされるべきです。もしこのような考えが気になるようであれば、いつでもこころの安心相談窓口 <b>1925</b> にお電話ください。話を聞いてくれる人がいます。または、お近くの医療機関にご相談ください。',
 
     /* —— score card —— */
     'score.lab': 'この1週間の感情的苦痛スコア',
@@ -512,7 +512,7 @@ function renderResult(){
     });
     const emergencyText=jteT('crisis.emergency','若有立即危險，請立刻撥打');
     c.innerHTML='<div class="ct"><i class="ti ti-heart-handshake"></i>'+_h(jteT('crisis.title','你並不孤單，現在就可以找人說'))+'</div>'+
-      '<p>'+_h(jteT('crisis.body','你的回答顯示，最近這段時間可能很不好受。這些感受值得被認真對待——請讓專業的人陪你一起面對，不用一個人撐。'))+'</p>'+
+      '<p>'+_h(jteT('crisis.body','你的回答顯示，最近這段時間可能很不好受。這些感受值得被認真對待——請讓專業的人陪你一起面對，不用一個人撐，或請就近尋找可提供服務的醫療院所。'))+'</p>'+
       '<ul class="crisis-res">'+resHtml+
       '<li><a href="tel:119"><span class="num">119 / 110</span><span class="nm">'+_h(emergencyText)+'</span></a></li></ul>';
     d.appendChild(c);
@@ -542,7 +542,7 @@ function renderResult(){
     const note=document.createElement('div');note.className='panel';
     note.style.borderColor='var(--severe)';
     note.innerHTML='<h3 style="color:var(--severe)">'+_h(jteT('item6.title','關於第 6 題'))+'</h3>'+
-      '<p>'+jteT('item6.body','你在「自殺的想法」這題有些勾選。即使分數不高，這份感受也值得被好好照顧。若這些念頭讓你困擾，隨時可以撥打安心專線 <b>1925</b>，有人願意聽你說。')+'</p>';
+      '<p>'+jteT('item6.body','你在「自殺的想法」這題有些勾選。即使分數不高，這份感受也值得被好好照顧。若這些念頭讓你困擾，隨時可以撥打安心專線 <b>1925</b>，有人願意聽你說，或請就近尋找可提供服務的醫療院所。')+'</p>';
     d.appendChild(note);
   }
 

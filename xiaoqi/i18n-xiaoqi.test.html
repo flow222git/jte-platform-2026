@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>i18n Test — 小憩。練息</title>
+<style>
+  body { font-family: monospace; padding: 20px; background: #f0f4f5; }
+  #log { white-space: pre; background: #fff; border: 1px solid #ccc; padding: 16px; border-radius: 8px; }
+  .pass { color: green; }
+  .fail { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+<h2>i18n Test — 小憩。練息</h2>
+<div id="log">Loading…</div>
+
+<iframe id="frame" src="index.html" style="width:100%;height:0;border:0;" title="xiaoqi iframe"></iframe>
+
+<script>
+var log = document.getElementById('log');
+var pass = 0, fail = 0;
+
+function assert(cond, msg) {
+  if (cond) {
+    log.innerHTML += '<span class="pass">✓ PASS</span> ' + msg + '\n';
+    pass++;
+  } else {
+    log.innerHTML += '<span class="fail">✗ FAIL</span> ' + msg + '\n';
+    fail++;
+  }
+}
+
+function report() {
+  log.innerHTML += '\n--- DONE pass=' + pass + ' fail=' + fail + ' ---\n';
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { fetch('/__result', { method: 'POST', body: 'DONE pass=' + pass + ' fail=' + fail }); } catch (e) {}
+}
+
+var frame = document.getElementById('frame');
+log.textContent = 'Waiting for iframe…\n';
+
+frame.addEventListener('load', function() {
+  // Wait for i18n engine to load (it's deferred)
+  var maxWait = 8000;
+  var interval = 200;
+  var waited = 0;
+
+  var poller = setInterval(function() {
+    waited += interval;
+    var fw = frame.contentWindow;
+
+    // Check if i18n engine has loaded (sets __jteI18nLoaded or jteSetLang exists)
+    var loaded = fw && (fw.__jteI18nLoaded || typeof fw.jteSetLang === 'function');
+
+    if (loaded || waited >= maxWait) {
+      clearInterval(poller);
+
+      if (!loaded) {
+        log.textContent += 'WARNING: jte-i18n.js may not have loaded (offline/CORS). Testing DOM only.\n';
+      }
+
+      runTests(fw);
+    }
+  }, interval);
+});
+
+function getBodyText(fw) {
+  try { return fw.document.body.innerText || ''; } catch(e) { return ''; }
+}
+
+function runTests(fw) {
+  log.textContent = 'Running tests…\n\n';
+
+  // 1. zh default — known string present
+  var bodyText = getBodyText(fw);
+  assert(
+    bodyText.indexOf('小憩') >= 0 || bodyText.indexOf('練息') >= 0,
+    'zh default: "小憩" or "練息" visible in DOM'
+  );
+
+  // 2. #jte-langbar has 3 buttons (injected by engine)
+  var langbar = fw.document.getElementById('jte-langbar');
+  if (langbar) {
+    var btns = langbar.querySelectorAll('button, [role="button"], span[onclick], a');
+    assert(btns.length >= 3, '#jte-langbar has ≥ 3 language buttons (found ' + btns.length + ')');
+  } else {
+    // Might not have loaded if offline
+    log.textContent += '  (skipped langbar test — jte-langbar not found, engine may be offline)\n';
+  }
+
+  // 3. JTE_I18N dictionary present with en and ja
+  var dict = fw.window && fw.window.JTE_I18N;
+  assert(dict && dict.en && dict.ja, 'JTE_I18N has en and ja keys');
+  if (dict && dict.en) {
+    assert(typeof dict.en.mode_three_name === 'string', 'en.mode_three_name is defined');
+    assert(dict.en.mode_three_name !== '正念三口呼吸', 'en.mode_three_name differs from zh');
+  }
+
+  // 4-6. Robust switch checks: lang attr changes + visible text actually changes + restores
+  var zhText0 = bodyText;
+  if (fw.window && typeof fw.window.jteSetLang === 'function') {
+    fw.window.jteSetLang('en');
+    setTimeout(function() {
+      var langEn = fw.document.documentElement.getAttribute('lang');
+      var textEn = getBodyText(fw);
+      assert(langEn === 'en', 'jteSetLang("en"): <html lang>=en (engine applied)');
+      assert(textEn !== zhText0, 'jteSetLang("en"): visible text changed (translated)');
+
+      fw.window.jteSetLang('ja');
+      setTimeout(function() {
+        var textJa = getBodyText(fw);
+        assert(textJa !== zhText0, 'jteSetLang("ja"): visible text changed');
+
+        fw.window.jteSetLang('zh');
+        setTimeout(function() {
+          var textZh = getBodyText(fw);
+          assert(textZh === zhText0, 'jteSetLang("zh"): Chinese default restored');
+          report();
+        }, 700);
+      }, 700);
+    }, 700);
+  } else {
+    log.textContent += '  (skipped lang-switch tests — jteSetLang not available)\n';
+    report();
+  }
+}
+</script>
+</body>
+</html>
