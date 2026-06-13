@@ -612,7 +612,7 @@ function renderTrend(){
   session.mode='trend'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
-  d.insertAdjacentHTML('beforeend','<p class="lead">最近的量測趨勢。看 RMSSD（心率變異）隨時間的變化，越高通常越放鬆。</p>');
+  d.insertAdjacentHTML('beforeend','<p class="lead">你的身體能量趨勢。分數是跟你自己平常比的相對參考，多量幾次會越來越貼近你。</p>');
   const body=document.createElement('div');body.id='trendBody';
   body.innerHTML='<p class="cam-hint">讀取中…</p>';
   d.appendChild(body);
@@ -636,55 +636,66 @@ function renderTrend(){
   });
 }
 
+// 能量等級→色：high 綠 / mid 金 / low 暖。舊記錄無 level 時退用 state。
+const ENERGY_COLOR={ high:'#2e8b57', mid:'#b8860b', low:'#c2631f' };
+const STATE_COLOR={ relaxed:'#2e8b57', balanced:'#b8860b', tense:'#c2631f' };
+const ENERGY_LABEL={ high:'充足', mid:'平穩', low:'偏低' };
+function recColor(r){ return ENERGY_COLOR[r.level]||STATE_COLOR[r.state]||'#003D7C'; }
 function drawTrend(list){
   const body=document.getElementById('trendBody'); if(!body)return;
-  // 只取有 RMSSD 數值的 HRV 記錄，依 ts 正序（helper 已排序，這裡再保險一次）
-  const recs=(list||[]).filter(function(r){ return r&&r.source==='HRV'&&isFinite(Number(r.rmssd)); })
+  // 所有 HRV 記錄（供列表），依 ts 正序
+  const all=(list||[]).filter(function(r){ return r&&r.source==='HRV'; })
     .sort(function(a,b){ return String(a.ts||'').localeCompare(String(b.ts||'')); });
+  // 折線只取有 energy 分數的記錄（舊記錄無 energy 者退出折線，仍進列表）
+  const recs=all.filter(function(r){ return isFinite(Number(r.energy)); });
   body.innerHTML='';
-  if(!recs.length){
+  if(!all.length){
     const c=document.createElement('div');c.className='guide-card';
     c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有記錄</h3>'+
-      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">量過一次之後，這裡會出現你的 RMSSD 趨勢折線。先量一次看看吧。</p>';
+      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">量過一次之後，這裡會出現你的身體能量趨勢。先量一次看看吧。</p>';
     body.appendChild(c);
     return;
   }
 
-  // —— SVG RMSSD 折線 ——
-  const W=520, H=170, padL=8, padR=8, padT=14, padB=18;
-  const vals=recs.map(function(r){ return Number(r.rmssd); });
-  let mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
-  if(mn===mx){ mn=mn-5; mx=mx+5; }
-  const span=(mx-mn)||1;
-  const n=recs.length;
-  function px(i){ return n===1 ? W/2 : padL + (W-padL-padR)*i/(n-1); }
-  function py(v){ return padT + (H-padT-padB)*(1-(v-mn)/span); }
-
-  const stateColor={ relaxed:'#2e8b57', balanced:'#b8860b', tense:'#c2631f' };
-  let path='';
-  for(let i=0;i<n;i++){ path += (i===0?'M':'L')+px(i).toFixed(1)+' '+py(vals[i]).toFixed(1)+' '; }
-  let dots='';
-  for(let i=0;i<n;i++){
-    const r=recs[i]; const col=stateColor[r.state]||'#003D7C';
-    const whenT=String(r.ts||''); // 供 title 顯示
-    const stZh=STATE_LABEL[r.state]||r.state||'';
-    dots+='<circle cx="'+px(i).toFixed(1)+'" cy="'+py(vals[i]).toFixed(1)+'" r="4.5" fill="'+col+'">'+
-      '<title>'+_h(stZh)+' · RMSSD '+Number(vals[i])+' · '+_h(whenT.slice(0,16).replace('T',' '))+'</title></circle>';
+  // —— SVG 身體能量折線（0–100 固定刻度）——
+  if(recs.length){
+    const W=520, H=170, padL=8, padR=8, padT=14, padB=18;
+    const mn=0, mx=100, span=100;
+    const n=recs.length;
+    function px(i){ return n===1 ? W/2 : padL + (W-padL-padR)*i/(n-1); }
+    function py(v){ return padT + (H-padT-padB)*(1-(v-mn)/span); }
+    let path='';
+    for(let i=0;i<n;i++){ path += (i===0?'M':'L')+px(i).toFixed(1)+' '+py(Number(recs[i].energy)).toFixed(1)+' '; }
+    let dots='';
+    for(let i=0;i<n;i++){
+      const r=recs[i]; const col=recColor(r);
+      const whenT=String(r.ts||'');
+      const lvZh=ENERGY_LABEL[r.level]||'';
+      dots+='<circle cx="'+px(i).toFixed(1)+'" cy="'+py(Number(r.energy)).toFixed(1)+'" r="4.5" fill="'+col+'">'+
+        '<title>身體能量 '+Number(r.energy)+(lvZh?(' · '+_h(lvZh)):'')+' · '+_h(whenT.slice(0,16).replace('T',' '))+'</title></circle>';
+    }
+    const wrap=document.createElement('div');wrap.className='trend-wrap';
+    wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+      '<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
+      dots+'</svg>';
+    body.appendChild(wrap);
+  }else{
+    const c=document.createElement('div');c.className='guide-card';
+    c.innerHTML='<h3><i class="ti ti-chart-line"></i>還沒有身體能量分數</h3>'+
+      '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">再量一次，這裡就會畫出你的身體能量趨勢。</p>';
+    body.appendChild(c);
   }
-  const wrap=document.createElement('div');wrap.className='trend-wrap';
-  wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
-    '<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
-    dots+'</svg>';
-  body.appendChild(wrap);
 
   // —— 列表（新到舊）——
-  for(let i=recs.length-1;i>=0;i--){
-    const r=recs[i];
+  for(let i=all.length-1;i>=0;i--){
+    const r=all[i];
     const card=document.createElement('div');card.className='hist-card';
-    const stZh=STATE_LABEL[r.state]||r.state||'';
+    const hasEn=isFinite(Number(r.energy));
+    const lvZh=ENERGY_LABEL[r.level]||(STATE_LABEL[r.state]||r.state||'');
     const when=String(r.ts||'').slice(0,16).replace('T',' ');
     const head=document.createElement('div');head.className='hist-head';
-    const badge=document.createElement('span');badge.className='hist-badge s-'+(r.state||'balanced');badge.textContent=stZh;
+    const badge=document.createElement('span');badge.className='hist-badge s-'+(ENERGY_TONE[r.level]||r.state||'balanced');
+    badge.textContent=hasEn?('能量 '+String(Number(r.energy))+(lvZh?(' · '+lvZh):'')):lvZh;
     const hr=document.createElement('span');hr.className='hist-hr';hr.textContent=String(Number(r.hr))+' bpm';
     const small=document.createElement('span');small.style.fontSize='12px';small.style.color='var(--ink-soft)';
     small.textContent='RMSSD '+String(Number(r.rmssd))+' ms';
