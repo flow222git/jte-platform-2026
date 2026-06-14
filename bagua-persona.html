@@ -215,6 +215,7 @@
     能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
     這不是算命，是一面認識自己的鏡子。
   </div>
+  <button onclick="resetMyBagua()" style="margin:18px auto 0;display:block;background:none;border:none;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:underline;cursor:pointer">清空我的八卦紀錄（重新體驗一輪）</button>
 </div>
 
 <!-- ───────── QUIZ ───────── -->
@@ -352,6 +353,14 @@ function getBase(){
 }
 // 某分數組的 top 型 key
 function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
+
+// 清空所有八卦本機紀錄（底色／場域／此刻／測過的局），重新乾淨體驗
+function resetMyBagua(){
+  if(!confirm('確定清空你的八卦紀錄嗎？\n會刪除：人格底色、各場域側寫、此刻、測過的局。\n（無法復原）')) return;
+  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+  alert('已清空，可以重新乾淨體驗一輪了 🌱');
+  location.reload();
+}
 
 function showFacetBanner(){
   var bn=document.getElementById('facet-banner');
