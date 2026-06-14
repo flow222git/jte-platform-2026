@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><title>PENDING</title></head><body>
+<pre id="out">running...</pre>
+<iframe id="f" src="bagua-persona.html" style="width:600px;height:400px"></iframe>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+document.getElementById('f').onload=function(){
+  try{
+    var w=document.getElementById('f').contentWindow;
+    var d=w.document;
+
+    // 1. structure
+    ok(w.QUESTIONS.length===24,'24 questions, got '+w.QUESTIONS.length);
+    var cnt={}; w.QUESTIONS.forEach(function(q){cnt[q.k]=(cnt[q.k]||0)+1;});
+    var per3=Object.keys(w.E).every(function(k){return cnt[k]===3;});
+    ok(per3,'3 questions per energy: '+JSON.stringify(cnt));
+    ok(Object.keys(w.E).length===8,'8 energies');
+
+    // 2. scoring — max out qian, zero others
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=3; });
+    var sc=w.computeScores();
+    ok(sc.qian===100,'qian=100 when maxed, got '+sc.qian);
+    ok(sc.kun===0,'kun=0 when unanswered, got '+sc.kun);
+
+    // 3. result renders with qian as top
+    w.showResult();
+    var title=d.querySelector('.tc-title');
+    ok(title && title.textContent.indexOf('乾金')>=0,'top type 乾金, got '+(title?title.textContent:'none'));
+    ok(d.querySelector('.radar-wrap svg'),'radar svg rendered');
+    ok(d.querySelectorAll('.tool').length>=2,'tool recommendations present');
+    ok(d.querySelector('.cta-now a').getAttribute('href')==='ven-i/','問易 CTA link');
+    // localStorage saved
+    var saved=w.localStorage.getItem('bagua_persona_v1');
+    ok(saved && JSON.parse(saved).top==='qian','result saved to localStorage');
+
+    // 4. different profile — max out kan
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='kan') w.answers[i]=3; });
+    w.showResult();
+    ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'kan profile → 坎水');
+
+    // 5. all-null doesn't throw
+    w.answers=new Array(24).fill(null);
+    var sc2=w.computeScores();
+    ok(sc2.qian===0,'null answers → 0');
+
+    // 6. radar has 8 score dots + 8 labels
+    w.answers=new Array(24).fill(2); w.showResult();
+    ok(d.querySelectorAll('.rlabel').length===8,'8 radar labels, got '+d.querySelectorAll('.rlabel').length);
+  }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
+
+  var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
+  document.title=msg;
+  document.getElementById('out').textContent=msg;
+};
+</script>
+</body></html>

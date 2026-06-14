@@ -1,0 +1,434 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>八卦能量人格 · 測驗</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
+  .sans{font-family:ui-sans-serif,sans-serif}
+  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:14px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+  .home-link:hover{background:var(--surface)}
+
+  /* ── Cover ── */
+  #cover{text-align:center;padding:8px 0}
+  #cover .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.24em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:14px}
+  #cover h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px}
+  #cover .lead{font-size:14px;color:var(--ink);max-width:380px;margin:0 auto 8px;line-height:1.9}
+  #cover .trigrams{font-size:26px;color:var(--pine);letter-spacing:.18em;margin:18px 0 6px;opacity:.85}
+  .start-btn{display:inline-block;background:var(--pine);color:#fff;border:none;font-family:"Songti TC","Noto Serif TC",serif;
+    font-size:16px;letter-spacing:.1em;padding:13px 40px;border-radius:999px;cursor:pointer;margin:18px 0 10px;
+    box-shadow:0 8px 24px rgba(53,97,79,.22);transition:transform .15s}
+  .start-btn:hover{transform:translateY(-2px)}
+  .meta-line{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-bottom:18px}
+  .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
+    border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;text-align:left;
+    max-width:430px;margin:14px auto 0;line-height:1.85}
+
+  /* ── Quiz ── */
+  #quiz{display:none}
+  .prog-wrap{margin-bottom:26px}
+  .prog-top{display:flex;justify-content:space-between;align-items:baseline;font-family:ui-sans-serif,sans-serif;
+    font-size:12px;color:var(--muted);margin-bottom:7px}
+  .prog-bar{height:6px;background:var(--surface2);border-radius:999px;overflow:hidden}
+  .prog-fill{height:100%;background:var(--pine);border-radius:999px;transition:width .3s ease;width:0}
+  .q-num{font-family:ui-sans-serif,sans-serif;font-size:12px;letter-spacing:.18em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:10px}
+  .q-text{font-size:21px;line-height:1.7;letter-spacing:.02em;margin-bottom:30px;min-height:2.6em}
+  .opts{display:flex;flex-direction:column;gap:11px}
+  .opt{background:var(--surface);border:1.5px solid var(--line);border-radius:13px;padding:15px 20px;
+    font-family:"Songti TC","Noto Serif TC",serif;font-size:16px;color:var(--ink);cursor:pointer;text-align:left;
+    transition:all .15s;display:flex;align-items:center;gap:13px}
+  .opt:hover{border-color:var(--pine);background:#fff;transform:translateX(3px)}
+  .opt .dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--line);flex:none}
+  .opt:hover .dot{border-color:var(--pine)}
+  .opt.sel{border-color:var(--pine);background:#eef3ee}
+  .opt.sel .dot{background:var(--pine);border-color:var(--pine)}
+  .back-btn{margin-top:24px;background:none;border:none;font-family:ui-sans-serif,sans-serif;font-size:13px;
+    color:var(--muted);cursor:pointer;padding:6px 4px}
+  .back-btn:hover{color:var(--ink)}
+  .back-btn[disabled]{opacity:.3;cursor:default}
+
+  /* ── Result ── */
+  #result{display:none}
+  .share-hint{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-bottom:10px}
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px 20px;
+    box-shadow:0 14px 38px rgba(74,62,44,.1);position:relative;overflow:hidden;text-align:center;margin-bottom:18px}
+  .typecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,var(--pine))}
+  .tc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px}
+  .tc-sym{font-size:48px;line-height:1;margin-bottom:6px;color:var(--accent,var(--pine))}
+  .tc-title{font-size:25px;letter-spacing:.08em;margin-bottom:9px}
+  .tc-essence{font-size:14.5px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
+
+  .radar-wrap{max-width:380px;margin:6px auto 4px}
+  .radar-wrap svg{width:100%;height:auto;display:block}
+  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--pine);font-weight:700}
+  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:5px 13px;justify-content:center;font-size:11.5px;color:var(--muted);
+    font-family:ui-sans-serif,sans-serif;margin:2px 0 20px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
+    margin-bottom:12px;font-weight:700}
+  .trait-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.7}
+  .trait-row:last-child{border-bottom:none}
+  .trait-row b{flex:none;width:46px;font-family:ui-sans-serif,sans-serif;font-size:12.5px;font-weight:700}
+  .trait-row.s b{color:var(--pine)} .trait-row.b b{color:var(--cinnabar)} .trait-row.g b{color:var(--gold)}
+  .portrait{font-size:14px;line-height:1.95;color:var(--ink)}
+  .portrait .em{color:var(--pine);font-weight:600}
+  .portrait-close{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-style:italic;
+    color:var(--pine);font-size:13.5px;line-height:1.8}
+
+  .tool{display:flex;align-items:center;gap:13px;background:var(--surface2);border-radius:12px;padding:12px 14px;
+    margin-bottom:9px;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s}
+  .tool:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(74,62,44,.1)}
+  .tool .tic{font-size:22px;flex:none;width:30px;text-align:center}
+  .tool .tbody{flex:1}
+  .tool .tnm{font-family:ui-sans-serif,sans-serif;font-size:13.5px;font-weight:700;color:var(--pine)}
+  .tool .tds{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .tool .tarr{color:var(--muted);font-size:16px}
+
+  .cta-now{background:linear-gradient(120deg,#35614f,#2c5142);color:#fff;border-radius:14px;padding:17px 19px;
+    margin-bottom:14px}
+  .cta-now .cn-h{font-family:ui-sans-serif,sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    opacity:.8;margin-bottom:6px}
+  .cta-now .cn-t{font-size:15px;line-height:1.8;margin-bottom:13px}
+  .cta-now a{display:inline-block;background:#fff;color:var(--pine);text-decoration:none;font-family:ui-sans-serif,sans-serif;
+    font-size:13px;font-weight:700;padding:9px 22px;border-radius:999px}
+  .retake{display:block;margin:6px auto 16px;background:none;border:1px solid var(--line);border-radius:999px;
+    font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);padding:9px 24px;cursor:pointer}
+  .retake:hover{background:var(--surface)}
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
+    border-top:1px solid var(--line);padding-top:16px}
+</style></head>
+<body>
+<a class="home-link" href="index.html">← 回練息場</a>
+
+<!-- ───────── COVER ───────── -->
+<div id="cover">
+  <div class="eyebrow">BAGUA ENERGY · PERSONA</div>
+  <h1>八卦能量人格</h1>
+  <p class="lead">古人用八卦描述天地間八種基本能量。<br>其實，它們也住在你身上——<br>你慣用哪幾種？又有哪些還沒長開？</p>
+  <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
+  <button class="start-btn" onclick="startQuiz()">開始測驗</button>
+  <div class="meta-line">24 題 · 約 3 分鐘 · 不需登入</div>
+  <div class="honest">
+    這測的是你的<b>「底色」</b>——你習慣動用的內在能量，是一種傾向，不是固定標籤。
+    能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
+    這不是算命，是一面認識自己的鏡子。
+  </div>
+</div>
+
+<!-- ───────── QUIZ ───────── -->
+<div id="quiz">
+  <div class="prog-wrap">
+    <div class="prog-top"><span id="prog-label" class="sans">第 1 / 24 題</span><span id="prog-pct" class="sans">4%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+  <div class="q-num" id="q-num">Q1</div>
+  <div class="q-text" id="q-text"></div>
+  <div class="opts" id="opts"></div>
+  <button class="back-btn" id="back-btn" onclick="goBack()">← 上一題</button>
+</div>
+
+<!-- ───────── RESULT ───────── -->
+<div id="result"></div>
+
+<script>
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
+var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+var NS='http://www.w3.org/2000/svg';
+
+// 8 energies — sym/fn/state from the bagua energy model; polar positions reuse bagua-map wheel
+var E={
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',state:'規劃、領導、創造',
+   title:'乾金 · 開創者',essence:'你是天生的開創者——看得見方向，敢做決定。給你一張白紙，你能畫出藍圖、帶人往前。',
+   str:'決斷力、領導、開創新局',blind:'容易獨斷、什麼都自己扛、難以放手或聽不進不同聲音',
+   grow:'練習「坤」的承載——信任、授權，讓別人也能出力。',tools:['wenyi','writespace'],pos:{x:200,y:60}},
+ li:{sym:'☲',nm:'離',wx:'fire',fn:'顯現／覺察',state:'洞察、理解、看見',
+   title:'離火 · 洞見者',essence:'你是看得清的人——先想明白、看穿本質，常能指出別人沒注意到的關鍵。',
+   str:'洞察、分析、覺察力',blind:'容易想太多、卡在分析裡遲遲不動，或看得太透而疏離',
+   grow:'練習「坎」的沉潛——讓腦袋休息，有些事先體驗、才會真懂。',tools:['wenyi','hrv'],pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',state:'行動、冒險、開始',
+   title:'震木 · 行動者',essence:'你是行動派——有念頭就衝，享受開始與突破的衝勁，是團隊的發動機。',
+   str:'行動力、勇氣、開創突破',blind:'容易衝動焦躁、停不下來，少了煞車與沉澱',
+   grow:'練習「艮」的暫停——適時停下、設界線，讓衝勁走得更遠。',tools:['xiaoqi','hrv'],pos:{x:340,y:200}},
+ dui:{sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',state:'對話、連結、人際',
+   title:'兌金 · 連結者',essence:'你靠交流而發光——擅長把感受說出口、把人聚在一起，所到之處氣氛變熱。',
+   str:'表達、親和、人際連結',blind:'可能過度在意他人、流於空談或討好，少了獨處沉澱',
+   grow:'練習深耕與留白——把連結變成扎實的合作，也留點時間給自己。',tools:['twct','bsrs'],pos:{x:299,y:299}},
+ kun:{sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',state:'接納、支持、穩定',
+   title:'坤土 · 承載者',essence:'你溫厚包容——是大家的依靠，擅長承接、支持，讓一切穩穩運轉。',
+   str:'包容、耐心、支持、滋養',blind:'容易過度承擔、犧牲自己，把別人放在自己之前',
+   grow:'練習「乾」與「艮」——也為自己開創、設界，先把自己接住。',tools:['bsrs','hrv'],pos:{x:200,y:340}},
+ kan:{sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',state:'沉澱、休息、反思',
+   title:'坎水 · 沉潛者',essence:'你深沉內斂——擅長獨處、沉澱與反思，是沉得住氣、想得夠深的人。',
+   str:'內省、深度、恢復力、沉穩',blind:'容易往內縮、想得多動得少，或在低潮裡待太久',
+   grow:'練習「離」與「震」——把想清楚的事顯現出來、化為行動。',tools:['breathe','writespace'],pos:{x:101,y:299}},
+ gen:{sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',state:'結束、拒絕、定界',
+   title:'艮土 · 守界者',essence:'你穩定可靠——知道何時該停、敢說不，守得住自己的節奏與界線。',
+   str:'穩定、界線感、踏實、不隨波逐流',blind:'可能太固執、抗拒改變，或停太久而錯過時機',
+   grow:'練習「震」的啟動——對的時候，鬆開煞車、允許自己冒一次險。',tools:['xiaoqi','wenyi'],pos:{x:60,y:200}},
+ xun:{sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',state:'推廣、成長、合作',
+   title:'巽木 · 協作者',essence:'你柔韌而有滲透力——擅長串連人與資源，讓事情自然生長、影響擴散。',
+   str:'協作、連結資源、順勢推進、彈性',blind:'容易攤太開而失焦、什麼都想沾、難以聚焦或拒絕',
+   grow:'練習「艮」的聚焦與界線——收斂焦點，把話講明白、把界線立清楚。',tools:['twct','writespace'],pos:{x:101,y:101}}
+};
+var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // clockwise from top
+
+var TOOLS={
+ breathe:{nm:'呼吸覺察',url:'BreatheAware/',ic:'🌬',ds:'即時看見你的呼吸狀態。'},
+ xiaoqi:{nm:'小憩 · 練息',url:'xiaoqi/',ic:'🍃',ds:'15 種呼吸法，選一個現在做。'},
+ hrv:{nm:'心率變異 HRV',url:'hrv/',ic:'❤️',ds:'手指貼鏡頭，一分鐘量身體。'},
+ wenyi:{nm:'問易 · 卜卦',url:'ven-i/',ic:'☯',ds:'從易經，回來看此刻的自己。'},
+ writespace:{nm:'心理位移書寫',url:'https://flow222git.github.io/writespace/',ic:'✍️',ds:'換個位置，把心裡的話寫出來。'},
+ twct:{nm:'溝通類型測驗',url:'https://flow222git.github.io/twct/',ic:'💬',ds:'看你在壓力下怎麼溝通。'},
+ bsrs:{nm:'心情溫度計',url:'bsrs/',ic:'🌡',ds:'一分鐘，看看最近的情緒。'},
+ baguamap:{nm:'八卦能量系統圖',url:'bagua-map.html',ic:'☯',ds:'認識這八種內在能量。'}
+};
+
+// 24 questions, 3 per energy, interleaved (round-robin over the 8)
+var QUESTIONS=[
+ {k:'qian',t:'面對一群人沒方向時，我常是跳出來做決定、定方向的那個。'},
+ {k:'dui', t:'我喜歡跟人聊天、分享，在互動裡會感到開心又有活力。'},
+ {k:'li',  t:'遇到事情，我習慣先看清楚、想明白，再決定怎麼做。'},
+ {k:'xun', t:'我擅長把人、資源、機會串在一起，讓事情慢慢長大。'},
+ {k:'zhen',t:'有了念頭我會很快行動，不太喜歡拖。'},
+ {k:'kan', t:'我需要獨處、安靜的時間來沉澱和恢復。'},
+ {k:'gen', t:'該停的時候我停得下來，也敢對不適合的事說「不」。'},
+ {k:'kun', t:'我願意承接別人的情緒和需要，是大家可以依靠的人。'},
+ {k:'qian',t:'比起照著別人的安排走，我更想自己開創、自己作主。'},
+ {k:'dui', t:'心裡有想法或感受，我習慣說出來、和人交流。'},
+ {k:'li',  t:'我常能察覺別人沒注意到的細節或盲點。'},
+ {k:'xun', t:'我做事偏柔軟、順勢推進，而不是硬碰硬。'},
+ {k:'zhen',t:'我喜歡嘗試新的、有點冒險的事，享受「開始」的衝勁。'},
+ {k:'kan', t:'累了或低潮時，我習慣往內收、慢慢調整，而不是往外衝。'},
+ {k:'gen', t:'我重視自己的界線和節奏，不會被別人輕易推著走。'},
+ {k:'kun', t:'比起搶著表現，我更常在背後支持、照顧，讓事情穩穩運轉。'},
+ {k:'qian',t:'我喜歡設定大目標，然後想辦法把它實現。'},
+ {k:'dui', t:'我很能炒熱氣氛，讓一群人聊得起來。'},
+ {k:'li',  t:'我喜歡分析、理解事情背後的道理。'},
+ {k:'xun', t:'我喜歡讓好的東西擴散出去、影響更多人。'},
+ {k:'zhen',t:'卡住時，我傾向用行動去突破，而不是一直想。'},
+ {k:'kan', t:'我喜歡深入地想事情，享受沉靜反思的時刻。'},
+ {k:'gen', t:'我做事踏實穩定，知道適可而止，不喜歡硬撐。'},
+ {k:'kun', t:'我有耐心、能包容，容得下不同的人和狀況。'}
+];
+var OPTS=[{t:'很像我',v:3},{t:'有點像',v:2},{t:'不太像',v:1},{t:'很不像',v:0}];
+
+var answers=new Array(QUESTIONS.length).fill(null);
+var idx=0;
+
+function startQuiz(){
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  idx=0; renderQ();
+  window.scrollTo(0,0);
+}
+
+function renderQ(){
+  var q=QUESTIONS[idx];
+  var n=QUESTIONS.length;
+  document.getElementById('prog-label').textContent='第 '+(idx+1)+' / '+n+' 題';
+  var pct=Math.round((idx)/n*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('q-num').textContent='Q'+(idx+1);
+  document.getElementById('q-text').textContent=q.t;
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  OPTS.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='opt'+(answers[idx]===o.v?' sel':'');
+    b.innerHTML='<span class="dot"></span>'+o.t;
+    b.onclick=function(){ answers[idx]=o.v; advance(); };
+    ow.appendChild(b);
+  });
+  document.getElementById('back-btn').disabled = idx===0;
+}
+
+function advance(){
+  // brief highlight then move on
+  renderQ();
+  if(idx<QUESTIONS.length-1){
+    setTimeout(function(){ idx++; renderQ(); window.scrollTo(0,0); },180);
+  } else {
+    setTimeout(showResult,200);
+  }
+}
+
+function goBack(){ if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);} }
+
+// ── Scoring ──────────────────────────────────────────────
+function computeScores(){
+  var raw={},cnt={};
+  Object.keys(E).forEach(function(k){raw[k]=0;cnt[k]=0;});
+  QUESTIONS.forEach(function(q,i){
+    var v=answers[i]==null?0:answers[i];
+    raw[q.k]+=v; cnt[q.k]++;
+  });
+  var sc={};
+  Object.keys(E).forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*3)*100); });
+  return sc;
+}
+
+// ── Radar wheel ──────────────────────────────────────────
+function buildRadar(sc,topKey){
+  var cx=200,cy=200,baseR=140;
+  var svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','-54 -46 508 500');
+  // grid octagons
+  [0.25,0.5,0.75,1].forEach(function(f){
+    var pts=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      return (cx+ux*baseR*f)+','+(cy+uy*baseR*f);
+    }).join(' ');
+    var poly=document.createElementNS(NS,'polygon');
+    poly.setAttribute('points',pts);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','var(--line)');
+    poly.setAttribute('stroke-width',f===1?1.4:1);
+    poly.setAttribute('opacity',f===1?0.9:0.5);
+    svg.appendChild(poly);
+  });
+  // spokes
+  EKEYS.forEach(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',cx);ln.setAttribute('y1',cy);
+    ln.setAttribute('x2',cx+ux*baseR);ln.setAttribute('y2',cy+uy*baseR);
+    ln.setAttribute('stroke','var(--line)');ln.setAttribute('stroke-width',1);ln.setAttribute('opacity',0.5);
+    svg.appendChild(ln);
+  });
+  // score polygon (radius 30..140)
+  function rOf(s){return 30+(s/100)*110;}
+  var sp=EKEYS.map(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    return (cx+ux*r)+','+(cy+uy*r);
+  }).join(' ');
+  var area=document.createElementNS(NS,'polygon');
+  area.setAttribute('points',sp);
+  area.setAttribute('fill','rgba(53,97,79,.16)');
+  area.setAttribute('stroke','var(--pine)');
+  area.setAttribute('stroke-width',2);
+  svg.appendChild(area);
+  // dots + labels
+  EKEYS.forEach(function(k){
+    var b=E[k];
+    var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    var px=cx+ux*r, py=cy+uy*r;
+    var dot=document.createElementNS(NS,'circle');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);
+    dot.setAttribute('r',k===topKey?7:5);
+    dot.setAttribute('fill',W[b.wx]);
+    dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
+    svg.appendChild(dot);
+    // label outside
+    var lr=baseR+22;
+    var lx=cx+ux*lr, ly=cy+uy*lr;
+    var anchor = ux>0.35?'start':(ux<-0.35?'end':'middle');
+    if(anchor==='start') lx+=2; else if(anchor==='end') lx-=2;
+    ly += uy>0.35?12:(uy<-0.35?-6:4);
+    var tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
+    tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
+    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
+    svg.appendChild(tx);
+    var ts=document.createElementNS(NS,'text');
+    ts.setAttribute('class','rscore');
+    ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
+    ts.textContent=sc[k];
+    svg.appendChild(ts);
+  });
+  return svg;
+}
+
+// ── Persona (top2 + low2) ────────────────────────────────
+function buildPortrait(sc,sorted){
+  var t1=E[sorted[0]],t2=E[sorted[1]];
+  var l1=E[sorted[sorted.length-1]],l2=E[sorted[sorted.length-2]];
+  var p='你的能量底色裡，最鮮明的是「<span class="em">'+t1.fn+'</span>」和「<span class="em">'+t2.fn+'</span>」——'
+    +t1.state+'，也'+t2.state+'。';
+  p+='相對地，你最少動用的是「'+l1.fn+'」與「'+l2.fn+'」，那是你還沒長開、最有空間的部分。';
+  var close='善用你最鮮明的那兩種能量，偶爾刻意練練最少用的那兩種，整個人會更完整、更有彈性。';
+  return {p:p,close:close};
+}
+
+// ── Render result ────────────────────────────────────────
+function showResult(){
+  var sc=computeScores();
+  var sorted=Object.keys(E).sort(function(a,b){ return sc[b]-sc[a]; });
+  var topKey=sorted[0];
+  var top=E[topKey];
+  var accent=W[top.wx];
+
+  // save
+  try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title})); }catch(e){}
+
+  var port=buildPortrait(sc,sorted);
+  var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
+    + toolRow(TOOLS.baguamap);
+
+  var html=''
+   +'<div class="share-hint">↓ 這是你的能量側寫 · 歡迎截圖分享</div>'
+   +'<div class="typecard" style="--accent:'+accent+'">'
+     +'<div class="tc-eyebrow">你的八卦能量人格</div>'
+     +'<div class="tc-sym">'+top.sym+'</div>'
+     +'<div class="tc-title">'+top.title+'</div>'
+     +'<div class="tc-essence">'+top.essence+'</div>'
+   +'</div>'
+   +'<div class="radar-wrap" id="radar-wrap"></div>'
+   +'<div class="legend">'
+     +'<span><i style="background:'+W.metal+'"></i>金 乾兌</span>'
+     +'<span><i style="background:'+W.wood+'"></i>木 震巽</span>'
+     +'<span><i style="background:'+W.water+'"></i>水 坎</span>'
+     +'<span><i style="background:'+W.fire+'"></i>火 離</span>'
+     +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
+   +'</div>'
+   +'<div class="block">'
+     +'<h3>這一型的你</h3>'
+     +'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div>'
+     +'<div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div>'
+     +'<div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>'
+   +'</div>'
+   +'<div class="block">'
+     +'<h3>🧍 人物速寫</h3>'
+     +'<div class="portrait">'+port.p+'</div>'
+     +'<div class="portrait-close">'+port.close+'</div>'
+   +'</div>'
+   +'<div class="block">'
+     +'<h3>適合你的下一步</h3>'+toolsHtml
+   +'</div>'
+   +'<div class="cta-now">'
+     +'<div class="cn-h">底色 vs 此刻</div>'
+     +'<div class="cn-t">這張側寫是你的<b>「底色」</b>——你慣用的能量。<br>想看你<b>「此刻」</b>的能量狀態嗎？問易會依你當下的提問，算出此刻的卦象。</div>'
+     +'<a href="ven-i/">去問易看此刻 →</a>'
+   +'</div>'
+   +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
+   +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+
+  var r=document.getElementById('result');
+  r.innerHTML=html;
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('cover').style.display='none';
+  r.style.display='block';
+  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey));
+  window.scrollTo(0,0);
+}
+
+function toolRow(t){
+  return '<a class="tool" href="'+t.url+'">'
+    +'<span class="tic">'+t.ic+'</span>'
+    +'<span class="tbody"><span class="tnm">'+t.nm+'</span><span class="tds">'+t.ds+'</span></span>'
+    +'<span class="tarr">→</span></a>';
+}
+</script>
+</body></html>
