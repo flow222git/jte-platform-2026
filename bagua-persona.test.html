@@ -273,6 +273,25 @@ document.getElementById('f').onload=function(){
     // 30. decodeCodeFromImageData null-guards
     ok(w.decodeCodeFromImageData(null)===null,'decodeCodeFromImageData(null) → null');
 
+    // 31. 底色存檔含 ts（記錄中心要用）
+    w.answers=new Array(24).fill(2); w.currentFacet=null; w.showResult();
+    var pv=JSON.parse(w.localStorage.getItem('bagua_persona_v1'));
+    ok(pv && !!pv.ts && !isNaN(new Date(pv.ts).getTime()),'底色存檔含有效 ts, got '+(pv&&pv.ts));
+
+    // 32. runCompat 成功 → 寫一筆 bagua_compat_v1（含 ts/sim/comp/otherTop/otherTitle）
+    w.localStorage.removeItem('bagua_compat_v1');
+    var ca={qian:0,li:0,zhen:90,dui:0,kun:0,kan:0,gen:0,xun:0};
+    var cb={qian:0,li:90,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0};
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:ca,top:'zhen',title:w.E.zhen.title,ts:new Date().toISOString()}));
+    w.pendingShareCode=null; w.showCompat();
+    d.getElementById('other-code').value=w.encodeCode(cb);
+    w.runCompat();
+    var ch=JSON.parse(w.localStorage.getItem('bagua_compat_v1'));
+    ok(Array.isArray(ch) && ch.length===1,'compat record saved (1 entry), got '+(ch&&ch.length));
+    var c0=ch&&ch[0];
+    ok(c0 && c0.otherTop==='li' && c0.otherTitle===w.E.li.title,'compat record otherTop/Title (li/離火)');
+    ok(c0 && typeof c0.sim==='number' && typeof c0.comp==='number' && !!c0.ts,'compat record has sim/comp/ts');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');

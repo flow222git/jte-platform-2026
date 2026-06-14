@@ -1,0 +1,339 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>📒 我的八卦記錄</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
+  .sans{font-family:ui-sans-serif,sans-serif}
+  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:14px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+  .home-link:hover{background:var(--surface)}
+
+  .page-head{text-align:center;margin:6px 0 22px}
+  .page-head h1{font-size:26px;letter-spacing:.06em;margin-bottom:8px}
+  .page-head .sub{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);line-height:1.7}
+
+  .sec{margin-bottom:24px}
+  .sec h2{font-family:ui-sans-serif,sans-serif;font-size:14px;letter-spacing:.06em;color:var(--pine);
+    font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:6px}
+
+  .empty{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);background:var(--surface);
+    border:1px dashed var(--line);border-radius:12px;padding:14px 16px;line-height:1.85}
+  .empty a{color:var(--pine);font-weight:700;text-decoration:none}
+
+  /* 底色卡片 */
+  .basecard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;
+    box-shadow:0 10px 30px rgba(74,62,44,.08);text-align:center}
+  .basecard .bc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:5px}
+  .basecard .bc-title{font-size:21px;letter-spacing:.06em;margin-bottom:2px}
+  .basecard .bc-sym{font-size:30px;color:var(--pine);line-height:1;margin-bottom:6px}
+  .basecard .bc-radar{max-width:280px;margin:4px auto 6px}
+  .basecard .bc-radar svg{width:100%;height:auto;display:block}
+  .basecard .bc-date{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .basecard .bc-link{display:inline-block;margin-top:10px;font-family:ui-sans-serif,sans-serif;font-size:12.5px;
+    color:var(--pine);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 16px}
+  .basecard .bc-link:hover{background:var(--surface2)}
+  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--pine);font-weight:700}
+  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+
+  /* 列表列 */
+  .row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;padding:11px 14px;margin-bottom:9px}
+  .row .r-ic{font-size:20px;flex:none;width:26px;text-align:center;color:var(--pine)}
+  .row .r-body{flex:1;min-width:0}
+  .row .r-nm{font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:700;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .r-st{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .row .r-link{flex:none;font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);
+    text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+  .row .r-link:hover{background:var(--surface2)}
+  .fit-badge{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:11px;font-weight:700;
+    color:var(--pine);background:var(--surface2);border-radius:999px;padding:1px 8px;margin-left:6px}
+
+  .clear-wrap{text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
+  .clear-btn{background:none;border:1px solid var(--cinnabar);color:var(--cinnabar);
+    font-family:ui-sans-serif,sans-serif;font-size:13px;padding:9px 22px;border-radius:999px;cursor:pointer}
+  .clear-btn:hover{background:var(--cinnabar);color:#fff}
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;
+    text-align:center;margin-top:16px}
+</style></head>
+<body>
+<a class="home-link" href="index.html">← 回練息場</a>
+
+<div class="page-head">
+  <h1>📒 我的八卦記錄</h1>
+  <div class="sub">都存在這台裝置上（本機、未上傳；清除瀏覽器資料會消失）</div>
+</div>
+
+<div id="app"></div>
+
+<div class="clear-wrap">
+  <button class="clear-btn" onclick="clearAll()">🧹 清空所有記錄</button>
+  <div class="foot">八卦能量系統 · 練息場 Join to Enjoy</div>
+</div>
+
+<script>
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
+var NS='http://www.w3.org/2000/svg';
+
+// 8 energies — 含 title 型稱號（從 bagua-persona 的 E 複製需要的欄位）
+var E={
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',title:'乾金 · 開創者',pos:{x:200,y:60}},
+ li:  {sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',title:'離火 · 洞見者',pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood', fn:'啟動／突破',title:'震木 · 行動者',pos:{x:340,y:200}},
+ dui: {sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',title:'兌金 · 連結者',pos:{x:299,y:299}},
+ kun: {sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',title:'坤土 · 承載者',pos:{x:200,y:340}},
+ kan: {sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',title:'坎水 · 沉潛者',pos:{x:101,y:299}},
+ gen: {sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',title:'艮土 · 守界者',pos:{x:60,y:200}},
+ xun: {sym:'☴',nm:'巽',wx:'wood', fn:'擴散／連結',title:'巽木 · 協作者',pos:{x:101,y:101}}
+};
+var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
+
+// 場域 top → title map（從 persona E 複製）；場域名
+var FACETS=[
+ {id:'work',     nm:'工作的你', ic:'💼'},
+ {id:'relation', nm:'關係裡的你', ic:'💞'},
+ {id:'solo',     nm:'獨處的你', ic:'🌙'}
+];
+var FACET_BY_ID={}; FACETS.forEach(function(f){FACET_BY_ID[f.id]=f;});
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
+function relTimeStr(ts){
+  try{ var then=new Date(ts).getTime(); if(isNaN(then)) return '';
+    var days=Math.floor((Date.now()-then)/86400000);
+    if(days<=0) return '今天'; if(days===1) return '昨天';
+    if(days<7) return days+' 天前'; if(days<30) return Math.floor(days/7)+' 週前';
+    return Math.floor(days/30)+' 個月前';
+  }catch(e){ return ''; }
+}
+function dateOrTested(ts){ var r=ts?relTimeStr(ts):''; return r||'已測'; }
+
+// ── localStorage 讀取 ────────────────────────────────────
+function getBase(){
+  try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.scores)?o:null; }
+  catch(e){ return null; }
+}
+function getFacets(){
+  try{ var raw=localStorage.getItem('bagua_facets_v1'); if(!raw) return {}; var o=JSON.parse(raw); return (o&&typeof o==='object')?o:{}; }
+  catch(e){ return {}; }
+}
+function getFields(){
+  try{ var raw=localStorage.getItem('bagua_fields_v1'); if(!raw) return []; var a=JSON.parse(raw); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function getCompat(){
+  try{ var raw=localStorage.getItem('bagua_compat_v1'); if(!raw) return []; var a=JSON.parse(raw); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function getNow(){
+  try{ var raw=localStorage.getItem('bagua_now_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.scores)?o:null; }
+  catch(e){ return null; }
+}
+
+// 適配度（與 bagua-field 同公式）：依局需求加權的覆蓋率
+function fitScore(you,field){
+  var sw=0,sc=0;
+  EKEYS.forEach(function(k){
+    var fv=field[k]||0; var yv=you[k]||0;
+    var coverage=Math.min(yv,fv)/Math.max(fv,1);
+    sw+=fv; sc+=fv*coverage;
+  });
+  return sw===0?0:Math.round(sc/sw*100);
+}
+
+// ── Radar wheel（沿用 bagua-persona 的 buildRadar） ──────
+function buildRadar(sc,topKey){
+  var cx=200,cy=200,baseR=140;
+  var svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','-54 -46 508 500');
+  [0.25,0.5,0.75,1].forEach(function(f){
+    var pts=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      return (cx+ux*baseR*f)+','+(cy+uy*baseR*f);
+    }).join(' ');
+    var poly=document.createElementNS(NS,'polygon');
+    poly.setAttribute('points',pts);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','var(--line)');
+    poly.setAttribute('stroke-width',f===1?1.4:1);
+    poly.setAttribute('opacity',f===1?0.9:0.5);
+    svg.appendChild(poly);
+  });
+  EKEYS.forEach(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',cx);ln.setAttribute('y1',cy);
+    ln.setAttribute('x2',cx+ux*baseR);ln.setAttribute('y2',cy+uy*baseR);
+    ln.setAttribute('stroke','var(--line)');ln.setAttribute('stroke-width',1);ln.setAttribute('opacity',0.5);
+    svg.appendChild(ln);
+  });
+  function rOf(s){return 30+(s/100)*110;}
+  var sp=EKEYS.map(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var r=rOf(sc[k]||0);
+    return (cx+ux*r)+','+(cy+uy*r);
+  }).join(' ');
+  var area=document.createElementNS(NS,'polygon');
+  area.setAttribute('points',sp);
+  area.setAttribute('fill','rgba(53,97,79,.16)');
+  area.setAttribute('stroke','var(--pine)');
+  area.setAttribute('stroke-width',2);
+  svg.appendChild(area);
+  EKEYS.forEach(function(k){
+    var b=E[k];
+    var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
+    var r=rOf(sc[k]||0);
+    var px=cx+ux*r, py=cy+uy*r;
+    var dot=document.createElementNS(NS,'circle');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);
+    dot.setAttribute('r',k===topKey?7:5);
+    dot.setAttribute('fill',W[b.wx]);
+    dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
+    svg.appendChild(dot);
+    var lr=baseR+22;
+    var lx=cx+ux*lr, ly=cy+uy*lr;
+    var anchor = ux>0.35?'start':(ux<-0.35?'end':'middle');
+    if(anchor==='start') lx+=2; else if(anchor==='end') lx-=2;
+    ly += uy>0.35?12:(uy<-0.35?-6:4);
+    var tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
+    tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
+    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
+    svg.appendChild(tx);
+    var ts=document.createElementNS(NS,'text');
+    ts.setAttribute('class','rscore');
+    ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
+    ts.textContent=sc[k]||0;
+    svg.appendChild(ts);
+  });
+  return svg;
+}
+
+// ── Render ───────────────────────────────────────────────
+function render(){
+  var app=document.getElementById('app');
+  app.innerHTML='';
+  app.appendChild(renderBase());
+  app.appendChild(renderFacets());
+  app.appendChild(renderFields());
+  app.appendChild(renderCompat());
+  app.appendChild(renderNow());
+}
+
+function sec(title){
+  var s=document.createElement('div'); s.className='sec';
+  var h=document.createElement('h2'); h.innerHTML=title; s.appendChild(h);
+  return s;
+}
+function emptyNote(html){
+  var e=document.createElement('div'); e.className='empty'; e.innerHTML=html; return e;
+}
+
+// 1. 我的底色
+function renderBase(){
+  var s=sec('🎨 我的底色');
+  var base=getBase();
+  if(!base){ s.appendChild(emptyNote('還沒有你的底色——<a href="bagua-persona.html">去測你的八卦能量人格 →</a>')); return s; }
+  var tk=base.top||topKeyOf(base.scores);
+  var title=base.title||E[tk].title;
+  var card=document.createElement('div'); card.className='basecard';
+  card.innerHTML='<div class="bc-eyebrow">你的八卦能量人格</div>'
+    +'<div class="bc-sym">'+E[tk].sym+'</div>'
+    +'<div class="bc-title">'+escapeHtml(title)+'</div>'
+    +'<div class="bc-radar" id="bc-radar"></div>'
+    +'<div class="bc-date">'+dateOrTested(base.ts)+'</div>'
+    +'<a class="bc-link" href="bagua-persona.html">重測 →</a>';
+  s.appendChild(card);
+  card.querySelector('#bc-radar').appendChild(buildRadar(base.scores, tk));
+  return s;
+}
+
+// 2. 場域側寫
+function renderFacets(){
+  var s=sec('🗺️ 場域側寫');
+  var all=getFacets();
+  var done=FACETS.filter(function(f){ return all[f.id]&&all[f.id].scores; });
+  if(!done.length){ s.appendChild(emptyNote('還沒有場域側寫——在<a href="bagua-persona.html">人格測驗</a>結果頁可以測「工作／關係／獨處」的你。')); return s; }
+  done.forEach(function(f){
+    var item=all[f.id];
+    var tk=topKeyOf(item.scores);
+    var row=document.createElement('div'); row.className='row';
+    row.innerHTML='<span class="r-ic">'+f.ic+'</span>'
+      +'<span class="r-body"><span class="r-nm">'+f.nm+'</span>'
+      +'<span class="r-st">'+E[tk].title+' · '+dateOrTested(item.ts)+'</span></span>'
+      +'<a class="r-link" href="bagua-persona.html">重看 →</a>';
+    s.appendChild(row);
+  });
+  return s;
+}
+
+// 3. 測過的局
+function renderFields(){
+  var s=sec('🎯 測過的局');
+  var fields=getFields();
+  if(!fields.length){ s.appendChild(emptyNote('還沒有測過的局——<a href="bagua-field.html">去測一個局 →</a>（看一段關係、一份工作合不合你）')); return s; }
+  var base=getBase();
+  var you=base?base.scores:null;
+  fields.forEach(function(f){
+    var tk=topKeyOf(f.scores);
+    var fitHtml='';
+    if(you){ fitHtml='<span class="fit-badge">適配 '+fitScore(you,f.scores)+'%</span>'; }
+    var row=document.createElement('div'); row.className='row';
+    row.innerHTML='<span class="r-ic">'+E[tk].sym+'</span>'
+      +'<span class="r-body"><span class="r-nm">'+escapeHtml(f.name||'這個局')+'</span>'
+      +'<span class="r-st">最吃『'+E[tk].fn+'』 · '+dateOrTested(f.ts)+fitHtml+'</span></span>'
+      +'<a class="r-link" href="bagua-field.html">重看 →</a>';
+    s.appendChild(row);
+  });
+  return s;
+}
+
+// 4. 合盤紀錄
+function renderCompat(){
+  var s=sec('🔗 合盤紀錄');
+  var hist=getCompat();
+  if(!hist.length){ s.appendChild(emptyNote('還沒有合盤紀錄——在<a href="bagua-persona.html">人格測驗</a>結果頁點「和別人合盤」就會記下來。')); return s; }
+  hist.forEach(function(r){
+    var title=r.otherTitle||(r.otherTop&&E[r.otherTop]?E[r.otherTop].title:'對方');
+    var row=document.createElement('div'); row.className='row';
+    row.innerHTML='<span class="r-ic">🔗</span>'
+      +'<span class="r-body"><span class="r-nm">'+escapeHtml(title)+'</span>'
+      +'<span class="r-st">同頻 '+(r.sim||0)+'% ／ 互補 '+(r.comp||0)+'% · '+dateOrTested(r.ts)+'</span></span>';
+    s.appendChild(row);
+  });
+  return s;
+}
+
+// 5. 此刻
+function renderNow(){
+  var s=sec('☯ 此刻');
+  var now=getNow();
+  if(!now){ s.appendChild(emptyNote('還沒有「此刻」——<a href="ven-i/">去問易</a>卜一卦，回來這裡就會看見此刻的能量。')); return s; }
+  var row=document.createElement('div'); row.className='row';
+  var hex=now.mainHex?('卦象 '+escapeHtml(now.mainHex)):'此刻能量';
+  row.innerHTML='<span class="r-ic">☯</span>'
+    +'<span class="r-body"><span class="r-nm">'+hex+'</span>'
+    +'<span class="r-st">'+dateOrTested(now.ts)+'</span></span>'
+    +'<a class="r-link" href="ven-i/">去問易 →</a>';
+  s.appendChild(row);
+  return s;
+}
+
+// ── 清空 ─────────────────────────────────────────────────
+function clearAll(){
+  if(!confirm('確定清空所有八卦記錄嗎？\n會刪除：底色、場域側寫、測過的局、合盤紀錄、此刻。\n（本機，無法復原）')) return;
+  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1','bagua_compat_v1']
+    .forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+  location.reload();
+}
+
+render();
+</script>
+</body></html>

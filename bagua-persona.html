@@ -210,6 +210,7 @@
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <button class="start-btn" onclick="startQuiz()">開始測驗</button>
   <div class="meta-line">24 題 · 約 3 分鐘 · 不需登入</div>
+  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">📒 我的記錄</a>
   <div class="honest">
     這測的是你的<b>「底色」</b>——你習慣動用的內在能量，是一種傾向，不是固定標籤。
     能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
@@ -621,7 +622,7 @@ function showResult(){
   var now=readNow();
 
   // save
-  try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title})); }catch(e){}
+  try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title,ts:new Date().toISOString()})); }catch(e){}
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -1182,6 +1183,16 @@ function runCompat(){
   // 四個讀數
   var sim=Math.round(cosineSim(mine,other)*100);
   var comp=Math.round(complementarity(mine,other)*100);
+
+  // 存一筆合盤紀錄（本機；unshift、上限 20）
+  try{
+    var otherTop=topKeyOf(other);
+    var rec={ts:new Date().toISOString(),otherCode:code,otherTop:otherTop,otherTitle:E[otherTop].title,sim:sim,comp:comp};
+    var hist=[];
+    try{ var rawH=localStorage.getItem('bagua_compat_v1'); if(rawH){ var a=JSON.parse(rawH); if(Array.isArray(a)) hist=a; } }catch(e2){}
+    hist.unshift(rec); if(hist.length>20) hist=hist.slice(0,20);
+    localStorage.setItem('bagua_compat_v1', JSON.stringify(hist));
+  }catch(e1){}
 
   // 共同盲點：兩人都 <50，依 (a+b) 由小到大取前 1–2
   var blind=EKEYS.filter(function(k){ return mine[k]<50 && other[k]<50; })
