@@ -175,6 +175,29 @@
     color:var(--pine);margin-top:4px}
   .smcell.base .sm-nm{color:var(--gold)}
   .facet-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:16px 0 10px}
+
+  /* ── 分享 / QR ── */
+  .qr-wrap{text-align:center;margin:6px 0 12px}
+  .qr-wrap img{width:172px;height:172px;image-rendering:pixelated;border:1px solid var(--line);
+    border-radius:12px;background:#fff;padding:8px}
+  .share-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:10px 0 4px}
+  .share-which{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:2px 0 12px}
+  .swbtn{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);background:var(--surface2);
+    border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;transition:all .15s}
+  .swbtn:hover{background:#fff}
+  .swbtn.on{background:var(--pine);color:#fff;border-color:var(--pine)}
+  .share-which-lab{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);
+    width:100%;text-align:center;margin-bottom:4px}
+  .upload-row{text-align:center;margin-top:10px}
+  .upload-btn{display:inline-block;background:none;color:var(--pine);border:1px solid var(--line);
+    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;
+    padding:10px 22px;border-radius:999px;cursor:pointer;transition:all .15s}
+  .upload-btn:hover{background:var(--surface2);transform:translateY(-1px)}
+  .code-fallback{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:13px;letter-spacing:.08em;
+    color:var(--muted);text-align:center;margin-top:10px;word-break:break-all;user-select:all}
+  .or-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:ui-sans-serif,sans-serif;
+    font-size:11.5px;margin:14px 0 12px}
+  .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回練息場</a>
@@ -215,6 +238,10 @@
 
 <!-- ───────── COMPAT (雙人合盤) ───────── -->
 <div id="compat"></div>
+
+<!-- QR 編碼/解碼（本機庫，相對路徑，同源；iframe onload 會等載完） -->
+<script src="lib/qrcode.js"></script>
+<script src="lib/jsQR.js"></script>
 
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
@@ -874,6 +901,30 @@ function decodeCode(str){
   return sc;
 }
 
+// ── 分享網址 / 解析（純函式，方便測試） ──────────────────
+function shareURL(code){ return location.origin + location.pathname + '#c=' + code; }
+// 從一段字串(純碼、或含 #c= / ?c= 的網址、或 QR 解出的文字)抽出合盤碼
+function extractCode(str){
+  str=(str||'').trim();
+  var m=str.match(/[#?&]c=([A-Za-z0-9]+)/); if(m) return m[1].toUpperCase();
+  var s=str.toUpperCase().replace(/\s/g,''); return /^B1[0-9]{16}$/.test(s)?s:null;
+}
+
+// ── QR 編碼 / 影像解碼 ────────────────────────────────────
+function makeQRDataURL(text){
+  var qr=qrcode(0,'M'); qr.addData(text); qr.make();
+  return qr.createDataURL(5,12); // data:image/gif;base64,...
+}
+// 從 ImageData 解出合盤碼（可測）→ code | null
+function decodeCodeFromImageData(imageData){
+  try{
+    if(typeof jsQR==='undefined' || !imageData) return null;
+    var res=jsQR(imageData.data, imageData.width, imageData.height);
+    if(!res || !res.data) return null;
+    return extractCode(res.data);
+  }catch(e){ return null; }
+}
+
 // ── 合盤計算（四個讀數） ──────────────────────────────────
 // 同頻度：cosine（分數皆非負 → 0..1）
 function cosineSim(a,b){var dot=0,na=0,nb=0;EKEYS.forEach(function(k){dot+=a[k]*b[k];na+=a[k]*a[k];nb+=b[k]*b[k];});return(na===0||nb===0)?0:dot/(Math.sqrt(na)*Math.sqrt(nb));}
@@ -922,24 +973,49 @@ function showCompat(){
    +'</div>';
 
   if(mine){
+    // 場域選擇器：底色 + 已測過的場域（未測場域不顯示，沒任何場域則整段不出）
+    var facets=getFacets();
+    var pickable=[{id:'__base__',nm:'整體底色'}];
+    FACETS.forEach(function(f){ if(facets[f.id]&&facets[f.id].scores) pickable.push({id:f.id,nm:f.nm}); });
+    var showPicker=pickable.length>1;
+    var whichHtml='';
+    if(showPicker){
+      whichHtml='<div class="share-which" id="share-which">'
+        +'<span class="share-which-lab">分享哪張盤？</span>'
+        +pickable.map(function(p,i){ return '<button class="swbtn'+(i===0?' on':'')+'" data-fid="'+p.id+'" onclick="selectShareFacet(\''+p.id+'\')">'+p.nm+'</button>'; }).join('')
+        +'</div>';
+    }
     html+='<div class="block">'
-      +'<h3>你的合盤碼</h3>'
-      +'<div class="codebox" id="my-code">'+encodeCode(mine)+'</div>'
-      +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="copyMyCode()">複製合盤碼</button>'
-      +'<span id="copy-tip" style="font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--pine);margin-left:10px"></span></div>'
-      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7">把這串碼給對方，對方貼進去就能合盤。對方的碼也貼到下面。</div>'
+      +'<h3>你的盤 · 分享給對方</h3>'
+      +whichHtml
+      +'<div class="qr-wrap"><img id="share-qr" alt="合盤 QR"></div>'
+      +'<div class="share-btns">'
+        +'<button class="cbtn" onclick="copyShareLink()">複製連結</button>'
+        +'<button class="cbtn ghost" onclick="downloadShareImage()">下載合盤圖</button>'
+        +'<span id="copy-tip" style="font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--pine)"></span>'
+      +'</div>'
+      +'<div class="code-fallback">合盤碼（備用）：<span id="my-code">'+encodeCode(mine)+'</span></div>'
+      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">'
+        +'對方掃 QR、點連結、或丟這張圖／貼這段碼，就能直接合盤。</div>'
+      +'<div class="honest" style="max-width:none;margin:12px 0 0">'
+        +'分享連結＝把你的八卦數值（8 個數字、無個資）給對方。</div>'
     +'</div>';
   } else {
     html+='<div class="block">'
-      +'<h3>你的合盤碼</h3>'
-      +'<div style="font-size:14px;line-height:1.85">要合盤，得先測你自己的<b>底色</b>——這樣才有你的合盤碼。</div>'
+      +'<h3>你的盤 · 分享給對方</h3>'
+      +'<div style="font-size:14px;line-height:1.85">要合盤，得先測你自己的<b>底色</b>——這樣才有你的盤可以分享。</div>'
       +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="startQuiz()">去測驗</button></div>'
     +'</div>';
   }
 
   html+='<div class="block">'
-    +'<h3>貼上對方的合盤碼</h3>'
-    +'<input class="compat-input" id="other-code" placeholder="B1xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">'
+    +'<h3>合對方的盤</h3>'
+    +'<div class="upload-row" style="margin-top:0;margin-bottom:6px">'
+      +'<input type="file" id="qr-file" accept="image/*" style="display:none" onchange="onQRFile(event)">'
+      +'<button class="upload-btn" onclick="document.getElementById(\'qr-file\').click()">📷 上傳對方的圖（含 QR）</button>'
+    +'</div>'
+    +'<div class="or-divider">或貼上連結／合盤碼</div>'
+    +'<input class="compat-input" id="other-code" placeholder="貼網址或 B1xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">'
     +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="runCompat()">合盤</button></div>'
     +'<div class="compat-err" id="compat-err"></div>'
   +'</div>'
@@ -948,7 +1024,112 @@ function showCompat(){
   var c=document.getElementById('compat');
   c.innerHTML=html;
   c.style.display='block';
+  if(mine){ shareFacetId='__base__'; refreshShare(); }
+  // 若有人先分享了盤、你剛測完底色 → 自動帶入對方的碼
+  if(mine && pendingShareCode){
+    var oc=document.getElementById('other-code'); if(oc) oc.value=pendingShareCode;
+  }
   window.scrollTo(0,0);
+}
+
+// ── 分享盤狀態：哪張盤（底色 / 某場域） ───────────────────
+var shareFacetId='__base__';
+function shareScores(){
+  if(shareFacetId && shareFacetId!=='__base__'){
+    var f=getFacets(); if(f[shareFacetId]&&f[shareFacetId].scores) return f[shareFacetId].scores;
+  }
+  var b=getBase(); return b?b.scores:null;
+}
+function shareLabel(){
+  if(shareFacetId && shareFacetId!=='__base__' && FACET_BY_ID[shareFacetId]) return FACET_BY_ID[shareFacetId].nm;
+  return '整體底色';
+}
+function selectShareFacet(id){
+  shareFacetId=id;
+  var wrap=document.getElementById('share-which');
+  if(wrap){ Array.prototype.forEach.call(wrap.querySelectorAll('.swbtn'),function(b){
+    b.classList.toggle('on', b.getAttribute('data-fid')===id);
+  }); }
+  refreshShare();
+}
+function refreshShare(){
+  var sc=shareScores(); if(!sc) return;
+  var code=encodeCode(sc);
+  var mc=document.getElementById('my-code'); if(mc) mc.textContent=code;
+  var img=document.getElementById('share-qr');
+  if(img){ try{ img.src=makeQRDataURL(shareURL(code)); }catch(e){} }
+}
+function copyShareLink(){
+  var sc=shareScores(); if(!sc) return;
+  var link=shareURL(encodeCode(sc));
+  var tip=document.getElementById('copy-tip');
+  function done(){ if(tip){ tip.textContent='連結已複製 ✓'; setTimeout(function(){tip.textContent='';},2000);} }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done,function(){ selectFallback(link,done); });
+  } else { selectFallback(link,done); }
+}
+
+// 下載合盤圖：canvas 畫 QR ＋下方小標題 → PNG
+function downloadShareImage(){
+  var sc=shareScores(); if(!sc) return;
+  var code=encodeCode(sc);
+  var b=getBase();
+  var typeTitle=(b&&E[b.top])?E[b.top].title:'';
+  if(shareFacetId && shareFacetId!=='__base__'){
+    var tk=topKeyOf(sc); typeTitle=E[tk].title;
+  }
+  var img=new Image();
+  img.onload=function(){
+    var W0=520, pad=46, qrSize=380;
+    var H0=pad + qrSize + 96;
+    var cv=document.createElement('canvas'); cv.width=W0; cv.height=H0;
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#fffdf6'; ctx.fillRect(0,0,W0,H0);
+    ctx.imageSmoothingEnabled=false;
+    var qx=(W0-qrSize)/2;
+    ctx.drawImage(img, qx, pad, qrSize, qrSize);
+    ctx.textAlign='center'; ctx.fillStyle='#35614f';
+    ctx.font='700 22px ui-sans-serif,sans-serif';
+    ctx.fillText('八卦能量人格 · 掃我合盤', W0/2, pad+qrSize+38);
+    ctx.fillStyle='#766f63'; ctx.font='16px ui-sans-serif,sans-serif';
+    var sub=shareLabel()+(typeTitle?' · '+typeTitle:'');
+    ctx.fillText(sub, W0/2, pad+qrSize+66);
+    var fname='八卦合盤_'+code+'.png';
+    function trigger(url){ var a=document.createElement('a'); a.href=url; a.download=fname;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    if(cv.toBlob){ cv.toBlob(function(blob){ var u=URL.createObjectURL(blob); trigger(u);
+      setTimeout(function(){URL.revokeObjectURL(u);},4000); },'image/png'); }
+    else { trigger(cv.toDataURL('image/png')); }
+  };
+  img.src=makeQRDataURL(shareURL(code));
+}
+
+// 上傳對方的圖：讀檔 → canvas → getImageData → jsQR → extractCode → 填入並合盤
+function onQRFile(ev){
+  var err=document.getElementById('compat-err'); if(err) err.textContent='';
+  var file=ev.target.files && ev.target.files[0];
+  ev.target.value=''; // 允許再次選同檔
+  if(!file){ return; }
+  var img=new Image();
+  img.onload=function(){
+    try{
+      var cv=document.createElement('canvas');
+      var maxW=900, scale=img.width>maxW?maxW/img.width:1;
+      cv.width=Math.round(img.width*scale); cv.height=Math.round(img.height*scale);
+      var ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      var data=ctx.getImageData(0,0,cv.width,cv.height);
+      var code=decodeCodeFromImageData(data);
+      if(!code){ if(err) err.textContent='這張圖裡找不到合盤碼——試試更清楚的截圖，或改貼連結／合盤碼。'; return; }
+      var oc=document.getElementById('other-code'); if(oc) oc.value=code;
+      runCompat();
+    }catch(e){ if(err) err.textContent='讀這張圖時出了點問題——換一張或改貼連結／合盤碼。'; }
+  };
+  img.onerror=function(){ if(err) err.textContent='這個檔讀不出來——請確認是圖片檔。'; };
+  var fr=new FileReader();
+  fr.onload=function(){ img.src=fr.result; };
+  fr.onerror=function(){ if(err) err.textContent='讀檔失敗——換一張試試。'; };
+  fr.readAsDataURL(file);
 }
 
 function backToResult(){
@@ -983,8 +1164,9 @@ function runCompat(){
   var mine=null;
   try{ var raw=localStorage.getItem('bagua_persona_v1'); if(raw){ var o=JSON.parse(raw); if(o&&o.scores) mine=o.scores; } }catch(e){}
   if(!mine){ err.textContent='還沒有你的底色——請先測驗。'; return; }
-  var other=decodeCode(document.getElementById('other-code').value);
-  if(!other){ err.textContent='合盤碼看起來不對。應該是「B1」開頭、後面 16 位數字（共 18 字）。'; return; }
+  var code=extractCode(document.getElementById('other-code').value);
+  var other=code?decodeCode(code):null;
+  if(!other){ err.textContent='讀不到對方的盤。可以貼合盤碼（B1 開頭 16 位數字）、整段分享連結，或上傳含 QR 的圖。'; return; }
 
   // 四個讀數
   var sim=Math.round(cosineSim(mine,other)*100);
@@ -1049,5 +1231,38 @@ function runCompat(){
   document.getElementById('compat-radar').appendChild(buildRadar(mine,myTop,other));
   ow.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+// ── 連結直達合盤（load 時檢查 #c=CODE） ──────────────────
+var pendingShareCode=null; // 沒有底色時暫存，測完可合
+function initFromHash(){
+  var code=extractCode(location.hash||'');
+  if(!code) return; // 正常無 hash 開啟不受影響
+  // 清掉 hash，避免重測時重觸發
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
+  if(getBase()){
+    // 有自己的底色 → 直接合盤
+    showCompat();
+    var oc=document.getElementById('other-code'); if(oc) oc.value=code;
+    runCompat();
+  } else {
+    // 還沒測 → 先提示測底色，暫存對方的碼
+    pendingShareCode=code;
+    showCompat();
+    var box=document.getElementById('compat');
+    var notice=document.createElement('div');
+    notice.className='honest';
+    notice.style.cssText='max-width:none;margin:0 0 16px;border-left-color:var(--pine)';
+    notice.innerHTML='<b>有人分享了他的盤給你 ☯</b><br>先測你自己的底色，就能跟他合盤。'
+      +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="startQuiz()">去測驗</button></div>';
+    var firstBlock=box.querySelector('.block');
+    if(firstBlock&&firstBlock.parentNode){ firstBlock.parentNode.insertBefore(notice,firstBlock); }
+    else { box.appendChild(notice); }
+  }
+}
+// 測完底色回到結果後，若有暫存的分享碼，showCompat 時自動帶入由使用者按合盤
+// （pendingShareCode 在 runCompat/showCompat 不主動消費，避免打斷正常流程；
+//  使用者測完看結果→點「和別人合盤」→貼上即可，或重開連結。）
+
+initFromHash();
 </script>
 </body></html>
