@@ -254,7 +254,7 @@ function renderCover(){
     var tk=base.top||topKeyOf(base.scores);
     bs.innerHTML='<div class="base-ok">✓ 已有你的底色（'+(base.title||E[tk].nm)+'）——測完局會自動和你合盤。</div>';
   } else {
-    bs.innerHTML='<div class="base-hint">還沒測過你的<b>人格底色</b>？'
+    bs.innerHTML='<div class="base-hint">還沒測過你的<b>人格底色（你慣用的能量）</b>？'
       +'<a href="bagua-persona.html">先測你的底色 →</a><br>'
       +'（沒底色也能單測這個局，只是少了「你 × 局」的對照。）</div>';
   }
@@ -695,6 +695,8 @@ function showResult(fieldSc, doSave){
     +'<button class="cbtn share-img" onclick="shareFieldImage()">📤 下載結果圖</button>'
     +'<button class="cbtn" onclick="resetCover()">再測一個局</button>'
     +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
+    +'<a class="cbtn ghost" href="bagua-records.html">📒 我的記錄</a>'
+    +'<a class="cbtn ghost" href="bagua.html">🧭 八卦能量</a>'
   +'</div>'
   +'<div style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink);background:var(--surface2);border:1px dashed var(--gold);border-radius:10px;padding:11px 15px;line-height:1.85;margin-bottom:14px">面對更<b>陌生</b>、根本答不出題的局？<a href="ven-i/" style="color:var(--pine);font-weight:700">去問易卜一卦 →</a>　當一面反思的鏡子。</div>'
   +'<div class="foot">這是幫你預想『你和這個局的能量合不合』的參考，不是吉凶判斷；'

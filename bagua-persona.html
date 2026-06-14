@@ -216,7 +216,7 @@
     能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
     這不是算命，是一面認識自己的鏡子。
   </div>
-  <button onclick="resetMyBagua()" style="margin:18px auto 0;display:block;background:none;border:none;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:underline;cursor:pointer">清空我的八卦紀錄（重新體驗一輪）</button>
+  <a href="bagua-records.html" style="margin:18px auto 0;display:block;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:underline">想清空重新體驗？到「我的記錄」清空 →</a>
 </div>
 
 <!-- ───────── QUIZ ───────── -->
@@ -711,7 +711,7 @@ function renderFacetMenu(){
     +'</div>';
   }).join('');
   var anyDone=FACETS.some(function(f){ return all[f.id]&&all[f.id].scores; });
-  var html='<h3>🗺️ 測你的不同場域</h3>'
+  var html='<h3>🗺️ 場域側寫</h3>'
     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:6px">'
     +'同一套題、換個場域再測一次，看看不同情境下的你，和你的底色差在哪。</div>'
     +rows;

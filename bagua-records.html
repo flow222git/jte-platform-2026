@@ -312,9 +312,26 @@ function buildRadar(sc,topKey){
 }
 
 // ── Render ───────────────────────────────────────────────
+function allEmpty(){
+  try{
+    if(getBase()) return false;
+    if(Object.keys(getFacets()).length) return false;
+    if(getFields().length) return false;
+    var c=localStorage.getItem('bagua_compat_v1'); if(c && JSON.parse(c).length) return false;
+    if(localStorage.getItem('bagua_now_v1')) return false;
+  }catch(e){}
+  return true;
+}
 function render(){
   var app=document.getElementById('app');
   app.innerHTML='';
+  if(allEmpty()){
+    var b=document.createElement('div'); b.className='block';
+    b.style.cssText='border-left:4px solid var(--pine);text-align:center;margin-bottom:18px';
+    b.innerHTML='<div style="font-size:15px;margin-bottom:8px">還沒開始記錄 🌱</div>'
+      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);line-height:1.85">先測你的<b>八卦能量底色</b>，這頁就會長出你的軌跡。<br><a href="bagua-persona.html" style="color:var(--pine);font-weight:700">去測我的底色 →</a></div>';
+    app.appendChild(b);
+  }
   app.appendChild(renderBase());
   app.appendChild(renderFacets());
   app.appendChild(renderFields());

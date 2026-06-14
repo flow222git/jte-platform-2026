@@ -127,7 +127,7 @@
   </div>
   <div class="honest">
     這是一面<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。
-    每個人的能量都會流動、可以成長——這只是把你們此刻的樣子放在一起看看。
+    每個人的能量都會流動、可以成長——這只是把你們此刻的<b>底色（你慣用的能量）</b>放在一起看看。
   </div>
 
   <div class="block">
@@ -470,6 +470,43 @@ function elementSpread(mbrs){
   return {have:haveList, miss:missList};
 }
 
+// 5. 能量覆蓋度：8 種能量裡有「強者罩」(任一成員 ≥60) 的有幾種；
+//    完全沒人罩(沒人 ≥45)的能量 → 缺口（與盲點不同：盲點看全員偏低，覆蓋看有無強者）
+function energyCoverage(mbrs){
+  var covered=[], gaps=[];
+  EKEYS.forEach(function(k){
+    var hasStrong=mbrs.some(function(m){ return (m.scores[k]||0)>=60; });
+    var anyMid   =mbrs.some(function(m){ return (m.scores[k]||0)>=45; });
+    if(hasStrong) covered.push(k);
+    if(!anyMid)   gaps.push(k);
+  });
+  return {covered:covered, gaps:gaps, coveredCount:covered.length};
+}
+
+// 6. 最佳互補配對：兩兩成員中互補度最高的一對。
+//    互補度＝Σ 兩人各自弱項(<40)被對方補上(對方該項≥60)的程度。
+//    成員<2 → null；=2 → 直接那對。
+function complementScore(a,b){
+  var s=0;
+  EKEYS.forEach(function(k){
+    var av=a.scores[k]||0, bv=b.scores[k]||0;
+    if(av<40 && bv>=60) s+=(bv-av);
+    if(bv<40 && av>=60) s+=(av-bv);
+  });
+  return s;
+}
+function bestPair(mbrs){
+  if(mbrs.length<2) return null;
+  var best=null;
+  for(var i=0;i<mbrs.length;i++){
+    for(var j=i+1;j<mbrs.length;j++){
+      var sc=complementScore(mbrs[i],mbrs[j]);
+      if(!best || sc>best.score){ best={i:i,j:j,a:mbrs[i],b:mbrs[j],score:sc}; }
+    }
+  }
+  return best;
+}
+
 // 五行缺漏的調性提示
 var WX_MISS_NOTE={
   metal:'少了果斷、定方向與收束的調性',
@@ -608,6 +645,26 @@ function showTeam(){
     ? '你們整隊都偏低「<span class="down">'+blind.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('』『')+'</span>」——這是全隊<b>共同的空白處</b>，容易在這裡一起卡住，少有人補上這份能量。'
     : '你們的能量涵蓋面蠻廣——沒有明顯的集體盲點，大致每種能量都有人撐著。';
 
+  // 能量覆蓋度
+  var cov=energyCoverage(members);
+  var covText = cov.gaps.length
+    ? '你們團隊有人扛起 <span class="em">'+cov.coveredCount+'</span> 種能量；但「<span class="down">'
+        +cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('』『')
+        +'</span>」沒人罩，遇到需要它的場面會吃力。'
+    : '你們團隊有人扛起 <span class="em">'+cov.coveredCount+'</span> 種能量——每一種能量都至少有人能撐場，遇事不太會整隊空著。';
+
+  // 最佳互補配對
+  var pair=bestPair(members);
+  var pairText='';
+  if(pair){
+    if(pair.score>0){
+      pairText='最互補的搭檔：<span class="em">'+esc(pair.a.name)+'</span> × <span class="em">'+esc(pair.b.name)
+        +'</span>——一個的弱項，剛好是另一個的強項，配在一起最容易補位。';
+    } else {
+      pairText='目前還找不到特別互補的一對——你們的強弱項蠻接近，補位空間不大，需要的能量可能得有人刻意去長。';
+    }
+  }
+
   // 五行分布
   var spread=elementSpread(members);
   var wxChips=WX_ALL.map(function(w){
@@ -653,6 +710,10 @@ function showTeam(){
      +'<div class="wx-grid">'+wxChips+'</div>'
      +'<div class="judge" style="margin-top:0">'+wxText+'</div>'
    +'</div>'
+
+   +'<div class="block"><h3>🛡️ 能量覆蓋度</h3><div class="judge" style="margin-top:0">'+covText+'</div></div>'
+
+   +(pairText?('<div class="block"><h3>🤝 最佳互補配對</h3><div class="judge" style="margin-top:0">'+pairText+'</div></div>'):'')
 
    +'<div style="text-align:center;margin:18px 0 6px">'
      +'<button onclick="shareTeamImage()" style="background:var(--pine);color:#fff;border:none;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(53,97,79,.22)">📤 下載團隊圖</button>'

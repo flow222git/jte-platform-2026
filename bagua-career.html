@@ -139,7 +139,7 @@
   <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">📒 我的記錄</a>
   <div id="base-status"></div>
   <div class="honest">
-    每個職業也是一張<b>八卦能量盤</b>——它需求哪些能量。把你的<b>底色</b>疊上去，就能看出哪些方向跟你比較合、哪些可能比較耗你。
+    每個職業也是一張<b>八卦能量盤</b>——它需求哪些能量。把你的<b>底色</b>（你慣用的那組能量）疊上去，就能看出哪些方向跟你比較合、哪些可能比較耗你。
   </div>
 </div>
 
@@ -181,7 +181,19 @@ var CAREERS=[
  {id:'ops',    nm:'行政／營運', ic:'🗃️', scores:{qian:45,dui:45,li:55,xun:65,zhen:25,kan:40,gen:88,kun:70}, blurb:'穩定按部就班、讓事情運轉。'},
  {id:'finance',nm:'財務／會計', ic:'📊', scores:{qian:55,dui:30,li:75,xun:40,zhen:20,kan:70,gen:88,kun:35}, blurb:'嚴謹把關、精準分析數字。'},
  {id:'hr',     nm:'客服／人資', ic:'💁', scores:{qian:40,dui:80,li:50,xun:65,zhen:35,kan:30,gen:55,kun:80}, blurb:'接住人、協調與服務。'},
- {id:'perform',nm:'表演／運動', ic:'🎭', scores:{qian:55,dui:75,li:55,xun:40,zhen:88,kan:30,gen:60,kun:35}, blurb:'即時爆發、用身體表達。'}
+ {id:'perform',nm:'表演／運動', ic:'🎭', scores:{qian:55,dui:75,li:55,xun:40,zhen:88,kan:30,gen:60,kun:35}, blurb:'即時爆發、用身體表達。'},
+ {id:'doctor', nm:'醫師', ic:'⚕️', scores:{qian:70,dui:45,li:88,xun:35,zhen:40,kan:60,gen:80,kun:78}, blurb:'覺察判斷、嚴謹下決定、照顧人。'},
+ {id:'lawyer', nm:'律師／法務', ic:'⚖️', scores:{qian:85,dui:55,li:85,xun:45,zhen:50,kan:55,gen:88,kun:35}, blurb:'決策與分析、守住界線與規則。'},
+ {id:'journ',  nm:'記者／編輯', ic:'📰', scores:{qian:50,dui:78,li:85,xun:70,zhen:75,kan:45,gen:45,kun:35}, blurb:'覺察議題、追問、把事寫清楚。'},
+ {id:'chef',   nm:'廚師／職人', ic:'🍳', scores:{qian:50,dui:45,li:70,xun:35,zhen:55,kan:75,gen:88,kun:55}, blurb:'專注打磨手藝、講究細節火候。'},
+ {id:'social', nm:'社工／輔導', ic:'🤲', scores:{qian:40,dui:70,li:60,xun:55,zhen:35,kan:55,gen:55,kun:90}, blurb:'承接弱勢、陪伴與穩定照顧。'},
+ {id:'rescue', nm:'軍警／消防', ic:'🚒', scores:{qian:75,dui:45,li:55,xun:35,zhen:88,kan:50,gen:80,kun:55}, blurb:'臨場果斷、守紀律、即時行動。'},
+ {id:'invest', nm:'金融／投資分析', ic:'📈', scores:{qian:75,dui:40,li:88,xun:45,zhen:45,kan:70,gen:80,kun:30}, blurb:'冷靜分析、嚴謹判斷與決策。'},
+ {id:'ux',     nm:'UX／產品設計', ic:'🖌️', scores:{qian:55,dui:70,li:85,xun:80,zhen:55,kan:50,gen:55,kun:55}, blurb:'覺察需求、連結各方、形塑體驗。'},
+ {id:'data',   nm:'資料科學／分析', ic:'🧮', scores:{qian:55,dui:30,li:88,xun:50,zhen:35,kan:85,gen:80,kun:30}, blurb:'深掘資料、嚴謹推理找洞見。'},
+ {id:'music',  nm:'音樂／表演者', ic:'🎵', scores:{qian:45,dui:88,li:75,xun:50,zhen:75,kan:55,gen:40,kun:40}, blurb:'用表達感染人、即時綻放。'},
+ {id:'farm',   nm:'農業／園藝', ic:'🌱', scores:{qian:40,dui:35,li:40,xun:50,zhen:40,kan:65,gen:75,kun:90}, blurb:'順節氣耐心栽培、滋養生長。'},
+ {id:'event',  nm:'活動企劃', ic:'🎪', scores:{qian:55,dui:82,li:60,xun:85,zhen:75,kan:30,gen:55,kun:55}, blurb:'連結各方、把場子炒熱串起來。'}
 ];
 
 // ── 底色（人格）讀取 ─────────────────────────────────────
@@ -403,6 +415,10 @@ function showResult(){
   html+='<div class="resbtns">'
     +'<button class="cbtn" onclick="resetCover()">回封面</button>'
     +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
+  +'</div>'
+  +'<div class="resbtns">'
+    +'<a class="cbtn ghost" href="bagua-records.html">📒 我的記錄</a>'
+    +'<a class="cbtn ghost" href="bagua.html">🧭 八卦能量</a>'
   +'</div>'
   +'<div class="foot">職業能量盤 · 練息場 Join to Enjoy</div>';
 

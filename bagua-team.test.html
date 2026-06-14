@@ -160,6 +160,56 @@ document.getElementById('f').onload=function(){
     w.members=tm; w.showTeam();
     ok(d.getElementById('result').innerHTML.indexOf('下載團隊圖')>=0,'下載團隊圖 button in result');
 
+    // 15. 能量覆蓋度：有人 ≥60 → covered；沒人 ≥45 → gap
+    //   a: qian80(≥60) li70 ; b: zhen90(≥60) dui65 ; 其餘全 <45 → gaps = kun,kan,gen,xun
+    var ec=[
+      {name:'a',scores:{qian:80,li:70,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'b',scores:{qian:10,li:10,zhen:90,dui:65,kun:10,kan:10,gen:10,xun:10}}
+    ];
+    var cv=w.energyCoverage(ec);
+    ok(cv.coveredCount===4,'coverage: qian/li/zhen/dui covered → 4, got '+cv.coveredCount);
+    ok(cv.covered.indexOf('qian')>=0 && cv.covered.indexOf('zhen')>=0,'covered includes qian+zhen (≥60)');
+    ok(cv.covered.indexOf('kun')<0,'kun (nobody ≥60) NOT covered');
+    ok(cv.gaps.indexOf('kun')>=0 && cv.gaps.indexOf('gen')>=0,'gaps include kun+gen (nobody ≥45)');
+    ok(cv.gaps.indexOf('qian')<0,'qian (has ≥45) NOT a gap');
+
+    // 15b. 全覆蓋、無缺口
+    var ecFull=[
+      {name:'a',scores:{qian:90,li:90,zhen:90,dui:90,kun:50,kan:50,gen:50,xun:50}},
+      {name:'b',scores:{qian:50,li:50,zhen:50,dui:50,kun:90,kan:90,gen:90,xun:90}}
+    ];
+    var cvF=w.energyCoverage(ecFull);
+    ok(cvF.coveredCount===8,'all 8 covered → coveredCount 8, got '+cvF.coveredCount);
+    ok(cvF.gaps.length===0,'no gaps when every energy has someone ≥45');
+
+    // 16. 最佳互補配對：挑出弱被對方強補的一對
+    //   pairAB 互補(A弱kun A強qian, B弱qian B強kun)；pairC 與兩者都不互補(全平)
+    var mp=[
+      {name:'A',scores:{qian:90,li:20,zhen:20,dui:20,kun:10,kan:20,gen:20,xun:20}},
+      {name:'B',scores:{qian:10,li:20,zhen:20,dui:20,kun:90,kan:20,gen:20,xun:20}},
+      {name:'C',scores:{qian:30,li:30,zhen:30,dui:30,kun:30,kan:30,gen:30,xun:30}}
+    ];
+    var bp=w.bestPair(mp);
+    ok(bp!==null,'bestPair returns a pair for ≥2 members');
+    var names=[bp.a.name,bp.b.name].sort().join('');
+    ok(names==='AB','best complementary pair is A×B, got '+names);
+    ok(bp.score>0,'best pair has positive complement score, got '+bp.score);
+
+    // 16b. <2 成員 → null；=2 → 直接那對
+    ok(w.bestPair([{name:'solo',scores:sheet('qian',90,10)}])===null,'bestPair null with 1 member');
+    var two=[{name:'p',scores:sheet('qian',90,10)},{name:'q',scores:sheet('li',90,10)}];
+    var bp2=w.bestPair(two);
+    ok(bp2 && [bp2.a.name,bp2.b.name].sort().join('')==='pq','bestPair with exactly 2 returns that pair');
+
+    // 17. 結果渲染：新區塊出現在 showTeam 輸出
+    w.members=mp; w.showTeam();
+    var rhtml=d.getElementById('result').innerHTML;
+    ok(rhtml.indexOf('能量覆蓋度')>=0,'coverage block rendered in result');
+    ok(rhtml.indexOf('最佳互補配對')>=0,'best-pair block rendered in result');
+
+    // 18. 底色 gloss 出現在封面/提示
+    ok(d.body.innerHTML.indexOf('底色（你慣用的能量）')>=0,'底色 gloss present once');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
