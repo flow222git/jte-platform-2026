@@ -56,6 +56,25 @@
   .fit-badge{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:11px;font-weight:700;
     color:var(--pine);background:var(--surface2);border-radius:999px;padding:1px 8px;margin-left:6px}
 
+  /* 消耗熱點 */
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
+    margin-bottom:10px;font-weight:700}
+  .drain-overview{font-size:14.5px;line-height:1.95;color:var(--ink)}
+  .drain-overview .em{color:var(--cinnabar);font-weight:700}
+  .drain-note{background:linear-gradient(120deg,#9d4b34,#823a28);color:#fff;border-radius:14px;
+    padding:15px 18px;font-size:14px;line-height:1.85;margin-bottom:12px}
+  .drain-note .dn-h{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;opacity:.82;margin-bottom:6px}
+  .drain-note .dn-line{padding:4px 0}
+  .strat-line{font-size:14px;line-height:1.9;color:var(--ink);padding:6px 0;border-bottom:1px solid var(--line)}
+  .strat-line:last-child{border-bottom:none}
+  .strat-line .em{color:var(--pine);font-weight:600}
+  .drain-weak{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.8;margin-top:8px}
+  .drain-honest{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink);background:var(--surface2);
+    border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;line-height:1.85;margin-top:4px}
+  .drain-more{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-top:8px}
+
   .clear-wrap{text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
   .clear-btn{background:none;border:1px solid var(--cinnabar);color:var(--cinnabar);
     font-family:ui-sans-serif,sans-serif;font-size:13px;padding:9px 22px;border-radius:999px;cursor:pointer}
@@ -148,6 +167,53 @@ function fitScore(you,field){
   return sw===0?0:Math.round(sc/sw*100);
 }
 
+// ── 消耗熱點：縱觀所有局 × 底色 ──────────────────────────
+// 對極參考（補對極）：乾⇄坤、離⇄坎、震⇄艮、兌⇄巽
+var OPPOSITE={qian:'kun',kun:'qian',li:'kan',kan:'li',zhen:'gen',gen:'zhen',dui:'xun',xun:'dui'};
+
+// 該局的消耗點（沿用 field 的「硬撐弱項」）：局需求≥55 且 你底色≤40
+function fieldDrainKeys(you,field){
+  return EKEYS.filter(function(k){ return (field[k]||0)>=55 && (you[k]||0)<=40; });
+}
+// 跑遍所有局，累計每個能量被當成消耗點的次數
+function drainCounts(you,fields){
+  var c={}; EKEYS.forEach(function(k){c[k]=0;});
+  (fields||[]).forEach(function(f){
+    if(!f||!f.scores) return;
+    fieldDrainKeys(you,f.scores).forEach(function(k){ c[k]++; });
+  });
+  return c;
+}
+// 消耗熱點：count≥1，由高到低取前 1–3 個（同分依 EKEYS 順序穩定）
+function drainHotspots(you,fields){
+  var c=drainCounts(you,fields);
+  return EKEYS.filter(function(k){ return c[k]>=1; })
+    .sort(function(a,b){ return c[b]-c[a] || EKEYS.indexOf(a)-EKEYS.indexOf(b); })
+    .slice(0,3);
+}
+// 最耗你的局：fitScore 最低者（回 {field,fit}）
+function mostDrainingField(you,fields){
+  var best=null;
+  (fields||[]).forEach(function(f){
+    if(!f||!f.scores) return;
+    var fit=fitScore(you,f.scores);
+    if(best===null || fit<best.fit){ best={field:f,fit:fit}; }
+  });
+  return best;
+}
+// 底色結構弱項：你底色最低的 2 個能量
+function baseWeakest(you,n){
+  return EKEYS.slice().sort(function(a,b){
+    return (you[a]||0)-(you[b]||0) || EKEYS.indexOf(a)-EKEYS.indexOf(b);
+  }).slice(0,n||2);
+}
+// 應對策略一句（沿用 field 口吻＋補對極）
+function strategyFor(k){
+  var op=OPPOSITE[k];
+  var opTxt=op?('用你的強項繞道、事後給自己「'+E[op].nm+'·'+E[op].fn.split('／')[0]+'」回血'):'用你的強項繞道、事後刻意排恢復';
+  return '『'+E[k].fn+'('+E[k].nm+')』你較弱卻常被要求 → 別硬撐，'+opTxt+'；也可找人補位、設界(艮)。';
+}
+
 // ── Radar wheel（沿用 bagua-persona 的 buildRadar） ──────
 function buildRadar(sc,topKey){
   var cx=200,cy=200,baseR=140;
@@ -223,6 +289,7 @@ function render(){
   app.appendChild(renderBase());
   app.appendChild(renderFacets());
   app.appendChild(renderFields());
+  app.appendChild(renderDrain());
   app.appendChild(renderCompat());
   app.appendChild(renderNow());
 }
@@ -292,6 +359,79 @@ function renderFields(){
       +'<a class="r-link" href="bagua-field.html">重看 →</a>';
     s.appendChild(row);
   });
+  return s;
+}
+
+// 3.5 你的消耗熱點（縱觀所有局 × 底色）
+function renderDrain(){
+  var s=sec('🔥 你的消耗熱點');
+  var base=getBase();
+  if(!base){
+    s.appendChild(emptyNote('先測你的<b>人格底色</b>，這裡才能對照——'
+      +'<a href="bagua-persona.html">去測你的底色 →</a>'));
+    return s;
+  }
+  var you=base.scores;
+  var fields=getFields();
+  if(!fields.length){
+    s.appendChild(emptyNote('去『測一個局』測幾個情境（新工作、新關係…），'
+      +'這裡會統計出最常耗你的能量＋應對策略——'
+      +'<a href="bagua-field.html">去測一個局 →</a>'));
+    return s;
+  }
+
+  var counts=drainCounts(you,fields);
+  var hotspots=drainHotspots(you,fields);
+  var most=mostDrainingField(you,fields);
+  var weak=baseWeakest(you,2);
+
+  // 一句總覽
+  var ov=document.createElement('div'); ov.className='block';
+  if(hotspots.length){
+    var listHtml=hotspots.map(function(k){
+      return '<span class="em">'+E[k].nm+'·'+E[k].fn+'</span>（'+counts[k]+' 個局）';
+    }).join('、');
+    ov.innerHTML='<div class="drain-overview">縱觀你測過的 '+fields.length+' 個局，'
+      +'最常耗你的是 '+listHtml+'——你天生較弱、又一再被要求。</div>';
+  } else {
+    ov.innerHTML='<div class="drain-overview">縱觀你測過的 '+fields.length+' 個局，'
+      +'沒看到反覆出現的消耗熱點——這些局要的，你的底色大致接得住。</div>';
+  }
+  s.appendChild(ov);
+
+  // 最耗你的局
+  if(most){
+    var mn=escapeHtml(most.field.name||'這個局');
+    var dn=document.createElement('div'); dn.className='drain-note';
+    dn.innerHTML='<div class="dn-h">最耗你的局</div>'
+      +'<div class="dn-line">「<b>'+mn+'</b>」　適配度 '+most.fit+'%</div>'
+      +'<div class="dn-line">這個局和你的能量落差最大。</div>';
+    s.appendChild(dn);
+  }
+
+  // 應對策略
+  if(hotspots.length){
+    var st=document.createElement('div'); st.className='block';
+    var stHtml='<h3>🧭 應對策略</h3>';
+    hotspots.forEach(function(k){
+      stHtml+='<div class="strat-line">'+strategyFor(k)+'</div>';
+    });
+    // 底色結構弱項（補充）
+    stHtml+='<div class="drain-weak">底色結構弱項：你天生最少動用的是「'
+      +weak.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('」「')
+      +'」——高需求情境最容易在這裡被掏空，平時就替它們安排補位與恢復。</div>';
+    if(fields.length===1){
+      stHtml+='<div class="drain-more">再多測幾個局，這張熱點圖會更準。</div>';
+    }
+    st.innerHTML=stHtml;
+    s.appendChild(st);
+  }
+
+  // 誠實句
+  var hn=document.createElement('div'); hn.className='drain-honest';
+  hn.textContent='消耗熱點是提醒你「在哪裡要照顧自己」，不是說你不能做——能量可以養、情境可以調適。';
+  s.appendChild(hn);
+
   return s;
 }
 
