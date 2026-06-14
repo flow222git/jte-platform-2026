@@ -122,6 +122,69 @@ document.getElementById('f').onload=function(){
     d.getElementById('other-code').value='nonsense';
     w.runCompat();
     ok(d.getElementById('compat-err').textContent.length>0,'bad code → error message');
+
+    // ── 多場域側寫 (Facets) ──────────────────────────────
+    // 16. getFacets/saveFacet round-trip
+    w.localStorage.removeItem('bagua_facets_v1');
+    ok(JSON.stringify(w.getFacets())==='{}','getFacets empty when none');
+    var fsc={qian:10,li:20,zhen:30,dui:40,kun:50,kan:60,gen:70,xun:80};
+    w.saveFacet('work',fsc);
+    var gf=w.getFacets();
+    var frt=gf.work && w.EKEYS.every(function(k){return gf.work.scores[k]===fsc[k];}) && !!gf.work.ts;
+    ok(frt,'saveFacet/getFacets round-trip (scores+ts): '+JSON.stringify(gf.work&&gf.work.scores));
+
+    // 17. startFacet('work') → quiz banner shown, currentFacet set, idx reset
+    w.startFacet('work');
+    ok(w.currentFacet==='work','currentFacet === work after startFacet');
+    ok(d.getElementById('quiz').style.display==='block','quiz shown for facet');
+    ok(d.getElementById('facet-banner').style.display==='block','facet banner visible');
+    ok(d.getElementById('fb-nm').textContent.indexOf('工作')>=0,'banner shows 工作的你');
+    ok(w.idx===0,'idx reset on startFacet');
+
+    // startQuiz (底色) hides banner + currentFacet null
+    w.startQuiz();
+    ok(w.currentFacet===null,'startQuiz → currentFacet null');
+    ok(d.getElementById('facet-banner').style.display==='none','banner hidden for 底色');
+
+    // 18. 建底色（強震 zhen）→ showResult，存底色
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='zhen') w.answers[i]=3; });
+    w.currentFacet=null; w.showResult();
+    ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).top==='zhen','底色 top zhen saved');
+    // facet menu rendered in result
+    ok(d.getElementById('facet-menu'),'facet-menu container in result');
+    ok(d.querySelector('#facet-menu .facet-row'),'facet rows rendered');
+
+    // 19. renderFacetMenu: work 已測顯示型、relation 未測顯示「未測」、≥1 → 看面向地圖
+    w.localStorage.removeItem('bagua_facets_v1');
+    w.showResult(); // re-render menu with no facets
+    ok(d.getElementById('facet-menu').innerHTML.indexOf('未測')>=0,'unmeasured facet shows 未測');
+    ok(!d.querySelector('#facet-menu .facet-map-btn'),'no map button when 0 facets');
+    // now measure work (弱 zhen, 強 kun) and re-render
+    var workSc={qian:10,li:10,zhen:5,dui:10,kun:90,kan:10,gen:10,xun:10};
+    w.saveFacet('work',workSc);
+    w.showResult();
+    ok(d.getElementById('facet-menu').innerHTML.indexOf('已測')>=0,'measured facet shows 已測 + type');
+    ok(d.querySelector('#facet-menu .facet-map-btn'),'map button when ≥1 facet');
+
+    // 20. showFacetResult: type card + radar with base overlay (dashed) + gap sentence
+    //   底色 top=zhen(強)；work 把 zhen 壓到 5、kun 拉到 90
+    w.showFacetResult('work');
+    ok(d.getElementById('compat').style.display==='block','facet result shown (#compat)');
+    ok(d.querySelector('#compat .typecard .tc-title'),'facet type card present');
+    ok(d.querySelector('#facet-radar svg'),'facet radar svg');
+    ok(d.querySelector('#facet-radar polygon[stroke-dasharray]'),'base overlay dashed polygon present');
+    var gapHtml=d.querySelector('#compat .gap-line').innerHTML;
+    ok(gapHtml.indexOf('壓低了')>=0 && gapHtml.indexOf('啟動')>=0,'gap sentence: 壓低了…啟動, got '+gapHtml);
+    // drain signal: base top3 includes zhen, work suppresses it by >=20 → drain note
+    ok(d.querySelector('#compat .drain-note'),'drain note when base strength suppressed');
+
+    // 21. showFacetMap: ≥2 small radar svgs (base + work)
+    w.showFacetMap();
+    var sm=d.querySelectorAll('#smgrid .smcell .sm-radar svg');
+    ok(sm.length>=2,'facet map ≥2 small radars, got '+sm.length);
+    ok(d.querySelector('#smgrid .smcell.base'),'base cell present in map');
+    ok(d.querySelector('#compat').innerHTML.indexOf('最大落差')>=0,'map shows 最大落差 summary');
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');

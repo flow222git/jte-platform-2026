@@ -31,6 +31,12 @@
 
   /* ── Quiz ── */
   #quiz{display:none}
+  #facet-banner{display:none;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:0 12px 12px 0;padding:11px 15px;margin-bottom:20px}
+  #facet-banner .fb-h{font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;color:var(--pine);
+    letter-spacing:.04em;margin-bottom:3px}
+  #facet-banner .fb-h .fb-ic{margin-right:6px}
+  #facet-banner .fb-f{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);line-height:1.7}
   .prog-wrap{margin-bottom:26px}
   .prog-top{display:flex;justify-content:space-between;align-items:baseline;font-family:ui-sans-serif,sans-serif;
     font-size:12px;color:var(--muted);margin-bottom:7px}
@@ -136,6 +142,39 @@
   .readcard .rc-sub{font-family:ui-sans-serif,sans-serif;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.6}
   .flowline{font-size:15px;line-height:1.9;color:var(--ink)}
   .flowline .arrow{color:var(--gold);font-weight:700;margin:0 4px}
+
+  /* ── 多場域側寫 (Facets) ── */
+  .facet-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .facet-row:last-child{border-bottom:none}
+  .facet-row .fr-ic{font-size:22px;flex:none;width:30px;text-align:center}
+  .facet-row .fr-body{flex:1;min-width:0}
+  .facet-row .fr-nm{font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:700;color:var(--ink)}
+  .facet-row .fr-st{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .facet-row .fr-st.done{color:var(--pine)}
+  .facet-row .fr-btn{flex:none;background:none;border:1px solid var(--line);border-radius:999px;
+    font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);padding:7px 16px;cursor:pointer;
+    transition:all .15s}
+  .facet-row .fr-btn:hover{background:var(--surface2);transform:translateY(-1px)}
+  .facet-map-btn{display:block;width:100%;margin-top:14px;background:var(--pine);color:#fff;border:none;
+    font-family:ui-sans-serif,sans-serif;font-size:13.5px;font-weight:700;letter-spacing:.04em;
+    padding:11px 0;border-radius:999px;cursor:pointer;transition:transform .15s}
+  .facet-map-btn:hover{transform:translateY(-2px)}
+  .gap-line{font-size:14.5px;line-height:1.9;color:var(--ink)}
+  .gap-line .up{color:var(--pine);font-weight:600}
+  .gap-line .down{color:var(--cinnabar);font-weight:600}
+  .drain-note{background:linear-gradient(120deg,#9d4b34,#823a28);color:#fff;border-radius:14px;
+    padding:15px 18px;font-size:14px;line-height:1.85;margin-bottom:14px}
+  .drain-note .dn-h{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;opacity:.82;margin-bottom:6px}
+  .drain-ok{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pine);
+    border-radius:0 12px 12px 0;padding:13px 16px;font-size:14px;line-height:1.85;color:var(--ink);margin-bottom:14px}
+  .smgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 16px}
+  .smcell{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 8px 6px}
+  .smcell .sm-radar svg{width:100%;height:auto;display:block}
+  .smcell .sm-nm{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;font-weight:700;
+    color:var(--pine);margin-top:4px}
+  .smcell.base .sm-nm{color:var(--gold)}
+  .facet-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:16px 0 10px}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回練息場</a>
@@ -157,6 +196,10 @@
 
 <!-- ───────── QUIZ ───────── -->
 <div id="quiz">
+  <div id="facet-banner">
+    <div class="fb-h"><span class="fb-ic" id="fb-ic"></span><span id="fb-nm"></span></div>
+    <div class="fb-f" id="fb-frame"></div>
+  </div>
   <div class="prog-wrap">
     <div class="prog-top"><span id="prog-label" class="sans">第 1 / 24 題</span><span id="prog-pct" class="sans">4%</span></div>
     <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
@@ -258,11 +301,61 @@ var OPTS=[{t:'很像我',v:3},{t:'有點像',v:2},{t:'不太像',v:1},{t:'很不
 var answers=new Array(QUESTIONS.length).fill(null);
 var idx=0;
 
+// ── 多場域側寫 ────────────────────────────────────────────
+var FACETS=[
+ {id:'work',     nm:'工作的你', ic:'💼', frame:'回答時，請想著你在【工作／做事】時的樣子。'},
+ {id:'relation', nm:'關係裡的你', ic:'💞', frame:'回答時，請想著你在【親密關係／重要的人】面前的樣子。'},
+ {id:'solo',     nm:'獨處的你', ic:'🌙', frame:'回答時，請想著你【一個人獨處】時的樣子。'}
+];
+var FACET_BY_ID={}; FACETS.forEach(function(f){FACET_BY_ID[f.id]=f;});
+var FACET_COLOR='#35614f'; // 松綠（場域實線，沿用 --pine）
+var currentFacet=null; // null = 底色/整體
+
+function getFacets(){
+  try{ var raw=localStorage.getItem('bagua_facets_v1'); if(!raw) return {}; var o=JSON.parse(raw); return o&&typeof o==='object'?o:{}; }
+  catch(e){ return {}; }
+}
+function saveFacet(id,scores){
+  try{ var all=getFacets(); all[id]={scores:scores,ts:new Date().toISOString()}; localStorage.setItem('bagua_facets_v1',JSON.stringify(all)); }
+  catch(e){}
+}
+function getBase(){
+  try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.scores)?o:null; }
+  catch(e){ return null; }
+}
+// 某分數組的 top 型 key
+function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
+
+function showFacetBanner(){
+  var bn=document.getElementById('facet-banner');
+  if(currentFacet && FACET_BY_ID[currentFacet]){
+    var f=FACET_BY_ID[currentFacet];
+    document.getElementById('fb-ic').textContent=f.ic;
+    document.getElementById('fb-nm').textContent=f.nm;
+    document.getElementById('fb-frame').textContent=f.frame;
+    bn.style.display='block';
+  } else { bn.style.display='none'; }
+}
+
 function startQuiz(){
+  currentFacet=null;
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
   document.getElementById('quiz').style.display='block';
-  idx=0; renderQ();
+  answers=new Array(QUESTIONS.length).fill(null);
+  idx=0; showFacetBanner(); renderQ();
+  window.scrollTo(0,0);
+}
+
+function startFacet(id){
+  currentFacet=id;
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  answers=new Array(QUESTIONS.length).fill(null);
+  idx=0; showFacetBanner(); renderQ();
   window.scrollTo(0,0);
 }
 
@@ -292,11 +385,17 @@ function advance(){
   if(idx<QUESTIONS.length-1){
     setTimeout(function(){ idx++; renderQ(); window.scrollTo(0,0); },180);
   } else {
-    setTimeout(showResult,200);
+    setTimeout(finishQuiz,200);
   }
 }
 
 function goBack(){ if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);} }
+
+// quiz 完成分流：底色 → showResult；場域 → 存檔＋場域結果
+function finishQuiz(){
+  if(currentFacet===null){ showResult(); }
+  else { var fc=currentFacet; saveFacet(fc, computeScores()); showFacetResult(fc); }
+}
 
 // ── Scoring ──────────────────────────────────────────────
 function computeScores(){
@@ -524,6 +623,7 @@ function showResult(){
      +'<h3>適合你的下一步</h3>'+toolsHtml
    +'</div>'
    +ctaBlock(sc,now)
+   +'<div class="block" id="facet-menu"></div>'
    +'<button class="retake" onclick="showCompat()">🔗 和別人合盤</button>'
    +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
    +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
@@ -534,6 +634,7 @@ function showResult(){
   document.getElementById('cover').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
+  renderFacetMenu();
   window.scrollTo(0,0);
 }
 
@@ -542,6 +643,217 @@ function toolRow(t){
     +'<span class="tic">'+t.ic+'</span>'
     +'<span class="tbody"><span class="tnm">'+t.nm+'</span><span class="tds">'+t.ds+'</span></span>'
     +'<span class="tarr">→</span></a>';
+}
+
+// ════════════════════════════════════════════════════════════
+//  多場域側寫 (Facets) — 同題同尺，疊在底色上看落差
+// ════════════════════════════════════════════════════════════
+
+// ── 結果頁的場域選單 ─────────────────────────────────────
+function renderFacetMenu(){
+  var box=document.getElementById('facet-menu');
+  if(!box) return;
+  var all=getFacets();
+  var rows=FACETS.map(function(f){
+    var done=all[f.id]&&all[f.id].scores;
+    var st;
+    if(done){
+      var tk=topKeyOf(all[f.id].scores);
+      st='<span class="fr-st done">✓ 已測 · '+E[tk].title+'</span>';
+    } else {
+      st='<span class="fr-st">未測</span>';
+    }
+    return '<div class="facet-row">'
+      +'<span class="fr-ic">'+f.ic+'</span>'
+      +'<span class="fr-body"><span class="fr-nm">'+f.nm+'</span>'+st+'</span>'
+      +'<button class="fr-btn" onclick="startFacet(\''+f.id+'\')">'+(done?'重測':'測這個場域')+'</button>'
+    +'</div>';
+  }).join('');
+  var anyDone=FACETS.some(function(f){ return all[f.id]&&all[f.id].scores; });
+  var html='<h3>🗺️ 測你的不同場域</h3>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:6px">'
+    +'同一套題、換個場域再測一次，看看不同情境下的你，和你的底色差在哪。</div>'
+    +rows;
+  if(anyDone){ html+='<button class="facet-map-btn" onclick="showFacetMap()">看面向地圖 →</button>'; }
+  box.innerHTML=html;
+}
+
+// ── 落差分析：場域 - 底色（同 0–100，可直接相減）────────────
+// 回 {ups:[{k,d}...], downs:[...]}（依差值排序）
+function facetDeltas(facetSc, baseSc){
+  var arr=EKEYS.map(function(k){ return {k:k,d:(facetSc[k]||0)-(baseSc[k]||0)}; });
+  var ups=arr.slice().sort(function(a,b){return b.d-a.d;});   // 最大正差在前
+  var downs=arr.slice().sort(function(a,b){return a.d-b.d;}); // 最大負差在前
+  return {ups:ups,downs:downs};
+}
+function energyLabel(k){ return E[k].fn; } // 含「／」全名，例「啟動／突破」
+
+// 落差句
+function gapSentence(facetId, facetSc, baseSc){
+  var f=FACET_BY_ID[facetId];
+  var dl=facetDeltas(facetSc,baseSc);
+  var up=dl.ups[0], down=dl.downs[0];
+  var parts=[];
+  if(up.d>0) parts.push('拉高了『<span class="up">'+energyLabel(up.k)+'</span>』');
+  if(down.d<0) parts.push('壓低了『<span class="down">'+energyLabel(down.k)+'</span>』');
+  if(!parts.length) return '【'+f.nm+'】和你的底色幾乎一樣——在這個場域，你大致還是平常的你。';
+  return '【'+f.nm+'】和你的底色相比，'+parts.join('、')+'。';
+}
+
+// 消耗訊號（L3 預覽）：壓抑底色強項 或 硬撐底色弱項
+function drainSignal(facetId, facetSc, baseSc){
+  var f=FACET_BY_ID[facetId];
+  var baseSorted=EKEYS.slice().sort(function(a,b){return (baseSc[b]||0)-(baseSc[a]||0);});
+  var top3=baseSorted.slice(0,3), bot3=baseSorted.slice(-3);
+  var suppressed=null, forced=null; // 被壓的強項、被硬拉的弱項
+  top3.forEach(function(k){ var d=(facetSc[k]||0)-(baseSc[k]||0); if(d<=-20 && (!suppressed||d<suppressed.d)) suppressed={k:k,d:d}; });
+  bot3.forEach(function(k){ var d=(facetSc[k]||0)-(baseSc[k]||0); if(d>=20 && (!forced||d>forced.d)) forced={k:k,d:d}; });
+  if(!suppressed && !forced) return null;
+  var clauses=[];
+  if(suppressed) clauses.push('壓抑『'+energyLabel(suppressed.k)+'』');
+  if(forced) clauses.push('硬撐『'+energyLabel(forced.k)+'』');
+  return '在【'+f.nm+'】，這個場域要你'+clauses.join('、')+'——長期這樣比較容易耗電，記得找地方把它補回來。';
+}
+
+// ── 場域結果畫面 ─────────────────────────────────────────
+function showFacetResult(id){
+  var f=FACET_BY_ID[id];
+  var all=getFacets();
+  var facetSc=(all[id]&&all[id].scores)||computeScores();
+  var topK=topKeyOf(facetSc);
+  var top=E[topK];
+  var accent=W[top.wx];
+  var base=getBase(); // {scores,top,title} 或 null
+  var baseSc=base?base.scores:null;
+
+  var html=''
+   +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回整體結果</a>'
+   +'<div class="compat-eyebrow">'+f.ic+' '+f.nm+' · 場域側寫</div>'
+   +'<div class="typecard" style="--accent:'+accent+'">'
+     +'<div class="tc-eyebrow">在這個場域，你最像</div>'
+     +'<div class="tc-sym">'+top.sym+'</div>'
+     +'<div class="tc-title">'+top.title+'</div>'
+     +'<div class="tc-essence">'+top.essence+'</div>'
+   +'</div>'
+   +'<div class="radar-wrap" id="facet-radar"></div>'
+   +'<div class="legend">'
+     +'<span><i style="background:var(--pine)"></i>松綠＝'+f.nm+'</span>'
+     +(baseSc?'<span><i style="background:var(--gold)"></i>金虛線＝你的底色</span>':'')
+   +'</div>';
+
+  if(baseSc){
+    html+='<div class="block"><h3>和你的底色比，這個場域…</h3>'
+      +'<div class="gap-line">'+gapSentence(id,facetSc,baseSc)+'</div></div>';
+    var drain=drainSignal(id,facetSc,baseSc);
+    if(drain){
+      html+='<div class="drain-note"><div class="dn-h">消耗訊號</div>'+drain+'</div>';
+    } else {
+      html+='<div class="drain-ok">在這個場域，你沒有特別壓抑強項、也沒有硬撐弱項——能量用得算自然，不太耗電。</div>';
+    }
+  } else {
+    html+='<div class="block"><h3>想看落差？</h3>'
+      +'<div style="font-size:14px;line-height:1.85">你還沒測過<b>底色（整體的你）</b>——測了之後，這裡就會把這個場域疊在底色上，告訴你它拉高、壓低了哪些能量。</div>'
+      +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="startQuiz()">去測底色</button></div></div>';
+  }
+
+  var allDone=getFacets();
+  var anyDone=FACETS.some(function(x){ return allDone[x.id]&&allDone[x.id].scores; });
+  html+='<div class="facet-btns">'
+    +'<button class="cbtn ghost" onclick="showFacetPicker()">測別的場域</button>'
+    +(anyDone?'<button class="cbtn" onclick="showFacetMap()">看面向地圖</button>':'')
+    +'<button class="cbtn ghost" onclick="backToResult()">回整體結果</button>'
+  +'</div>'
+  +'<div class="foot">場域側寫和底色一樣，是自我覺察的鏡子——不同場域有不同的你，是適應，不是標籤。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+
+  var c=document.getElementById('compat');
+  c.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('result').style.display='none';
+  c.style.display='block';
+  document.getElementById('facet-radar').appendChild(buildRadar(facetSc,topK, baseSc?baseSc:null));
+  window.scrollTo(0,0);
+}
+
+// 「測別的場域」：沒有結果頁時，直接跳第一個未測場域；否則回結果頁讓使用者選
+function showFacetPicker(){
+  // 回到結果頁的場域選單（若底色已測），否則回 cover
+  if(getBase()){ backToResult(); }
+  else { startFacet(FACETS[0].id); }
+}
+
+// ── 小倍數雷達（縮小版，複用 buildRadar） ──────────────────
+function smallRadar(sc, topK){
+  var svg=buildRadar(sc, topK, null);
+  // 縮小：移除分數小字與外圈長標籤過長的問題；保留形狀為主
+  svg.setAttribute('viewBox','-54 -46 508 500');
+  return svg;
+}
+
+// ── 面向地圖 ─────────────────────────────────────────────
+function showFacetMap(){
+  var base=getBase();
+  var all=getFacets();
+  var cells=[];
+  if(base){ cells.push({nm:'整體（底色）',sc:base.scores,base:true}); }
+  FACETS.forEach(function(f){
+    if(all[f.id]&&all[f.id].scores){ cells.push({nm:f.nm,sc:all[f.id].scores,base:false}); }
+  });
+
+  // 最大落差摘要（場域 vs 底色）
+  var summary='';
+  if(base){
+    var bestFacet=null, bestK=null, bestAbs=-1;
+    FACETS.forEach(function(f){
+      if(!(all[f.id]&&all[f.id].scores)) return;
+      var sc=all[f.id].scores;
+      EKEYS.forEach(function(k){
+        var ad=Math.abs((sc[k]||0)-(base.scores[k]||0));
+        if(ad>bestAbs){ bestAbs=ad; bestFacet=f; bestK=k; }
+      });
+    });
+    if(bestFacet && bestAbs>=8){
+      summary='你落差最大的是【'+bestFacet.nm+'】——和平常的你差最多的，是『<b>'+energyLabel(bestK)+'</b>』。';
+    } else if(bestFacet){
+      summary='你測過的場域和底色都蠻接近的——不管在哪，你大致都是同一個你。';
+    }
+  } else {
+    summary='你還沒測底色（整體的你），所以這裡只放各場域的形狀。測了底色之後，就能看出各場域和平常的你差在哪。';
+  }
+
+  var html=''
+   +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回</a>'
+   +'<div class="compat-eyebrow">🗺️ BAGUA · 面向地圖</div>'
+   +'<h2 style="font-size:23px;letter-spacing:.06em;text-align:center;margin-bottom:8px">面向地圖</h2>'
+   +'<div class="honest" style="max-width:none;margin:6px 0 18px">'
+     +'每一張是不同場域的你。<b>不同場域有不同的你，是適應、不是分裂</b>；'
+     +'落差大的地方，常是你在那裡特別用力（或特別放鬆）的線索。'
+   +'</div>'
+   +'<div class="smgrid" id="smgrid"></div>';
+
+  if(summary){ html+='<div class="block"><h3>最大落差</h3><div class="gap-line">'+summary+'</div></div>'; }
+
+  html+='<div style="text-align:center;margin:18px 0 10px"><button class="cbtn ghost" onclick="backToResult()">返回</button></div>'
+   +'<div class="foot">面向地圖只是此刻一張側寫——能量會流動，場域也會。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+
+  var c=document.getElementById('compat');
+  c.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('result').style.display='none';
+  c.style.display='block';
+
+  var grid=document.getElementById('smgrid');
+  cells.forEach(function(cell){
+    var div=document.createElement('div');
+    div.className='smcell'+(cell.base?' base':'');
+    var rd=document.createElement('div'); rd.className='sm-radar';
+    rd.appendChild(smallRadar(cell.sc, topKeyOf(cell.sc)));
+    var nm=document.createElement('div'); nm.className='sm-nm'; nm.textContent=cell.nm;
+    div.appendChild(rd); div.appendChild(nm);
+    grid.appendChild(div);
+  });
+  window.scrollTo(0,0);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -641,8 +953,9 @@ function showCompat(){
 
 function backToResult(){
   document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='none';
   var r=document.getElementById('result');
-  if(r.innerHTML.trim()){ r.style.display='block'; }
+  if(r.innerHTML.trim()){ r.style.display='block'; renderFacetMenu(); }
   else { document.getElementById('cover').style.display='block'; }
   window.scrollTo(0,0);
 }
