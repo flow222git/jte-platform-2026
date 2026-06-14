@@ -299,6 +299,15 @@ document.getElementById('f').onload=function(){
     ok(rc && rc.width===640 && rc.height>800,'result canvas size 640xN');
     ok(rc && rc.toDataURL('image/png').length>2000,'result canvas renders non-empty png');
 
+    // 雙人合盤圖卡
+    ok(typeof w.buildCompatCanvas==='function','buildCompatCanvas present');
+    ok(typeof w.shareCompatImage==='function','shareCompatImage present');
+    var cMine={qian:80,li:10,zhen:60,dui:20,kun:30,kan:15,gen:25,xun:40};
+    var cOther={qian:10,li:90,zhen:20,dui:70,kun:50,kan:40,gen:30,xun:20};
+    var cc=w.buildCompatCanvas(cMine,cOther,72,58,null);
+    ok(cc && cc.width===640,'compat canvas width 640, got '+(cc&&cc.width));
+    ok(cc && cc.toDataURL('image/png').length>2000,'compat canvas renders non-empty png');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');

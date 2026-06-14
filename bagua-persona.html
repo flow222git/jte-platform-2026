@@ -940,7 +940,7 @@ function wrapTextC(ctx,text,cx,y,maxW,lh){
   if(line)ctx.fillText(line,cx,yy);
   return yy;
 }
-function drawRadarOn(x,scores,topKey,cx,cy,R){
+function drawRadarOn(x,scores,topKey,cx,cy,R,overlay){
   function dir(k){return {ux:(E[k].pos.x-200)/140, uy:(E[k].pos.y-200)/140};}
   function rOf(s){return R*0.18+(s/100)*R*0.82;}
   // grid octagon + spokes
@@ -950,6 +950,17 @@ function drawRadarOn(x,scores,topKey,cx,cy,R){
   // score polygon
   x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
   x.fillStyle='rgba(53,97,79,.16)';x.fill();x.strokeStyle='#35614f';x.lineWidth=2.5;x.stroke();
+  // overlay polygon (gold dashed + gold dots) — 例如雙人合盤的「對方」
+  if(overlay){
+    x.save();
+    x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),r=rOf(overlay[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
+    x.fillStyle='rgba(169,130,59,.10)';x.fill();
+    x.strokeStyle='#a9823b';x.lineWidth=2.5;if(x.setLineDash)x.setLineDash([6,5]);x.stroke();
+    if(x.setLineDash)x.setLineDash([]);
+    EKEYS.forEach(function(k){var d=dir(k),r=rOf(overlay[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;
+      x.beginPath();x.arc(px,py,4,0,7);x.fillStyle='#a9823b';x.fill();x.strokeStyle='#fff';x.lineWidth=1.5;x.stroke();});
+    x.restore();
+  }
   // dots + labels
   EKEYS.forEach(function(k){
     var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;
@@ -1002,6 +1013,56 @@ function shareResultImage(){
   qimg.onerror=function(){outputResultImage(base.scores,tk,title,null);};
   qimg.src=makeQRDataURL(shareURL(encodeCode(base.scores)));
 }
+// ── 雙人合盤圖卡（canvas：雙人雷達＋同頻/互補＋QR）─────────
+function buildCompatCanvas(myScores,otherScores,sim,comp,qrImg){
+  var Wd=640,Ht=760,c=document.createElement('canvas');c.width=Wd;c.height=Ht;
+  var x=c.getContext('2d');
+  x.fillStyle='#f4efe4';x.fillRect(0,0,Wd,Ht);
+  x.textAlign='center';
+  var myTop=topKeyOf(myScores), otherTop=topKeyOf(otherScores);
+  // 標頭
+  x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('八 卦 能 量 · 雙 人 合 盤',Wd/2,52);
+  // 雙人雷達（我＝松綠實線、對方＝金虛線 overlay）
+  drawRadarOn(x,myScores,myTop,320,250,140,otherScores);
+  // 圖例
+  x.font='13px sans-serif';
+  x.textAlign='left';x.fillStyle='#35614f';x.fillRect(178,420,16,4);x.fillText('松綠實線＝你',202,425);
+  x.fillStyle='#a9823b';x.fillRect(360,420,16,4);x.fillText('金色虛線＝對方',384,425);
+  x.textAlign='center';
+  // 兩個大數字
+  x.fillStyle='#35614f';x.font='bold 46px serif';
+  x.fillText(sim+'%',Wd*0.30,500); x.fillText(comp+'%',Wd*0.70,500);
+  x.fillStyle='#766f63';x.font='600 15px sans-serif';
+  x.fillText('同頻度',Wd*0.30,526); x.fillText('互補度',Wd*0.70,526);
+  // 一句
+  x.fillStyle='#22322c';x.font='600 18px serif';
+  x.fillText('你＝'+E[myTop].title+'　對方＝'+E[otherTop].title,Wd/2,578);
+  // QR + 邀請
+  if(qrImg){var qs=110;x.drawImage(qrImg,(Wd-qs)/2,604,qs,qs);
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 和我合盤',Wd/2,732);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('八卦能量人格 · 練息場 Join to Enjoy',Wd/2,640);}
+  return c;
+}
+function shareCompatImage(myScores,otherScores,sim,comp){
+  function out(qimg){
+    var c=buildCompatCanvas(myScores,otherScores,sim,comp,qimg);
+    c.toBlob(function(blob){
+      if(!blob){alert('產圖失敗，可改用截圖分享');return;}
+      var file=null;try{file=new File([blob],'八卦雙人合盤.png',{type:'image/png'});}catch(e){}
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'八卦能量 · 雙人合盤',text:'同頻 '+sim+'% · 互補 '+comp+'%'}).catch(function(){});
+      }else{
+        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='八卦雙人合盤.png';
+        document.body.appendChild(a);a.click();a.remove();
+      }
+    },'image/png');
+  }
+  var qimg=new Image();
+  qimg.onload=function(){out(qimg);};
+  qimg.onerror=function(){out(null);};
+  qimg.src=makeQRDataURL(shareURL(encodeCode(myScores)));
+}
+
 // 從 ImageData 解出合盤碼（可測）→ code | null
 function decodeCodeFromImageData(imageData){
   try{
@@ -1245,6 +1306,7 @@ function selectFallback(code,done){
   }catch(e){ var tip=document.getElementById('copy-tip'); if(tip) tip.textContent='請手動選取複製'; }
 }
 
+var lastCompat=null; // 最近一次合盤的值，供下載合盤圖用
 function runCompat(){
   var err=document.getElementById('compat-err');
   err.textContent='';
@@ -1258,6 +1320,8 @@ function runCompat(){
   // 四個讀數
   var sim=Math.round(cosineSim(mine,other)*100);
   var comp=Math.round(complementarity(mine,other)*100);
+  // 存當下值供「下載合盤圖」按鈕用
+  lastCompat={mine:mine,other:other,sim:sim,comp:comp};
 
   // 存一筆合盤紀錄（本機；unshift、上限 20）
   try{
@@ -1318,7 +1382,9 @@ function runCompat(){
      +'<div class="portrait" style="margin-top:14px">'+port.p+'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
-   +'<div style="text-align:center;margin:18px 0 10px"><button class="cbtn ghost" onclick="backToResult()">返回我的結果</button></div>'
+   +'<div style="text-align:center;margin:18px 0 10px">'
+     +'<button onclick="shareCompatImage(lastCompat.mine,lastCompat.other,lastCompat.sim,lastCompat.comp)" style="background:var(--pine);color:#fff;border:none;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(53,97,79,.22);margin-right:10px">📤 下載合盤圖</button>'
+     +'<button class="cbtn ghost" onclick="backToResult()">返回我的結果</button></div>'
    +'<div class="foot">合盤是理解關係的鏡子，不是配對評分。<br>能量會流動，關係也會——這只是此刻的一張側寫。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
 
   var ow=document.getElementById('compat-out');

@@ -141,6 +141,25 @@ document.getElementById('f').onload=function(){
     w.renderMembers();
     ok(d.getElementById('go-btn').disabled===false,'go button enabled with 2 members');
 
+    // 14. 團隊圖卡：qrcode 庫 + buildTeamCanvas/shareTeamImage 存在 + 產圖非空
+    ok(typeof w.qrcode!=='undefined','qrcode lib loaded (global qrcode)');
+    ok(typeof w.buildTeamCanvas==='function','buildTeamCanvas present');
+    ok(typeof w.shareTeamImage==='function','shareTeamImage present');
+    var tm=[
+      {name:'你',scores:{qian:90,li:10,zhen:80,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'阿明',scores:{qian:20,li:80,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'小華',scores:{qian:10,li:10,zhen:10,dui:10,kun:80,kan:10,gen:10,xun:10}}
+    ];
+    var tcomp=w.composite(tm);
+    var ttop=w.EKEYS.slice().sort(function(x,y){return tcomp[y]-tcomp[x];})[0];
+    var tblind=w.blindSpots(tm);
+    var tc=w.buildTeamCanvas(tcomp,ttop,tm,tblind,null);
+    ok(tc && tc.width===640,'team canvas width 640, got '+(tc&&tc.width));
+    ok(tc && tc.toDataURL('image/png').length>2000,'team canvas renders non-empty png');
+    // 下載團隊圖鈕 出現在結果
+    w.members=tm; w.showTeam();
+    ok(d.getElementById('result').innerHTML.indexOf('下載團隊圖')>=0,'下載團隊圖 button in result');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
