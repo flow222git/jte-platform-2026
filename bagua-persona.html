@@ -280,7 +280,7 @@ function computeScores(){
 }
 
 // ── Radar wheel ──────────────────────────────────────────
-function buildRadar(sc,topKey){
+function buildRadar(sc,topKey,nowNorm){
   var cx=200,cy=200,baseR=140;
   var svg=document.createElementNS(NS,'svg');
   svg.setAttribute('viewBox','-54 -46 508 500');
@@ -320,6 +320,29 @@ function buildRadar(sc,topKey){
   area.setAttribute('stroke','var(--pine)');
   area.setAttribute('stroke-width',2);
   svg.appendChild(area);
+  // 此刻 overlay polygon (gold dashed)
+  if(nowNorm){
+    var np=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      var r=rOf(nowNorm[k]||0);
+      return (cx+ux*r)+','+(cy+uy*r);
+    }).join(' ');
+    var narea=document.createElementNS(NS,'polygon');
+    narea.setAttribute('points',np);
+    narea.setAttribute('fill','rgba(169,130,59,.10)');
+    narea.setAttribute('stroke','var(--gold)');
+    narea.setAttribute('stroke-width',2);
+    narea.setAttribute('stroke-dasharray','5 4');
+    svg.appendChild(narea);
+    EKEYS.forEach(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      var r=rOf(nowNorm[k]||0);
+      var nd=document.createElementNS(NS,'circle');
+      nd.setAttribute('cx',cx+ux*r);nd.setAttribute('cy',cy+uy*r);
+      nd.setAttribute('r',3.5);nd.setAttribute('fill','var(--gold)');nd.setAttribute('stroke','#fff');nd.setAttribute('stroke-width',1);
+      svg.appendChild(nd);
+    });
+  }
   // dots + labels
   EKEYS.forEach(function(k){
     var b=E[k];
@@ -363,6 +386,64 @@ function buildPortrait(sc,sorted){
   return {p:p,close:close};
 }
 
+// ── 此刻（問易快照）讀取與對照 ────────────────────────────
+function readNow(){
+  try{
+    var raw=localStorage.getItem('bagua_now_v1');
+    if(!raw) return null;
+    var o=JSON.parse(raw);
+    if(!o||!o.scores) return null;
+    var vals=Object.keys(E).map(function(k){return (typeof o.scores[k]==='number')?o.scores[k]:0;});
+    var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+    var norm={};
+    Object.keys(E).forEach(function(k){
+      var v=(typeof o.scores[k]==='number')?o.scores[k]:0;
+      norm[k]=(mx===mn)?50:Math.round((v-mn)/(mx-mn)*100);
+    });
+    return {norm:norm,raw:o.scores,mainHex:o.mainHex||'',ts:o.ts||''};
+  }catch(e){ return null; }
+}
+function relTimeStr(ts){
+  try{
+    var then=new Date(ts).getTime(); if(isNaN(then)) return '';
+    var days=Math.floor((Date.now()-then)/86400000);
+    if(days<=0) return '今天'; if(days===1) return '昨天';
+    if(days<7) return days+' 天前';
+    if(days<30) return Math.floor(days/7)+' 週前';
+    return Math.floor(days/30)+' 個月前';
+  }catch(e){ return ''; }
+}
+function ctaBlock(sc,now){
+  if(!now){
+    return '<div class="cta-now">'
+      +'<div class="cn-h">底色 vs 此刻</div>'
+      +'<div class="cn-t">這張側寫是你的<b>「底色」</b>——你慣用的能量。<br>想看你<b>「此刻」</b>的能量狀態嗎？問易會依你當下的提問算出此刻卦象，回到這頁就會自動疊上對照。</div>'
+      +'<a href="ven-i/">去問易看此刻 →</a></div>';
+  }
+  var base=Object.keys(E).slice().sort(function(a,b){return sc[b]-sc[a];});
+  var nowSorted=Object.keys(E).slice().sort(function(a,b){return (now.raw[b]||0)-(now.raw[a]||0);});
+  var rb={},rn={};
+  base.forEach(function(k,i){rb[k]=i;}); nowSorted.forEach(function(k,i){rn[k]=i;});
+  var deltas=Object.keys(E).map(function(k){return {k:k,d:rb[k]-rn[k]};});
+  deltas.sort(function(a,b){return b.d-a.d;});
+  var up=deltas[0], down=deltas[deltas.length-1];
+  var sentence;
+  if(up.d<=0 && down.d>=0){
+    sentence='你此刻的能量輪廓和底色蠻接近的——狀態挺穩。';
+  } else {
+    var parts=[];
+    if(up.d>0) parts.push('此刻你的「<b>'+E[up.k].fn+'</b>」比平常更突出');
+    if(down.d<0) parts.push('「<b>'+E[down.k].fn+'</b>」比平常收斂');
+    sentence='和你的底色相比，'+parts.join('、')+'。';
+  }
+  var rt=relTimeStr(now.ts);
+  var hexpart=now.mainHex?('此刻卦象：<b>'+now.mainHex+'</b>'+(rt?'（'+rt+'的問易）':'')):'';
+  return '<div class="cta-now">'
+    +'<div class="cn-h">底色 vs 此刻</div>'
+    +'<div class="cn-t">雷達上的<b>金色虛線</b>＝你<b>此刻</b>的能量輪廓。'+(hexpart?'<br>'+hexpart:'')+'<br>'+sentence+'</div>'
+    +'<a href="ven-i/">重新去問易更新此刻 →</a></div>';
+}
+
 // ── Render result ────────────────────────────────────────
 function showResult(){
   var sc=computeScores();
@@ -370,6 +451,7 @@ function showResult(){
   var topKey=sorted[0];
   var top=E[topKey];
   var accent=W[top.wx];
+  var now=readNow();
 
   // save
   try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title})); }catch(e){}
@@ -394,6 +476,7 @@ function showResult(){
      +'<span><i style="background:'+W.fire+'"></i>火 離</span>'
      +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
    +'</div>'
+   +(now?'<div class="share-hint" style="margin-top:-12px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'')
    +'<div class="block">'
      +'<h3>這一型的你</h3>'
      +'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div>'
@@ -408,11 +491,7 @@ function showResult(){
    +'<div class="block">'
      +'<h3>適合你的下一步</h3>'+toolsHtml
    +'</div>'
-   +'<div class="cta-now">'
-     +'<div class="cn-h">底色 vs 此刻</div>'
-     +'<div class="cn-t">這張側寫是你的<b>「底色」</b>——你慣用的能量。<br>想看你<b>「此刻」</b>的能量狀態嗎？問易會依你當下的提問，算出此刻的卦象。</div>'
-     +'<a href="ven-i/">去問易看此刻 →</a>'
-   +'</div>'
+   +ctaBlock(sc,now)
    +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
    +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
 
@@ -421,7 +500,7 @@ function showResult(){
   document.getElementById('quiz').style.display='none';
   document.getElementById('cover').style.display='none';
   r.style.display='block';
-  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey));
+  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
   window.scrollTo(0,0);
 }
 

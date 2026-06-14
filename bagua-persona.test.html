@@ -48,6 +48,23 @@ document.getElementById('f').onload=function(){
     // 6. radar has 8 score dots + 8 labels
     w.answers=new Array(24).fill(2); w.showResult();
     ok(d.querySelectorAll('.rlabel').length===8,'8 radar labels, got '+d.querySelectorAll('.rlabel').length);
+
+    // 7. 底色 vs 此刻 — no snapshot → fallback CTA
+    w.localStorage.removeItem('bagua_now_v1');
+    ok(w.readNow()===null,'readNow null when no snapshot');
+    w.answers=new Array(24).fill(2); w.showResult();
+    ok(d.querySelector('.cta-now a').textContent.indexOf('去問易看此刻')>=0,'fallback CTA when no 此刻');
+    ok(!d.querySelector('polygon[stroke-dasharray]'),'no 此刻 polygon without snapshot');
+
+    // 8. with 此刻 snapshot → overlay polygon + comparison CTA
+    w.localStorage.setItem('bagua_now_v1', JSON.stringify({scores:{qian:5,zhen:4,dui:1,li:0,xun:-1,kan:-3,gen:-2,kun:1},mainHex:'節',ts:new Date().toISOString()}));
+    var nn=w.readNow();
+    ok(nn && nn.norm.qian===100,'readNow normalizes max→100, got '+(nn&&nn.norm.qian));
+    ok(nn.norm.kan===0,'readNow normalizes min→0, got '+(nn&&nn.norm.kan));
+    w.answers=new Array(24).fill(2); w.showResult();
+    ok(d.querySelector('polygon[stroke-dasharray]'),'此刻 overlay polygon rendered');
+    ok(d.querySelector('.cta-now .cn-t').innerHTML.indexOf('金色虛線')>=0,'comparison CTA mentions 金色虛線');
+    ok(d.querySelector('.cta-now .cn-t').innerHTML.indexOf('節')>=0,'comparison shows 此刻卦象 節');
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
