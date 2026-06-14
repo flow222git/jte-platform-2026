@@ -1,0 +1,125 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>八卦能量系統圖</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:22px;max-width:760px;margin:0 auto;line-height:1.7}
+  h1{font-size:22px;letter-spacing:.06em;margin-bottom:2px}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:6px;font-family:ui-sans-serif,sans-serif}
+  .wheel-wrap{position:relative;width:100%;max-width:440px;margin:8px auto 4px}
+  svg{width:100%;height:auto;display:block}
+  .node{cursor:pointer}
+  .node circle{transition:transform .15s,filter .15s}
+  .node:hover circle,.node.active circle{filter:brightness(1.08)}
+  .node.active circle{stroke:var(--ink);stroke-width:3}
+  .node .sym{font-size:26px;fill:#fff;text-anchor:middle;dominant-baseline:central;font-family:serif}
+  .node .nm{font-size:13px;fill:#fff;text-anchor:middle;font-weight:700;font-family:ui-sans-serif,sans-serif}
+  .axis{stroke:var(--line);stroke-width:1.5;stroke-dasharray:4 4}
+  .axislbl{font-size:10.5px;fill:var(--muted);text-anchor:middle;font-family:ui-sans-serif,sans-serif}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;color:var(--muted);
+    font-family:ui-sans-serif,sans-serif;margin:6px 0 14px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .detail{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+    box-shadow:0 10px 30px rgba(74,62,44,.08);min-height:160px}
+  .detail .dh{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .detail .dsym{font-size:40px;line-height:1}
+  .detail h2{font-size:20px;margin:0}
+  .detail .dfn{font-size:13px;color:var(--muted);font-family:ui-sans-serif,sans-serif}
+  .detail .wuxing{font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;font-family:ui-sans-serif,sans-serif;margin-left:auto}
+  .drow{display:flex;gap:8px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .drow:last-child{border-bottom:none}
+  .drow b{flex:none;width:74px;color:var(--muted);font-weight:600;font-size:12.5px;font-family:ui-sans-serif,sans-serif}
+  .drow .over{color:var(--cinnabar)} .drow .under{color:var(--blue)}
+  .pair-note{background:var(--surface2);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--ink);margin-top:12px;line-height:1.7}
+  .pair-note b{color:var(--pine)}
+  .foot{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.8;font-family:ui-sans-serif,sans-serif}
+  .axes-box{font-size:12.5px;color:var(--ink);margin:2px 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+  .axes-box span b{color:var(--pine)}
+  .hint{text-align:center;font-size:12px;color:var(--muted);font-family:ui-sans-serif,sans-serif;margin:2px 0 10px}
+</style></head><body>
+  <h1>八卦能量系統圖</h1>
+  <p class="sub">八種內在能量 · 四組極性對 · 五行歸屬　|　點任一卦看內涵</p>
+
+  <div class="axes-box">
+    <span><b>給出 ⇄ 接納</b>　乾 ⇄ 坤</span>
+    <span><b>顯現 ⇄ 收藏</b>　離 ⇄ 坎</span>
+    <span><b>啟動 ⇄ 停止</b>　震 ⇄ 艮</span>
+    <span><b>表達 ⇄ 連結</b>　兌 ⇄ 巽</span>
+  </div>
+
+  <div class="wheel-wrap">
+    <svg viewBox="0 0 400 400" id="wheel">
+      <!-- 四極性軸線 -->
+      <line class="axis" x1="200" y1="60" x2="200" y2="340"/>
+      <line class="axis" x1="340" y1="200" x2="60" y2="200"/>
+      <line class="axis" x1="299" y1="101" x2="101" y2="299"/>
+      <line class="axis" x1="299" y1="299" x2="101" y2="101"/>
+      <circle cx="200" cy="200" r="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <g id="nodes"></g>
+    </svg>
+  </div>
+  <div class="legend">
+    <span><i style="background:var(--metal)"></i>金 乾兌</span>
+    <span><i style="background:var(--wood)"></i>木 震巽</span>
+    <span><i style="background:var(--water)"></i>水 坎</span>
+    <span><i style="background:var(--fire)"></i>火 離</span>
+    <span><i style="background:var(--earth)"></i>土 艮坤</span>
+  </div>
+  <p class="hint">▼ 點圖上任一卦</p>
+
+  <div class="detail" id="detail"></div>
+
+  <div class="foot">
+    <b>怎麼讀這張圖：</b><br>
+    ・<b>八個節點</b>＝你內在的八種能量（功能）。<br>
+    ・<b>四條軸線</b>＝四組互相平衡的極性；某個能量「過強」，往往是缺了它<b>對面那一極</b>。<br>
+    ・<b>顏色</b>＝五行歸屬（金木水火土）；五行間有生剋，是能量的供應鏈。<br>
+    ・每個卦由三條陰陽爻組成，功能其實從<b>陰陽結構</b>長出來（如乾純陽＝全動能、坤純陰＝全承接）。<br>
+    <span style="color:var(--muted);font-size:11px">＊此為「功能能量」的極性排列；古典先天八卦的陰陽全反對為 乾坤・離坎・震巽・兌艮，可另作深層對照。</span>
+  </div>
+
+<script>
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
+var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+// x,y = 圓上位置（對極成直徑）
+var BAGUA=[
+ {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',x:200,y:60, state:'規劃、領導、創造',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創'},
+ {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',x:299,y:101,state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明'},
+ {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',x:340,y:200,state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動'},
+ {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',x:299,y:299,state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達'},
+ {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',x:200,y:340,state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養'},
+ {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',x:101,y:299,state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏'},
+ {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',x:60, y:200,state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法停止、無法拒絕',pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止'},
+ {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',x:101,y:101,state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散'}
+];
+var g=document.getElementById('nodes');
+BAGUA.forEach(function(b){
+  var ns='http://www.w3.org/2000/svg';
+  var grp=document.createElementNS(ns,'g');grp.setAttribute('class','node');grp.setAttribute('data-k',b.k);
+  var c=document.createElementNS(ns,'circle');c.setAttribute('cx',b.x);c.setAttribute('cy',b.y);c.setAttribute('r',33);
+  c.setAttribute('fill',W[b.wx]);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');
+  var s=document.createElementNS(ns,'text');s.setAttribute('class','sym');s.setAttribute('x',b.x);s.setAttribute('y',b.y-5);s.textContent=b.sym;
+  var n=document.createElementNS(ns,'text');n.setAttribute('class','nm');n.setAttribute('x',b.x);n.setAttribute('y',b.y+17);n.textContent=b.nm;
+  grp.appendChild(c);grp.appendChild(s);grp.appendChild(n);
+  grp.addEventListener('click',function(){show(b.k);});
+  g.appendChild(grp);
+});
+function show(k){
+  var b=BAGUA.filter(function(x){return x.k===k;})[0];
+  document.querySelectorAll('.node').forEach(function(el){el.classList.toggle('active',el.getAttribute('data-k')===k);});
+  document.getElementById('detail').innerHTML=
+    '<div class="dh"><div class="dsym" style="color:'+W[b.wx]+'">'+b.sym+'</div>'+
+    '<div><h2>'+b.nm+'卦</h2><div class="dfn">'+b.fn+'</div></div>'+
+    '<span class="wuxing" style="background:'+W[b.wx]+'">'+WLAB[b.wx]+'</span></div>'+
+    '<div class="drow"><b>狀態表現</b><span>'+b.state+'</span></div>'+
+    '<div class="drow"><b>過強</b><span class="over">'+b.over+'</span></div>'+
+    '<div class="drow"><b>過弱</b><span class="under">'+b.under+'</span></div>'+
+    '<div class="drow"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
+    '<div class="pair-note">極性對：<b>'+b.nm+'</b> ⇄ <b>'+b.pair+'</b>。當「'+b.nm+'」過強，多半是缺了它對面的「'+b.pair.replace(/（.*/,'')+'」——回到那一極就平衡了。</div>';
+}
+show('qian');
+</script>
+</body></html>
