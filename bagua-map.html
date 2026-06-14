@@ -1,4 +1,5 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>八卦能量系統圖</title>
 <style>
   :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
@@ -26,7 +27,7 @@
   .view-copy.hidden{display:none}
 
   /* --- Wheel --- */
-  .wheel-wrap{position:relative;width:100%;max-width:440px;margin:8px auto 4px}
+  .wheel-wrap{position:relative;width:100%;max-width:600px;margin:8px auto 4px}
   svg{width:100%;height:auto;display:block}
   .node{cursor:pointer}
   .node circle{transition:r .2s,opacity .2s,filter .15s}
@@ -65,6 +66,11 @@
   /* --- View-1 extras --- */
   #axes-panel{margin-bottom:4px}
 
+  /* --- View-4 wuxing SVG --- */
+  #wuxing-wrap{display:none;width:100%;max-width:600px;margin:8px auto 4px}
+  #wuxing-legend{display:none;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;
+    color:var(--muted);font-family:ui-sans-serif,sans-serif;margin:6px 0 14px}
+
   /* --- View-3 controls --- */
   #v3-controls{display:none;margin:4px 0 12px;font-family:ui-sans-serif,sans-serif}
   .v3-buttons{display:flex;gap:10px;margin-bottom:10px}
@@ -98,6 +104,7 @@
     <button id="btn-v1" class="active" onclick="switchView(1)">極性</button>
     <button id="btn-v2" onclick="switchView(2)">循環</button>
     <button id="btn-v3" onclick="switchView(3)">我的能量</button>
+    <button id="btn-v4" onclick="switchView(4)">五行</button>
   </div>
 
   <!-- View copy blocks -->
@@ -109,6 +116,9 @@
   </div>
   <div class="view-copy hidden" id="copy-v3">
     這就是「問易」算完一個人之後、疊在輪盤上的樣子——哪些能量正旺、哪些過頭、哪些透支，一眼看見。點點看，自己擺一個側寫。
+  </div>
+  <div class="view-copy hidden" id="copy-v4">
+    五行是八種能量之間「誰餵養誰、誰壓制誰」的網絡。<b>相生</b>＝補弱的供應鏈（要養某個弱能量，先養生它的「母」）；<b>相剋</b>＝解釋過強（某能量過旺，會壓住它所剋的那個）。
   </div>
 
   <!-- Axes-pair panel (view 1 only) -->
@@ -150,13 +160,35 @@
     </svg>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="bagua-legend">
     <span><i style="background:var(--metal)"></i>金 乾兌</span>
     <span><i style="background:var(--wood)"></i>木 震巽</span>
     <span><i style="background:var(--water)"></i>水 坎</span>
     <span><i style="background:var(--fire)"></i>火 離</span>
     <span><i style="background:var(--earth)"></i>土 艮坤</span>
   </div>
+
+  <!-- View-4 Wuxing SVG -->
+  <div id="wuxing-wrap">
+    <svg viewBox="0 0 400 400" id="wuxing-svg">
+      <defs>
+        <marker id="arrow-sheng" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <polygon points="0 0, 7 3.5, 0 7" fill="var(--pine)" opacity=".85"/>
+        </marker>
+      </defs>
+      <!-- sheng (相生) lines — green, drawn between pentagon vertices -->
+      <g id="wx-sheng"></g>
+      <!-- ke (相剋) lines — cinnabar dashed pentagram -->
+      <g id="wx-ke"></g>
+      <!-- nodes -->
+      <g id="wx-nodes"></g>
+    </svg>
+  </div>
+  <div id="wuxing-legend">
+    <span style="color:var(--pine)">&#8594; 綠＝相生（餵養）</span>
+    <span style="color:var(--cinnabar)">⤍ 朱紅虛線＝相剋（壓制）</span>
+  </div>
+
   <p class="hint" id="hint-line">▼ 點圖上任一卦</p>
 
   <!-- View-3 controls -->
@@ -249,6 +281,150 @@ BAGUA.forEach(function(b){BAGUA_MAP[b.k]=b;});
 
 var currentView=1;
 var activeKey='qian';
+
+// ── Wuxing (五行) data ────────────────────────────────────────
+// Pentagon layout: 木(top)→火(top-right)→土(bottom-right)→金(bottom-left)→水(top-left), clockwise
+// Center 200,200, radius 120; angles: -90, -18, 54, 126, 198 degrees
+var WX_CX=200, WX_CY=200, WX_R=120;
+var WX_ELEMENTS=[
+  {id:'wood', lbl:'木', guaLbl:'震巽', wx:'wood',
+   sheng:'火', shengBy:'水', ke:'土', keBy:'金',
+   angle:-90},
+  {id:'fire', lbl:'火', guaLbl:'離',   wx:'fire',
+   sheng:'土', shengBy:'木', ke:'金', keBy:'水',
+   angle:-18},
+  {id:'earth',lbl:'土', guaLbl:'艮坤',wx:'earth',
+   sheng:'金', shengBy:'火', ke:'水', keBy:'木',
+   angle:54},
+  {id:'metal',lbl:'金', guaLbl:'乾兌',wx:'metal',
+   sheng:'水', shengBy:'土', ke:'木', keBy:'火',
+   angle:126},
+  {id:'water',lbl:'水', guaLbl:'坎',  wx:'water',
+   sheng:'木', shengBy:'金', ke:'火', keBy:'土',
+   angle:198}
+];
+var WX_MAP={};
+WX_ELEMENTS.forEach(function(e){
+  var rad=e.angle*Math.PI/180;
+  e.x=Math.round(WX_CX+WX_R*Math.cos(rad));
+  e.y=Math.round(WX_CY+WX_R*Math.sin(rad));
+  WX_MAP[e.id]=e;
+});
+// 相生順序: 木→火→土→金→水→木
+var SHENG_ORDER=['wood','fire','earth','metal','water'];
+// 相剋順序: 木→土→水→火→金→木 (pentagram skip-one)
+var KE_ORDER=['wood','earth','water','fire','metal'];
+
+var activeWxId=null;
+
+// ── Wuxing render ─────────────────────────────────────────────
+function renderWuxing(){
+  var NR=36; // node radius
+  var OFFSET=6; // arrow gap from circle edge
+
+  // ─ 相生 lines ─
+  var sg=document.getElementById('wx-sheng');
+  sg.innerHTML='';
+  for(var i=0;i<SHENG_ORDER.length;i++){
+    var e1=WX_MAP[SHENG_ORDER[i]];
+    var e2=WX_MAP[SHENG_ORDER[(i+1)%SHENG_ORDER.length]];
+    var dx=e2.x-e1.x, dy=e2.y-e1.y;
+    var dist=Math.sqrt(dx*dx+dy*dy);
+    var ux=dx/dist, uy=dy/dist;
+    var sx=e1.x+ux*(NR+OFFSET), sy=e1.y+uy*(NR+OFFSET);
+    var ex=e2.x-ux*(NR+OFFSET+6), ey=e2.y-uy*(NR+OFFSET+6);
+    var path=document.createElementNS(NS,'path');
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke','var(--pine)');
+    path.setAttribute('stroke-width','2');
+    path.setAttribute('opacity','.8');
+    path.setAttribute('d','M'+sx+','+sy+' L'+ex+','+ey);
+    path.setAttribute('marker-end','url(#arrow-sheng)');
+    sg.appendChild(path);
+  }
+
+  // ─ 相剋 lines ─
+  var kg=document.getElementById('wx-ke');
+  kg.innerHTML='';
+  for(var j=0;j<KE_ORDER.length;j++){
+    var k1=WX_MAP[KE_ORDER[j]];
+    var k2=WX_MAP[KE_ORDER[(j+1)%KE_ORDER.length]];
+    var kline=document.createElementNS(NS,'line');
+    kline.setAttribute('x1',k1.x);kline.setAttribute('y1',k1.y);
+    kline.setAttribute('x2',k2.x);kline.setAttribute('y2',k2.y);
+    kline.setAttribute('stroke','var(--cinnabar)');
+    kline.setAttribute('stroke-width','1.2');
+    kline.setAttribute('stroke-dasharray','5 4');
+    kline.setAttribute('opacity','.7');
+    kg.appendChild(kline);
+  }
+
+  // ─ Nodes ─
+  var ng=document.getElementById('wx-nodes');
+  ng.innerHTML='';
+  WX_ELEMENTS.forEach(function(e){
+    var grp=document.createElementNS(NS,'g');
+    grp.setAttribute('style','cursor:pointer');
+    grp.setAttribute('data-wxid',e.id);
+
+    var c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',e.x);c.setAttribute('cy',e.y);c.setAttribute('r',NR);
+    c.setAttribute('fill',W[e.wx]);
+    c.setAttribute('stroke',activeWxId===e.id?'var(--ink)':'#fff');
+    c.setAttribute('stroke-width',activeWxId===e.id?3:2);
+
+    var lbl=document.createElementNS(NS,'text');
+    lbl.setAttribute('x',e.x);lbl.setAttribute('y',e.y-4);
+    lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','central');
+    lbl.setAttribute('font-size','22');lbl.setAttribute('fill','#fff');
+    lbl.setAttribute('font-family','serif');lbl.setAttribute('pointer-events','none');
+    lbl.textContent=e.lbl;
+
+    var sub=document.createElementNS(NS,'text');
+    sub.setAttribute('x',e.x);sub.setAttribute('y',e.y+17);
+    sub.setAttribute('text-anchor','middle');
+    sub.setAttribute('font-size','10');sub.setAttribute('fill','rgba(255,255,255,.85)');
+    sub.setAttribute('font-family','ui-sans-serif,sans-serif');
+    sub.setAttribute('pointer-events','none');
+    sub.textContent=e.guaLbl;
+
+    grp.appendChild(c);grp.appendChild(lbl);grp.appendChild(sub);
+    grp.addEventListener('click',function(ev){
+      activeWxId=ev.currentTarget.getAttribute('data-wxid');
+      renderWuxing();
+      showWuxingDetail(activeWxId);
+    });
+    ng.appendChild(grp);
+  });
+}
+
+function showWuxingDetail(id){
+  var e=WX_MAP[id];
+  if(!e) return;
+  var col=W[e.wx];
+
+  // 白話說明
+  var shengEl=WX_MAP[e.sheng], shengByEl=WX_MAP[e.shengBy];
+  var keEl=WX_MAP[e.ke], keByEl=WX_MAP[e.keBy];
+
+  var shengTxt=e.lbl+'生'+shengEl.lbl+'（補'+shengEl.lbl+'先養'+e.lbl+'）；'+
+               shengByEl.lbl+'生'+e.lbl+'（要養'+e.lbl+'可養'+shengByEl.lbl+'）';
+  var keTxt=e.lbl+'剋'+keEl.lbl+'（'+e.lbl+'旺會壓住'+keEl.lbl+'）；'+
+            keByEl.lbl+'剋'+e.lbl+'（'+keByEl.lbl+'旺會耗損'+e.lbl+'）';
+
+  document.getElementById('detail').innerHTML=
+    '<div class="dh">'+
+      '<div class="dsym" style="color:'+col+';font-size:32px;font-weight:700">'+e.lbl+'</div>'+
+      '<div><h2>'+e.lbl+'行</h2><div class="dfn">所屬卦：'+e.guaLbl+'</div></div>'+
+      '<span class="wuxing" style="background:'+col+'">五行</span>'+
+    '</div>'+
+    '<div class="drow"><b>生（供給）</b><span>我生 <b style="color:'+W[WX_MAP[e.sheng].wx]+'">'+e.sheng+'（'+WX_MAP[e.sheng].lbl+'）</b>；生我者 <b style="color:'+W[WX_MAP[e.shengBy].wx]+'">'+e.shengBy+'（'+WX_MAP[e.shengBy].lbl+'）</b></span></div>'+
+    '<div class="drow"><b>剋（壓制）</b><span>我剋 <b style="color:'+W[WX_MAP[e.ke].wx]+'">'+e.ke+'（'+WX_MAP[e.ke].lbl+'）</b>；剋我者 <b style="color:'+W[WX_MAP[e.keBy].wx]+'">'+e.keBy+'（'+WX_MAP[e.keBy].lbl+'）</b></span></div>'+
+    '<div class="pair-note" style="margin-top:10px">'+
+      '<b style="color:var(--pine)">相生</b>：'+shengTxt+'<br>'+
+      '<b style="color:var(--cinnabar)">相剋</b>：'+keTxt+
+    '</div>';
+}
 
 // ── Render nodes ──────────────────────────────────────────────
 function getPos(b){
@@ -567,34 +743,59 @@ function switchView(v){
   if(v!==3) BAGUA.forEach(function(b){b.level=0;});
 
   // Buttons
-  [1,2,3].forEach(function(i){
-    document.getElementById('btn-v'+i).classList.toggle('active',i===v);
+  [1,2,3,4].forEach(function(i){
+    var btn=document.getElementById('btn-v'+i);
+    if(btn) btn.classList.toggle('active',i===v);
   });
 
   // Copy blocks
-  [1,2,3].forEach(function(i){
+  [1,2,3,4].forEach(function(i){
     var el=document.getElementById('copy-v'+i);
     if(el) el.classList.toggle('hidden',i!==v);
   });
 
-  // Axes panel (only view 1 & 3)
+  // Axes panel (only view 1)
   document.getElementById('axes-panel').style.display=(v===1)?'':'none';
 
   // V3 controls
   document.getElementById('v3-controls').style.display=(v===3)?'block':'none';
   if(v!==3) document.getElementById('v3-persona').style.display='none';
 
+  // Bagua wheel vs wuxing SVG
+  var isV4=(v===4);
+  document.querySelector('.wheel-wrap').style.display=isV4?'none':'';
+  document.getElementById('bagua-legend').style.display=isV4?'none':'';
+  document.getElementById('wuxing-wrap').style.display=isV4?'block':'none';
+  document.getElementById('wuxing-legend').style.display=isV4?'flex':'none';
+
+  // Axis lines & cycle arrows: hide when v4
+  if(!isV4){
+    updateAxisLines();
+    renderCycleArrows();
+    renderNodes();
+  } else {
+    // hide axis lines and cycle arrows
+    document.getElementById('axis-lines').style.display='none';
+    document.getElementById('axis-labels-v1').style.display='none';
+    document.getElementById('cycle-arrows').style.display='none';
+    document.getElementById('nodes').innerHTML='';
+  }
+
   // Hint text
   document.getElementById('hint-line').textContent=
     v===2?'▼ 點任一卦看詳情，箭頭顯示能量流轉方向':
-    v===3?'▼ 點節點循環切換狀態（正常→過強→過弱）':'▼ 點圖上任一卦';
+    v===3?'▼ 點節點循環切換狀態（正常→過強→過弱）':
+    v===4?'▼ 點五行節點看生剋關係':
+    '▼ 點圖上任一卦';
 
-  updateAxisLines();
-  renderCycleArrows();
-  renderNodes();
-
-  if(v===3) updateV3Summary();
-  showDetail(activeKey, v===3);
+  if(v===3){updateV3Summary();showDetail(activeKey,true);}
+  else if(v===4){
+    renderWuxing();
+    if(activeWxId) showWuxingDetail(activeWxId);
+    else document.getElementById('detail').innerHTML='';
+  } else {
+    showDetail(activeKey,false);
+  }
 }
 
 // ── Init ─────────────────────────────────────────────────────
