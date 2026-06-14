@@ -109,7 +109,7 @@
 
   <!-- Wheel -->
   <div class="wheel-wrap">
-    <svg viewBox="0 0 400 400" id="wheel">
+    <svg viewBox="-56 -56 512 512" id="wheel">
       <defs>
         <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
           <polygon points="0 0, 7 3.5, 0 7" fill="var(--pine)" opacity=".75"/>
@@ -180,7 +180,7 @@ var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:29
 // 震→巽→離→坤→兌→乾→坎→艮
 var CYCLE_ORDER=['zhen','xun','li','kun','dui','qian','kan','gen'];
 // Pre-compute cycle positions (8 positions clockwise, start top = -90deg)
-var CX=200,CY=200,CR=148;
+var CX=200,CY=200,CR=124;
 var CYCLE_POS={};
 CYCLE_ORDER.forEach(function(k,i){
   var angle=(Math.PI*2/8)*i - Math.PI/2;
@@ -281,16 +281,19 @@ function renderNodes(){
       grp.appendChild(bd);
     }
 
-    // Phase label in view 2 (outside circle)
+    // Phase label in view 2 (outside circle) — anchor by quadrant so it never overlaps the node
     if(currentView===2){
       var ang=Math.atan2(pos.y-CY,pos.x-CX);
-      var lx=Math.round(CX+(CR+50)*Math.cos(ang));
-      var ly=Math.round(CY+(CR+50)*Math.sin(ang));
+      var cos=Math.cos(ang), sin=Math.sin(ang);
+      var lx=Math.round(CX+(CR+46)*cos);
+      var ly=Math.round(CY+(CR+46)*sin);
+      var anchor = cos>0.35 ? 'start' : (cos<-0.35 ? 'end' : 'middle');
+      if(anchor==='start') lx+=10; else if(anchor==='end') lx-=10;
+      ly += sin>0.35 ? 10 : (sin<-0.35 ? -2 : 4);   // 下方往下推、上方略上提
       var ph=document.createElementNS(NS,'text');
       ph.setAttribute('class','phase');
       ph.setAttribute('x',lx);ph.setAttribute('y',ly);
-      ph.setAttribute('text-anchor','middle');
-      ph.setAttribute('dominant-baseline','central');
+      ph.setAttribute('text-anchor',anchor);
       ph.textContent=b.phase;
       grp.appendChild(ph);
     }
