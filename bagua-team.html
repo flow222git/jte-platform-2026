@@ -1,0 +1,585 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>團隊合盤 · 八卦能量</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
+  .sans{font-family:ui-sans-serif,sans-serif}
+  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:14px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+  .home-link:hover{background:var(--surface)}
+
+  /* ── Cover / 管理區 ── */
+  #cover{padding:4px 0}
+  .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--gold);
+    text-transform:uppercase;text-align:center;margin-bottom:8px}
+  h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px;text-align:center}
+  .lead{font-size:14px;color:var(--ink);max-width:430px;margin:0 auto 4px;line-height:1.9;text-align:center}
+  .nav-row{text-align:center;margin:12px 0 6px}
+  .nav-row a{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin:0 4px 6px}
+  .nav-row a:hover{background:var(--surface)}
+  .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
+    border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;line-height:1.85;margin:14px 0}
+
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
+    margin-bottom:12px;font-weight:700}
+
+  /* ── 成員清單 ── */
+  .member-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .member-row:last-child{border-bottom:none}
+  .member-row .m-sym{font-size:22px;flex:none;width:30px;text-align:center;color:var(--accent,var(--pine))}
+  .member-row .m-body{flex:1;min-width:0}
+  .member-row .m-nm{font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:700;color:var(--ink);
+    background:none;border:none;border-bottom:1px dashed transparent;padding:1px 0;width:100%;max-width:160px}
+  .member-row .m-nm:focus{outline:none;border-bottom-color:var(--line)}
+  .member-row .m-type{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .member-row .m-rm{flex:none;background:none;border:1px solid var(--line);border-radius:999px;
+    font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);padding:5px 12px;cursor:pointer}
+  .member-row .m-rm:hover{background:var(--surface2);color:var(--cinnabar)}
+  .empty-note{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.8;padding:4px 0}
+
+  .add-input{width:100%;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:15px;letter-spacing:.06em;
+    background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--ink)}
+  .add-input:focus{outline:none;border-color:var(--pine);background:#fff}
+  .cbtn{display:inline-block;background:var(--pine);color:#fff;border:none;
+    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;
+    padding:10px 22px;border-radius:999px;cursor:pointer;transition:transform .15s}
+  .cbtn:hover{transform:translateY(-2px)}
+  .cbtn:disabled{opacity:.4;cursor:default;transform:none}
+  .cbtn.ghost{background:none;color:var(--muted);border:1px solid var(--line);font-weight:400}
+  .cbtn.ghost:hover{background:var(--surface);transform:none}
+  .upload-btn{display:inline-block;background:none;color:var(--pine);border:1px solid var(--line);
+    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;
+    padding:10px 18px;border-radius:999px;cursor:pointer;transition:all .15s}
+  .upload-btn:hover{background:var(--surface2);transform:translateY(-1px)}
+  .add-err{color:var(--cinnabar);font-family:ui-sans-serif,sans-serif;font-size:12.5px;margin-top:8px;min-height:1.2em}
+  .or-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:ui-sans-serif,sans-serif;
+    font-size:11.5px;margin:13px 0 11px}
+  .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .go-btn{display:block;width:100%;background:var(--pine);color:#fff;border:none;
+    font-family:"Songti TC","Noto Serif TC",serif;font-size:16px;letter-spacing:.1em;
+    padding:14px 0;border-radius:999px;cursor:pointer;margin:8px 0 4px;
+    box-shadow:0 8px 24px rgba(53,97,79,.22);transition:transform .15s}
+  .go-btn:hover:not(:disabled){transform:translateY(-2px)}
+  .go-btn:disabled{opacity:.4;cursor:default;box-shadow:none}
+  .go-hint{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:8px}
+
+  /* ── Result ── */
+  #result{display:none}
+  .radar-wrap{max-width:380px;margin:6px auto 4px}
+  .radar-wrap svg{width:100%;height:auto;display:block}
+  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--pine);font-weight:700}
+  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:5px 13px;justify-content:center;font-size:11.5px;color:var(--muted);
+    font-family:ui-sans-serif,sans-serif;margin:2px 0 18px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px 20px;
+    box-shadow:0 14px 38px rgba(74,62,44,.1);position:relative;overflow:hidden;text-align:center;margin-bottom:18px}
+  .typecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,var(--pine))}
+  .tc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px}
+  .tc-sym{font-size:48px;line-height:1;margin-bottom:6px;color:var(--accent,var(--pine))}
+  .tc-title{font-size:25px;letter-spacing:.08em;margin-bottom:9px}
+  .tc-essence{font-size:14.5px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
+  .portrait{font-size:14px;line-height:1.95;color:var(--ink)}
+  .portrait .em{color:var(--pine);font-weight:600}
+  .portrait-close{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-style:italic;
+    color:var(--pine);font-size:13.5px;line-height:1.8}
+
+  .role-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .role-row:last-child{border-bottom:none}
+  .role-row .r-sym{font-size:20px;flex:none;width:28px;text-align:center;color:var(--accent,var(--pine))}
+  .role-row .r-body{flex:1;min-width:0}
+  .role-row .r-nm{font-family:ui-sans-serif,sans-serif;font-size:13.5px;font-weight:700;color:var(--ink)}
+  .role-row .r-ty{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .judge{font-size:14px;line-height:1.9;color:var(--ink);margin-top:12px}
+  .judge .em{color:var(--pine);font-weight:600}
+  .judge .down{color:var(--cinnabar);font-weight:600}
+
+  .wx-grid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+  .wx-chip{font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;border-radius:999px;
+    padding:7px 16px;border:1.5px solid var(--line)}
+  .wx-chip.have{color:#fff}
+  .wx-chip.miss{color:var(--muted);background:var(--surface2);opacity:.6}
+
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
+    border-top:1px solid var(--line);padding-top:16px;margin-top:6px}
+  .res-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:16px 0 10px}
+</style></head>
+<body>
+<a class="home-link" href="index.html">← 回練息場</a>
+
+<!-- ───────── COVER / 管理區 ───────── -->
+<div id="cover">
+  <div class="eyebrow">BAGUA ENERGY · TEAM</div>
+  <h1>團隊合盤</h1>
+  <p class="lead">把一群人的八卦盤放在一起，看你們整體的樣子、誰補誰、和共同的盲點。</p>
+  <div class="nav-row">
+    <a href="bagua-persona.html">🧭 先測我的八卦底色</a>
+    <a href="bagua-records.html">📒 我的記錄</a>
+  </div>
+  <div class="honest">
+    這是一面<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。
+    每個人的能量都會流動、可以成長——這只是把你們此刻的樣子放在一起看看。
+  </div>
+
+  <div class="block">
+    <h3>👥 團隊成員</h3>
+    <div id="member-list"></div>
+  </div>
+
+  <div class="block">
+    <h3>＋ 加入成員</h3>
+    <input class="add-input" id="add-code" placeholder="貼上別人的合盤碼或連結（B1 開頭）" autocomplete="off" spellcheck="false">
+    <div style="text-align:center;margin-top:11px"><button class="cbtn" onclick="addFromInput()">加入</button></div>
+    <div class="or-divider">或上傳含 QR 的圖</div>
+    <div style="text-align:center">
+      <input type="file" id="qr-file" accept="image/*" style="display:none" onchange="onQRFile(event)">
+      <button class="upload-btn" onclick="document.getElementById('qr-file').click()">📷 上傳一張含 QR 的圖</button>
+    </div>
+    <div class="add-err" id="add-err"></div>
+  </div>
+
+  <div class="go-hint" id="go-hint"></div>
+  <button class="go-btn" id="go-btn" onclick="showTeam()" disabled>看團隊合盤</button>
+  <div style="text-align:center;margin-top:10px"><button class="cbtn ghost" onclick="clearTeam()">清空團隊</button></div>
+</div>
+
+<!-- ───────── RESULT ───────── -->
+<div id="result"></div>
+
+<!-- QR 解碼（本機庫，相對路徑，同源） -->
+<script src="lib/jsQR.js"></script>
+
+<script>
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
+var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+var WX_ALL=['metal','wood','water','fire','earth'];
+var NS='http://www.w3.org/2000/svg';
+
+// ── 8 能量模型（沿用 bagua-persona）──────────────────────
+var E={
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',state:'規劃、領導、創造',title:'乾金 · 開創者',pos:{x:200,y:60}},
+ li:{sym:'☲',nm:'離',wx:'fire',fn:'顯現／覺察',state:'洞察、理解、看見',title:'離火 · 洞見者',pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',state:'行動、冒險、開始',title:'震木 · 行動者',pos:{x:340,y:200}},
+ dui:{sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',state:'對話、連結、人際',title:'兌金 · 連結者',pos:{x:299,y:299}},
+ kun:{sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',state:'接納、支持、穩定',title:'坤土 · 承載者',pos:{x:200,y:340}},
+ kan:{sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',state:'沉澱、休息、反思',title:'坎水 · 沉潛者',pos:{x:101,y:299}},
+ gen:{sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',state:'結束、拒絕、定界',title:'艮土 · 守界者',pos:{x:60,y:200}},
+ xun:{sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',state:'推廣、成長、合作',title:'巽木 · 協作者',pos:{x:101,y:101}}
+};
+var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // clockwise from top
+
+// ── escape 使用者輸入 ─────────────────────────────────────
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+// ── 合盤碼編解碼（沿用 bagua-persona）─────────────────────
+function encodeCode(scores){
+  var s='B1';
+  EKEYS.forEach(function(k){ var v=Math.max(0,Math.min(99,Math.round(scores[k]||0))); s+=(v<10?'0':'')+v; });
+  return s;
+}
+function decodeCode(str){
+  str=(str||'').trim().toUpperCase().replace(/\s/g,'');
+  if(str.indexOf('B1')!==0 || str.length!==18) return null;
+  var d=str.slice(2); if(!/^[0-9]{16}$/.test(d)) return null;
+  var sc={}; EKEYS.forEach(function(k,i){ sc[k]=parseInt(d.substr(i*2,2),10); });
+  return sc;
+}
+function extractCode(str){
+  str=(str||'').trim();
+  var m=str.match(/[#?&]c=([A-Za-z0-9]+)/); if(m) return m[1].toUpperCase();
+  var s=str.toUpperCase().replace(/\s/g,''); return /^B1[0-9]{16}$/.test(s)?s:null;
+}
+function decodeCodeFromImageData(imageData){
+  try{
+    if(typeof jsQR==='undefined' || !imageData) return null;
+    var res=jsQR(imageData.data, imageData.width, imageData.height);
+    if(!res || !res.data) return null;
+    return extractCode(res.data);
+  }catch(e){ return null; }
+}
+
+// 某分數組的 top 型 key
+function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
+
+// ── 人物速寫（沿用 bagua-persona buildPortrait）────────────
+function buildPortrait(sc,sorted){
+  var t1=E[sorted[0]],t2=E[sorted[1]];
+  var l1=E[sorted[sorted.length-1]],l2=E[sorted[sorted.length-2]];
+  var p='你們團隊的能量裡，最鮮明的是「<span class="em">'+t1.fn+'</span>」和「<span class="em">'+t2.fn+'</span>」——'
+    +'整體擅長'+t1.state+'，也'+t2.state+'。';
+  p+='相對地，你們最少動用的是「'+l1.fn+'」與「'+l2.fn+'」，那是這個團隊還沒長開、最有空間的部分。';
+  var close='善用團隊最鮮明的那兩種能量，偶爾刻意補補最少用的那兩種，整支隊伍會更完整、更有彈性。';
+  return {p:p,close:close};
+}
+
+// ── Radar wheel（沿用 bagua-persona buildRadar；overlay 可選）──
+function buildRadar(sc,topKey,nowNorm){
+  var cx=200,cy=200,baseR=140;
+  var svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','-54 -46 508 500');
+  [0.25,0.5,0.75,1].forEach(function(f){
+    var pts=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      return (cx+ux*baseR*f)+','+(cy+uy*baseR*f);
+    }).join(' ');
+    var poly=document.createElementNS(NS,'polygon');
+    poly.setAttribute('points',pts);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','var(--line)');
+    poly.setAttribute('stroke-width',f===1?1.4:1);
+    poly.setAttribute('opacity',f===1?0.9:0.5);
+    svg.appendChild(poly);
+  });
+  EKEYS.forEach(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',cx);ln.setAttribute('y1',cy);
+    ln.setAttribute('x2',cx+ux*baseR);ln.setAttribute('y2',cy+uy*baseR);
+    ln.setAttribute('stroke','var(--line)');ln.setAttribute('stroke-width',1);ln.setAttribute('opacity',0.5);
+    svg.appendChild(ln);
+  });
+  function rOf(s){return 30+(s/100)*110;}
+  var sp=EKEYS.map(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    return (cx+ux*r)+','+(cy+uy*r);
+  }).join(' ');
+  var area=document.createElementNS(NS,'polygon');
+  area.setAttribute('points',sp);
+  area.setAttribute('fill','rgba(53,97,79,.16)');
+  area.setAttribute('stroke','var(--pine)');
+  area.setAttribute('stroke-width',2);
+  svg.appendChild(area);
+  if(nowNorm){
+    var np=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      var r=rOf(nowNorm[k]||0);
+      return (cx+ux*r)+','+(cy+uy*r);
+    }).join(' ');
+    var narea=document.createElementNS(NS,'polygon');
+    narea.setAttribute('points',np);
+    narea.setAttribute('fill','rgba(169,130,59,.10)');
+    narea.setAttribute('stroke','var(--gold)');
+    narea.setAttribute('stroke-width',2);
+    narea.setAttribute('stroke-dasharray','5 4');
+    svg.appendChild(narea);
+  }
+  EKEYS.forEach(function(k){
+    var b=E[k];
+    var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    var px=cx+ux*r, py=cy+uy*r;
+    var dot=document.createElementNS(NS,'circle');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);
+    dot.setAttribute('r',k===topKey?7:5);
+    dot.setAttribute('fill',W[b.wx]);
+    dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
+    svg.appendChild(dot);
+    var lr=baseR+22;
+    var lx=cx+ux*lr, ly=cy+uy*lr;
+    var anchor = ux>0.35?'start':(ux<-0.35?'end':'middle');
+    if(anchor==='start') lx+=2; else if(anchor==='end') lx-=2;
+    ly += uy>0.35?12:(uy<-0.35?-6:4);
+    var tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
+    tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
+    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
+    svg.appendChild(tx);
+    var ts=document.createElementNS(NS,'text');
+    ts.setAttribute('class','rscore');
+    ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
+    ts.textContent=sc[k];
+    svg.appendChild(ts);
+  });
+  return svg;
+}
+
+// ════════════════════════════════════════════════════════════
+//  團隊成員管理
+// ════════════════════════════════════════════════════════════
+var members=[]; // [{name, scores}]
+var TEAM_KEY='bagua_teams_v1';
+
+// 自己若有底色 → 自動帶入「你」
+function loadMyBase(){
+  try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null;
+    var o=JSON.parse(raw); return (o&&o.scores)?o.scores:null; }catch(e){ return null; }
+}
+
+function saveTeam(){
+  try{ localStorage.setItem(TEAM_KEY, JSON.stringify({members:members,ts:new Date().toISOString()})); }catch(e){}
+}
+function loadTeam(){
+  try{ var raw=localStorage.getItem(TEAM_KEY); if(!raw) return null;
+    var o=JSON.parse(raw); return (o&&Array.isArray(o.members))?o.members:null; }catch(e){ return null; }
+}
+
+// 初始化 members：先讀存檔，沒有再自動帶入「你」
+function initMembers(){
+  var saved=loadTeam();
+  if(saved && saved.length){ members=saved; return; }
+  members=[];
+  var mine=loadMyBase();
+  if(mine){ members.push({name:'你', scores:mine}); }
+}
+
+function addMember(scores, name){
+  members.push({name:name||('成員'+(members.length+1)), scores:scores});
+  saveTeam();
+}
+
+function addFromInput(){
+  var err=document.getElementById('add-err'); err.textContent='';
+  var inp=document.getElementById('add-code');
+  var code=extractCode(inp.value);
+  var sc=code?decodeCode(code):null;
+  if(!sc){ err.textContent='讀不到這個盤。請貼合盤碼（B1 開頭 16 位數字）、整段分享連結，或改上傳含 QR 的圖。'; return; }
+  addMember(sc);
+  inp.value='';
+  renderMembers();
+}
+
+function removeMember(i){
+  members.splice(i,1);
+  saveTeam();
+  renderMembers();
+}
+
+function renameMember(i, val){
+  if(members[i]){ members[i].name = (val||'').trim() || ('成員'+(i+1)); saveTeam(); }
+}
+
+function clearTeam(){
+  if(!confirm('確定清空整支團隊嗎？（無法復原）')) return;
+  members=[]; try{ localStorage.removeItem(TEAM_KEY); }catch(e){}
+  // 清空後若你還有底色，重新帶入「你」
+  var mine=loadMyBase();
+  if(mine){ members.push({name:'你', scores:mine}); saveTeam(); }
+  backToManage();
+  renderMembers();
+}
+
+function renderMembers(){
+  var list=document.getElementById('member-list');
+  if(!members.length){
+    list.innerHTML='<div class="empty-note">還沒有成員。先到「八卦底色」測你自己，或貼別人的合盤碼／連結把人加進來。<br>湊滿 2 位以上就能看團隊合盤。</div>';
+  } else {
+    list.innerHTML=members.map(function(m,i){
+      var tk=topKeyOf(m.scores);
+      return '<div class="member-row" style="--accent:'+W[E[tk].wx]+'">'
+        +'<span class="m-sym">'+E[tk].sym+'</span>'
+        +'<span class="m-body">'
+          +'<input class="m-nm" value="'+esc(m.name)+'" maxlength="12" '
+            +'onchange="renameMember('+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()">'
+          +'<span class="m-type">'+esc(E[tk].title)+'</span>'
+        +'</span>'
+        +'<button class="m-rm" onclick="removeMember('+i+')">移除</button>'
+      +'</div>';
+    }).join('');
+  }
+  var go=document.getElementById('go-btn');
+  var hint=document.getElementById('go-hint');
+  if(members.length>=2){ go.disabled=false; hint.textContent='共 '+members.length+' 位成員'; }
+  else { go.disabled=true; hint.textContent='再加 '+(2-members.length)+' 位就能合盤（至少 2 位）'; }
+}
+
+// ── 上傳含 QR 的圖 → 解碼 → 加入 ──────────────────────────
+function onQRFile(ev){
+  var err=document.getElementById('add-err'); if(err) err.textContent='';
+  var file=ev.target.files && ev.target.files[0];
+  ev.target.value='';
+  if(!file) return;
+  var img=new Image();
+  img.onload=function(){
+    try{
+      var cv=document.createElement('canvas');
+      var maxW=900, scale=img.width>maxW?maxW/img.width:1;
+      cv.width=Math.round(img.width*scale); cv.height=Math.round(img.height*scale);
+      var ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      var data=ctx.getImageData(0,0,cv.width,cv.height);
+      var code=decodeCodeFromImageData(data);
+      if(!code){ if(err) err.textContent='這張圖裡找不到合盤碼——試試更清楚的截圖，或改貼連結／合盤碼。'; return; }
+      var sc=decodeCode(code);
+      if(!sc){ if(err) err.textContent='這張 QR 不是有效的合盤碼。'; return; }
+      addMember(sc);
+      renderMembers();
+    }catch(e){ if(err) err.textContent='讀這張圖時出了點問題——換一張或改貼連結／合盤碼。'; }
+  };
+  img.onerror=function(){ if(err) err.textContent='這個檔讀不出來——請確認是圖片檔。'; };
+  var fr=new FileReader();
+  fr.onload=function(){ img.src=fr.result; };
+  fr.onerror=function(){ if(err) err.textContent='讀檔失敗——換一張試試。'; };
+  fr.readAsDataURL(file);
+}
+
+// ════════════════════════════════════════════════════════════
+//  團隊分析邏輯（純函式，方便測試）
+// ════════════════════════════════════════════════════════════
+
+// 1. 合成盤：各能量平均（四捨五入）
+function composite(mbrs){
+  var c={}; EKEYS.forEach(function(k){ c[k]=0; });
+  if(!mbrs.length) return c;
+  EKEYS.forEach(function(k){
+    var sum=0; mbrs.forEach(function(m){ sum+=(m.scores[k]||0); });
+    c[k]=Math.round(sum/mbrs.length);
+  });
+  return c;
+}
+
+// 2. 多樣性：不重複 top 能量數，對照 ceil(成員/2)
+function diversity(mbrs){
+  var tops={}; mbrs.forEach(function(m){ tops[topKeyOf(m.scores)]=true; });
+  var distinct=Object.keys(tops).length;
+  var threshold=Math.ceil(mbrs.length/2);
+  var concentrated = distinct<=threshold;
+  // 集中時的代表能量＝出現最多次的 top
+  var counts={}; var topMost=null, mostN=0;
+  mbrs.forEach(function(m){ var t=topKeyOf(m.scores); counts[t]=(counts[t]||0)+1;
+    if(counts[t]>mostN){ mostN=counts[t]; topMost=t; } });
+  return {distinct:distinct, threshold:threshold, concentrated:concentrated, topMost:topMost};
+}
+
+// 3. 共同盲點：所有成員該能量皆 <50，依 composite 由小到大取前 1–3
+function blindSpots(mbrs){
+  var comp=composite(mbrs);
+  return EKEYS.filter(function(k){
+    return mbrs.every(function(m){ return (m.scores[k]||0) < 50; });
+  }).sort(function(a,b){ return comp[a]-comp[b]; }).slice(0,3);
+}
+
+// 4. 五行分布：統計每位成員 top 能量的五行 → have / miss
+function elementSpread(mbrs){
+  var have={};
+  mbrs.forEach(function(m){ have[E[topKeyOf(m.scores)].wx]=true; });
+  var haveList=WX_ALL.filter(function(w){ return have[w]; });
+  var missList=WX_ALL.filter(function(w){ return !have[w]; });
+  return {have:haveList, miss:missList};
+}
+
+// 五行缺漏的調性提示
+var WX_MISS_NOTE={
+  metal:'少了果斷、定方向與收束的調性',
+  wood:'少了開創、行動與生長的衝勁',
+  water:'少了沉潛、休息與恢復的調性',
+  fire:'少了洞察、覺察與看清本質的眼睛',
+  earth:'少了承載、穩定與守界的底盤'
+};
+
+// ════════════════════════════════════════════════════════════
+//  結果畫面
+// ════════════════════════════════════════════════════════════
+function showTeam(){
+  if(members.length<2) return;
+  var comp=composite(members);
+  var sorted=EKEYS.slice().sort(function(a,b){ return comp[b]-comp[a]; });
+  var compTop=sorted[0];
+  var top=E[compTop];
+  var accent=W[top.wx];
+  var port=buildPortrait(comp,sorted);
+
+  // 角色地圖
+  var roleHtml=members.map(function(m){
+    var tk=topKeyOf(m.scores);
+    return '<div class="role-row" style="--accent:'+W[E[tk].wx]+'">'
+      +'<span class="r-sym">'+E[tk].sym+'</span>'
+      +'<span class="r-body"><span class="r-nm">'+esc(m.name)+'</span>'
+        +'<span class="r-ty">'+esc(E[tk].title)+' · 主能量「'+E[tk].fn+'」</span></span>'
+    +'</div>';
+  }).join('');
+
+  // 多樣性判讀
+  var dv=diversity(members);
+  var divText = dv.concentrated
+    ? '你們的能量偏集中在「<span class="em">'+E[dv.topMost].nm+'·'+E[dv.topMost].fn.split('／')[0]+'</span>」——默契高、容易一拍即合，但小心一起忽略同樣的盲點。'
+    : '你們的能量很<span class="em">多元</span>（共 '+dv.distinct+' 種主能量）——互相補位的空間大，遇事不容易只有一種聲音。';
+
+  // 共同盲點
+  var blind=blindSpots(members);
+  var blindText = blind.length
+    ? '你們整隊都偏低「<span class="down">'+blind.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('』『')+'</span>」——這是全隊<b>共同的空白處</b>，容易在這裡一起卡住，少有人補上這份能量。'
+    : '你們的能量涵蓋面蠻廣——沒有明顯的集體盲點，大致每種能量都有人撐著。';
+
+  // 五行分布
+  var spread=elementSpread(members);
+  var wxChips=WX_ALL.map(function(w){
+    var has=spread.have.indexOf(w)>=0;
+    return '<span class="wx-chip '+(has?'have':'miss')+'"'+(has?' style="background:'+W[w]+';border-color:'+W[w]+'"':'')+'>'
+      +WLAB[w]+(has?'':' ·缺')+'</span>';
+  }).join('');
+  var wxText = spread.miss.length
+    ? '你們的主能量缺了「<span class="down">'+spread.miss.map(function(w){return WLAB[w];}).join('』『')+'</span>」——'
+        +spread.miss.map(function(w){return WX_MISS_NOTE[w];}).join('；')+'。'
+    : '金木水火土<b>五行齊全</b>——這支團隊的能量底盤很完整，各種調性都有人帶。';
+
+  var html=''
+   +'<a class="home-link" href="javascript:void(0)" onclick="backToManage()">← 回成員管理</a>'
+   +'<div class="eyebrow">BAGUA · 團隊合盤</div>'
+
+   +'<div class="typecard" style="--accent:'+accent+'">'
+     +'<div class="tc-eyebrow">你們這個團隊整體</div>'
+     +'<div class="tc-sym">'+top.sym+'</div>'
+     +'<div class="tc-title">'+top.title+'</div>'
+     +'<div class="tc-essence">'+port.p+'</div>'
+   +'</div>'
+
+   +'<div class="block"><h3>團隊合成盤</h3>'
+     +'<div class="radar-wrap" id="team-radar"></div>'
+     +'<div class="legend">'
+       +'<span><i style="background:'+W.metal+'"></i>金 乾兌</span>'
+       +'<span><i style="background:'+W.wood+'"></i>木 震巽</span>'
+       +'<span><i style="background:'+W.water+'"></i>水 坎</span>'
+       +'<span><i style="background:'+W.fire+'"></i>火 離</span>'
+       +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
+     +'</div>'
+     +'<div class="portrait-close">'+port.close+'</div>'
+   +'</div>'
+
+   +'<div class="block"><h3>🗺️ 能量角色地圖</h3>'+roleHtml
+     +'<div class="judge">'+divText+'</div>'
+   +'</div>'
+
+   +'<div class="block"><h3>🕳️ 共同盲點</h3><div class="judge" style="margin-top:0">'+blindText+'</div></div>'
+
+   +'<div class="block"><h3>🌳 五行分布</h3>'
+     +'<div class="wx-grid">'+wxChips+'</div>'
+     +'<div class="judge" style="margin-top:0">'+wxText+'</div>'
+   +'</div>'
+
+   +'<div class="res-btns">'
+     +'<button class="cbtn ghost" onclick="backToManage()">回成員管理</button>'
+     +'<button class="cbtn ghost" onclick="clearTeam()">清空團隊</button>'
+   +'</div>'
+   +'<div class="foot">團隊合盤是<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。<br>每個人都會成長，能量會流動——這只是你們此刻的一張側寫。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+
+  var r=document.getElementById('result');
+  r.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  r.style.display='block';
+  document.getElementById('team-radar').appendChild(buildRadar(comp, compTop, null));
+  window.scrollTo(0,0);
+}
+
+function backToManage(){
+  document.getElementById('result').style.display='none';
+  document.getElementById('cover').style.display='block';
+  renderMembers();
+  window.scrollTo(0,0);
+}
+
+// ── init ──────────────────────────────────────────────────
+initMembers();
+renderMembers();
+</script>
+</body></html>

@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title></head><body>
+<pre id="out">running...</pre>
+<iframe id="f" src="bagua-team.html" style="width:600px;height:400px"></iframe>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+document.getElementById('f').onload=function(){
+  try{
+    var w=document.getElementById('f').contentWindow;
+    var d=w.document;
+
+    // helper：用某能量為 top 造一張盤
+    function sheet(topK, topV, baseV){
+      var s={}; w.EKEYS.forEach(function(k){ s[k]=baseV; }); s[topK]=topV; return s;
+    }
+
+    // 0. libs
+    ok(typeof w.jsQR!=='undefined','jsQR lib loaded (global jsQR)');
+    ok(Object.keys(w.E).length===8,'8 energies');
+
+    // 1. 加成員：貼有效 encodeCode → members +1，顯示其型
+    w.members=[]; w.renderMembers();
+    var s1=sheet('qian',90,20); // 乾金 top
+    d.getElementById('add-code').value=w.encodeCode(s1);
+    w.addFromInput();
+    ok(w.members.length===1,'valid code adds 1 member, got '+w.members.length);
+    ok(d.getElementById('member-list').innerHTML.indexOf('乾金')>=0,'member list shows 乾金 title');
+    ok(d.getElementById('add-err').textContent==='','no error on valid add');
+
+    // 2. 貼亂碼 → 錯誤訊息、members 不變
+    var before=w.members.length;
+    d.getElementById('add-code').value='not-a-code';
+    w.addFromInput();
+    ok(w.members.length===before,'garbage does not add member');
+    ok(d.getElementById('add-err').textContent.length>0,'garbage shows error message');
+
+    // 3. composite 平均正確（兩盤平均）
+    var a={qian:80,li:0,zhen:40,dui:0,kun:0,kan:0,gen:0,xun:0};
+    var b={qian:20,li:10,zhen:60,dui:0,kun:0,kan:0,gen:0,xun:0};
+    var comp=w.composite([{name:'x',scores:a},{name:'y',scores:b}]);
+    ok(comp.qian===50,'composite qian avg (80,20)→50, got '+comp.qian);
+    ok(comp.zhen===50,'composite zhen avg (40,60)→50, got '+comp.zhen);
+    ok(comp.li===5,'composite li avg (0,10)→5, got '+comp.li);
+
+    // 4. 多樣性：三人 top 都同 → 偏集中
+    var same=[sheet('qian',90,10),sheet('qian',88,10),sheet('qian',80,10)].map(function(s){return{name:'m',scores:s};});
+    var dvS=w.diversity(same);
+    ok(dvS.distinct===1,'3 same tops → distinct 1, got '+dvS.distinct);
+    ok(dvS.concentrated===true,'3 same tops → concentrated true');
+    ok(dvS.topMost==='qian','concentrated topMost qian');
+
+    // 4b. 多樣性：三人 top 不同 → 多元
+    var diff=[sheet('qian',90,10),sheet('li',90,10),sheet('zhen',90,10)].map(function(s){return{name:'m',scores:s};});
+    var dvD=w.diversity(diff);
+    ok(dvD.distinct===3,'3 diff tops → distinct 3, got '+dvD.distinct);
+    ok(dvD.concentrated===false,'3 diff tops → concentrated false (threshold='+dvD.threshold+')');
+
+    // 5. 共同盲點：某能量全 <50 且屬最低 → 入盲點；有人 ≥50 → 不入
+    //   各盤多數能量拉高(≥50)，只留 kan/gen/xun 三個全低 → 盲點正好取這 3 個
+    //   zhen: 一人 90 → 不入盲點； qian: 全 ≥50 → 不入
+    var bm=[
+      {name:'a',scores:{qian:90,li:60,zhen:90,dui:60,kun:60,kan:10,gen:5,xun:20}},
+      {name:'b',scores:{qian:80,li:55,zhen:10,dui:70,kun:60,kan:20,gen:8,xun:25}},
+      {name:'c',scores:{qian:70,li:80,zhen:10,dui:55,kun:90,kan:30,gen:9,xun:15}}
+    ];
+    var blind=w.blindSpots(bm);
+    ok(blind.indexOf('kan')>=0,'kan (all<50, among lowest) is a blind spot');
+    ok(blind.indexOf('gen')>=0,'gen (all<50, lowest) is a blind spot');
+    ok(blind.indexOf('zhen')<0,'zhen (one≥50) is NOT a blind spot');
+    ok(blind.indexOf('qian')<0,'qian (all≥50) is NOT a blind spot');
+    ok(blind.length<=3,'blind spots capped at 3, got '+blind.length);
+    // composite 由小到大：gen<xun<kan → 前3 應依此序
+    ok(blind[0]==='gen','lowest composite (gen) first in blind spots, got '+blind[0]);
+
+    // 5b. 無盲點：各能量都有人≥50
+    var nob=[
+      {name:'a',scores:{qian:90,li:90,zhen:90,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'b',scores:{qian:10,li:10,zhen:10,dui:90,kun:90,kan:90,gen:90,xun:90}}
+    ];
+    ok(w.blindSpots(nob).length===0,'no blind spot when each energy covered');
+
+    // 6. 五行分布：缺某五行時正確標出缺
+    //   兩人 top = qian(metal) 與 zhen(wood) → have metal,wood; miss water,fire,earth
+    var spread=w.elementSpread([{name:'a',scores:sheet('qian',90,10)},{name:'b',scores:sheet('zhen',90,10)}]);
+    ok(spread.have.indexOf('metal')>=0 && spread.have.indexOf('wood')>=0,'spread has metal+wood');
+    ok(spread.miss.indexOf('water')>=0 && spread.miss.indexOf('fire')>=0 && spread.miss.indexOf('earth')>=0,'spread misses water/fire/earth');
+    // 五行齊全
+    var full=w.elementSpread([
+      {name:'a',scores:sheet('qian',90,10)}, // metal
+      {name:'b',scores:sheet('zhen',90,10)}, // wood
+      {name:'c',scores:sheet('kan',90,10)},  // water
+      {name:'d',scores:sheet('li',90,10)},   // fire
+      {name:'e',scores:sheet('kun',90,10)}   // earth
+    ]);
+    ok(full.miss.length===0,'5 elements covered → no miss, got miss='+JSON.stringify(full.miss));
+
+    // 7. 結果渲染：≥2 成員 → 合成盤雷達(svg polygon)＋角色地圖＋共同盲點區
+    w.members=[
+      {name:'你',scores:{qian:90,li:10,zhen:80,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'阿明',scores:{qian:20,li:80,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10}},
+      {name:'小華',scores:{qian:10,li:10,zhen:10,dui:10,kun:80,kan:10,gen:10,xun:10}}
+    ];
+    w.showTeam();
+    ok(d.getElementById('result').style.display==='block','result visible after showTeam');
+    ok(d.querySelector('#team-radar svg polygon'),'team radar svg polygon rendered');
+    ok(d.querySelectorAll('.role-row').length===3,'3 role-rows in 角色地圖, got '+d.querySelectorAll('.role-row').length);
+    ok(d.querySelector('.typecard .tc-title'),'composite type card title present');
+    ok(d.querySelectorAll('.block h3').length>=4,'≥4 result blocks (合成盤/角色/盲點/五行)');
+    ok(d.querySelectorAll('.wx-chip').length===5,'5 五行 chips, got '+d.querySelectorAll('.wx-chip').length);
+
+    // 8. 角色地圖反映成員名字（escape）
+    ok(d.getElementById('result').innerHTML.indexOf('阿明')>=0,'role map shows member name 阿明');
+
+    // 9. composite top 正確（你 qian 90 + 其他 → 合成 top 應為 qian）
+    var c2=w.composite(w.members);
+    var ctop=w.EKEYS.slice().sort(function(x,y){return c2[y]-c2[x];})[0];
+    ok(ctop==='qian','composite top qian for this team, got '+ctop);
+
+    // 10. escape：名字含 < > 不破壞 HTML
+    w.members=[
+      {name:'<b>x</b>',scores:sheet('qian',90,10)},
+      {name:'y',scores:sheet('li',90,10)}
+    ];
+    w.showTeam();
+    ok(d.getElementById('result').innerHTML.indexOf('&lt;b&gt;x&lt;/b&gt;')>=0,'member name escaped in output');
+
+    // 11. addMember 預設名字 成員N
+    w.members=[]; w.addMember(sheet('qian',90,10));
+    ok(w.members[0].name==='成員1','default name 成員1');
+
+    // 12. removeMember
+    w.addMember(sheet('li',90,10));
+    var n=w.members.length; w.removeMember(0);
+    ok(w.members.length===n-1,'removeMember drops one');
+
+    // 13. <2 成員 showTeam 不渲染（go 邏輯）
+    w.members=[{name:'solo',scores:sheet('qian',90,10)}];
+    w.renderMembers();
+    ok(d.getElementById('go-btn').disabled===true,'go button disabled with 1 member');
+    w.members.push({name:'two',scores:sheet('li',90,10)});
+    w.renderMembers();
+    ok(d.getElementById('go-btn').disabled===false,'go button enabled with 2 members');
+
+  }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
+
+  var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
+  document.title=msg;
+  document.getElementById('out').textContent=msg;
+};
+</script>
+</body></html>
