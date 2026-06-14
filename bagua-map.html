@@ -8,17 +8,37 @@
   body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
     padding:22px;max-width:760px;margin:0 auto;line-height:1.7}
   h1{font-size:22px;letter-spacing:.06em;margin-bottom:2px}
-  .sub{font-size:13px;color:var(--muted);margin-bottom:6px;font-family:ui-sans-serif,sans-serif}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:12px;font-family:ui-sans-serif,sans-serif}
+
+  /* --- Toggle bar --- */
+  .toggle-bar{display:flex;gap:0;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;
+    margin-bottom:16px;font-family:ui-sans-serif,sans-serif;font-size:14px}
+  .toggle-bar button{flex:1;background:var(--surface2);color:var(--muted);border:none;
+    padding:9px 4px;cursor:pointer;transition:background .2s,color .2s;letter-spacing:.04em}
+  .toggle-bar button:not(:last-child){border-right:1.5px solid var(--line)}
+  .toggle-bar button.active{background:var(--pine);color:#fff;font-weight:600}
+  .toggle-bar button:hover:not(.active){background:var(--line);color:var(--ink)}
+
+  /* --- Copy blocks per view --- */
+  .view-copy{font-size:13px;color:var(--ink);margin-bottom:10px;line-height:1.75;
+    font-family:ui-sans-serif,sans-serif;background:var(--surface);border-left:3px solid var(--pine);
+    padding:9px 14px;border-radius:0 8px 8px 0}
+  .view-copy.hidden{display:none}
+
+  /* --- Wheel --- */
   .wheel-wrap{position:relative;width:100%;max-width:440px;margin:8px auto 4px}
   svg{width:100%;height:auto;display:block}
   .node{cursor:pointer}
-  .node circle{transition:transform .15s,filter .15s}
-  .node:hover circle,.node.active circle{filter:brightness(1.08)}
-  .node.active circle{stroke:var(--ink);stroke-width:3}
-  .node .sym{font-size:26px;fill:#fff;text-anchor:middle;dominant-baseline:central;font-family:serif}
-  .node .nm{font-size:13px;fill:#fff;text-anchor:middle;font-weight:700;font-family:ui-sans-serif,sans-serif}
+  .node circle{transition:r .2s,opacity .2s,filter .15s}
+  .node:hover circle{filter:brightness(1.1)}
+  .node.active circle{stroke:var(--ink)!important;stroke-width:3!important}
+  .node .sym{font-size:26px;fill:#fff;text-anchor:middle;dominant-baseline:central;font-family:serif;pointer-events:none}
+  .node .nm{font-size:13px;fill:#fff;text-anchor:middle;font-weight:700;font-family:ui-sans-serif,sans-serif;pointer-events:none}
+  .node .badge{font-size:11px;fill:#fff;text-anchor:middle;font-weight:700;font-family:ui-sans-serif,sans-serif;pointer-events:none}
+  .node .phase{font-size:10px;fill:var(--muted);text-anchor:middle;font-family:ui-sans-serif,sans-serif;pointer-events:none}
   .axis{stroke:var(--line);stroke-width:1.5;stroke-dasharray:4 4}
   .axislbl{font-size:10.5px;fill:var(--muted);text-anchor:middle;font-family:ui-sans-serif,sans-serif}
+  .arrow-path{fill:none;stroke:var(--pine);stroke-width:1.8;opacity:.7}
   .legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;color:var(--muted);
     font-family:ui-sans-serif,sans-serif;margin:6px 0 14px}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
@@ -33,34 +53,89 @@
   .drow:last-child{border-bottom:none}
   .drow b{flex:none;width:74px;color:var(--muted);font-weight:600;font-size:12.5px;font-family:ui-sans-serif,sans-serif}
   .drow .over{color:var(--cinnabar)} .drow .under{color:var(--blue)}
+  .drow .hi-over{background:rgba(157,75,52,.1);border-radius:4px;padding:0 4px}
+  .drow .hi-under{background:rgba(77,107,134,.1);border-radius:4px;padding:0 4px}
   .pair-note{background:var(--surface2);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--ink);margin-top:12px;line-height:1.7}
   .pair-note b{color:var(--pine)}
   .foot{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.8;font-family:ui-sans-serif,sans-serif}
-  .axes-box{font-size:12.5px;color:var(--ink);margin:2px 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+  .axes-box{font-size:12.5px;color:var(--ink);margin:2px 0 10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
   .axes-box span b{color:var(--pine)}
   .hint{text-align:center;font-size:12px;color:var(--muted);font-family:ui-sans-serif,sans-serif;margin:2px 0 10px}
+
+  /* --- View-1 extras --- */
+  #axes-panel{margin-bottom:4px}
+
+  /* --- View-3 controls --- */
+  #v3-controls{display:none;margin:4px 0 12px;font-family:ui-sans-serif,sans-serif}
+  .v3-buttons{display:flex;gap:10px;margin-bottom:10px}
+  .v3-buttons button{padding:7px 16px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);
+    color:var(--ink);font-size:13px;cursor:pointer;font-family:ui-sans-serif,sans-serif;transition:background .2s}
+  .v3-buttons button:hover{background:var(--surface2)}
+  .v3-summary{font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+    border-radius:8px;padding:8px 14px;margin-bottom:8px;min-height:36px}
+  .v3-hint{font-size:12.5px;color:var(--muted);line-height:1.75;border-left:3px solid var(--gold);
+    padding:8px 12px;background:var(--surface);border-radius:0 8px 8px 0}
 </style></head><body>
   <h1>八卦能量系統圖</h1>
   <p class="sub">八種內在能量 · 四組極性對 · 五行歸屬　|　點任一卦看內涵</p>
 
-  <div class="axes-box">
-    <span><b>給出 ⇄ 接納</b>　乾 ⇄ 坤</span>
-    <span><b>顯現 ⇄ 收藏</b>　離 ⇄ 坎</span>
-    <span><b>啟動 ⇄ 停止</b>　震 ⇄ 艮</span>
-    <span><b>表達 ⇄ 連結</b>　兌 ⇄ 巽</span>
+  <!-- Toggle -->
+  <div class="toggle-bar">
+    <button id="btn-v1" class="active" onclick="switchView(1)">極性</button>
+    <button id="btn-v2" onclick="switchView(2)">循環</button>
+    <button id="btn-v3" onclick="switchView(3)">我的能量</button>
   </div>
 
+  <!-- View copy blocks -->
+  <div class="view-copy" id="copy-v1">
+    健康不是把某種能量推到底，而是能在兩極間來回——要衝得出去，也要停得下來。
+  </div>
+  <div class="view-copy hidden" id="copy-v2">
+    能量像四季一樣流轉——每一段都有它的任務，也都會過去。看看你此刻走到哪一段。
+  </div>
+  <div class="view-copy hidden" id="copy-v3">
+    這就是「問易」算完一個人之後、疊在輪盤上的樣子——哪些能量正旺、哪些過頭、哪些透支，一眼看見。點點看，自己擺一個側寫。
+  </div>
+
+  <!-- Axes-pair panel (view 1 only) -->
+  <div id="axes-panel">
+    <div class="axes-box">
+      <span><b>給出 ⇄ 接納</b>　乾 ⇄ 坤</span>
+      <span><b>顯現 ⇄ 收藏</b>　離 ⇄ 坎</span>
+      <span><b>啟動 ⇄ 停止</b>　震 ⇄ 艮</span>
+      <span><b>表達 ⇄ 連結</b>　兌 ⇄ 巽</span>
+    </div>
+  </div>
+
+  <!-- Wheel -->
   <div class="wheel-wrap">
     <svg viewBox="0 0 400 400" id="wheel">
-      <!-- 四極性軸線 -->
-      <line class="axis" x1="200" y1="60" x2="200" y2="340"/>
-      <line class="axis" x1="340" y1="200" x2="60" y2="200"/>
-      <line class="axis" x1="299" y1="101" x2="101" y2="299"/>
-      <line class="axis" x1="299" y1="299" x2="101" y2="101"/>
-      <circle cx="200" cy="200" r="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <defs>
+        <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <polygon points="0 0, 7 3.5, 0 7" fill="var(--pine)" opacity=".75"/>
+        </marker>
+      </defs>
+      <!-- Polarity axes (view 1 / view 3) -->
+      <g id="axis-lines">
+        <line class="axis" x1="200" y1="60" x2="200" y2="340"/>
+        <line class="axis" x1="340" y1="200" x2="60" y2="200"/>
+        <line class="axis" x1="299" y1="101" x2="101" y2="299"/>
+        <line class="axis" x1="299" y1="299" x2="101" y2="101"/>
+        <circle cx="200" cy="200" r="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      </g>
+      <!-- Cycle arrows (view 2 only, initially hidden) -->
+      <g id="cycle-arrows" style="display:none"></g>
       <g id="nodes"></g>
+      <!-- Axis pair labels for view 1 (inside SVG, near axis ends) -->
+      <g id="axis-labels-v1">
+        <text class="axislbl" x="200" y="20">給出 乾</text>
+        <text class="axislbl" x="200" y="390">接納 坤</text>
+        <text class="axislbl" x="374" y="200">啟動 震</text>
+        <text class="axislbl" x="26" y="200">停止 艮</text>
+      </g>
     </svg>
   </div>
+
   <div class="legend">
     <span><i style="background:var(--metal)"></i>金 乾兌</span>
     <span><i style="background:var(--wood)"></i>木 震巽</span>
@@ -68,58 +143,349 @@
     <span><i style="background:var(--fire)"></i>火 離</span>
     <span><i style="background:var(--earth)"></i>土 艮坤</span>
   </div>
-  <p class="hint">▼ 點圖上任一卦</p>
+  <p class="hint" id="hint-line">▼ 點圖上任一卦</p>
+
+  <!-- View-3 controls -->
+  <div id="v3-controls">
+    <div class="v3-buttons">
+      <button onclick="applyExample()">套用範例側寫</button>
+      <button onclick="resetAll()">全部歸零</button>
+    </div>
+    <div class="v3-summary" id="v3-summary">過強：無　|　過弱：無</div>
+    <div class="v3-hint" id="v3-hint"></div>
+  </div>
 
   <div class="detail" id="detail"></div>
 
-  <div class="foot">
+  <div class="foot" id="foot-text">
     <b>怎麼讀這張圖：</b><br>
     ・<b>八個節點</b>＝你內在的八種能量（功能）。<br>
     ・<b>四條軸線</b>＝四組互相平衡的極性；某個能量「過強」，往往是缺了它<b>對面那一極</b>。<br>
     ・<b>顏色</b>＝五行歸屬（金木水火土）；五行間有生剋，是能量的供應鏈。<br>
     ・每個卦由三條陰陽爻組成，功能其實從<b>陰陽結構</b>長出來（如乾純陽＝全動能、坤純陰＝全承接）。<br>
+    ・<b>循環</b>視圖依後天卦序排列，顯示能量流轉的自然節奏（啟動→成長→顯現→化育→收穫→收束→收藏→停轉）。<br>
     <span style="color:var(--muted);font-size:11px">＊此為「功能能量」的極性排列；古典先天八卦的陰陽全反對為 乾坤・離坎・震巽・兌艮，可另作深層對照。</span>
   </div>
 
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
 var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
-// x,y = 圓上位置（對極成直徑）
-var BAGUA=[
- {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',x:200,y:60, state:'規劃、領導、創造',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創'},
- {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',x:299,y:101,state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明'},
- {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',x:340,y:200,state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動'},
- {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',x:299,y:299,state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達'},
- {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',x:200,y:340,state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養'},
- {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',x:101,y:299,state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏'},
- {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',x:60, y:200,state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法停止、無法拒絕',pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止'},
- {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',x:101,y:101,state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散'}
-];
-var g=document.getElementById('nodes');
-BAGUA.forEach(function(b){
-  var ns='http://www.w3.org/2000/svg';
-  var grp=document.createElementNS(ns,'g');grp.setAttribute('class','node');grp.setAttribute('data-k',b.k);
-  var c=document.createElementNS(ns,'circle');c.setAttribute('cx',b.x);c.setAttribute('cy',b.y);c.setAttribute('r',33);
-  c.setAttribute('fill',W[b.wx]);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');
-  var s=document.createElementNS(ns,'text');s.setAttribute('class','sym');s.setAttribute('x',b.x);s.setAttribute('y',b.y-5);s.textContent=b.sym;
-  var n=document.createElementNS(ns,'text');n.setAttribute('class','nm');n.setAttribute('x',b.x);n.setAttribute('y',b.y+17);n.textContent=b.nm;
-  grp.appendChild(c);grp.appendChild(s);grp.appendChild(n);
-  grp.addEventListener('click',function(){show(b.k);});
-  g.appendChild(grp);
+var NS='http://www.w3.org/2000/svg';
+
+// Polarity wheel positions (對極成直徑)
+var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
+           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
+
+// Cycle sequence: 後天八卦 order, phase/season labels, clockwise from top
+// 震→巽→離→坤→兌→乾→坎→艮
+var CYCLE_ORDER=['zhen','xun','li','kun','dui','qian','kan','gen'];
+// Pre-compute cycle positions (8 positions clockwise, start top = -90deg)
+var CX=200,CY=200,CR=148;
+var CYCLE_POS={};
+CYCLE_ORDER.forEach(function(k,i){
+  var angle=(Math.PI*2/8)*i - Math.PI/2;
+  CYCLE_POS[k]={x:Math.round(CX+CR*Math.cos(angle)),y:Math.round(CY+CR*Math.sin(angle))};
 });
-function show(k){
-  var b=BAGUA.filter(function(x){return x.k===k;})[0];
-  document.querySelectorAll('.node').forEach(function(el){el.classList.toggle('active',el.getAttribute('data-k')===k);});
+
+var BAGUA=[
+ {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',
+  phase:'決斷·收束',
+  state:'規劃、領導、創造',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',
+  pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創',level:0},
+ {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',
+  phase:'顯現·夏盛',
+  state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',
+  pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明',level:0},
+ {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',
+  phase:'啟動·春萌',
+  state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',
+  pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動',level:0},
+ {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',
+  phase:'交流·秋收',
+  state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',
+  pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達',level:0},
+ {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',
+  phase:'承載·化育',
+  state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',
+  pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養',level:0},
+ {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',
+  phase:'休息·冬藏',
+  state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',
+  pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏',level:0},
+ {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',
+  phase:'止·轉折',
+  state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法停止、無法拒絕',
+  pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止',level:0},
+ {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',
+  phase:'連結·成長',
+  state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',
+  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散',level:0}
+];
+var BAGUA_MAP={};
+BAGUA.forEach(function(b){BAGUA_MAP[b.k]=b;});
+
+var currentView=1;
+var activeKey='qian';
+
+// ── Render nodes ──────────────────────────────────────────────
+function getPos(b){
+  if(currentView===2) return CYCLE_POS[b.k];
+  return POLAR[b.k];
+}
+
+function renderNodes(){
+  var g=document.getElementById('nodes');
+  g.innerHTML='';
+  BAGUA.forEach(function(b){
+    var pos=getPos(b);
+    var grp=document.createElementNS(NS,'g');
+    grp.setAttribute('class','node');
+    grp.setAttribute('data-k',b.k);
+    if(b.k===activeKey) grp.classList.add('active');
+
+    var r=33;
+    var fillColor=W[b.wx];
+    var strokeColor='#fff';
+    var strokeW=2;
+    var opacity=1;
+    var badge='';
+
+    if(currentView===3){
+      if(b.level===1){r=40;strokeColor='#9d4b34';strokeW=4;badge='過';}
+      else if(b.level===2){r=24;opacity=0.5;badge='弱';}
+    }
+
+    var c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',pos.x);c.setAttribute('cy',pos.y);c.setAttribute('r',r);
+    c.setAttribute('fill',fillColor);c.setAttribute('stroke',strokeColor);
+    c.setAttribute('stroke-width',strokeW);c.setAttribute('opacity',opacity);
+
+    var s=document.createElementNS(NS,'text');
+    s.setAttribute('class','sym');s.setAttribute('x',pos.x);s.setAttribute('y',pos.y-5);
+    s.textContent=b.sym;
+
+    var n=document.createElementNS(NS,'text');
+    n.setAttribute('class','nm');n.setAttribute('x',pos.x);n.setAttribute('y',pos.y+17);
+    n.textContent=b.nm;
+
+    grp.appendChild(c);grp.appendChild(s);grp.appendChild(n);
+
+    // Badge (over/under) in view 3
+    if(currentView===3 && badge){
+      var bd=document.createElementNS(NS,'text');
+      bd.setAttribute('class','badge');
+      bd.setAttribute('x',pos.x+(r-4));bd.setAttribute('y',pos.y-(r-8));
+      bd.setAttribute('fill',b.level===1?'#fff':'var(--blue)');
+      bd.setAttribute('font-size','12');
+      bd.textContent=badge;
+      grp.appendChild(bd);
+    }
+
+    // Phase label in view 2 (outside circle)
+    if(currentView===2){
+      var ang=Math.atan2(pos.y-CY,pos.x-CX);
+      var lx=Math.round(CX+(CR+50)*Math.cos(ang));
+      var ly=Math.round(CY+(CR+50)*Math.sin(ang));
+      var ph=document.createElementNS(NS,'text');
+      ph.setAttribute('class','phase');
+      ph.setAttribute('x',lx);ph.setAttribute('y',ly);
+      ph.setAttribute('text-anchor','middle');
+      ph.setAttribute('dominant-baseline','central');
+      ph.textContent=b.phase;
+      grp.appendChild(ph);
+    }
+
+    grp.addEventListener('click',function(){handleClick(b.k);});
+    g.appendChild(grp);
+  });
+}
+
+// ── Cycle arrows ─────────────────────────────────────────────
+function renderCycleArrows(){
+  var ag=document.getElementById('cycle-arrows');
+  ag.innerHTML='';
+  if(currentView!==2){ag.style.display='none';return;}
+  ag.style.display='';
+  var n=CYCLE_ORDER.length;
+  for(var i=0;i<n;i++){
+    var k1=CYCLE_ORDER[i];
+    var k2=CYCLE_ORDER[(i+1)%n];
+    var p1=CYCLE_POS[k1];
+    var p2=CYCLE_POS[k2];
+    // Direction vector, shorten by node radius so arrow starts/ends near circle edge
+    var dx=p2.x-p1.x,dy=p2.y-p1.y;
+    var dist=Math.sqrt(dx*dx+dy*dy);
+    var r1=33,r2=33;
+    var ux=dx/dist,uy=dy/dist;
+    var sx=p1.x+ux*r1,sy=p1.y+uy*r1;
+    var ex=p2.x-ux*(r2+6),ey=p2.y-uy*(r2+6);
+    // Slight arc via quadratic bezier — midpoint offset perpendicular
+    var mx=(sx+ex)/2,my=(sy+ey)/2;
+    var perp=20; // curve bulge outward from center
+    var cx2=mx+(my-CY)/dist*perp,cy2=my-(mx-CX)/dist*perp;
+    var path=document.createElementNS(NS,'path');
+    path.setAttribute('class','arrow-path');
+    path.setAttribute('d','M'+sx+','+sy+' Q'+cx2+','+cy2+' '+ex+','+ey);
+    path.setAttribute('marker-end','url(#arrowhead)');
+    ag.appendChild(path);
+  }
+}
+
+// ── Axis lines toggle ────────────────────────────────────────
+function updateAxisLines(){
+  var al=document.getElementById('axis-lines');
+  var alv1=document.getElementById('axis-labels-v1');
+  if(currentView===2){
+    al.style.display='none';
+    alv1.style.display='none';
+  } else {
+    al.style.display='';
+    alv1.style.display='none'; // keep SVG labels hidden; use axes-box instead
+  }
+}
+
+// ── Click handler ────────────────────────────────────────────
+function handleClick(k){
+  if(currentView===3){
+    // Cycle level: 0→1→2→0
+    var b=BAGUA_MAP[k];
+    b.level=(b.level+1)%3;
+    activeKey=k;
+    renderNodes();
+    updateV3Summary();
+    showDetail(k,true);
+  } else {
+    activeKey=k;
+    renderNodes();
+    showDetail(k,false);
+  }
+}
+
+// ── Detail panel ─────────────────────────────────────────────
+function showDetail(k,isV3){
+  var b=BAGUA_MAP[k];
+  var levelLabel=isV3?['正常','過強','過弱'][b.level]:null;
+
+  var normalCls='',overCls=' class="over"',underCls=' class="under"';
+  var normalRow='',overRow='',underRow='';
+  if(isV3 && b.level===0){normalCls=' class="hi-over"';overCls=' class="over"';underCls=' class="under"';}
+  // Highlight the currently active state row
+  var stateSpan=isV3 && b.level===0?'<span style="font-weight:700">'+b.state+'</span>':b.state;
+  var overSpan=isV3 && b.level===1?'<span class="over hi-over">'+b.over+'</span>':'<span class="over">'+b.over+'</span>';
+  var underSpan=isV3 && b.level===2?'<span class="under hi-under">'+b.under+'</span>':'<span class="under">'+b.under+'</span>';
+
+  var phaseRow='';
+  if(currentView===2){
+    phaseRow='<div class="drow"><b>能量節奏</b><span>'+b.phase+'</span></div>';
+  }
+  var levelRow='';
+  if(isV3 && levelLabel){
+    levelRow='<div class="drow"><b>目前狀態</b><span style="font-weight:700;color:'+(b.level===1?'var(--cinnabar)':b.level===2?'var(--blue)':'var(--pine)')+'">'+levelLabel+'</span></div>';
+  }
+
+  document.querySelectorAll('.node').forEach(function(el){
+    el.classList.toggle('active',el.getAttribute('data-k')===k);
+  });
+
   document.getElementById('detail').innerHTML=
     '<div class="dh"><div class="dsym" style="color:'+W[b.wx]+'">'+b.sym+'</div>'+
     '<div><h2>'+b.nm+'卦</h2><div class="dfn">'+b.fn+'</div></div>'+
     '<span class="wuxing" style="background:'+W[b.wx]+'">'+WLAB[b.wx]+'</span></div>'+
-    '<div class="drow"><b>狀態表現</b><span>'+b.state+'</span></div>'+
-    '<div class="drow"><b>過強</b><span class="over">'+b.over+'</span></div>'+
-    '<div class="drow"><b>過弱</b><span class="under">'+b.under+'</span></div>'+
+    (levelRow||'')+
+    '<div class="drow"><b>狀態表現</b>'+stateSpan+'</div>'+
+    '<div class="drow"><b>過強</b>'+overSpan+'</div>'+
+    '<div class="drow"><b>過弱</b>'+underSpan+'</div>'+
+    (phaseRow||'')+
     '<div class="drow"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
     '<div class="pair-note">極性對：<b>'+b.nm+'</b> ⇄ <b>'+b.pair+'</b>。當「'+b.nm+'」過強，多半是缺了它對面的「'+b.pair.replace(/（.*/,'')+'」——回到那一極就平衡了。</div>';
 }
-show('qian');
+
+// ── View-3 helpers ───────────────────────────────────────────
+function updateV3Summary(){
+  var overs=[],unders=[];
+  BAGUA.forEach(function(b){
+    if(b.level===1) overs.push(b.nm);
+    if(b.level===2) unders.push(b.nm);
+  });
+  document.getElementById('v3-summary').textContent=
+    '過強：'+(overs.length?overs.join('、'):'無')+'　|　過弱：'+(unders.length?unders.join('、'):'無');
+
+  // Build hint
+  var hints=[];
+  overs.forEach(function(nm){
+    var b=BAGUA.filter(function(x){return x.nm===nm;})[0];
+    if(b) hints.push('「'+b.nm+'」過強 → 試試多些對面的「'+b.pair+'」能量');
+  });
+  unders.forEach(function(nm){
+    var b=BAGUA.filter(function(x){return x.nm===nm;})[0];
+    if(b) hints.push('「'+b.nm+'」透支 → 需要補回它的功能：'+b.fn);
+  });
+  var hintEl=document.getElementById('v3-hint');
+  if(hints.length){
+    hintEl.style.display='';
+    hintEl.innerHTML=hints.slice(0,3).join('<br>');
+  } else {
+    hintEl.style.display='none';
+  }
+}
+
+function applyExample(){
+  // 乾過強、震過強、坎過弱、艮過弱，其他正常
+  BAGUA.forEach(function(b){b.level=0;});
+  BAGUA_MAP['qian'].level=1;
+  BAGUA_MAP['zhen'].level=1;
+  BAGUA_MAP['kan'].level=2;
+  BAGUA_MAP['gen'].level=2;
+  renderNodes();
+  updateV3Summary();
+  showDetail(activeKey,true);
+}
+
+function resetAll(){
+  BAGUA.forEach(function(b){b.level=0;});
+  renderNodes();
+  updateV3Summary();
+  showDetail(activeKey,true);
+}
+
+// ── View switch ──────────────────────────────────────────────
+function switchView(v){
+  currentView=v;
+  // Reset levels when leaving v3
+  if(v!==3) BAGUA.forEach(function(b){b.level=0;});
+
+  // Buttons
+  [1,2,3].forEach(function(i){
+    document.getElementById('btn-v'+i).classList.toggle('active',i===v);
+  });
+
+  // Copy blocks
+  [1,2,3].forEach(function(i){
+    var el=document.getElementById('copy-v'+i);
+    if(el) el.classList.toggle('hidden',i!==v);
+  });
+
+  // Axes panel (only view 1 & 3)
+  document.getElementById('axes-panel').style.display=(v===1)?'':'none';
+
+  // V3 controls
+  document.getElementById('v3-controls').style.display=(v===3)?'block':'none';
+
+  // Hint text
+  document.getElementById('hint-line').textContent=
+    v===2?'▼ 點任一卦看詳情，箭頭顯示能量流轉方向':
+    v===3?'▼ 點節點循環切換狀態（正常→過強→過弱）':'▼ 點圖上任一卦';
+
+  updateAxisLines();
+  renderCycleArrows();
+  renderNodes();
+
+  if(v===3) updateV3Summary();
+  showDetail(activeKey, v===3);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+switchView(1);
+showDetail('qian',false);
 </script>
 </body></html>
