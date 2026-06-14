@@ -233,7 +233,6 @@ function getBase(){
 }
 function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
 function energyLabel(k){ return E[k].fn; }
-function energyName(k){ return E[k].nm; } // 「乾」等
 
 // ── 局庫（bagua_fields_v1）讀寫 ──────────────────────────
 function getFields(){

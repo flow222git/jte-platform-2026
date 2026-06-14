@@ -226,7 +226,7 @@
     <div class="fb-f" id="fb-frame"></div>
   </div>
   <div class="prog-wrap">
-    <div class="prog-top"><span id="prog-label" class="sans">第 1 / 24 題</span><span id="prog-pct" class="sans">4%</span></div>
+    <div class="prog-top"><span id="prog-label" class="sans">第 1 / 24 題</span><span id="prog-pct" class="sans">0%</span></div>
     <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
   </div>
   <div class="q-num" id="q-num">Q1</div>
@@ -630,6 +630,7 @@ function showResult(){
 
   var html=''
    +'<div style="text-align:center;margin-bottom:16px"><button onclick="shareResultImage()" style="background:var(--pine);color:#fff;border:none;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(53,97,79,.22)">📤 分享我的結果（下載圖卡）</button></div>'
+   +'<div class="share-hint" style="margin:-10px 0 16px">把你的型發給朋友 · 互相丟連結就能合盤 🔗</div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你的八卦能量人格</div>'
      +'<div class="tc-sym">'+top.sym+'</div>'
@@ -1289,14 +1290,6 @@ function backToResult(){
   window.scrollTo(0,0);
 }
 
-function copyMyCode(){
-  var code=document.getElementById('my-code').textContent;
-  var tip=document.getElementById('copy-tip');
-  function done(){ if(tip){ tip.textContent='已複製 ✓'; setTimeout(function(){tip.textContent='';},2000);} }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(code).then(done,function(){ selectFallback(code,done); });
-  } else { selectFallback(code,done); }
-}
 function selectFallback(code,done){
   try{
     var ta=document.createElement('textarea');

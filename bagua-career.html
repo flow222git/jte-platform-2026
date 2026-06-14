@@ -191,7 +191,6 @@ function getBase(){
 }
 function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
 function energyLabel(k){ return E[k].fn; }
-function energyName(k){ return E[k].nm; }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
 // ════════════════════════════════════════════════════════════
@@ -398,7 +397,7 @@ function showResult(){
   // 誠實框架
   html+='<div class="block" style="margin-top:22px;border-left:4px solid var(--gold)"><h3>讀這份配對前，先記得</h3>'
     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--ink);line-height:1.95">'
-    +'這是<b>啟發性的探索方向</b>，不是性向測驗、不是命定。真正適合一份工作，還牽涉興趣、能力、價值觀、市場與機運——'
+    +'這是一面認識自己的<b>鏡子</b>、是啟發性的探索方向，不是性向測驗、不是命定。真正適合一份工作，還牽涉興趣、能力、價值觀、市場與機運——'
     +'能量合只是其中一個角度。能量也會成長，沒有哪個職業是你「不能」做的。</div></div>';
 
   html+='<div class="resbtns">'
