@@ -292,6 +292,13 @@ document.getElementById('f').onload=function(){
     ok(c0 && c0.otherTop==='li' && c0.otherTitle===w.E.li.title,'compat record otherTop/Title (li/離火)');
     ok(c0 && typeof c0.sim==='number' && typeof c0.comp==='number' && !!c0.ts,'compat record has sim/comp/ts');
 
+    // 分享結果圖卡
+    ok(typeof w.buildResultCanvas==='function','buildResultCanvas present');
+    ok(typeof w.shareResultImage==='function','shareResultImage present');
+    var rc=w.buildResultCanvas({li:80,kan:70,gen:50,xun:60,kun:55,qian:40,dui:30,zhen:45},'li','離火 · 洞見者',null);
+    ok(rc && rc.width===640 && rc.height>800,'result canvas size 640xN');
+    ok(rc && rc.toDataURL('image/png').length>2000,'result canvas renders non-empty png');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');

@@ -629,7 +629,7 @@ function showResult(){
     + toolRow(TOOLS.baguamap);
 
   var html=''
-   +'<div class="share-hint">↓ 這是你的能量側寫 · 歡迎截圖分享</div>'
+   +'<div style="text-align:center;margin-bottom:16px"><button onclick="shareResultImage()" style="background:var(--pine);color:#fff;border:none;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(53,97,79,.22)">📤 分享我的結果（下載圖卡）</button></div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你的八卦能量人格</div>'
      +'<div class="tc-sym">'+top.sym+'</div>'
@@ -927,6 +927,80 @@ function extractCode(str){
 function makeQRDataURL(text){
   var qr=qrcode(0,'M'); qr.addData(text); qr.make();
   return qr.createDataURL(5,12); // data:image/gif;base64,...
+}
+
+// ── 分享結果圖卡（canvas 產圖：型＋雷達＋QR）─────────────
+function wrapTextC(ctx,text,cx,y,maxW,lh){
+  var chars=(text||'').split(''),line='',yy=y;
+  for(var i=0;i<chars.length;i++){
+    var t=line+chars[i];
+    if(ctx.measureText(t).width>maxW && line){ctx.fillText(line,cx,yy);line=chars[i];yy+=lh;}
+    else line=t;
+  }
+  if(line)ctx.fillText(line,cx,yy);
+  return yy;
+}
+function drawRadarOn(x,scores,topKey,cx,cy,R){
+  function dir(k){return {ux:(E[k].pos.x-200)/140, uy:(E[k].pos.y-200)/140};}
+  function rOf(s){return R*0.18+(s/100)*R*0.82;}
+  // grid octagon + spokes
+  x.strokeStyle='#ddd2bf';x.lineWidth=1;
+  x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),px=cx+d.ux*R,py=cy+d.uy*R;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();x.stroke();
+  EKEYS.forEach(function(k){var d=dir(k);x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+d.ux*R,cy+d.uy*R);x.strokeStyle='#e7decd';x.stroke();});
+  // score polygon
+  x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
+  x.fillStyle='rgba(53,97,79,.16)';x.fill();x.strokeStyle='#35614f';x.lineWidth=2.5;x.stroke();
+  // dots + labels
+  EKEYS.forEach(function(k){
+    var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;
+    x.beginPath();x.arc(px,py,k===topKey?6:4,0,7);x.fillStyle=W[E[k].wx];x.fill();
+    x.strokeStyle='#fff';x.lineWidth=1.5;x.stroke();
+    var lr=R+18,lx=cx+d.ux*lr,ly=cy+d.uy*lr;
+    x.fillStyle=k===topKey?'#35614f':'#766f63';x.font=(k===topKey?'bold ':'')+'15px sans-serif';
+    x.textAlign=d.ux>0.35?'left':(d.ux<-0.35?'right':'center');
+    x.fillText(E[k].nm, lx, ly+(d.uy>0.35?13:(d.uy<-0.35?-2:5)));
+  });
+}
+function buildResultCanvas(scores,topKey,title,qrImg){
+  var Wd=640,Ht=852,c=document.createElement('canvas');c.width=Wd;c.height=Ht;
+  var x=c.getContext('2d');
+  x.fillStyle='#f4efe4';x.fillRect(0,0,Wd,Ht);
+  x.textAlign='center';
+  x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('八 卦 能 量 人 格',Wd/2,56);
+  x.fillStyle=W[E[topKey].wx];x.font='54px serif';x.fillText(E[topKey].sym,Wd/2,120);
+  x.fillStyle='#22322c';x.font='bold 34px serif';x.fillText(title||'',Wd/2,170);
+  x.fillStyle='#4a463c';x.font='17px sans-serif';
+  wrapTextC(x,(E[topKey].essence||'').replace(/<[^>]*>/g,''),Wd/2,206,548,26);
+  drawRadarOn(x,scores,topKey,320,462,140);
+  var srt=EKEYS.slice().sort(function(a,b){return (scores[b]||0)-(scores[a]||0);});
+  x.fillStyle='#35614f';x.font='600 16px sans-serif';x.fillText('我慣用：'+E[srt[0]].fn+'、'+E[srt[1]].fn,Wd/2,664);
+  if(qrImg){var qs=116;x.drawImage(qrImg,(Wd-qs)/2,686,qs,qs);
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 測你的八卦能量',Wd/2,824);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('來測你的八卦能量 · 練息場 Join to Enjoy',Wd/2,760);}
+  return c;
+}
+function outputResultImage(scores,topKey,title,qrImg){
+  var c=buildResultCanvas(scores,topKey,title,qrImg);
+  c.toBlob(function(blob){
+    if(!blob){alert('產圖失敗，可改用截圖分享');return;}
+    var file=null;try{file=new File([blob],'我的八卦能量人格.png',{type:'image/png'});}catch(e){}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'我的八卦能量人格',text:title}).catch(function(){});
+    }else{
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的八卦能量人格.png';
+      document.body.appendChild(a);a.click();a.remove();
+    }
+  },'image/png');
+}
+function shareResultImage(){
+  var base;try{base=JSON.parse(localStorage.getItem('bagua_persona_v1'));}catch(e){}
+  if(!base||!base.scores){alert('先完成測驗再分享喔');return;}
+  var tk=base.top||topKeyOf(base.scores);
+  var title=base.title||E[tk].title;
+  var qimg=new Image();
+  qimg.onload=function(){outputResultImage(base.scores,tk,title,qimg);};
+  qimg.onerror=function(){outputResultImage(base.scores,tk,title,null);};
+  qimg.src=makeQRDataURL(shareURL(encodeCode(base.scores)));
 }
 // 從 ImageData 解出合盤碼（可測）→ code | null
 function decodeCodeFromImageData(imageData){
