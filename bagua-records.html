@@ -83,7 +83,7 @@
     text-align:center;margin-top:16px}
 </style></head>
 <body>
-<a class="home-link" href="index.html">← 回練息場</a>
+<a class="home-link" href="bagua.html">← 回八卦能量</a>
 
 <div class="page-head">
   <h1>📒 我的八卦記錄</h1>
@@ -97,6 +97,7 @@
   <div class="foot">八卦能量系統 · 練息場 Join to Enjoy</div>
 </div>
 
+<script src="lib/qrcode.js"></script>
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
 var NS='http://www.w3.org/2000/svg';
@@ -113,6 +114,34 @@ var E={
  xun: {sym:'☴',nm:'巽',wx:'wood', fn:'擴散／連結',title:'巽木 · 協作者',pos:{x:101,y:101}}
 };
 var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
+
+// ── 分享助手（底色→合盤碼／連結／QR圖）──────────────
+function encodeCode(scores){var s='B1';EKEYS.forEach(function(k){var v=Math.max(0,Math.min(99,Math.round(scores[k]||0)));s+=(v<10?'0':'')+v;});return s;}
+function personaShareURL(code){return location.origin+location.pathname.replace(/[^/]*$/,'bagua-persona.html')+'#c='+code;}
+function makeQRDataURL(t){var qr=qrcode(0,'M');qr.addData(t);qr.make();return qr.createDataURL(5,12);}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){alert('已複製連結 ✓');},function(){window.prompt('複製這個連結：',t);});}
+  else{window.prompt('複製這個連結：',t);}
+}
+function shareBaseLink(){var b=getBase();if(!b)return;copyText(personaShareURL(encodeCode(b.scores)));}
+function downloadBaseQR(){
+  var b=getBase();if(!b)return;
+  var url=personaShareURL(encodeCode(b.scores));
+  var qimg=new Image();
+  qimg.onload=function(){
+    var WD=520,HT=620,c=document.createElement('canvas');c.width=WD;c.height=HT;var x=c.getContext('2d');
+    x.fillStyle='#f4efe4';x.fillRect(0,0,WD,HT);
+    x.textAlign='center';
+    x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('八卦能量人格',WD/2,58);
+    x.fillStyle='#22322c';x.font='bold 32px serif';x.fillText(b.title||'',WD/2,100);
+    var qs=300;x.drawImage(qimg,(WD-qs)/2,150,qs,qs);
+    x.fillStyle='#35614f';x.font='600 16px sans-serif';x.fillText('掃我 · 和我合盤',WD/2,500);
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('八卦能量 · 練息場 Join to Enjoy',WD/2,535);
+    try{var a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='我的八卦能量盤.png';a.click();}catch(e){alert('下載失敗，可改用「複製連結」分享');}
+  };
+  qimg.onerror=function(){alert('產生 QR 失敗，可改用「複製連結」分享');};
+  qimg.src=makeQRDataURL(url);
+}
 
 // 場域 top → title map（從 persona E 複製）；場域名
 var FACETS=[
@@ -311,12 +340,22 @@ function renderBase(){
   var tk=base.top||topKeyOf(base.scores);
   var title=base.title||E[tk].title;
   var card=document.createElement('div'); card.className='basecard';
+  var valsHtml=EKEYS.slice().sort(function(a,b){return base.scores[b]-base.scores[a];}).map(function(k){
+    return '<span style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:#fff;background:'+W[E[k].wx]
+      +';border-radius:999px;padding:2px 9px">'+E[k].nm+' '+Math.round(base.scores[k])+'</span>';
+  }).join('');
   card.innerHTML='<div class="bc-eyebrow">你的八卦能量人格</div>'
     +'<div class="bc-sym">'+E[tk].sym+'</div>'
     +'<div class="bc-title">'+escapeHtml(title)+'</div>'
     +'<div class="bc-radar" id="bc-radar"></div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:2px 0 12px">'+valsHtml+'</div>'
     +'<div class="bc-date">'+dateOrTested(base.ts)+'</div>'
-    +'<a class="bc-link" href="bagua-persona.html">重測 →</a>';
+    +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center;margin-top:8px">'
+      +'<button onclick="shareBaseLink()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">🔗 複製連結</button>'
+      +'<button onclick="downloadBaseQR()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">📥 下載 QR 圖</button>'
+      +'<a class="bc-link" href="bagua-persona.html">重測 →</a>'
+    +'</div>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);margin-top:9px;line-height:1.65">連結／圖含你的 8 個數字（無個資）——給朋友，他就能和你合盤。</div>';
   s.appendChild(card);
   card.querySelector('#bc-radar').appendChild(buildRadar(base.scores, tk));
   return s;
@@ -399,13 +438,35 @@ function renderDrain(){
   }
   s.appendChild(ov);
 
-  // 最耗你的局
+  // 最耗你的局（依適配度＋硬撐弱項分級，只有真的耗才說「耗」）
   if(most){
     var mn=escapeHtml(most.field.name||'這個局');
-    var dn=document.createElement('div'); dn.className='drain-note';
-    dn.innerHTML='<div class="dn-h">最耗你的局</div>'
-      +'<div class="dn-line">「<b>'+mn+'</b>」　適配度 '+most.fit+'%</div>'
-      +'<div class="dn-line">這個局和你的能量落差最大。</div>';
+    var fit=most.fit;
+    var dk=fieldDrainKeys(you, most.field.scores); // 它很吃、你卻弱的能量
+    var dkTxt=dk.length?('「'+dk.slice(0,2).map(function(k){return E[k].fn;}).join('、')+'」'):'';
+    var head, line2, hard=false;
+    if(fit < 50){
+      hard=true; head='最耗你的局';
+      line2='和你的能量落差較大'+(dkTxt?('，它很吃你較弱的'+dkTxt):'')+'——長期容易耗你，記得照顧自己。';
+    } else if(fit < 70){
+      head='比較需要費力的局';
+      line2=(dkTxt?('它對'+dkTxt+'的需求，你要多花點力氣'):'有些地方要花點力氣')+'，但不至於太耗。';
+    } else {
+      head='你和這個局';
+      line2='適配度其實不低——你的底色大致接得住，沒有特別消耗你。';
+    }
+    var dn=document.createElement('div');
+    if(hard){
+      dn.className='drain-note most-field';
+      dn.innerHTML='<div class="dn-h">'+head+'</div>'
+        +'<div class="dn-line">「<b>'+mn+'</b>」　適配度 '+fit+'%</div>'
+        +'<div class="dn-line">'+line2+'</div>';
+    } else {
+      dn.className='block most-field';
+      dn.innerHTML='<div style="font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:6px">'+head+'</div>'
+        +'<div style="font-size:14px">「<b>'+mn+'</b>」　適配度 '+fit+'%</div>'
+        +'<div style="font-size:13.5px;color:var(--muted);margin-top:4px">'+line2+'</div>';
+    }
     s.appendChild(dn);
   }
 

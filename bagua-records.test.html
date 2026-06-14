@@ -120,8 +120,8 @@ ifr.onload=function(){
     var dtxt=drainSec.textContent;
     ok(dtxt.indexOf('縱觀你測過的 2 個局')>=0,'overview 顯示 N=2');
     ok(drainSec.querySelector('.drain-overview .em').textContent.indexOf('兌')>=0,'overview 列出熱點 兌');
-    ok(drainSec.querySelector('.drain-note').textContent.indexOf('局B')>=0,'最耗你的局 = 局B');
-    ok(drainSec.querySelector('.drain-note').textContent.indexOf('落差最大')>=0,'最耗你的局 一句');
+    ok(drainSec.querySelector('.most-field').textContent.indexOf('局B')>=0,'最費力的局 = fit最低的局B');
+    ok(drainSec.querySelector('.most-field').textContent.indexOf('適配度')>=0,'最費力的局 顯示適配度');
     ok(dtxt.indexOf('別硬撐')>=0,'應對策略文字出現');
     ok(dtxt.indexOf('照顧自己')>=0,'誠實句出現');
     ok(!drainSec.querySelector('img'),'drain 局名 escape — no injected img');
@@ -130,8 +130,24 @@ ifr.onload=function(){
     w.localStorage.setItem('bagua_fields_v1', JSON.stringify([{name:'<b>x</b>局',scores:fA,ts:new Date().toISOString()}]));
     w.render();
     var drainSec2=d.querySelectorAll('.sec')[3];
-    ok(!drainSec2.querySelector('.drain-note b') || drainSec2.querySelector('.drain-note').innerHTML.indexOf('&lt;b&gt;')>=0,'drain 局名 escaped');
+    ok(drainSec2.querySelector('.most-field').innerHTML.indexOf('&lt;b&gt;')>=0,'drain 局名 escaped');
     ok(drainSec2.textContent.indexOf('再多測幾個局')>=0,'局數=1 加提醒');
+
+    // 分級：真的低適配→紅框「最耗你的局」；高適配→中性不說「耗」
+    var youLow={qian:20,li:20,zhen:20,dui:20,kun:20,kan:20,gen:20,xun:80};
+    var fieldHard={qian:80,li:80,zhen:80,dui:80,kun:80,kan:80,gen:80,xun:10};
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:youLow,top:'xun',ts:new Date().toISOString()}));
+    w.localStorage.setItem('bagua_fields_v1', JSON.stringify([{name:'硬局',scores:fieldHard,ts:new Date().toISOString()}]));
+    w.render();
+    var dh=d.querySelectorAll('.sec')[3].querySelector('.most-field');
+    ok(dh && dh.textContent.indexOf('最耗你的局')>=0,'低適配→顯示「最耗你的局」');
+    ok(dh && dh.className.indexOf('drain-note')>=0,'低適配→紅色 drain-note 樣式');
+    var youHi={qian:80,li:80,zhen:80,dui:80,kun:80,kan:80,gen:80,xun:80};
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:youHi,top:'qian',ts:new Date().toISOString()}));
+    w.localStorage.setItem('bagua_fields_v1', JSON.stringify([{name:'合局',scores:{qian:50,li:50,zhen:50,dui:50,kun:50,kan:50,gen:50,xun:50},ts:new Date().toISOString()}]));
+    w.render();
+    var dhi=d.querySelectorAll('.sec')[3].querySelector('.most-field');
+    ok(dhi && dhi.textContent.indexOf('最耗你的局')<0,'高適配→不說「最耗」');
 
     // 有底色、0 局 → 提示去測局，無熱點
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:youT,top:'li',ts:new Date().toISOString()}));
