@@ -75,6 +75,20 @@
     border-radius:8px;padding:8px 14px;margin-bottom:8px;min-height:36px}
   .v3-hint{font-size:12.5px;color:var(--muted);line-height:1.75;border-left:3px solid var(--gold);
     padding:8px 12px;background:var(--surface);border-radius:0 8px 8px 0}
+  .drow-remind{display:flex;gap:8px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .drow-remind b{flex:none;width:74px;color:var(--muted);font-weight:600;font-size:12.5px;font-family:ui-sans-serif,sans-serif}
+  .remind-text{color:var(--ink);font-style:italic;border-left:3px solid var(--pine);padding-left:9px;line-height:1.75}
+  .persona-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin-top:12px;box-shadow:0 4px 18px rgba(74,62,44,.07)}
+  .persona-card .pc-head{font-size:14px;font-weight:700;color:var(--pine);font-family:ui-sans-serif,sans-serif;
+    margin-bottom:10px;letter-spacing:.04em}
+  .persona-card .pc-portrait{font-size:13.5px;color:var(--ink);line-height:1.8;margin-bottom:12px}
+  .persona-card .pc-advice-head{font-size:12.5px;font-weight:700;color:var(--muted);
+    font-family:ui-sans-serif,sans-serif;margin-bottom:6px;letter-spacing:.03em}
+  .persona-card .pc-advice{font-size:13px;color:var(--ink);line-height:1.85}
+  .persona-card .pc-advice div{padding:3px 0}
+  .persona-card .pc-closing{font-size:13px;color:var(--pine);font-style:italic;
+    margin-top:10px;border-top:1px solid var(--line);padding-top:10px;line-height:1.75}
 </style></head><body>
   <h1>八卦能量系統圖</h1>
   <p class="sub">八種內在能量 · 四組極性對 · 五行歸屬　|　點任一卦看內涵</p>
@@ -153,6 +167,7 @@
     </div>
     <div class="v3-summary" id="v3-summary">過強：無　|　過弱：無</div>
     <div class="v3-hint" id="v3-hint"></div>
+    <div id="v3-persona" style="display:none"></div>
   </div>
 
   <div class="detail" id="detail"></div>
@@ -191,35 +206,43 @@ var BAGUA=[
  {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',
   phase:'決斷·收束',
   state:'規劃、領導、創造',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',
-  pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創',level:0},
+  pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創',
+  remind:'能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。',level:0},
  {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',
   phase:'顯現·夏盛',
   state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',
-  pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明',level:0},
+  pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明',
+  remind:'看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。',level:0},
  {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',
   phase:'啟動·春萌',
   state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',
-  pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動',level:0},
+  pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動',
+  remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。',level:0},
  {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',
   phase:'交流·秋收',
   state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',
-  pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達',level:0},
+  pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達',
+  remind:'表達與連結帶來喜悅；但說出口之外，也要懂得留白與傾聽。',level:0},
  {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',
   phase:'承載·化育',
   state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',
-  pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養',level:0},
+  pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養',
+  remind:'能涵容、能支持，是深厚的力量；但承載別人之前，先把自己接住。',level:0},
  {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',
   phase:'休息·冬藏',
   state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',
-  pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏',level:0},
+  pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏',
+  remind:'懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。',level:0},
  {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',
   phase:'止·轉折',
   state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法停止、無法拒絕',
-  pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止',level:0},
+  pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止',
+  remind:'知道何時停、何時說不，是難得的清醒；但別讓停止變成卡死不動。',level:0},
  {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',
   phase:'連結·成長',
   state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',
-  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散',level:0}
+  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散',
+  remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。',level:0}
 ];
 var BAGUA_MAP={};
 BAGUA.forEach(function(b){BAGUA_MAP[b.k]=b;});
@@ -400,6 +423,7 @@ function showDetail(k,isV3){
     '<div class="drow"><b>過弱</b>'+underSpan+'</div>'+
     (phaseRow||'')+
     '<div class="drow"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
+    '<div class="drow-remind"><b>卦的提醒</b><span class="remind-text">'+b.remind+'</span></div>'+
     '<div class="pair-note">極性對：<b>'+b.nm+'</b> ⇄ <b>'+b.pair+'</b>。當「'+b.nm+'」過強，多半是缺了它對面的「'+b.pair.replace(/（.*/,'')+'」——回到那一極就平衡了。</div>';
 }
 
@@ -430,6 +454,91 @@ function updateV3Summary(){
   } else {
     hintEl.style.display='none';
   }
+  buildPersona();
+}
+
+// ── Persona builder ──────────────────────────────────────────
+var PERSONA_TITLE={
+  qian:'開創決策者',dui:'交流連結者',li:'洞察思考者',xun:'協作擴散者',
+  zhen:'行動開創者',kan:'沉潛內省者',gen:'守界穩定者',kun:'承載照顧者'
+};
+// 「衝/動」類 & 「休/止」類
+var ACT_KEYS={zhen:1,qian:1};
+var REST_KEYS={kan:1,gen:1};
+
+function buildPersona(){
+  var overs=[],unders=[];
+  BAGUA.forEach(function(b){
+    if(b.level===1) overs.push(b);
+    if(b.level===2) unders.push(b);
+  });
+
+  var el=document.getElementById('v3-persona');
+
+  // All balanced
+  if(!overs.length && !unders.length){
+    el.style.display='';
+    el.innerHTML=
+      '<div class="persona-card">'+
+      '<div class="pc-head">🧍 人物速寫</div>'+
+      '<div class="pc-portrait">你此刻八種能量大致平衡、流通——是個穩穩的狀態。八種能量都在線上，能屈能伸。</div>'+
+      '<div class="pc-closing">保持覺察，享受這份平衡；偶爾留意哪一種正悄悄偏移。</div>'+
+      '</div>';
+    return;
+  }
+
+  // Persona title from first over卦; if none pick from under
+  var titleKey = overs.length ? overs[0].k : unders[0].k;
+  var title = PERSONA_TITLE[titleKey] || '能量探索者';
+
+  // Portrait
+  var portrait = '從你擺出的側寫看，你此刻像一個【' + title + '】。';
+
+  // Strengths from over (max 2)
+  var overShow = overs.slice(0,2);
+  overShow.forEach(function(b){
+    portrait += '你的「' + b.fn + '」很活躍——' + b.state + '。';
+  });
+
+  // Shadow from overs combined
+  if(overShow.length){
+    var shadowParts = overShow.map(function(b){return b.over;});
+    portrait += '不過用過了頭，容易' + shadowParts.join('、或是') + '。';
+  }
+
+  // Gaps from unders (max 2)
+  var underShow = unders.slice(0,2);
+  if(underShow.length){
+    var gapFns = underShow.map(function(b){return b.fn;}).join('與');
+    var gapDescs = underShow.map(function(b){return b.under;}).join('、');
+    portrait += '相對地，' + gapFns + '偏弱——' + gapDescs + '。';
+  }
+
+  // Advice bullets
+  var bullets = [];
+  overShow.forEach(function(b){
+    bullets.push('・「' + b.fn + '」很足，過頭時會' + b.over + '；試著補回它的對極「' + b.pair + '」。');
+  });
+  underShow.forEach(function(b){
+    bullets.push('・「' + b.fn + '」偏弱，可以有意識地養回它：' + b.state + '。');
+  });
+
+  // Closing line
+  var hasAct = overs.some(function(b){return ACT_KEYS[b.k];});
+  var hasRest = unders.some(function(b){return REST_KEYS[b.k];});
+  var closing = (hasAct && hasRest)
+    ? '你的引擎很強，缺的是煞車與保養——記得，停下來不是停滯，是為了走更遠。'
+    : '能量會流動，照顧失衡的那一邊，整個人就鬆了。';
+
+  el.style.display='';
+  el.innerHTML=
+    '<div class="persona-card">'+
+    '<div class="pc-head">🧍 人物速寫</div>'+
+    '<div class="pc-portrait">'+portrait+'</div>'+
+    '<div class="pc-advice-head">給你的建議</div>'+
+    '<div class="pc-advice">'+bullets.map(function(s){return '<div>'+s+'</div>';}).join('')+'</div>'+
+    '<div class="pc-closing">'+closing+'</div>'+
+    '</div>';
 }
 
 function applyExample(){
@@ -473,6 +582,7 @@ function switchView(v){
 
   // V3 controls
   document.getElementById('v3-controls').style.display=(v===3)?'block':'none';
+  if(v!==3) document.getElementById('v3-persona').style.display='none';
 
   // Hint text
   document.getElementById('hint-line').textContent=
