@@ -99,15 +99,39 @@
 
   /* --- View-5 認識八卦 cards --- */
   #eight-wrap{display:none}
+  .eight-intro{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px 16px;margin-bottom:16px;box-shadow:0 4px 18px rgba(74,62,44,.06)}
+  .eight-intro .ei-title{font-size:18px;letter-spacing:.06em;color:var(--ink);margin-bottom:10px;
+    font-family:"Songti TC","Noto Serif TC",serif}
+  .eight-intro .ei-sub{font-size:13px;font-weight:700;color:var(--pine);margin:14px 0 4px;
+    font-family:ui-sans-serif,sans-serif;letter-spacing:.03em}
+  .eight-intro p{font-size:13px;color:var(--ink);line-height:1.95;margin-bottom:9px;
+    font-family:ui-sans-serif,sans-serif}
+  .eight-intro p:last-child{margin-bottom:0}
+  .eight-intro b{color:var(--pine)}
+  .eight-intro .ei-divider{height:1px;background:var(--line);margin:14px 0 4px}
   .gua-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;
     padding:16px 18px;margin-bottom:12px;box-shadow:0 4px 18px rgba(74,62,44,.06)}
   .gua-card .gc-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
   .gua-card .gc-sym{font-size:40px;line-height:1;font-family:serif}
   .gua-card .gc-name{font-size:20px;font-weight:700;
     font-family:"Songti TC","Noto Serif TC",serif}
+  .gua-card .gc-pin{font-size:12px;color:var(--muted);font-family:ui-sans-serif,sans-serif;
+    font-style:italic;letter-spacing:.03em}
   .gua-card .gc-nature{font-size:13px;color:var(--muted);font-family:ui-sans-serif,sans-serif}
+  .gua-card .gc-virtue{font-size:12px;color:var(--gold);font-family:ui-sans-serif,sans-serif;font-weight:600}
   .gua-card .gc-wx{font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;
     font-family:ui-sans-serif,sans-serif;margin-left:auto}
+  .gua-card .gc-symbols{font-size:12.5px;color:var(--ink);font-family:ui-sans-serif,sans-serif;
+    background:var(--bg);border-radius:8px;padding:7px 12px;margin-bottom:9px;line-height:1.8}
+  .gua-card .gc-symbols b{color:var(--muted);font-weight:600}
+  .gua-card .gc-sec{font-size:12.5px;font-weight:700;color:var(--pine);
+    font-family:ui-sans-serif,sans-serif;margin:11px 0 4px;letter-spacing:.03em}
+  .gua-card .gc-text{font-size:13px;color:var(--ink);line-height:1.85;font-family:ui-sans-serif,sans-serif}
+  .gua-card .gc-func{font-size:13px;color:var(--ink);line-height:1.85;font-family:ui-sans-serif,sans-serif}
+  .gua-card .gc-func .fn-norm{color:var(--pine)}
+  .gua-card .gc-func .fn-over{color:var(--cinnabar)}
+  .gua-card .gc-func .fn-under{color:var(--blue)}
   .gua-card .gc-attr{font-size:13px;color:var(--ink);font-family:ui-sans-serif,sans-serif;
     background:var(--surface2);border-radius:8px;padding:7px 12px;margin-bottom:9px;line-height:1.7}
   .gua-card .gc-attr b{color:var(--pine)}
@@ -126,11 +150,11 @@
 
   <!-- Toggle -->
   <div class="toggle-bar">
-    <button id="btn-v1" class="active" onclick="switchView(1)">極性</button>
+    <button id="btn-v5" class="active" onclick="switchView(5)">認識八卦</button>
+    <button id="btn-v1" onclick="switchView(1)">極性</button>
     <button id="btn-v2" onclick="switchView(2)">循環</button>
     <button id="btn-v3" onclick="switchView(3)">我的能量</button>
     <button id="btn-v4" onclick="switchView(4)">五行</button>
-    <button id="btn-v5" onclick="switchView(5)">認識八卦</button>
   </div>
 
   <!-- View copy blocks -->
@@ -398,26 +422,116 @@ var CLASSIC={
 // 排列順序：乾兌離震巽坎艮坤
 var EIGHT_ORDER=['qian','dui','li','zhen','xun','kan','gen','kun'];
 
+// ── 完整卦卡資料（view 5） ────────────────────────────────────
+var GUA8={
+ qian:{sym:'☰',nm:'乾',pin:'qián',nature:'天',wx:'metal',virtue:'健（剛健）',
+  structure:'三爻皆陽，純陽之卦——至剛至健，全是動能。',
+  family:'父',body:'首（頭）',animal:'馬',dir:'西北',season:'秋冬之交',
+  spirit:'「天行健，君子以自強不息。」乾是創生的原動力、宇宙運行不息的力量，為開創、決斷、領導之源。',
+  func:'創造／決策。正常＝規劃、領導、開創；過強＝控制慾、獨斷、脫離現實；過弱＝缺方向、缺願景。',
+  person:'天生的領導者與開創者，目標感強、敢做決定、推得動事情。要學的是放手與柔軟（坤）。',
+  remind:'能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。'},
+ dui:{sym:'☱',nm:'兌',pin:'duì',nature:'澤',wx:'metal',virtue:'悅（喜悅）',
+  structure:'上爻陰、下二爻陽——內實而外開口，象徵向外表達、令人喜悅。',
+  family:'少女',body:'口',animal:'羊',dir:'西',season:'秋',
+  spirit:'「麗澤，兌；君子以朋友講習。」兌是喜悅與溝通，是人與人交流、分享、彼此滋潤的能量。',
+  func:'交流／分享。正常＝對話、連結、人際；過強＝過度社交、討好、空談；過弱＝封閉、不願表達。',
+  person:'開朗健談、擅長連結、帶來歡樂氣氛。要學的是深度與留白（巽、坎）。',
+  remind:'表達與連結帶來喜悅；但說出口之外，也要懂得留白與傾聽。'},
+ li:{sym:'☲',nm:'離',pin:'lí',nature:'火',wx:'fire',virtue:'麗（附麗、光明）',
+  structure:'外二陽、中爻陰——外明而中虛，如火附於物而生光明，中空故能明察。',
+  family:'中女',body:'目（眼）',animal:'雉',dir:'南',season:'夏',
+  spirit:'「明兩作，離；大人以繼明照于四方。」離是光明與覺察，是看見、理解、使事物顯明的能量，也象徵文明與智慧。',
+  func:'顯現／覺察。正常＝洞察、理解、看見；過強＝過度分析、想太多；過弱＝看不清方向。',
+  person:'敏銳、善分析、看得透徹。要學的是行動與沉澱（震、坎），別困在想。',
+  remind:'看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。'},
+ zhen:{sym:'☳',nm:'震',pin:'zhèn',nature:'雷',wx:'wood',virtue:'動（震動、奮起）',
+  structure:'初爻陽、上二爻陰——一陽動於下，象徵動能初生、由靜而動、奮起向上。',
+  family:'長男',body:'足（腳）',animal:'龍',dir:'東',season:'春',
+  spirit:'「洊雷，震；君子以恐懼脩省。」震是奮起與開端——雷出地奮、萬物萌生，是打破沉寂、啟動、突破的能量。',
+  func:'啟動／突破。正常＝行動、冒險、開始；過強＝衝動、焦躁、停不下來；過弱＝拖延、不敢開始。',
+  person:'行動派、有衝勁、勇於開始與冒險。要學的是暫停與界線（艮）。',
+  remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。'},
+ xun:{sym:'☴',nm:'巽',pin:'xùn',nature:'風',wx:'wood',virtue:'入（順入、滲透）',
+  structure:'初爻陰、上二爻陽——一陰伏於下，象徵柔順、潛入、無孔不入。',
+  family:'長女',body:'股（大腿）',animal:'雞',dir:'東南',season:'春夏之交',
+  spirit:'「隨風，巽；君子以申命行事。」巽是順入與滲透，像風無所不入、像木漸漸生長，是協調、連結、順勢推進的能量。',
+  func:'擴散／連結。正常＝推廣、成長、合作；過強＝擴張失控、分心；過弱＝缺資源連結。',
+  person:'柔軟有彈性、善協調與滲透、能把資源串起來。要學的是聚焦與界線（艮）。',
+  remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。'},
+ kan:{sym:'☵',nm:'坎',pin:'kǎn',nature:'水',wx:'water',virtue:'陷（險陷，亦主智）',
+  structure:'中爻陽、上下爻陰——陽剛藏於中，象徵內實外柔、力量藏於內，行於險而不失其信。',
+  family:'中男',body:'耳',animal:'豕（豬）',dir:'北',season:'冬',
+  spirit:'「水洊至，習坎；君子以常德行，習教事。」坎是險陷也是智慧與信實——水雖陷於險，卻流動不息、就下不爭，是沉潛、內省、蓄力的能量。',
+  func:'收藏／恢復。正常＝沉澱、休息、反思；過強＝內耗、逃避、過度退縮；過弱＝不會休息、不會恢復。',
+  person:'深沉內斂、想得深、耐得住沉潛。要學的是顯現與行動（離、震），別讓退縮變逃避。',
+  remind:'懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。'},
+ gen:{sym:'☶',nm:'艮',pin:'gèn',nature:'山',wx:'earth',virtue:'止（靜止）',
+  structure:'上爻陽、下二爻陰——一陽止於上，象徵動到極處而止，如山之靜定。',
+  family:'少男',body:'手',animal:'狗',dir:'東北',season:'冬春之交',
+  spirit:'「兼山，艮；君子以思不出其位。」艮是靜止與守界——山靜止不移，是知道何時該停、守住分寸、安住當下的能量。',
+  func:'停止／界線。正常＝結束、拒絕、定界；過強＝固執、停滯、不變通；過弱＝無法停止、無法拒絕。',
+  person:'穩定可靠、有原則、守得住界線與節奏。要學的是啟動與彈性（震）。',
+  remind:'知道何時停、何時說不，是難得的清醒；但別讓停止變成卡死不動。'},
+ kun:{sym:'☷',nm:'坤',pin:'kūn',nature:'地',wx:'earth',virtue:'順（柔順）',
+  structure:'三爻皆陰，純陰之卦——至柔至順，全是承接。',
+  family:'母',body:'腹',animal:'牛',dir:'西南',season:'夏秋之交',
+  spirit:'「地勢坤，君子以厚德載物。」坤是大地般的承載與滋養——柔順而能容、能成全萬物，是包容、支持、孕育的能量。',
+  func:'承載／滋養。正常＝接納、支持、穩定；過強＝過度承擔、失去自我；過弱＝缺耐心、缺穩定。',
+  person:'溫厚包容、有耐心、是大家的依靠。要學的是為自己開創與設界（乾、艮）。',
+  remind:'能涵容、能支持，是深厚的力量；但承載別人之前，先把自己接住。'}
+};
+var GUA8_ORDER=['qian','dui','li','zhen','xun','kan','gen','kun'];
+
+// 把 func 字串「功能。正常＝…；過強＝…；過弱＝…」上色
+function fmtFunc(s){
+  return s
+    .replace(/正常＝([^；]*)/,'<span class="fn-norm">正常＝$1</span>')
+    .replace(/過強＝([^；]*)/,'<span class="fn-over">過強＝$1</span>')
+    .replace(/過弱＝([^。]*)/,'<span class="fn-under">過弱＝$1</span>');
+}
+
 // ── 認識八卦 render（view 5） ──────────────────────────────────
 function renderEight(){
   var wrap=document.getElementById('eight-wrap');
-  var html='';
-  EIGHT_ORDER.forEach(function(k){
-    var b=BAGUA_MAP[k], c=CLASSIC[k];
-    if(!b||!c) return;
-    var col=W[b.wx];
+  var html=
+    '<div class="eight-intro">'+
+      '<div class="ei-title">八卦是什麼</div>'+
+      '<p>八卦源自《易經》。古人觀察天地萬物，用<b>陰（- -）</b>與<b>陽（—）</b>兩種符號，三爻由下而上相疊，組成八種基本卦象，代表天地間八種基本的能量與狀態。</p>'+
+      '<div class="ei-sub">怎麼生出來的</div>'+
+      '<p>生成：<b>太極生兩儀（陰陽），兩儀生四象，四象生八卦</b>。陽爻主動、剛、進；陰爻主靜、柔、受。三爻怎麼組合，就決定了這一卦的性情。</p>'+
+      '<p>八卦兩兩相疊，成為<b>六十四卦</b>，用來描述天地人事的各種情境。</p>'+
+      '<div class="ei-sub">八卦像一家人</div>'+
+      '<p>八卦也像<b>一家人</b>：乾為父、坤為母，震坎艮為三男，巽離兌為三女。</p>'+
+      '<p>先天八卦（伏羲）談對待與方位，後天八卦（文王）談流轉與應用。</p>'+
+      '<div class="ei-sub">我們怎麼用它</div>'+
+      '<p>在這套系統裡，我們把八卦重新詮釋成八種<b>內在能量／功能</b>，讓古人的智慧能拿來認識自己。</p>'+
+    '</div>';
+  GUA8_ORDER.forEach(function(k){
+    var g=GUA8[k];
+    if(!g) return;
+    var col=W[g.wx];
     html+=
       '<div class="gua-card">'+
         '<div class="gc-head">'+
-          '<span class="gc-sym" style="color:'+col+'">'+b.sym+'</span>'+
-          '<span class="gc-name">'+b.nm+'</span>'+
-          '<span class="gc-nature">'+c.nature+'</span>'+
-          '<span class="gc-wx" style="background:'+col+'">'+WLAB[b.wx]+'</span>'+
+          '<span class="gc-sym" style="color:'+col+'">'+g.sym+'</span>'+
+          '<span class="gc-name">'+g.nm+'</span>'+
+          '<span class="gc-pin">'+g.pin+'</span>'+
+          '<span class="gc-nature">'+g.nature+'</span>'+
+          '<span class="gc-virtue">'+g.virtue+'</span>'+
+          '<span class="gc-wx" style="background:'+col+'">'+WLAB[g.wx]+'</span>'+
         '</div>'+
-        '<div class="gc-attr">性質 <b>'+c.quality+'</b>｜家人 <b>'+c.family+'</b>｜功能 <b>'+b.fn+'</b></div>'+
-        '<div class="gc-row"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
-        '<div class="gc-row"><b>古典意象</b><span class="gc-classic">'+c.classic+'</span></div>'+
-        '<div class="gc-row"><b>卦的提醒</b><span class="gc-remind">'+b.remind+'</span></div>'+
+        '<div class="gc-symbols"><b>象徵</b>　家人 '+g.family+'｜身體 '+g.body+'｜動物 '+g.animal+'｜方位 '+g.dir+'｜季節 '+g.season+'</div>'+
+        '<div class="gc-sec">結構</div>'+
+        '<div class="gc-text">'+g.structure+'</div>'+
+        '<div class="gc-sec">核心精神</div>'+
+        '<div class="gc-text">'+g.spirit+'</div>'+
+        '<div class="gc-sec">我們的功能詮釋</div>'+
+        '<div class="gc-func">'+fmtFunc(g.func)+'</div>'+
+        '<div class="gc-sec">這種能量強的人</div>'+
+        '<div class="gc-text">'+g.person+'</div>'+
+        '<div class="gc-sec">卦的提醒</div>'+
+        '<div class="gc-remind">'+g.remind+'</div>'+
       '</div>';
   });
   html+=
@@ -456,6 +570,8 @@ WX_ELEMENTS.forEach(function(e){
   e.y=Math.round(WX_CY+WX_R*Math.sin(rad));
   WX_MAP[e.id]=e;
 });
+var WX_BY_LBL={};
+WX_ELEMENTS.forEach(function(e){ WX_BY_LBL[e.lbl]=e; });
 // 相生順序: 木→火→土→金→水→木
 var SHENG_ORDER=['wood','fire','earth','metal','water'];
 // 相剋順序: 木→土→水→火→金→木 (pentagram skip-one)
@@ -550,8 +666,8 @@ function showWuxingDetail(id){
   var col=W[e.wx];
 
   // 白話說明
-  var shengEl=WX_MAP[e.sheng], shengByEl=WX_MAP[e.shengBy];
-  var keEl=WX_MAP[e.ke], keByEl=WX_MAP[e.keBy];
+  var shengEl=WX_BY_LBL[e.sheng], shengByEl=WX_BY_LBL[e.shengBy];
+  var keEl=WX_BY_LBL[e.ke], keByEl=WX_BY_LBL[e.keBy];
 
   var shengTxt=e.lbl+'生'+shengEl.lbl+'（補'+shengEl.lbl+'先養'+e.lbl+'）；'+
                shengByEl.lbl+'生'+e.lbl+'（要養'+e.lbl+'可養'+shengByEl.lbl+'）';
@@ -564,8 +680,8 @@ function showWuxingDetail(id){
       '<div><h2>'+e.lbl+'行</h2><div class="dfn">所屬卦：'+e.guaLbl+'</div></div>'+
       '<span class="wuxing" style="background:'+col+'">五行</span>'+
     '</div>'+
-    '<div class="drow"><b>生（供給）</b><span>我生 <b style="color:'+W[WX_MAP[e.sheng].wx]+'">'+e.sheng+'（'+WX_MAP[e.sheng].lbl+'）</b>；生我者 <b style="color:'+W[WX_MAP[e.shengBy].wx]+'">'+e.shengBy+'（'+WX_MAP[e.shengBy].lbl+'）</b></span></div>'+
-    '<div class="drow"><b>剋（壓制）</b><span>我剋 <b style="color:'+W[WX_MAP[e.ke].wx]+'">'+e.ke+'（'+WX_MAP[e.ke].lbl+'）</b>；剋我者 <b style="color:'+W[WX_MAP[e.keBy].wx]+'">'+e.keBy+'（'+WX_MAP[e.keBy].lbl+'）</b></span></div>'+
+    '<div class="drow"><b>生（供給）</b><span>我生 <b style="color:'+W[shengEl.wx]+'">'+e.sheng+'（'+shengEl.guaLbl+'）</b>；生我者 <b style="color:'+W[shengByEl.wx]+'">'+e.shengBy+'（'+shengByEl.guaLbl+'）</b></span></div>'+
+    '<div class="drow"><b>剋（壓制）</b><span>我剋 <b style="color:'+W[keEl.wx]+'">'+e.ke+'（'+keEl.guaLbl+'）</b>；剋我者 <b style="color:'+W[keByEl.wx]+'">'+e.keBy+'（'+keByEl.guaLbl+'）</b></span></div>'+
     '<div class="pair-note" style="margin-top:10px">'+
       '<b style="color:var(--pine)">相生</b>：'+shengTxt+'<br>'+
       '<b style="color:var(--cinnabar)">相剋</b>：'+keTxt+
@@ -955,7 +1071,7 @@ function switchView(v){
 }
 
 // ── Init ─────────────────────────────────────────────────────
-switchView(1);
-showDetail('qian',false);
+showDetail('qian',false);  // 預先填好詳情面板內容（切到極性時即可見）
+switchView(5);             // 預設開啟「認識八卦」
 </script>
 </body></html>
