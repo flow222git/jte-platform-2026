@@ -1,6 +1,7 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>測一個局 · 八卦能量盤</title>
+<script src="lib/qrcode.js"></script>
 <style>
   :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
@@ -484,6 +485,115 @@ function elementFlow(fieldEl,youEl){
   return {type:'same',text:'你和這個局的主能量彼此呼應。'};
 }
 
+// ── 分享結果圖卡（canvas 產圖：複用 persona 的畫法）─────────
+var shareState=null; // {name, fieldScores, youScores, fit} — showResult 時設好
+
+function makeQRDataURL(text){
+  var qr=qrcode(0,'M'); qr.addData(text); qr.make();
+  return qr.createDataURL(5,12); // data:image/gif;base64,...
+}
+function wrapTextC(ctx,text,cx,y,maxW,lh){
+  var chars=(text||'').split(''),line='',yy=y;
+  for(var i=0;i<chars.length;i++){
+    var t=line+chars[i];
+    if(ctx.measureText(t).width>maxW && line){ctx.fillText(line,cx,yy);line=chars[i];yy+=lh;}
+    else line=t;
+  }
+  if(line)ctx.fillText(line,cx,yy);
+  return yy;
+}
+// 與 bagua-persona.html drawRadarOn 相同：第7參 overlay 疊金色虛線第二盤
+function drawRadarOn(x,scores,topKey,cx,cy,R,overlay){
+  function dir(k){return {ux:(E[k].pos.x-200)/140, uy:(E[k].pos.y-200)/140};}
+  function rOf(s){return R*0.18+(s/100)*R*0.82;}
+  x.strokeStyle='#ddd2bf';x.lineWidth=1;
+  x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),px=cx+d.ux*R,py=cy+d.uy*R;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();x.stroke();
+  EKEYS.forEach(function(k){var d=dir(k);x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+d.ux*R,cy+d.uy*R);x.strokeStyle='#e7decd';x.stroke();});
+  x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
+  x.fillStyle='rgba(53,97,79,.16)';x.fill();x.strokeStyle='#35614f';x.lineWidth=2.5;x.stroke();
+  if(overlay){
+    x.save();
+    x.beginPath();EKEYS.forEach(function(k,i){var d=dir(k),r=rOf(overlay[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
+    x.fillStyle='rgba(169,130,59,.10)';x.fill();
+    x.strokeStyle='#a9823b';x.lineWidth=2.5;if(x.setLineDash)x.setLineDash([6,5]);x.stroke();
+    if(x.setLineDash)x.setLineDash([]);
+    EKEYS.forEach(function(k){var d=dir(k),r=rOf(overlay[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;
+      x.beginPath();x.arc(px,py,4,0,7);x.fillStyle='#a9823b';x.fill();x.strokeStyle='#fff';x.lineWidth=1.5;x.stroke();});
+    x.restore();
+  }
+  EKEYS.forEach(function(k){
+    var d=dir(k),r=rOf(scores[k]||0),px=cx+d.ux*r,py=cy+d.uy*r;
+    x.beginPath();x.arc(px,py,k===topKey?6:4,0,7);x.fillStyle=W[E[k].wx];x.fill();
+    x.strokeStyle='#fff';x.lineWidth=1.5;x.stroke();
+    var lr=R+18,lx=cx+d.ux*lr,ly=cy+d.uy*lr;
+    x.fillStyle=k===topKey?'#35614f':'#766f63';x.font=(k===topKey?'bold ':'')+'15px sans-serif';
+    x.textAlign=d.ux>0.35?'left':(d.ux<-0.35?'right':'center');
+    x.fillText(E[k].nm, lx, ly+(d.uy>0.35?13:(d.uy<-0.35?-2:5)));
+  });
+}
+// 局圖卡：640×~780 禪風（局需求＝松綠實線、你的底色＝金虛線 overlay）
+function buildFieldCanvas(name, fieldScores, youScores, fit, qrImg){
+  var Wd=640,Ht=780,c=document.createElement('canvas');c.width=Wd;c.height=Ht;
+  var x=c.getContext('2d');
+  x.fillStyle='#f4efe4';x.fillRect(0,0,Wd,Ht);
+  x.textAlign='center';
+  var topK=topKeyOf(fieldScores);
+  // 標頭
+  x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('八 卦 能 量 · 測 一 個 局',Wd/2,52);
+  // 局名（serif、大、置中換行）
+  x.fillStyle='#22322c';x.font='bold 34px serif';
+  var ny=wrapTextC(x,name||'這個局',Wd/2,108,548,40);
+  var radarCy=ny>120?ny+170:300;
+  // 雷達：局需求松綠實線 + 你的底色金虛線 overlay（無底色則只畫單盤）
+  drawRadarOn(x, fieldScores, topK, 320, radarCy, 140, youScores||null);
+  var legY=radarCy+192;
+  // 圖例
+  x.font='13px sans-serif';
+  if(youScores){
+    x.fillStyle='#35614f';x.fillText('松綠＝這個局的需求 · 金虛線＝你的底色',Wd/2,legY);
+  }else{
+    x.fillStyle='#35614f';x.fillText('松綠＝這個局的需求',Wd/2,legY);
+  }
+  var y=legY+34;
+  // 適配度（有底色才顯示）
+  if(youScores && fit!=null){
+    x.fillStyle='#35614f';x.font='bold 30px serif';x.fillText('適配度 '+fit+'%',Wd/2,y);
+    y+=34;
+  }
+  // 最需要句
+  var srt=EKEYS.slice().sort(function(a,b){return (fieldScores[b]||0)-(fieldScores[a]||0);});
+  x.fillStyle='#9d4b34';x.font='600 16px sans-serif';
+  x.fillText('這個局最需要：'+E[srt[0]].fn+'、'+E[srt[1]].fn,Wd/2,y);
+  y+=8;
+  // 底部 QR + 引導
+  if(qrImg){var qs=110;x.drawImage(qrImg,(Wd-qs)/2,y+10,qs,qs);
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 來測你的八卦能量',Wd/2,y+10+qs+24);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('來測你的八卦能量 · 練息場 Join to Enjoy',Wd/2,y+40);}
+  return c;
+}
+function outputResultImage(name, fieldScores, youScores, fit, qrImg){
+  var c=buildFieldCanvas(name, fieldScores, youScores, fit, qrImg);
+  c.toBlob(function(blob){
+    if(!blob){alert('產圖失敗，可改用截圖分享');return;}
+    var file=null;try{file=new File([blob],'我的局.png',{type:'image/png'});}catch(e){}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'我的局',text:name||'這個局'}).catch(function(){});
+    }else{
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的局.png';
+      document.body.appendChild(a);a.click();a.remove();
+    }
+  },'image/png');
+}
+function shareFieldImage(){
+  var s=shareState; if(!s){alert('先測一個局再分享喔');return;}
+  // 局無單一代碼 → QR 指向八卦能量門面 bagua.html
+  var url=location.origin+location.pathname.replace(/[^/]*$/,'bagua.html');
+  var qimg=new Image();
+  qimg.onload=function(){outputResultImage(s.name,s.fieldScores,s.youScores,s.fit,qimg);};
+  qimg.onerror=function(){outputResultImage(s.name,s.fieldScores,s.youScores,s.fit,null);};
+  qimg.src=makeQRDataURL(url);
+}
+
 // ── Render result ────────────────────────────────────────
 function showResult(fieldSc, doSave){
   var topK=topKeyOf(fieldSc);
@@ -492,6 +602,9 @@ function showResult(fieldSc, doSave){
   var base=getBase();
   var you=base?base.scores:null;
   var nm=escapeHtml(fieldName);
+
+  // 存成模組變數供 shareFieldImage() 取用
+  shareState={name:fieldName, fieldScores:fieldSc, youScores:you, fit:you?fitScore(you,fieldSc):null};
 
   if(doSave){ saveField(fieldName, fieldSc); }
 
@@ -580,6 +693,7 @@ function showResult(fieldSc, doSave){
   }
 
   html+='<div class="resbtns">'
+    +'<button class="cbtn share-img" onclick="shareFieldImage()">📤 下載結果圖</button>'
     +'<button class="cbtn" onclick="resetCover()">再測一個局</button>'
     +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
   +'</div>'

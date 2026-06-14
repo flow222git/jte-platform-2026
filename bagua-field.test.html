@@ -113,6 +113,21 @@ document.getElementById('f').onload=function(){
     ok(typeof w.fitSentence(80)==='string' && w.fitSentence(80).length>0,'fitSentence high non-empty');
     ok(typeof w.fitSentence(20)==='string' && w.fitSentence(20).length>0,'fitSentence low non-empty');
 
+    // 12. 結果圖卡 canvas（複用 persona 畫法）
+    ok(typeof w.shareFieldImage==='function','shareFieldImage exists');
+    ok(typeof w.buildFieldCanvas==='function','buildFieldCanvas exists');
+    ok(typeof w.qrcode!=='undefined','qrcode lib loaded');
+    var fsc={qian:90,li:60,zhen:40,dui:40,kun:20,kan:40,gen:40,xun:40};
+    var yourSc={qian:50,li:50,zhen:70,dui:40,kun:60,kan:40,gen:40,xun:40};
+    // with youScores (overlay)
+    var c1=w.buildFieldCanvas('我的測試局', fsc, yourSc, 62, null);
+    ok(c1.width===640,'buildFieldCanvas width 640 (with youScores), got '+c1.width);
+    ok(c1.toDataURL('image/png').length>2000,'png dataURL >2000 (with youScores)');
+    // without youScores (single ring)
+    var c2=w.buildFieldCanvas('無底色局', fsc, null, null, null);
+    ok(c2.width===640,'buildFieldCanvas width 640 (no youScores), got '+c2.width);
+    ok(c2.toDataURL('image/png').length>2000,'png dataURL >2000 (no youScores)');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message+' @ '+(e.stack||'')); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
