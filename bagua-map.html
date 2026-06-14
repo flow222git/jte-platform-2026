@@ -13,12 +13,13 @@
 
   /* --- Toggle bar --- */
   .toggle-bar{display:flex;gap:0;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;
-    margin-bottom:16px;font-family:ui-sans-serif,sans-serif;font-size:14px}
-  .toggle-bar button{flex:1;background:var(--surface2);color:var(--muted);border:none;
-    padding:9px 4px;cursor:pointer;transition:background .2s,color .2s;letter-spacing:.04em}
+    margin-bottom:16px;font-family:ui-sans-serif,sans-serif;font-size:13.5px}
+  .toggle-bar button{flex:1;min-width:0;background:var(--surface2);color:var(--muted);border:none;
+    padding:9px 3px;cursor:pointer;transition:background .2s,color .2s;letter-spacing:.02em;white-space:nowrap}
   .toggle-bar button:not(:last-child){border-right:1.5px solid var(--line)}
   .toggle-bar button.active{background:var(--pine);color:#fff;font-weight:600}
   .toggle-bar button:hover:not(.active){background:var(--line);color:var(--ink)}
+  @media(max-width:430px){.toggle-bar{font-size:12.5px}.toggle-bar button{padding:8px 2px;letter-spacing:0}}
 
   /* --- Copy blocks per view --- */
   .view-copy{font-size:13px;color:var(--ink);margin-bottom:10px;line-height:1.75;
@@ -95,6 +96,30 @@
   .persona-card .pc-advice div{padding:3px 0}
   .persona-card .pc-closing{font-size:13px;color:var(--pine);font-style:italic;
     margin-top:10px;border-top:1px solid var(--line);padding-top:10px;line-height:1.75}
+
+  /* --- View-5 認識八卦 cards --- */
+  #eight-wrap{display:none}
+  .gua-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin-bottom:12px;box-shadow:0 4px 18px rgba(74,62,44,.06)}
+  .gua-card .gc-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .gua-card .gc-sym{font-size:40px;line-height:1;font-family:serif}
+  .gua-card .gc-name{font-size:20px;font-weight:700;
+    font-family:"Songti TC","Noto Serif TC",serif}
+  .gua-card .gc-nature{font-size:13px;color:var(--muted);font-family:ui-sans-serif,sans-serif}
+  .gua-card .gc-wx{font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;
+    font-family:ui-sans-serif,sans-serif;margin-left:auto}
+  .gua-card .gc-attr{font-size:13px;color:var(--ink);font-family:ui-sans-serif,sans-serif;
+    background:var(--surface2);border-radius:8px;padding:7px 12px;margin-bottom:9px;line-height:1.7}
+  .gua-card .gc-attr b{color:var(--pine)}
+  .gua-card .gc-row{display:flex;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line)}
+  .gua-card .gc-row:last-child{border-bottom:none}
+  .gua-card .gc-row b{flex:none;width:74px;color:var(--muted);font-weight:600;font-size:12.5px;
+    font-family:ui-sans-serif,sans-serif}
+  .gua-card .gc-classic{color:var(--ink);line-height:1.8}
+  .gua-card .gc-remind{color:var(--ink);font-style:italic;border-left:3px solid var(--pine);
+    padding-left:9px;line-height:1.75}
+  .eight-closing{background:var(--surface2);border-radius:12px;padding:14px 18px;font-size:13.5px;
+    color:var(--ink);line-height:1.9;margin-top:4px;border-left:3px solid var(--gold)}
 </style></head><body>
   <h1>八卦能量系統圖</h1>
   <p class="sub">八種內在能量 · 四組極性對 · 五行歸屬　|　點任一卦看內涵</p>
@@ -105,6 +130,7 @@
     <button id="btn-v2" onclick="switchView(2)">循環</button>
     <button id="btn-v3" onclick="switchView(3)">我的能量</button>
     <button id="btn-v4" onclick="switchView(4)">五行</button>
+    <button id="btn-v5" onclick="switchView(5)">認識八卦</button>
   </div>
 
   <!-- View copy blocks -->
@@ -119,6 +145,9 @@
   </div>
   <div class="view-copy hidden" id="copy-v4">
     五行是八種能量之間「誰餵養誰、誰壓制誰」的網絡。<b>相生</b>＝補弱的供應鏈（要養某個弱能量，先養生它的「母」）；<b>相剋</b>＝解釋過強（某能量過旺，會壓住它所剋的那個）。
+  </div>
+  <div class="view-copy hidden" id="copy-v5">
+    八卦是古人觀察天地，歸納出的八種基本能量。每一卦從三條陰陽爻長出一種性情，對應自然界的一個象（天、澤、火、雷、風、水、山、地），也對應我們現代的一種內在功能。
   </div>
 
   <!-- Axes-pair panel (view 1 only) -->
@@ -188,6 +217,9 @@
     <span style="color:var(--pine)">&#8594; 綠＝相生（餵養）</span>
     <span style="color:var(--cinnabar)">⤍ 朱紅虛線＝相剋（壓制）</span>
   </div>
+
+  <!-- View-5 認識八卦 -->
+  <div id="eight-wrap"></div>
 
   <p class="hint" id="hint-line">▼ 點圖上任一卦</p>
 
@@ -343,6 +375,55 @@ var BAGUA=[
 ];
 var BAGUA_MAP={};
 BAGUA.forEach(function(b){BAGUA_MAP[b.k]=b;});
+
+// ── 古典資料（認識八卦 / view 5）by key ──────────────────────
+var CLASSIC={
+  qian:{nature:'天',quality:'健',family:'父',
+    classic:'純陽至剛，象天運行不息——對應「創造／決策」：開創、領導、自強不息。'},
+  dui:{nature:'澤',quality:'悅',family:'少女',
+    classic:'澤水滋潤大地，象喜悅與交流——對應「交流／分享」：表達、連結、令人愉悅。'},
+  li:{nature:'火',quality:'麗',family:'中女',
+    classic:'火附於物而生光明，象明察與依附——對應「顯現／覺察」：看見、洞察、使事物顯明。'},
+  zhen:{nature:'雷',quality:'動',family:'長男',
+    classic:'雷出地奮，象奮起與開端——對應「啟動／突破」：行動、冒險、打破沉寂。'},
+  xun:{nature:'風',quality:'入',family:'長女',
+    classic:'風無孔不入，象柔順滲透——對應「擴散／連結」：協調、滲透、順勢推進。'},
+  kan:{nature:'水',quality:'陷',family:'中男',
+    classic:'水行於險而不失其信，象沉潛蓄力——對應「收藏／恢復」：內省、休養、蓄勢。'},
+  gen:{nature:'山',quality:'止',family:'少男',
+    classic:'山靜止不動，象知止守界——對應「停止／界線」：適可而止、守住分寸。'},
+  kun:{nature:'地',quality:'順',family:'母',
+    classic:'純陰至柔，象大地厚德載物——對應「承載／滋養」：包容、支持、滋養萬物。'}
+};
+// 排列順序：乾兌離震巽坎艮坤
+var EIGHT_ORDER=['qian','dui','li','zhen','xun','kan','gen','kun'];
+
+// ── 認識八卦 render（view 5） ──────────────────────────────────
+function renderEight(){
+  var wrap=document.getElementById('eight-wrap');
+  var html='';
+  EIGHT_ORDER.forEach(function(k){
+    var b=BAGUA_MAP[k], c=CLASSIC[k];
+    if(!b||!c) return;
+    var col=W[b.wx];
+    html+=
+      '<div class="gua-card">'+
+        '<div class="gc-head">'+
+          '<span class="gc-sym" style="color:'+col+'">'+b.sym+'</span>'+
+          '<span class="gc-name">'+b.nm+'</span>'+
+          '<span class="gc-nature">'+c.nature+'</span>'+
+          '<span class="gc-wx" style="background:'+col+'">'+WLAB[b.wx]+'</span>'+
+        '</div>'+
+        '<div class="gc-attr">性質 <b>'+c.quality+'</b>｜家人 <b>'+c.family+'</b>｜功能 <b>'+b.fn+'</b></div>'+
+        '<div class="gc-row"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
+        '<div class="gc-row"><b>古典意象</b><span class="gc-classic">'+c.classic+'</span></div>'+
+        '<div class="gc-row"><b>卦的提醒</b><span class="gc-remind">'+b.remind+'</span></div>'+
+      '</div>';
+  });
+  html+=
+    '<div class="eight-closing">八卦合起來，就像一家人、一個完整的能量循環——剛健的乾、柔順的坤，與六個子女，缺一不可。理解它們，就是理解自己內在的各種面向。</div>';
+  wrap.innerHTML=html;
+}
 
 var currentView=1;
 var activeKey='qian';
@@ -808,16 +889,19 @@ function switchView(v){
   if(v!==3) BAGUA.forEach(function(b){b.level=0;});
 
   // Buttons
-  [1,2,3,4].forEach(function(i){
+  [1,2,3,4,5].forEach(function(i){
     var btn=document.getElementById('btn-v'+i);
     if(btn) btn.classList.toggle('active',i===v);
   });
 
   // Copy blocks
-  [1,2,3,4].forEach(function(i){
+  [1,2,3,4,5].forEach(function(i){
     var el=document.getElementById('copy-v'+i);
     if(el) el.classList.toggle('hidden',i!==v);
   });
+
+  var isV4=(v===4);
+  var isV5=(v===5);
 
   // Axes panel (only view 1)
   document.getElementById('axes-panel').style.display=(v===1)?'':'none';
@@ -826,15 +910,19 @@ function switchView(v){
   document.getElementById('v3-controls').style.display=(v===3)?'block':'none';
   if(v!==3) document.getElementById('v3-persona').style.display='none';
 
-  // Bagua wheel vs wuxing SVG
-  var isV4=(v===4);
-  document.querySelector('.wheel-wrap').style.display=isV4?'none':'';
-  document.getElementById('bagua-legend').style.display=isV4?'none':'';
+  // Bagua wheel vs wuxing SVG vs 認識八卦
+  document.querySelector('.wheel-wrap').style.display=(isV4||isV5)?'none':'';
+  document.getElementById('bagua-legend').style.display=(isV4||isV5)?'none':'';
   document.getElementById('wuxing-wrap').style.display=isV4?'block':'none';
   document.getElementById('wuxing-legend').style.display=isV4?'flex':'none';
+  document.getElementById('eight-wrap').style.display=isV5?'block':'none';
 
-  // Axis lines & cycle arrows: hide when v4
-  if(!isV4){
+  // Detail panel & foot: hidden in view 5 (cards are self-contained)
+  document.getElementById('detail').style.display=isV5?'none':'';
+  document.getElementById('foot-text').style.display=isV5?'none':'';
+
+  // Axis lines & cycle arrows: hide when v4 / v5
+  if(!isV4 && !isV5){
     updateAxisLines();
     renderCycleArrows();
     renderNodes();
@@ -851,6 +939,7 @@ function switchView(v){
     v===2?'▼ 點任一卦看詳情，箭頭顯示能量流轉方向':
     v===3?'▼ 點節點循環切換狀態（正常→過強→過弱）':
     v===4?'▼ 點五行節點看生剋關係':
+    v===5?'▼ 八卦特性一覽':
     '▼ 點圖上任一卦';
 
   if(v===3){updateV3Summary();showDetail(activeKey,true);}
@@ -858,6 +947,8 @@ function switchView(v){
     if(!activeWxId) activeWxId='wood';
     renderWuxing();
     showWuxingDetail(activeWxId);
+  } else if(v===5){
+    renderEight();
   } else {
     showDetail(activeKey,false);
   }
