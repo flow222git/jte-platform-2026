@@ -1,0 +1,174 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>八卦能量系統 · 功能說明與範例</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:24px 18px 60px;max-width:680px;margin:0 auto;line-height:1.85}
+  .sans{font-family:ui-sans-serif,sans-serif}
+  a{color:var(--pine)}
+  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:16px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+  .home-link:hover{background:var(--surface)}
+  h1{font-size:25px;letter-spacing:.06em;margin-bottom:6px}
+  .lead{font-size:13.5px;color:var(--muted);font-family:ui-sans-serif,sans-serif;line-height:1.9;margin-bottom:18px}
+  .toc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:24px;
+    font-family:ui-sans-serif,sans-serif;font-size:13px}
+  .toc b{display:block;color:var(--pine);margin-bottom:8px;letter-spacing:.06em}
+  .toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 0}
+  .toc a:hover{color:var(--pine)}
+  .toc .n{color:var(--gold);font-weight:700;margin-right:7px}
+  section{margin-bottom:30px;scroll-margin-top:14px}
+  h2{font-size:19px;letter-spacing:.04em;margin-bottom:4px;padding-top:8px;border-top:2px solid var(--line)}
+  .tag{display:inline-block;font-size:10px;font-weight:700;color:#fff;background:var(--pine);border-radius:999px;
+    padding:1px 9px;margin-left:8px;vertical-align:2px;font-family:ui-sans-serif,sans-serif}
+  .tag.plan{background:var(--gold)}
+  .url{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--blue);margin:4px 0 12px;word-break:break-all}
+  .what{font-size:14px;line-height:1.95;margin-bottom:12px}
+  .what b{color:var(--pine)}
+  .eg{background:var(--surface);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;
+    padding:12px 16px;font-size:13px;line-height:1.95;font-family:ui-sans-serif,sans-serif;color:var(--ink)}
+  .eg .eh{font-weight:700;color:var(--gold);letter-spacing:.08em;font-size:12px;margin-bottom:6px}
+  .eg b{color:var(--pine)}
+  ul.k{list-style:none;padding:0;margin:8px 0 12px}
+  ul.k li{position:relative;padding:4px 0 4px 18px;font-size:13.5px;line-height:1.8}
+  ul.k li::before{content:"・";position:absolute;left:0;color:var(--gold)}
+  .note{background:var(--surface2);border-radius:10px;padding:13px 16px;font-size:12.5px;color:var(--ink);
+    font-family:ui-sans-serif,sans-serif;line-height:1.9;margin-top:8px}
+  .note b{color:var(--cinnabar)}
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
+    border-top:1px solid var(--line);padding-top:18px;margin-top:10px}
+</style></head>
+<body>
+<a class="home-link" href="bagua-map.html">← 八卦能量系統圖</a>
+
+<h1>八卦能量系統 · 功能說明與範例</h1>
+<p class="lead">這份文件把每個做出來的功能寫成「<b>是什麼</b>＋<b>範例</b>」，方便完整介紹給別人。<br>整套系統把「八卦」當成描述<b>內在能量</b>的語言——是一面認識自己與關係的鏡子，不是算命。</p>
+
+<div class="toc sans">
+  <b>目錄</b>
+  <a href="#concept"><span class="n">0</span>系統核心概念</a>
+  <a href="#map"><span class="n">1</span>八卦能量系統圖</a>
+  <a href="#test"><span class="n">2</span>八卦能量人格測驗</a>
+  <a href="#nowvs"><span class="n">3</span>底色 vs 此刻</a>
+  <a href="#facet"><span class="n">4</span>多場域側寫</a>
+  <a href="#compat"><span class="n">5</span>雙人合盤</a>
+  <a href="#io"><span class="n">6</span>合盤的分享（網址／QR／丟圖）</a>
+  <a href="#honest"><span class="n">7</span>誠實框架</a>
+  <a href="#road"><span class="n">8</span>發展中的方向</a>
+</div>
+
+<!-- 0 -->
+<section id="concept">
+  <h2>0 · 系統核心概念</h2>
+  <p class="what">把八卦當成<b>八種內在能量（功能）</b>，每個人、甚至每個情境，都是這八種能量的一種組合。</p>
+  <ul class="k">
+    <li><b>八種能量</b>：乾 創造／決策・兌 交流／分享・離 顯現／覺察・巽 擴散／連結・震 啟動／突破・坎 收藏／恢復・艮 停止／界線・坤 承載／滋養。</li>
+    <li><b>四組極性對</b>：給出⇄接納（乾⇄坤）、顯現⇄收藏（離⇄坎）、啟動⇄停止（震⇄艮）、表達⇄連結（兌⇄巽）。某能量「過強」，常是缺了對面那一極。</li>
+    <li><b>五行生剋</b>：金 乾兌・木 震巽・水 坎・火 離・土 艮坤。相生＝補弱的供應鏈；相剋＝解釋過強的壓制。也是「誰滋養誰、誰消耗誰」的底層。</li>
+    <li><b>循環節律</b>：後天卦序，啟動→成長→顯現→化育→收穫→收束→收藏→停轉，像四季流轉。</li>
+    <li><b>底色 vs 此刻</b>：底色＝你慣用的能量（特質）；此刻＝你當下的狀態。</li>
+  </ul>
+  <div class="eg"><div class="eh">範例</div>一個「離（覺察）」很高的人＝看得清、愛分析；但離的對極是「坎（收藏）」，所以他過頭時容易想太多、需要練習讓腦袋休息。這就是用極性與五行去理解一個人。</div>
+</section>
+
+<!-- 1 -->
+<section id="map">
+  <h2>1 · 八卦能量系統圖 <span class="tag">已上線</span></h2>
+  <div class="url">flow222git.github.io/jte-platform-2026/bagua-map.html</div>
+  <p class="what">一張<b>互動輪盤</b>，用四種看法認識這八種能量。點任一卦看它的狀態、過強、過弱、陰陽結構與「卦的提醒」。</p>
+  <ul class="k">
+    <li><b>極性</b>：四組對極排成直徑，看平衡。</li>
+    <li><b>循環</b>：依後天卦序排列，看能量流轉的節奏。</li>
+    <li><b>我的能量</b>：把每個能量設成正常／過強／過弱，自己擺一個側寫，會生出一段人物速寫＋建議。</li>
+    <li><b>五行</b>：正五邊形，綠箭頭＝相生、朱紅虛線星＝相剋，點元素看生剋關係。</li>
+  </ul>
+  <div class="eg"><div class="eh">範例</div>切到「我的能量」，把<b>震（啟動）設過強、坎（恢復）設過弱</b>→系統速寫：「你像一個全力衝刺的人，引擎很強、卻少了煞車與保養」＋建議補回坎。切到「五行」會看到<b>水生木、水剋火</b>等關係。</div>
+</section>
+
+<!-- 2 -->
+<section id="test">
+  <h2>2 · 八卦能量人格測驗 <span class="tag">已上線</span></h2>
+  <div class="url">flow222git.github.io/jte-platform-2026/bagua-persona.html</div>
+  <p class="what">回答 <b>24 題</b>（約 3 分鐘）→ 算出你的八能量分數 → 給你一個<b>能量人格型</b>＋八角雷達＋人物速寫＋優勢／盲點／成長＋適合你的工具。這測的是「<b>整體的你＝底色</b>」。</p>
+  <ul class="k">
+    <li>八種型（依最高能量）：乾金·開創者、兌金·連結者、離火·洞見者、巽木·協作者、震木·行動者、坎水·沉潛者、艮土·守界者、坤土·承載者。</li>
+    <li>每型都有：本質一句、優勢、盲點、成長方向、推薦 2 個平台工具。</li>
+  </ul>
+  <div class="eg"><div class="eh">範例</div>答完得到「<b>離火 · 洞見者</b>」，雷達顯示離 85、坤 78 最高，震 20 最低。<br>優勢＝洞察分析；盲點＝想太多、卡分析；成長＝練習「坎」的沉潛，先體驗再理解；推薦工具＝問易、HRV。</div>
+</section>
+
+<!-- 3 -->
+<section id="nowvs">
+  <h2>3 · 底色 vs 此刻 <span class="tag">已上線</span></h2>
+  <p class="what">底色＝你慣用的能量（特質）；<b>此刻</b>＝你當下的能量狀態，來自「<b>問易</b>」卜卦。當你用過問易，回到測驗結果頁，雷達會把你<b>最近一次的此刻能量（金色虛線）</b>疊在底色（松綠實線）上，看出落差。</p>
+  <div class="eg"><div class="eh">範例</div>你的底色「覺察／承載」高，但最近一次問易算出的此刻是「<b>啟動</b>」特別突出 → 系統說：「和你的底色相比，此刻你的『啟動』比平常更突出」→ 提示你最近大概在衝一個案子，記得別忘了照顧底色裡的恢復。</div>
+</section>
+
+<!-- 4 -->
+<section id="facet">
+  <h2>4 · 多場域側寫 <span class="tag">已上線</span></h2>
+  <p class="what">同一個人，在不同場域會用不同的能量。用<b>同一套題、換場域框架</b>，測「<b>工作的你 / 關係裡的你 / 獨處的你</b>」。每個場域的盤會疊在底色上看落差，並點出<b>消耗訊號</b>；測過 ≥1 個場域，就生一張<b>面向地圖</b>對照。</p>
+  <ul class="k">
+    <li><b>落差句</b>：這個場域比底色拉高了什麼、壓低了什麼。</li>
+    <li><b>消耗訊號</b>：若某場域逼你壓抑強項、或硬撐弱項，提醒你那裡容易耗電。</li>
+    <li><b>面向地圖</b>：底色＋各場域的小雷達並排，一眼看出你在不同場域怎麼變形。</li>
+  </ul>
+  <div class="eg"><div class="eh">範例</div>「工作的你」vs 底色 →「<b>拉高了承載／滋養、壓低了啟動／突破</b>」＋消耗訊號：「工作要你壓抑『行動』、硬撐『承載』，長期容易耗電，記得找地方補回來。」<br>面向地圖顯示：你落差最大的是【工作】，差最多的是『創造／決策』。</div>
+</section>
+
+<!-- 5 -->
+<section id="compat">
+  <h2>5 · 雙人合盤 <span class="tag">已上線</span></h2>
+  <p class="what">兩個人各自測完，就能合盤——把兩張盤疊在同一張雷達上，並給六種讀數。這是<b>理解關係動態的鏡子</b>。</p>
+  <ul class="k">
+    <li><b>同頻度</b>：你們的能量像不像（默契／同盲點）。</li>
+    <li><b>互補度</b>：你強的剛好他弱、他強的剛好你弱（拼圖互補）。</li>
+    <li><b>共同盲點</b>：兩人都弱的能量＝關係的共同課題。</li>
+    <li><b>摩擦點</b>：差最多的能量，可能互補也可能步調摩擦。</li>
+    <li><b>五行能量流向</b>：有方向——誰滋養誰、誰消耗誰。</li>
+    <li><b>合成人物</b>：你們這一對當一個整體的型與速寫。</li>
+  </ul>
+  <div class="eg"><div class="eh">範例</div>你（離火·洞見者）× 對方（震木·行動者）→ <b>同頻 56%／互補 60%</b>；共同盲點：無；摩擦點：『啟動』（你 12、他 92）；五行流向：「<b>他的木 生 你的火 → 他滋養你</b>」；合成型：離火·洞見者。</div>
+</section>
+
+<!-- 6 -->
+<section id="io">
+  <h2>6 · 合盤的分享：網址／QR／丟圖 <span class="tag">已上線</span></h2>
+  <p class="what">合盤<b>不用手打代碼</b>。測完後，你的盤可以：</p>
+  <ul class="k">
+    <li><b>複製連結</b>：把你的盤編進網址，傳給對方；他點開（他也測過）就直接看到你們的合盤。</li>
+    <li><b>下載合盤圖</b>：一張含 <b>QR</b> 的圖，存起來或傳出去。</li>
+    <li><b>選擇分享哪張盤</b>：整體底色，或某個已測場域（工作／關係／獨處）。</li>
+  </ul>
+  <p class="what">對方要合盤時，三種方式擇一：① 點你的<b>連結</b>　② 把你的<b>圖丟進「上傳對方的圖」</b>（自動掃 QR）　③ 貼上<b>連結或合盤碼</b>。</p>
+  <div class="eg"><div class="eh">範例</div>你按「複製連結」把網址貼到聊天室；朋友點開→因為他也測過自己，畫面<b>直接跳出你們的合盤結果</b>。或者你「下載合盤圖」傳給他，他在合盤頁按「上傳對方的圖」選那張圖，系統掃到 QR 就自動合盤。<div class="note">分享連結／圖＝把你的<b>八卦數值（8 個數字、無個資）</b>給對方，是你自己決定要不要分享。</div></div>
+</section>
+
+<!-- 7 -->
+<section id="honest">
+  <h2>7 · 誠實框架</h2>
+  <ul class="k">
+    <li>這是<b>認識自己與關係的鏡子</b>，不是算命、不是命定、不是相容度評分。</li>
+    <li>能量會<b>流動、可以成長</b>——底色是傾向，不是固定標籤；今天的你和半年後的你可能不同。</li>
+    <li>合盤裡，<b>同頻不比互補好</b>、讀數低不代表不合。</li>
+    <li>所有結果都來自你的<b>自我覺察作答</b>，是反思的起點，不是定論。</li>
+  </ul>
+</section>
+
+<!-- 8 -->
+<section id="road">
+  <h2>8 · 發展中的方向</h2>
+  <ul class="k">
+    <li><b>局／情境盤</b><span class="tag plan">規劃中</span>：問幾題測出一個「局」（新工作、新關係）需要的能量盤，再和你合盤，看 fit 與消耗。</li>
+    <li><b>職業配對</b><span class="tag plan">規劃中</span>：建職業能量庫，測完人格就推「能量比較合的職業方向」（啟發性參考）。</li>
+    <li><b>消耗預測＋應對策略</b><span class="tag plan">規劃中</span>：哪些人事物會快速消耗你，以及怎麼補回來。</li>
+    <li><b>多人／團隊合盤、後台分析</b><span class="tag plan">規劃中</span>：團隊合成盤、共同盲點、群體分析（需先處理隱私／登入）。</li>
+  </ul>
+</section>
+
+<div class="foot">八卦能量系統 · 練息場 Join to Enjoy<br>目前為內部開發中、未公開（搜尋不到）。</div>
+</body></html>
