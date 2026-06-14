@@ -1,0 +1,123 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title></head><body>
+<pre id="out">running...</pre>
+<iframe id="f" src="bagua-field.html" style="width:600px;height:400px"></iframe>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+document.getElementById('f').onload=function(){
+  try{
+    var w=document.getElementById('f').contentWindow;
+    var d=w.document;
+
+    // 1. structure: 16 questions, 2 per energy
+    ok(w.QUESTIONS.length===16,'16 questions, got '+w.QUESTIONS.length);
+    var cnt={}; w.QUESTIONS.forEach(function(q){cnt[q.k]=(cnt[q.k]||0)+1;});
+    var per2=w.EKEYS.every(function(k){return cnt[k]===2;});
+    ok(per2,'2 questions per energy: '+JSON.stringify(cnt));
+    ok(w.EKEYS.length===8,'8 energies');
+    // interleaved: no two adjacent same energy
+    var adj=true; for(var i=1;i<w.QUESTIONS.length;i++){ if(w.QUESTIONS[i].k===w.QUESTIONS[i-1].k) adj=false; }
+    ok(adj,'questions interleaved (no adjacent same energy)');
+
+    // 2. scoring: both 3 → 100, both 0 → 0
+    w.answers=new Array(16).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=3; });
+    var sc=w.computeScores();
+    ok(sc.qian===100,'qian=100 when both maxed, got '+sc.qian);
+    ok(sc.kun===0,'kun=0 when both zero, got '+sc.kun);
+    // partial: one 3 one 0 → 50
+    w.answers=new Array(16).fill(0);
+    var liIdx=[]; w.QUESTIONS.forEach(function(q,i){ if(q.k==='li') liIdx.push(i); });
+    w.answers[liIdx[0]]=3; w.answers[liIdx[1]]=0;
+    ok(w.computeScores().li===50,'li=50 when 3+0, got '+w.computeScores().li);
+
+    // 3. fitScore: identical → ~100 ; you low field high → low
+    var same={}; w.EKEYS.forEach(function(k){ same[k]=70; });
+    ok(w.fitScore(same,same)===100,'fitScore identical → 100, got '+w.fitScore(same,same));
+    var youLow={},fieldHigh={}; w.EKEYS.forEach(function(k){ youLow[k]=5; fieldHigh[k]=90; });
+    var fLow=w.fitScore(youLow,fieldHigh);
+    ok(fLow<25,'fitScore you-low field-high is low, got '+fLow);
+
+    // 4. shine / forcedWeak / idleStrength
+    // build: qian → shine (both high); li → forcedWeak (field high, you low); kun → idleStrength (you high, field low)
+    var you={qian:80,li:10,zhen:40,dui:40,kun:90,kan:40,gen:40,xun:40};
+    var field={qian:80,li:80,zhen:40,dui:40,kun:20,kan:40,gen:40,xun:40};
+    var shine=w.shinePoints(you,field);
+    ok(shine.indexOf('qian')>=0,'shine includes qian (both high), got '+JSON.stringify(shine));
+    var fw=w.forcedWeak(you,field);
+    ok(fw.indexOf('li')>=0,'forcedWeak includes li (field high you low), got '+JSON.stringify(fw));
+    var idle=w.idleStrength(you,field);
+    ok(idle.indexOf('kun')>=0,'idleStrength includes kun (you high field low), got '+JSON.stringify(idle));
+
+    // 5. 五行流向: field top=metal(qian), you top=wood(zhen) → 金剋木 → 局剋你
+    var fieldMetal={qian:90,li:10,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10}; // top qian=metal
+    var youWood={qian:10,li:10,zhen:90,dui:10,kun:10,kan:10,gen:10,xun:10};   // top zhen=wood
+    ok(w.topElement(fieldMetal)==='metal','field topElement metal');
+    ok(w.topElement(youWood)==='wood','you topElement wood');
+    var flow=w.elementFlow(w.topElement(fieldMetal), w.topElement(youWood));
+    ok(flow.type==='fieldKeYou','metal field kills wood you → fieldKeYou, got '+flow.type);
+    ok(flow.text.indexOf('壓到你的主場')>=0,'flow text says 壓到你的主場');
+
+    // 6. result render with base overlay + fit + strategy
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:youWood,top:'zhen',title:'震木 · 行動者'}));
+    w.fieldName='測試局';
+    w.showResult(fieldMetal, false);
+    var r=d.getElementById('result');
+    ok(r.style.display==='block','#result visible');
+    ok(d.querySelector('#radar-wrap svg'),'field radar svg rendered');
+    ok(d.querySelector('#radar-wrap svg polygon[stroke-dasharray]'),'底色 overlay polygon (dashed) rendered');
+    ok(d.querySelector('.fit-card .fc-num'),'適配度 number shown');
+    ok(/%$/.test(d.querySelector('.fit-card .fc-num').textContent),'適配度 ends with %');
+    ok(d.querySelector('.block h3') && r.innerHTML.indexOf('應對策略')>=0,'應對策略 section present');
+    ok(r.innerHTML.indexOf('五行能量流向')>=0,'五行流向 section present');
+    ok(r.innerHTML.indexOf('壓到你的主場')>=0,'result shows 局剋你 flow text');
+
+    // 7. 發揮點 / 消耗點 文案出現對應能量
+    // you qian high+field qian high → shine '創造／決策' ; field li high you li low → forcedWeak '顯現／覺察'
+    var you2={qian:80,li:10,zhen:40,dui:40,kun:90,kan:40,gen:40,xun:40};
+    var field2={qian:80,li:80,zhen:40,dui:40,kun:20,kan:40,gen:40,xun:40};
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:you2,top:'kun',title:'坤土'}));
+    w.fieldName='測試局2';
+    w.showResult(field2, false);
+    var rh=d.getElementById('result').innerHTML;
+    ok(rh.indexOf('你會發光')>=0 && rh.indexOf('創造／決策')>=0,'發揮點 文案含 創造／決策 + 你會發光');
+    ok(rh.indexOf('長期容易耗你')>=0 && rh.indexOf('顯現／覺察')>=0,'消耗(硬撐弱項) 文案含 顯現／覺察');
+    ok(rh.indexOf('可能會悶')>=0 && rh.indexOf('承載／滋養')>=0,'消耗(強項閒置) 文案含 承載／滋養');
+    ok(rh.indexOf('別硬撐')>=0,'應對策略含 硬撐弱項對策');
+
+    // 8. no base → no overlay, prompt to test base
+    w.localStorage.removeItem('bagua_persona_v1');
+    ok(w.getBase()===null,'getBase null when no persona');
+    w.fieldName='無底色局';
+    w.showResult(fieldMetal, false);
+    ok(!d.querySelector('#radar-wrap svg polygon[stroke-dasharray]'),'no overlay polygon when no base');
+    ok(d.getElementById('result').innerHTML.indexOf('去測你的底色')>=0,'prompt to test base when no persona');
+
+    // 9. bagua_fields_v1 round-trip
+    w.localStorage.removeItem('bagua_fields_v1');
+    w.saveField('我的新局', fieldMetal);
+    var got=w.getFields();
+    ok(got.length===1 && got[0].name==='我的新局','saveField/getFields round-trip name');
+    ok(w.EKEYS.every(function(k){ return got[0].scores[k]===fieldMetal[k]; }),'saved scores match');
+    // newest first
+    w.saveField('第二個局', youWood);
+    ok(w.getFields()[0].name==='第二個局','newest field first');
+
+    // 10. cover renders past fields list
+    w.localStorage.removeItem('bagua_fields_v1');
+    w.saveField('封面測試局', fieldMetal);
+    w.renderCover();
+    ok(d.getElementById('past-box').innerHTML.indexOf('封面測試局')>=0,'cover lists past fields');
+
+    // 11. fitSentence buckets
+    ok(typeof w.fitSentence(80)==='string' && w.fitSentence(80).length>0,'fitSentence high non-empty');
+    ok(typeof w.fitSentence(20)==='string' && w.fitSentence(20).length>0,'fitSentence low non-empty');
+
+  }catch(e){ fail++; log.push('EXCEPTION: '+e.message+' @ '+(e.stack||'')); }
+
+  var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
+  document.title=msg;
+  document.getElementById('out').textContent=msg;
+};
+</script>
+</body></html>
