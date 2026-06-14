@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title></head><body>
+<pre id="out">running...</pre>
+<iframe id="f" src="bagua-career.html" style="width:600px;height:400px"></iframe>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+document.getElementById('f').onload=function(){
+  try{
+    var w=document.getElementById('f').contentWindow;
+    var d=w.document;
+    var A=w.__career;
+
+    // 1. CAREERS: each has 8 energy keys, values 0..100
+    ok(A.CAREERS.length>=10,'CAREERS has many entries, got '+A.CAREERS.length);
+    var allValid=A.CAREERS.every(function(c){
+      return A.EKEYS.every(function(k){
+        var v=c.scores[k];
+        return typeof v==='number' && v>=0 && v<=100;
+      });
+    });
+    ok(allValid,'every CAREER has 8 energy keys, values 0..100');
+    var allNm=A.CAREERS.every(function(c){ return c.nm && c.ic && c.blurb && c.id; });
+    ok(allNm,'every CAREER has id/nm/ic/blurb');
+
+    // 2. fitScore consistency with bagua-field behavior
+    var same={}; A.EKEYS.forEach(function(k){ same[k]=70; });
+    ok(A.fitScore(same,same)===100,'fitScore identical → 100, got '+A.fitScore(same,same));
+    var youLow={},fieldHigh={}; A.EKEYS.forEach(function(k){ youLow[k]=5; fieldHigh[k]=90; });
+    ok(A.fitScore(youLow,fieldHigh)<25,'fitScore you-low field-high is low, got '+A.fitScore(youLow,fieldHigh));
+
+    // 3. no base → prompt, no matching list
+    w.localStorage.removeItem('bagua_persona_v1');
+    ok(A.getBase()===null,'getBase null when no persona');
+    w.renderCover();
+    ok(d.getElementById('base-status').innerHTML.indexOf('先測你的底色')>=0,'cover prompts to test base when no persona');
+    ok(d.getElementById('start-btn').disabled===true,'start button disabled when no base');
+    A.showResult();
+    ok(d.getElementById('result').innerHTML.indexOf('要先測你的人格底色')>=0 ||
+       d.getElementById('result').innerHTML.indexOf('去測你的底色')>=0,'no-base showResult shows prompt, no matches');
+    ok(!d.querySelector('.ccard'),'no career cards when no base');
+
+    // 4. with base (離坎高底色) → sorted matching list appears
+    var liKan={qian:30,li:90,zhen:20,dui:25,kun:30,kan:88,gen:55,xun:30}; // 離火 + 坎水 high
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:liKan,top:'li',title:'離火 · 顯現者'}));
+    w.renderCover();
+    ok(d.getElementById('start-btn').disabled===false,'start button enabled when base present');
+    ok(d.getElementById('base-status').innerHTML.indexOf('已有你的底色')>=0,'cover confirms base present');
+    A.showResult();
+    var cards=d.querySelectorAll('.ccard');
+    ok(cards.length>=8,'career cards rendered (top6 + worst3), got '+cards.length);
+    ok(d.getElementById('result').innerHTML.indexOf('能量比較合的方向')>=0,'has 能量比較合的方向 section');
+    ok(d.getElementById('result').innerHTML.indexOf('可能比較耗你的')>=0,'has 可能比較耗你的 section');
+
+    // 5. sorting correct: 離坎高 → research/writer rank higher than sales
+    var ranked=A.rankedCareers(liKan);
+    var order={}; ranked.forEach(function(o,i){ order[o.c.id]=i; });
+    ok(order.research<order.sales,'research ranks before sales for 離坎 base ('+order.research+' < '+order.sales+')');
+    ok(order.writer<order.sales,'writer ranks before sales for 離坎 base ('+order.writer+' < '+order.sales+')');
+    // fits are descending
+    var desc=true; for(var i=1;i<ranked.length;i++){ if(ranked[i].fit>ranked[i-1].fit) desc=false; }
+    ok(desc,'rankedCareers sorted descending by fit');
+
+    // 6. 你會發光的點 文案 — 離坎高底色，research 應有發光點
+    var rh=d.getElementById('result').innerHTML;
+    ok(rh.indexOf('你會發光的點')>=0,'top cards show 你會發光的點');
+    ok(/%/.test(d.querySelector('.ccard .cc-fitnum').textContent),'card shows fit %');
+
+    // 7. 誠實框架 present
+    ok(rh.indexOf('啟發性的探索方向')>=0,'honest framing 啟發性的探索方向 present');
+    ok(rh.indexOf('不能')>=0 && rh.indexOf('命定')>=0,'honest framing 不是命定 / 沒有不能做');
+
+    // 8. detail view: radar + overlay polygon + fit% + strategy
+    A.showDetail('research');
+    var dr=d.getElementById('result');
+    ok(d.querySelector('#radar-wrap svg'),'detail radar svg rendered');
+    ok(d.querySelector('#radar-wrap svg polygon[stroke-dasharray]'),'底色 overlay polygon (dashed) in detail');
+    ok(d.querySelector('.fit-card .fc-num') && /%$/.test(d.querySelector('.fit-card .fc-num').textContent),'detail fit% shown');
+    ok(dr.innerHTML.indexOf('應對策略')>=0,'detail 應對策略 present');
+    ok(dr.innerHTML.indexOf('五行能量流向')>=0,'detail 五行流向 present');
+    ok(dr.innerHTML.indexOf('你會在哪發光')>=0,'detail 發揮點 present');
+
+    // 9. fitScore identical career == high; same career盤 high score
+    var c0=A.CAREERS[0];
+    ok(A.fitScore(c0.scores,c0.scores)>=95,'identical you=career → high fit, got '+A.fitScore(c0.scores,c0.scores));
+
+  }catch(e){ fail++; log.push('EXCEPTION: '+e.message+' @ '+(e.stack||'')); }
+
+  var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
+  document.title=msg;
+  document.getElementById('out').textContent=msg;
+};
+</script>
+</body></html>

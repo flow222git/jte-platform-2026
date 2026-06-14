@@ -1,0 +1,558 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>職業能量配對 · 八卦能量盤</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+    padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
+  .sans{font-family:ui-sans-serif,sans-serif}
+  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:14px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+  .home-link:hover{background:var(--surface)}
+
+  /* ── Cover ── */
+  #cover{text-align:center;padding:8px 0}
+  #cover .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.24em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:14px}
+  #cover h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px}
+  #cover .lead{font-size:14px;color:var(--ink);max-width:420px;margin:0 auto 8px;line-height:1.9}
+  #cover .trigrams{font-size:26px;color:var(--pine);letter-spacing:.18em;margin:18px 0 6px;opacity:.85}
+  .start-btn{display:inline-block;background:var(--pine);color:#fff;border:none;font-family:"Songti TC","Noto Serif TC",serif;
+    font-size:16px;letter-spacing:.1em;padding:13px 40px;border-radius:999px;cursor:pointer;margin:18px 0 10px;
+    box-shadow:0 8px 24px rgba(53,97,79,.22);transition:transform .15s}
+  .start-btn:hover{transform:translateY(-2px)}
+  .start-btn[disabled]{opacity:.4;cursor:default;box-shadow:none}
+  .meta-line{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-bottom:18px}
+  .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
+    border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;text-align:left;
+    max-width:460px;margin:14px auto 0;line-height:1.85}
+  .honest b{color:var(--ink)}
+  .base-hint{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line);border-left:4px solid var(--pine);border-radius:0 12px 12px 0;
+    padding:12px 15px;text-align:left;max-width:440px;margin:16px auto 0;line-height:1.8}
+  .base-hint a{color:var(--pine);font-weight:700}
+  .base-ok{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);margin:14px auto 0;max-width:440px}
+
+  /* ── Result ── */
+  #result{display:none}
+  .res-head{text-align:center;margin-bottom:8px}
+  .res-head .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:6px}
+  .res-head h2{font-size:22px;letter-spacing:.06em;margin-bottom:6px}
+  .res-head .sub{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.8}
+  .res-head .sub b{color:var(--pine)}
+
+  .seclab{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
+    font-weight:700;margin:22px 0 12px}
+  .seclab.warn{color:var(--cinnabar)}
+
+  .cardlist{display:flex;flex-direction:column;gap:11px}
+  .ccard{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px 16px;
+    cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+  .ccard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--pine))}
+  .ccard:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(74,62,44,.1)}
+  .ccard .cc-top{display:flex;align-items:center;gap:12px}
+  .ccard .cc-ic{font-size:26px;flex:none;width:34px;text-align:center}
+  .ccard .cc-body{flex:1;min-width:0}
+  .ccard .cc-nm{font-family:ui-sans-serif,sans-serif;font-size:15.5px;font-weight:700;color:var(--ink)}
+  .ccard .cc-blurb{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.6}
+  .ccard .cc-fit{flex:none;text-align:right}
+  .ccard .cc-fitnum{font-family:ui-sans-serif,sans-serif;font-size:24px;font-weight:700;color:var(--pine);line-height:1}
+  .ccard.warn .cc-fitnum{color:var(--cinnabar)}
+  .ccard .cc-fitlab{font-family:ui-sans-serif,sans-serif;font-size:10px;color:var(--muted);letter-spacing:.04em}
+  .ccard .cc-shine{font-size:13.5px;color:var(--ink);line-height:1.8;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+  .ccard .cc-shine .em{color:var(--pine);font-weight:600}
+  .ccard .cc-arr{font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);margin-top:8px}
+
+  .warn-frame{background:linear-gradient(120deg,#9d4b34,#823a28);color:#fff;border-radius:14px;
+    padding:14px 17px;font-size:13px;line-height:1.8;margin-bottom:6px}
+  .warn-frame b{color:#fbe9c8}
+
+  /* ── 詳情（重用 field 視覺） ── */
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px 20px;
+    box-shadow:0 14px 38px rgba(74,62,44,.1);position:relative;overflow:hidden;text-align:center;margin-bottom:18px}
+  .typecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,var(--pine))}
+  .tc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px}
+  .tc-sym{font-size:44px;line-height:1;margin-bottom:6px}
+  .tc-title{font-size:23px;letter-spacing:.06em;margin-bottom:9px}
+  .tc-essence{font-size:14px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
+
+  .radar-wrap{max-width:380px;margin:6px auto 4px}
+  .radar-wrap svg{width:100%;height:auto;display:block}
+  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--pine);font-weight:700}
+  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:5px 13px;justify-content:center;font-size:11.5px;color:var(--muted);
+    font-family:ui-sans-serif,sans-serif;margin:2px 0 20px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+  .legend i.dash{width:14px;height:0;border-radius:0;border-top:2px dashed var(--gold);vertical-align:3px}
+
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
+    margin-bottom:12px;font-weight:700}
+  .fit-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 18px;
+    text-align:center;margin-bottom:14px;box-shadow:0 10px 30px rgba(74,62,44,.08)}
+  .fit-card .fc-num{font-size:46px;line-height:1;color:var(--pine);font-family:ui-sans-serif,sans-serif;font-weight:700}
+  .fit-card .fc-lab{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--ink);font-weight:700;margin-top:6px;letter-spacing:.06em}
+  .fit-card .fc-sub{font-size:14px;color:var(--ink);line-height:1.85;margin-top:10px;max-width:420px;margin-left:auto;margin-right:auto}
+  .pt-line{font-size:14.5px;line-height:1.95;color:var(--ink);padding:7px 0;border-bottom:1px solid var(--line)}
+  .pt-line:last-child{border-bottom:none}
+  .pt-line .em{color:var(--pine);font-weight:600}
+  .pt-line.shine::before{content:"✦ ";color:var(--pine)}
+  .drain-note{background:linear-gradient(120deg,#9d4b34,#823a28);color:#fff;border-radius:14px;
+    padding:15px 18px;font-size:14px;line-height:1.85;margin-bottom:14px}
+  .drain-note .dn-h{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;opacity:.82;margin-bottom:6px}
+  .drain-note .dn-line{padding:4px 0}
+  .drain-ok{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pine);
+    border-radius:0 12px 12px 0;padding:13px 16px;font-size:14px;line-height:1.85;color:var(--ink);margin-bottom:14px}
+  .strat-line{font-size:14px;line-height:1.9;color:var(--ink);padding:5px 0}
+  .strat-line .em{color:var(--pine);font-weight:600}
+  .flowline{font-size:15px;line-height:1.95;color:var(--ink)}
+  .flowline .arrow{color:var(--gold);font-weight:700;margin:0 4px}
+
+  .resbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0 10px}
+  .cbtn{display:inline-block;background:var(--pine);color:#fff;border:none;
+    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;
+    padding:11px 24px;border-radius:999px;cursor:pointer;transition:transform .15s;text-decoration:none}
+  .cbtn:hover{transform:translateY(-2px)}
+  .cbtn.ghost{background:none;color:var(--muted);border:1px solid var(--line);font-weight:400}
+  .cbtn.ghost:hover{background:var(--surface);transform:none}
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
+    border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
+</style></head>
+<body>
+<a class="home-link" href="index.html">← 回練息場</a>
+
+<!-- ───────── COVER ───────── -->
+<div id="cover">
+  <div class="eyebrow">BAGUA ENERGY · CAREER</div>
+  <h1>職業能量配對</h1>
+  <p class="lead">看看哪些職業的能量，和你的底色比較合——一個探索方向的起點。</p>
+  <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
+  <button class="start-btn" id="start-btn" onclick="showResult()">看我的配對</button>
+  <div class="meta-line">即時比對 · 不需登入</div>
+  <div id="base-status"></div>
+  <div class="honest">
+    每個職業也是一張<b>八卦能量盤</b>——它需求哪些能量。把你的<b>底色</b>疊上去，就能看出哪些方向跟你比較合、哪些可能比較耗你。
+  </div>
+</div>
+
+<!-- ───────── RESULT ───────── -->
+<div id="result"></div>
+
+<script>
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
+var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+var NS='http://www.w3.org/2000/svg';
+
+// 8 energies — 精簡版（重用 bagua-field 的 E：nm/fn/wx/pos/sym）
+var E={
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',pos:{x:200,y:60}},
+ li:  {sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood', fn:'啟動／突破',pos:{x:340,y:200}},
+ dui: {sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',pos:{x:299,y:299}},
+ kun: {sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',pos:{x:200,y:340}},
+ kan: {sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',pos:{x:101,y:299}},
+ gen: {sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',pos:{x:60,y:200}},
+ xun: {sym:'☴',nm:'巽',wx:'wood', fn:'擴散／連結',pos:{x:101,y:101}}
+};
+var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
+
+// ── 職業能量庫 ────────────────────────────────────────────
+var CAREERS=[
+ {id:'sales',  nm:'業務／銷售', ic:'🤝', scores:{qian:65,dui:90,li:45,xun:55,zhen:80,kan:20,gen:30,kun:40}, blurb:'靠交流與行動推進、開拓客戶。'},
+ {id:'mkt',    nm:'行銷／品牌', ic:'📣', scores:{qian:50,dui:80,li:70,xun:80,zhen:60,kan:30,gen:35,kun:35}, blurb:'把訊息擴散出去、連結受眾。'},
+ {id:'founder',nm:'創業者', ic:'🚀', scores:{qian:90,dui:65,li:60,xun:65,zhen:88,kan:30,gen:40,kun:40}, blurb:'從無到有、開創與突破。'},
+ {id:'mgr',    nm:'管理／主管', ic:'🧭', scores:{qian:80,dui:65,li:55,xun:60,zhen:45,kan:35,gen:65,kun:75}, blurb:'帶人、定方向、承接團隊。'},
+ {id:'pm',     nm:'專案管理', ic:'🗂️', scores:{qian:65,dui:65,li:55,xun:88,zhen:45,kan:30,gen:75,kun:50}, blurb:'協調資源、把關進度與界線。'},
+ {id:'research',nm:'研究／學術', ic:'🔬', scores:{qian:45,dui:25,li:90,xun:35,zhen:25,kan:88,gen:65,kun:35}, blurb:'深入鑽研、分析求真。'},
+ {id:'eng',    nm:'工程／開發', ic:'⚙️', scores:{qian:60,dui:25,li:80,xun:45,zhen:45,kan:80,gen:75,kun:30}, blurb:'專注解題、嚴謹建構。'},
+ {id:'design', nm:'設計／創意', ic:'🎨', scores:{qian:50,dui:60,li:80,xun:65,zhen:70,kan:55,gen:40,kun:30}, blurb:'覺察與創造、形塑體驗。'},
+ {id:'writer', nm:'創作／寫作', ic:'✍️', scores:{qian:40,dui:40,li:80,xun:50,zhen:45,kan:88,gen:45,kun:30}, blurb:'沉潛內省、把世界寫出來。'},
+ {id:'teacher',nm:'教育／教師', ic:'📚', scores:{qian:45,dui:78,li:65,xun:55,zhen:35,kan:35,gen:55,kun:85}, blurb:'滋養他人、傳遞與陪伴。'},
+ {id:'care',   nm:'醫護／照護', ic:'🩺', scores:{qian:40,dui:50,li:60,xun:40,zhen:30,kan:55,gen:70,kun:90}, blurb:'承接需求、穩定地照顧人。'},
+ {id:'counsel',nm:'諮商／心理', ic:'🫂', scores:{qian:35,dui:65,li:78,xun:45,zhen:25,kan:75,gen:50,kun:80}, blurb:'深聽與覺察、陪人走過。'},
+ {id:'ops',    nm:'行政／營運', ic:'🗃️', scores:{qian:45,dui:45,li:55,xun:65,zhen:25,kan:40,gen:88,kun:70}, blurb:'穩定按部就班、讓事情運轉。'},
+ {id:'finance',nm:'財務／會計', ic:'📊', scores:{qian:55,dui:30,li:75,xun:40,zhen:20,kan:70,gen:88,kun:35}, blurb:'嚴謹把關、精準分析數字。'},
+ {id:'hr',     nm:'客服／人資', ic:'💁', scores:{qian:40,dui:80,li:50,xun:65,zhen:35,kan:30,gen:55,kun:80}, blurb:'接住人、協調與服務。'},
+ {id:'perform',nm:'表演／運動', ic:'🎭', scores:{qian:55,dui:75,li:55,xun:40,zhen:88,kan:30,gen:60,kun:35}, blurb:'即時爆發、用身體表達。'}
+];
+
+// ── 底色（人格）讀取 ─────────────────────────────────────
+function getBase(){
+  try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.scores)?o:null; }
+  catch(e){ return null; }
+}
+function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>(sc[t]||0)) t=k; }); return t; }
+function energyLabel(k){ return E[k].fn; }
+function energyName(k){ return E[k].nm; }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+// ════════════════════════════════════════════════════════════
+//  你 × 局／職業 引擎（直接重用 bagua-field 的邏輯）
+// ════════════════════════════════════════════════════════════
+function fitScore(you,field){
+  var sw=0,sc=0;
+  EKEYS.forEach(function(k){
+    var fv=field[k]||0; var yv=you[k]||0;
+    var coverage=Math.min(yv,fv)/Math.max(fv,1);
+    sw+=fv; sc+=fv*coverage;
+  });
+  return sw===0?0:Math.round(sc/sw*100);
+}
+function fitSentence(fit){
+  if(fit>=70) return '你大致具備這個職業要的能量——它要什麼，你身上多半有。上手不會太吃力。';
+  if(fit>=45) return '你有它要的一部分，也有缺口——能做，但某些地方得多花力氣或找人補。';
+  return '它要的能量你比較缺——不是做不來，而是要常常動用你不擅長的部分，要留意別硬撐。';
+}
+function shinePoints(you,field){
+  return EKEYS.filter(function(k){ return (field[k]||0)>=55 && (you[k]||0)>=55; })
+    .sort(function(a,b){ return (field[b]+you[b])-(field[a]+you[a]); });
+}
+function forcedWeak(you,field){
+  return EKEYS.filter(function(k){ return (field[k]||0)>=55 && (you[k]||0)<=40; })
+    .sort(function(a,b){ return (field[b]-you[b])-(field[a]-you[a]); });
+}
+function idleStrength(you,field){
+  return EKEYS.filter(function(k){ return (you[k]||0)>=60 && (field[k]||0)<=35; })
+    .sort(function(a,b){ return (you[b]-field[b])-(you[a]-field[a]); });
+}
+var shengNext={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
+var keNext={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
+function topElement(sc){ return E[topKeyOf(sc)].wx; }
+function elementFlow(fieldEl,youEl){
+  if(fieldEl===youEl) return {type:'same',
+    text:'這個職業的主能量是「'+WLAB[fieldEl]+'」，你的主能量也是「'+WLAB[youEl]+'」——<b>同調</b>：好上手，但也容易和它一起偏。'};
+  if(keNext[fieldEl]===youEl) return {type:'fieldKeYou',
+    text:'這個職業的「'+WLAB[fieldEl]+'」<span class="arrow">剋→</span>你的「'+WLAB[youEl]+'」：<b>它的調性會壓到你的主場，留意被消耗。</b>'};
+  if(keNext[youEl]===fieldEl) return {type:'youKeField',
+    text:'你的「'+WLAB[youEl]+'」<span class="arrow">剋→</span>這個職業的「'+WLAB[fieldEl]+'」：<b>你的主能量能壓住它，你能主導它。</b>'};
+  if(shengNext[fieldEl]===youEl) return {type:'fieldShengYou',
+    text:'這個職業的「'+WLAB[fieldEl]+'」<span class="arrow">生→</span>你的「'+WLAB[youEl]+'」：<b>它會滋養你，待在這裡你會長。</b>'};
+  if(shengNext[youEl]===fieldEl) return {type:'youShengField',
+    text:'你的「'+WLAB[youEl]+'」<span class="arrow">生→</span>這個職業的「'+WLAB[fieldEl]+'」：<b>你會一直餵養它，小心過度付出。</b>'};
+  return {type:'same',text:'你和這個職業的主能量彼此呼應。'};
+}
+
+// ── Radar wheel（直接沿用 bagua-field 的 buildRadar） ──
+function buildRadar(sc,topKey,overlay){
+  var cx=200,cy=200,baseR=140;
+  var svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','-54 -46 508 500');
+  [0.25,0.5,0.75,1].forEach(function(f){
+    var pts=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      return (cx+ux*baseR*f)+','+(cy+uy*baseR*f);
+    }).join(' ');
+    var poly=document.createElementNS(NS,'polygon');
+    poly.setAttribute('points',pts);
+    poly.setAttribute('fill','none');
+    poly.setAttribute('stroke','var(--line)');
+    poly.setAttribute('stroke-width',f===1?1.4:1);
+    poly.setAttribute('opacity',f===1?0.9:0.5);
+    svg.appendChild(poly);
+  });
+  EKEYS.forEach(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',cx);ln.setAttribute('y1',cy);
+    ln.setAttribute('x2',cx+ux*baseR);ln.setAttribute('y2',cy+uy*baseR);
+    ln.setAttribute('stroke','var(--line)');ln.setAttribute('stroke-width',1);ln.setAttribute('opacity',0.5);
+    svg.appendChild(ln);
+  });
+  function rOf(s){return 30+(s/100)*110;}
+  var sp=EKEYS.map(function(k){
+    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    return (cx+ux*r)+','+(cy+uy*r);
+  }).join(' ');
+  var area=document.createElementNS(NS,'polygon');
+  area.setAttribute('points',sp);
+  area.setAttribute('fill','rgba(53,97,79,.16)');
+  area.setAttribute('stroke','var(--pine)');
+  area.setAttribute('stroke-width',2);
+  svg.appendChild(area);
+  if(overlay){
+    var np=EKEYS.map(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      var r=rOf(overlay[k]||0);
+      return (cx+ux*r)+','+(cy+uy*r);
+    }).join(' ');
+    var narea=document.createElementNS(NS,'polygon');
+    narea.setAttribute('points',np);
+    narea.setAttribute('fill','rgba(169,130,59,.10)');
+    narea.setAttribute('stroke','var(--gold)');
+    narea.setAttribute('stroke-width',2);
+    narea.setAttribute('stroke-dasharray','5 4');
+    svg.appendChild(narea);
+    EKEYS.forEach(function(k){
+      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
+      var r=rOf(overlay[k]||0);
+      var nd=document.createElementNS(NS,'circle');
+      nd.setAttribute('cx',cx+ux*r);nd.setAttribute('cy',cy+uy*r);
+      nd.setAttribute('r',3.5);nd.setAttribute('fill','var(--gold)');nd.setAttribute('stroke','#fff');nd.setAttribute('stroke-width',1);
+      svg.appendChild(nd);
+    });
+  }
+  EKEYS.forEach(function(k){
+    var b=E[k];
+    var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
+    var r=rOf(sc[k]);
+    var px=cx+ux*r, py=cy+uy*r;
+    var dot=document.createElementNS(NS,'circle');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);
+    dot.setAttribute('r',k===topKey?7:5);
+    dot.setAttribute('fill',W[b.wx]);
+    dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
+    svg.appendChild(dot);
+    var lr=baseR+22;
+    var lx=cx+ux*lr, ly=cy+uy*lr;
+    var anchor = ux>0.35?'start':(ux<-0.35?'end':'middle');
+    if(anchor==='start') lx+=2; else if(anchor==='end') lx-=2;
+    ly += uy>0.35?12:(uy<-0.35?-6:4);
+    var tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
+    tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
+    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
+    svg.appendChild(tx);
+    var ts=document.createElementNS(NS,'text');
+    ts.setAttribute('class','rscore');
+    ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
+    ts.textContent=sc[k];
+    svg.appendChild(ts);
+  });
+  return svg;
+}
+
+// ── Cover：底色提示 + 控制按鈕 ────────────────────────────
+function renderCover(){
+  var bs=document.getElementById('base-status');
+  var btn=document.getElementById('start-btn');
+  var base=getBase();
+  if(base){
+    var tk=base.top||topKeyOf(base.scores);
+    bs.innerHTML='<div class="base-ok">✓ 已有你的底色（'+escapeHtml(base.title||E[tk].nm)+'）——可以開始配對。</div>';
+    btn.disabled=false;
+  } else {
+    bs.innerHTML='<div class="base-hint">要先測你的<b>人格底色</b>，才能做配對。'
+      +'<a href="bagua-persona.html">先測你的底色 →</a></div>';
+    btn.disabled=true;
+  }
+}
+
+// ── 排序：依 fitScore ─────────────────────────────────────
+function rankedCareers(you){
+  return CAREERS.map(function(c){ return {c:c, fit:fitScore(you,c.scores)}; })
+    .sort(function(a,b){ return b.fit-a.fit; });
+}
+
+// ── 結果列表 ──────────────────────────────────────────────
+function showResult(){
+  var base=getBase();
+  var r=document.getElementById('result');
+  if(!base){
+    // 沒底色不算配對（理論上按鈕已 disabled，保險）
+    r.innerHTML='<div class="block"><h3>要先測你的人格底色</h3>'
+      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--ink);line-height:1.85">'
+      +'配對需要你的底色。<a href="bagua-persona.html" style="color:var(--pine);font-weight:700">去測你的底色 →</a></div></div>';
+    document.getElementById('cover').style.display='none';
+    r.style.display='block'; window.scrollTo(0,0);
+    return;
+  }
+  var you=base.scores;
+  var ranked=rankedCareers(you);
+  var top=ranked.slice(0,6);
+  var worst=ranked.slice(-3).reverse(); // fit 最低 3 個（高→低呈現）
+  var btk=base.top||topKeyOf(you);
+
+  var html=''
+   +'<div class="res-head">'
+     +'<div class="eyebrow">YOUR MATCHES</div>'
+     +'<h2>你的職業能量配對</h2>'
+     +'<div class="sub">以你的底色（<b>'+escapeHtml(base.title||E[btk].nm)+'</b>）和每個職業的能量需求比對</div>'
+   +'</div>';
+
+  // 比較合的方向
+  html+='<div class="seclab">能量比較合的方向</div><div class="cardlist">';
+  top.forEach(function(o){
+    html+=careerCard(o.c,o.fit,you,false);
+  });
+  html+='</div>';
+
+  // 可能比較耗你的
+  html+='<div class="seclab warn">可能比較耗你的</div>'
+    +'<div class="warn-frame">這幾個不是「不能做」，而是<b>要刻意調適、找方法補位</b>——'
+    +'它們要的能量跟你的底色落差較大，硬撐容易累。列出來是為了誠實，不是勸退。</div>'
+    +'<div class="cardlist">';
+  worst.forEach(function(o){
+    html+=careerCard(o.c,o.fit,you,true);
+  });
+  html+='</div>';
+
+  // 誠實框架
+  html+='<div class="block" style="margin-top:22px;border-left:4px solid var(--gold)"><h3>讀這份配對前，先記得</h3>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--ink);line-height:1.95">'
+    +'這是<b>啟發性的探索方向</b>，不是性向測驗、不是命定。真正適合一份工作，還牽涉興趣、能力、價值觀、市場與機運——'
+    +'能量合只是其中一個角度。能量也會成長，沒有哪個職業是你「不能」做的。</div></div>';
+
+  html+='<div class="resbtns">'
+    +'<button class="cbtn" onclick="resetCover()">回封面</button>'
+    +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
+  +'</div>'
+  +'<div class="foot">職業能量盤 · 練息場 Join to Enjoy</div>';
+
+  r.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  r.style.display='block';
+  window.scrollTo(0,0);
+}
+
+function careerCard(c,fit,you,isWarn){
+  var topk=topKeyOf(c.scores);
+  var accent=W[E[topk].wx];
+  var shine=shinePoints(you,c.scores);
+  var shineHtml='';
+  if(!isWarn){
+    if(shine.length){
+      shineHtml='<div class="cc-shine">你會發光的點：『<span class="em">'+energyLabel(shine[0])+'</span>』——你和它都高。</div>';
+    } else {
+      shineHtml='<div class="cc-shine">它要的能量裡，沒有特別落在你最強那幾項——得均勻使力。</div>';
+    }
+  }
+  return '<div class="ccard'+(isWarn?' warn':'')+'" style="--accent:'+accent+'" onclick="showDetail(\''+c.id+'\')">'
+    +'<div class="cc-top">'
+      +'<span class="cc-ic">'+c.ic+'</span>'
+      +'<span class="cc-body"><span class="cc-nm">'+escapeHtml(c.nm)+'</span>'
+        +'<span class="cc-blurb">'+escapeHtml(c.blurb)+'</span></span>'
+      +'<span class="cc-fit"><span class="cc-fitnum">'+fit+'%</span><br><span class="cc-fitlab">適配度</span></span>'
+    +'</div>'
+    +shineHtml
+    +'<div class="cc-arr">點開看詳情 →</div>'
+  +'</div>';
+}
+
+// ── 詳情（你 × 這個職業）——重用 field 的解讀邏輯 ─────────
+function showDetail(id){
+  var c=null; CAREERS.forEach(function(x){ if(x.id===id) c=x; }); if(!c) return;
+  var base=getBase(); var you=base?base.scores:null;
+  var sc=c.scores;
+  var topK=topKeyOf(sc);
+  var top=E[topK];
+  var accent=W[top.wx];
+  var nm=escapeHtml(c.nm);
+
+  var html=''
+   +'<div class="res-head"><div class="eyebrow">CAREER DETAIL</div></div>'
+   +'<div class="typecard" style="--accent:'+accent+'">'
+     +'<div class="tc-eyebrow">這個職業最吃的能量</div>'
+     +'<div class="tc-sym" style="color:'+accent+'">'+c.ic+'</div>'
+     +'<div class="tc-title">'+nm+'</div>'
+     +'<div class="tc-essence">這個職業最需要的是『<b>'+top.nm+'·'+top.fn+'</b>』。'
+       +(you?'下面看它和你的底色合不合。':'測一下你的底色，就能看你和它合不合。')+'</div>'
+   +'</div>'
+   +'<div class="radar-wrap" id="radar-wrap"></div>'
+   +'<div class="legend">'
+     +'<span><i style="background:var(--pine)"></i>松綠＝這個職業的需求</span>'
+     +(you?'<span><i class="dash"></i>金虛線＝你的底色</span>':'')
+   +'</div>';
+
+  if(you){
+    var fit=fitScore(you,sc);
+    var shine=shinePoints(you,sc);
+    var fw=forcedWeak(you,sc);
+    var idle=idleStrength(you,sc);
+
+    html+='<div class="fit-card">'
+      +'<div class="fc-num">'+fit+'%</div>'
+      +'<div class="fc-lab">適配度 · 你 × '+nm+'</div>'
+      +'<div class="fc-sub">'+fitSentence(fit)+'</div>'
+    +'</div>';
+
+    html+='<div class="block"><h3>✦ 你會在哪發光</h3>';
+    if(shine.length){
+      html+=shine.map(function(k){
+        return '<div class="pt-line shine">這個職業需要『<span class="em">'+energyLabel(k)+'</span>』，正是你的強項——你會發光。</div>';
+      }).join('');
+    } else {
+      html+='<div class="pt-line">這個職業要的能量裡，沒有特別落在你最強的那幾項——但也不代表你不行，只是得均勻使力、慢慢累積亮點。</div>';
+    }
+    html+='</div>';
+
+    var drainLines=[];
+    fw.forEach(function(k){
+      drainLines.push('<div class="dn-line">這個職業很吃『<b>'+energyLabel(k)+'</b>』，但那不是你慣用的——長期容易耗你。</div>');
+    });
+    idle.forEach(function(k){
+      drainLines.push('<div class="dn-line">你的『<b>'+energyLabel(k)+'</b>』很強卻用不太到，可能會悶。</div>');
+    });
+    if(drainLines.length){
+      html+='<div class="drain-note"><div class="dn-h">消耗訊號</div>'+drainLines.join('')+'</div>';
+    } else {
+      html+='<div class="drain-ok">沒看到明顯的消耗點——這個職業要的，你大致接得住；你的強項也用得上，能量用起來算自然。</div>';
+    }
+
+    html+='<div class="block"><h3>🧭 應對策略</h3>';
+    if(fw.length){
+      fw.forEach(function(k){
+        html+='<div class="strat-line">面對『<span class="em">'+energyLabel(k)+'</span>』：找人補位／刻意排恢復，別硬撐；用你的強項繞道完成。</div>';
+      });
+    }
+    if(idle.length){
+      idle.forEach(function(k){
+        html+='<div class="strat-line">關於閒置的『<span class="em">'+energyLabel(k)+'</span>』：在這個職業裡找地方發揮它，或到別處釋放它。</div>';
+      });
+    }
+    if(!fw.length && !idle.length){
+      html+='<div class="strat-line">你和這個職業之間沒有明顯的拉扯——順著做就好，把你的強項放到它最需要的地方，會更省力。</div>';
+    }
+    html+='</div>';
+
+    var flow=elementFlow(topElement(sc), topElement(you));
+    html+='<div class="block"><h3>五行能量流向</h3>'
+      +'<div class="flowline">'+flow.text+'</div>'
+      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7">'
+        +'生未必是好（一直給也會洩）；剋未必是壞（適度的約束反而把人接住）。方向只是描述能量怎麼走。</div>'
+    +'</div>';
+  } else {
+    html+='<div class="block"><h3>想看「你 × 這個職業」？</h3>'
+      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--ink);line-height:1.85">你還沒測過<b>你的底色</b>——'
+      +'<a href="bagua-persona.html" style="color:var(--pine);font-weight:700">去測你的底色 →</a></div></div>';
+  }
+
+  html+='<div class="block" style="border-left:4px solid var(--gold)"><h3>提醒</h3>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink);line-height:1.9">'
+    +'能量合只是一個角度——興趣、能力、價值觀、市場與機運同樣重要。沒有哪個職業是你「不能」做的。</div></div>';
+
+  html+='<div class="resbtns">'
+    +'<button class="cbtn" onclick="showResult()">← 回列表</button>'
+    +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
+  +'</div>'
+  +'<div class="foot">職業能量盤 · 練息場 Join to Enjoy</div>';
+
+  var r=document.getElementById('result');
+  r.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  r.style.display='block';
+  document.getElementById('radar-wrap').appendChild(buildRadar(sc, topK, you));
+  window.scrollTo(0,0);
+}
+
+function resetCover(){
+  document.getElementById('result').style.display='none';
+  document.getElementById('cover').style.display='block';
+  renderCover();
+  window.scrollTo(0,0);
+}
+
+// 供測試呼叫
+window.__career={CAREERS:CAREERS,EKEYS:EKEYS,fitScore:fitScore,rankedCareers:rankedCareers,
+  showResult:showResult,showDetail:showDetail,getBase:getBase};
+
+renderCover();
+</script>
+</body></html>
