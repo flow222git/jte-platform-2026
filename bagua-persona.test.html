@@ -65,6 +65,63 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('polygon[stroke-dasharray]'),'此刻 overlay polygon rendered');
     ok(d.querySelector('.cta-now .cn-t').innerHTML.indexOf('金色虛線')>=0,'comparison CTA mentions 金色虛線');
     ok(d.querySelector('.cta-now .cn-t').innerHTML.indexOf('節')>=0,'comparison shows 此刻卦象 節');
+
+    // ── 雙人合盤 (Compat) ────────────────────────────────
+    // 9. encode→decode round-trip
+    var sample={qian:80,li:0,zhen:99,dui:5,kun:50,kan:7,gen:33,xun:100};
+    var code=w.encodeCode(sample);
+    ok(/^B1[0-9]{16}$/.test(code),'encodeCode shape B1+16digits, got '+code);
+    var dec=w.decodeCode(code);
+    var rt=dec && w.EKEYS.every(function(k){ return dec[k]===Math.max(0,Math.min(99,Math.round(sample[k]))); });
+    ok(rt,'encode→decode round-trip (cap 0-99): '+JSON.stringify(dec));
+
+    // 10. decode garbage / wrong length → null
+    ok(w.decodeCode('garbage')===null,'decode garbage → null');
+    ok(w.decodeCode('B1123')===null,'decode short → null');
+    ok(w.decodeCode('B1'+'a'.repeat(16))===null,'decode non-digit → null');
+    ok(w.decodeCode('XX'+'1'.repeat(16))===null,'decode wrong prefix → null');
+
+    // 11. cosineSim: same vector → 1, orthogonal → 0
+    var vA={}; w.EKEYS.forEach(function(k){ vA[k]=10; });
+    ok(Math.abs(w.cosineSim(vA,vA)-1)<1e-9,'cosine same vec → 1, got '+w.cosineSim(vA,vA));
+    var oA={qian:1,li:0,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0};
+    var oB={qian:0,li:1,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0};
+    ok(Math.abs(w.cosineSim(oA,oB)-0)<1e-9,'cosine orthogonal → 0, got '+w.cosineSim(oA,oB));
+
+    // 12. complementarity: A all high, B all low → comp > sim
+    var hi={}, lo={}; w.EKEYS.forEach(function(k){ hi[k]=100; lo[k]=0; });
+    var cSim=w.cosineSim(hi,lo), cComp=w.complementarity(hi,lo);
+    ok(cComp>cSim,'opposite profiles: comp('+cComp.toFixed(2)+') > sim('+cSim.toFixed(2)+')');
+
+    // 13. element flow: elemA(wood) sheng elemB(fire) → 你滋養他 (aToB)
+    //  zhen=wood top for A; li=fire top for B
+    var fa={qian:0,li:0,zhen:90,dui:0,kun:0,kan:0,gen:0,xun:0}; // top wood
+    var fb={qian:0,li:90,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0}; // top fire
+    ok(w.topElement(fa)==='wood','topElement A → wood');
+    ok(w.topElement(fb)==='fire','topElement B → fire');
+    var fl=w.elementFlow('wood','fire');
+    ok(fl.type==='aToB' && fl.text.indexOf('你滋養他')>=0,'wood→fire = 你滋養他, got '+fl.type);
+
+    // 14. runCompat flow: set my scores, showCompat, fill other code, runCompat → radar(2 poly)+numbers
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:fa,top:'zhen',title:w.E.zhen.title}));
+    w.showCompat();
+    var cdiv=d.getElementById('compat');
+    ok(cdiv.style.display==='block','#compat visible');
+    ok(d.getElementById('my-code') && d.getElementById('my-code').textContent.indexOf('B1')===0,'my-code shown');
+    d.getElementById('other-code').value=w.encodeCode(fb);
+    w.runCompat();
+    var polys=d.querySelectorAll('#compat-radar svg polygon[stroke="var(--pine)"], #compat-radar svg polygon[stroke="var(--gold)"]');
+    ok(polys.length>=2,'compat radar has 2 score polygons (pine+gold), got '+polys.length);
+    var nums=d.querySelectorAll('#compat-out .readcard .rc-num');
+    ok(nums.length===2,'two reading cards (同頻/互補), got '+nums.length);
+    ok(/%$/.test(nums[0].textContent) && /%$/.test(nums[1].textContent),'reading cards show % numbers');
+    ok(d.querySelector('#compat-out .flowline').innerHTML.indexOf('你滋養他')>=0,'flow shows 你滋養他');
+    ok(d.querySelector('#compat-out .typecard .tc-title'),'merged 合成人物 type shown');
+
+    // 15. runCompat bad code → friendly error, no out
+    d.getElementById('other-code').value='nonsense';
+    w.runCompat();
+    ok(d.getElementById('compat-err').textContent.length>0,'bad code → error message');
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
