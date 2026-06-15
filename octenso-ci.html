@@ -62,7 +62,7 @@
   .logo-on-paper{background:var(--white)}
 
   /* variations grid */
-  .vargrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .vargrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .varbox{border:1px solid var(--line);border-radius:14px;padding:26px;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:14px;min-height:150px;background:var(--white)}
   .varbox.dark{background:var(--ink);color:var(--white)}
@@ -168,14 +168,6 @@
       <div class="varbox paper">
         <img class="enso" src="assets/enso.png" width="74" height="74" alt="enso">
         <div class="vlabel">純符號 enso · 頭像 / favicon</div>
-      </div>
-      <div class="varbox">
-        <div class="vstack">
-          <img class="enso" src="assets/enso.png" width="56" height="56" alt="enso">
-          <span class="vname">Octenso</span>
-          <span class="zh wm" style="font-family:'Noto Sans TC';font-weight:300">八態能格</span>
-        </div>
-        <div class="vlabel">直式堆疊 · 名片 / 海報</div>
       </div>
       <div class="varbox">
         <div style="display:flex;align-items:center;gap:12px">
