@@ -80,6 +80,23 @@
     font-family:ui-sans-serif,sans-serif;margin:2px 0 20px}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
 
+  /* ── 四向度傾向 ── */
+  .pair-block{border-left:4px solid var(--gold)}
+  .pair-sub{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:-4px 0 14px}
+  .pair-bar{padding:9px 0 11px;border-bottom:1px solid var(--line)}
+  .pair-bar:last-of-type{border-bottom:none}
+  .pb-ends{display:flex;justify-content:space-between;font-family:ui-sans-serif,sans-serif;font-size:12.5px;
+    color:var(--ink);margin-bottom:7px}
+  .pb-ends .pb-l,.pb-ends .pb-r{font-weight:700}
+  .pb-track{position:relative;height:8px;background:var(--surface2);border:1px solid var(--line);
+    border-radius:999px;margin:0 7px}
+  .pb-mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line);transform:translateX(-.5px)}
+  .pb-mark{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;border:2px solid var(--surface);
+    box-shadow:0 1px 3px rgba(74,62,44,.28);transform:translate(-50%,-50%);transition:left .4s ease}
+  .pb-verdict{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-top:7px}
+  .pair-foot{font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);line-height:1.7;
+    margin-top:12px;font-style:italic}
+
   .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
   .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
     margin-bottom:12px;font-weight:700}
@@ -468,6 +485,52 @@ function computeScores(){
   return sc;
 }
 
+// ── 四向度傾向（MBTI 式「另一種看法」，連續不二分）──────────
+// 每對極性用兩能量分數算偏向：pct=A/(A+B)*100（A=sc[l] 偏左、B=sc[r] 偏右）
+// side='left'|'right'|'even'（gap<EVEN_GAP 視為平衡）；gap=|A-B|
+var PAIRS=[
+ {l:'qian',r:'kun', lname:'給出',rname:'接納'},
+ {l:'li',  r:'kan', lname:'顯現',rname:'收藏'},
+ {l:'zhen',r:'gen', lname:'啟動',rname:'停止'},
+ {l:'dui', r:'xun', lname:'表達',rname:'連結'}
+];
+var PAIR_EVEN_GAP=12; // |A-B| < 此值 視為「兩邊平衡」
+function pairLean(sc,l,r){
+  var A=sc[l]||0, B=sc[r]||0, sum=A+B;
+  var pct=(sum===0)?50:(A/sum*100);
+  var gap=Math.abs(A-B);
+  var side=(gap<PAIR_EVEN_GAP)?'even':(A>B?'left':'right');
+  return {pct:pct,side:side,gap:gap};
+}
+// 四向度傾向區塊 HTML（雷達＋圖例之後、「這一型的你」之前）
+function pairBlockHtml(sc){
+  var rows=PAIRS.map(function(p){
+    var ln=pairLean(sc,p.l,p.r);
+    // pct=A/(A+B)*100 → 越大越偏左；marker left% = 100-pct（marker 越右越偏右能量）
+    var markLeft=Math.round(100-ln.pct);
+    // marker 顏色取偏向那一邊能量的五行色；even 用中性色
+    var col=(ln.side==='left')?W[E[p.l].wx]:(ln.side==='right')?W[E[p.r].wx]:'var(--muted)';
+    var verdict=(ln.side==='left')?('偏'+p.lname):(ln.side==='right')?('偏'+p.rname):'兩邊平衡';
+    return '<div class="pair-bar">'
+      +'<div class="pb-ends">'
+        +'<span class="pb-l">'+E[p.l].nm+'·'+p.lname+'</span>'
+        +'<span class="pb-r">'+p.rname+'·'+E[p.r].nm+'</span>'
+      +'</div>'
+      +'<div class="pb-track">'
+        +'<div class="pb-mid"></div>'
+        +'<div class="pb-mark" style="left:'+markLeft+'%;background:'+col+'"></div>'
+      +'</div>'
+      +'<div class="pb-verdict">'+verdict+'</div>'
+    +'</div>';
+  }).join('');
+  return '<div class="block pair-block">'
+    +'<h3>🧭 四向度傾向</h3>'
+    +'<div class="pair-sub">另一種看法：你在四組相對能量上各偏哪邊（偏多少，不是二選一）。</div>'
+    +rows
+    +'<div class="pair-foot">這只是把雷達換個角度看——是傾向、有程度，不是非此即彼。</div>'
+  +'</div>';
+}
+
 // ── Radar wheel ──────────────────────────────────────────
 function buildRadar(sc,topKey,nowNorm){
   var cx=200,cy=200,baseR=140;
@@ -736,6 +799,7 @@ function showResult(){
      +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
    +'</div>'
    +(now?'<div class="share-hint" style="margin-top:-12px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'')
+   +pairBlockHtml(sc)
    +'<div class="block">'
      +'<h3>這一型的你</h3>'
      +'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div>'

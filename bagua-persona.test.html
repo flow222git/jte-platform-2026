@@ -355,6 +355,32 @@ document.getElementById('f').onload=function(){
     ok(cc && cc.width===640,'compat canvas width 640, got '+(cc&&cc.width));
     ok(cc && cc.toDataURL('image/png').length>2000,'compat canvas renders non-empty png');
 
+    // ── 四向度傾向 (pair lean) ──────────────────────────────
+    // 36. pairLean: A>>B 明顯 → side left, pct>50
+    ok(typeof w.pairLean==='function','pairLean present');
+    var plL=w.pairLean({qian:90,kun:10},'qian','kun');
+    ok(plL.side==='left' && plL.pct>50,'A>B → side left & pct>50, got '+JSON.stringify(plL));
+    var plR=w.pairLean({qian:10,kun:90},'qian','kun');
+    ok(plR.side==='right' && plR.pct<50,'B>A → side right & pct<50, got '+JSON.stringify(plR));
+    // 相等 → even、pct===50
+    ok(w.pairLean({qian:50,kun:50},'qian','kun').side==='even','equal → even');
+    ok(w.pairLean({qian:50,kun:50},'qian','kun').pct===50,'equal → pct 50');
+    // 兩邊皆 0 → 放中間 50%、even
+    var plZ=w.pairLean({qian:0,kun:0},'qian','kun');
+    ok(plZ.pct===50 && plZ.side==='even','both 0 → pct 50 & even');
+    // gap=|A-B|
+    ok(w.pairLean({qian:90,kun:10},'qian','kun').gap===80,'gap = |A-B| = 80');
+    // PAIRS = 4 對
+    ok(w.PAIRS.length===4,'PAIRS has 4 pairs, got '+w.PAIRS.length);
+
+    // 37. 結果頁 render 出「四向度傾向」＋ 4 條 .pair-bar
+    w.answers=new Array(24).fill(2); w.currentFacet=null; w.showResult();
+    var pblk=d.querySelector('.pair-block');
+    ok(pblk,'pair block rendered in result');
+    ok(pblk && pblk.textContent.indexOf('四向度傾向')>=0,'pair block title 四向度傾向');
+    ok(d.querySelectorAll('.pair-bar').length===4,'4 pair bars, got '+d.querySelectorAll('.pair-bar').length);
+    ok(pblk && pblk.textContent.indexOf('不是非此即彼')>=0,'pair block honest line present');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
