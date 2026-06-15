@@ -332,9 +332,10 @@ var idx=0;
 
 // ── 多場域側寫 ────────────────────────────────────────────
 var FACETS=[
- {id:'work',     nm:'工作的你', ic:'💼', frame:'回答時，請想著你在【工作／做事】時的樣子。'},
- {id:'relation', nm:'關係裡的你', ic:'💞', frame:'回答時，請想著你在【親密關係／重要的人】面前的樣子。'},
- {id:'solo',     nm:'獨處的你', ic:'🌙', frame:'回答時，請想著你【一個人獨處】時的樣子。'}
+ {id:'work',     nm:'工作的你', ic:'💼', frame:'想著你在【工作／做事】時的樣子——回想一個真實的日常情境，不是理想中的你。'},
+ {id:'relation', nm:'關係裡的你', ic:'💞', frame:'想著你在【親密關係／重要的人】面前的樣子——真實的你，不是理想的。'},
+ {id:'solo',     nm:'獨處的你', ic:'🌙', frame:'想著你【一個人獨處】時的樣子——真實的你，不是理想的。'},
+ {id:'ideal',    nm:'嚮往的你', ic:'✨', frame:'這次相反——想著你「想成為、嚮往」的樣子來回答（和底色的落差，就是你想去的方向）。'}
 ];
 var FACET_BY_ID={}; FACETS.forEach(function(f){FACET_BY_ID[f.id]=f;});
 var FACET_COLOR='#35614f'; // 松綠（場域實線，沿用 --pine）
@@ -371,7 +372,13 @@ function showFacetBanner(){
     document.getElementById('fb-nm').textContent=f.nm;
     document.getElementById('fb-frame').textContent=f.frame;
     bn.style.display='block';
-  } else { bn.style.display='none'; }
+  } else {
+    // 底色（整體的你）也給一個場景錨，引導答真實而非理想
+    document.getElementById('fb-ic').textContent='🪞';
+    document.getElementById('fb-nm').textContent='整體的你（底色）';
+    document.getElementById('fb-frame').textContent='想一個真實的日常情境再回答——不是理想中的你，是平常真正的你。';
+    bn.style.display='block';
+  }
 }
 
 function startQuiz(){
@@ -695,26 +702,23 @@ function renderFacetMenu(){
   var box=document.getElementById('facet-menu');
   if(!box) return;
   var all=getFacets();
-  var rows=FACETS.map(function(f){
+  function rowFor(f){
     var done=all[f.id]&&all[f.id].scores;
-    var st;
-    if(done){
-      var tk=topKeyOf(all[f.id].scores);
-      st='<span class="fr-st done">✓ 已測 · '+E[tk].title+'</span>';
-    } else {
-      st='<span class="fr-st">未測</span>';
-    }
+    var st = done ? '<span class="fr-st done">✓ 已測 · '+E[topKeyOf(all[f.id].scores)].title+'</span>' : '<span class="fr-st">未測</span>';
     return '<div class="facet-row">'
       +'<span class="fr-ic">'+f.ic+'</span>'
       +'<span class="fr-body"><span class="fr-nm">'+f.nm+'</span>'+st+'</span>'
-      +'<button class="fr-btn" onclick="startFacet(\''+f.id+'\')">'+(done?'重測':'測這個場域')+'</button>'
+      +'<button class="fr-btn" onclick="startFacet(\''+f.id+'\')">'+(done?'重測':'測這個')+'</button>'
     +'</div>';
-  }).join('');
+  }
+  var rows=FACETS.filter(function(f){return f.id!=='ideal';}).map(rowFor).join('');
   var anyDone=FACETS.some(function(f){ return all[f.id]&&all[f.id].scores; });
   var html='<h3>🗺️ 場域側寫</h3>'
     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:6px">'
     +'同一套題、換個場域再測一次，看看不同情境下的你，和你的底色差在哪。</div>'
-    +rows;
+    +rows
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:14px 0 6px">✨ 還有一面特別的鏡子——<b>想著你嚮往成為的樣子</b>來答，看你跟現在的落差：</div>'
+    +rowFor(FACET_BY_ID['ideal']);
   if(anyDone){ html+='<button class="facet-map-btn" onclick="showFacetMap()">看面向地圖 →</button>'; }
   box.innerHTML=html;
 }
@@ -759,6 +763,7 @@ function drainSignal(facetId, facetSc, baseSc){
 // ── 場域結果畫面 ─────────────────────────────────────────
 function showFacetResult(id){
   var f=FACET_BY_ID[id];
+  var isIdeal=(id==='ideal');
   var all=getFacets();
   var facetSc=(all[id]&&all[id].scores)||computeScores();
   var topK=topKeyOf(facetSc);
@@ -769,9 +774,9 @@ function showFacetResult(id){
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回整體結果</a>'
-   +'<div class="compat-eyebrow">'+f.ic+' '+f.nm+' · 場域側寫</div>'
+   +'<div class="compat-eyebrow">'+f.ic+' '+f.nm+(isIdeal?' · 慣用 vs 嚮往':' · 場域側寫')+'</div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
-     +'<div class="tc-eyebrow">在這個場域，你最像</div>'
+     +'<div class="tc-eyebrow">'+(isIdeal?'你嚮往的樣子裡，最像':'在這個場域，你最像')+'</div>'
      +'<div class="tc-sym">'+top.sym+'</div>'
      +'<div class="tc-title">'+top.title+'</div>'
      +'<div class="tc-essence">'+top.essence+'</div>'
@@ -779,10 +784,24 @@ function showFacetResult(id){
    +'<div class="radar-wrap" id="facet-radar"></div>'
    +'<div class="legend">'
      +'<span><i style="background:var(--pine)"></i>松綠＝'+f.nm+'</span>'
-     +(baseSc?'<span><i style="background:var(--gold)"></i>金虛線＝你的底色</span>':'')
+     +(baseSc?'<span><i style="background:var(--gold)"></i>金虛線＝你'+(isIdeal?'慣用的底色':'的底色')+'</span>':'')
    +'</div>';
 
-  if(baseSc){
+  if(baseSc && isIdeal){
+    // 慣用 vs 嚮往：成長落差鏡（不走消耗訊號）
+    var dli=facetDeltas(facetSc,baseSc), upi=dli.ups[0], dni=dli.downs[0];
+    var gp=[];
+    if(upi.d>0) gp.push('更想要『<span class="up">'+energyLabel(upi.k)+'</span>』');
+    if(dni.d<0) gp.push('想放下一些『<span class="down">'+energyLabel(dni.k)+'</span>』');
+    var gapTxt=gp.length?('和你<b>慣用的底色</b>相比，你'+gp.join('、')+'——這是你心裡想去的方向。')
+                        :'你嚮往的你和慣用的你幾乎一樣——你其實正活在你想要的樣子裡 🌱';
+    var totalGap=EKEYS.reduce(function(s,k){return s+Math.abs((facetSc[k]||0)-(baseSc[k]||0));},0);
+    var note=totalGap>=120?'落差不小——適度的差距是動力，但別用「還不夠好」苛責自己；朝那個方向，一次長一點點就好。'
+                          :'落差溫和——你正穩穩朝想要的自己靠近。';
+    html+='<div class="block"><h3>慣用的你 → 嚮往的你</h3>'
+      +'<div class="gap-line">'+gapTxt+'</div>'
+      +'<div style="margin-top:10px;font-size:13.5px;color:var(--muted);line-height:1.85">'+note+'</div></div>';
+  } else if(baseSc){
     html+='<div class="block"><h3>和你的底色比，這個場域…</h3>'
       +'<div class="gap-line">'+gapSentence(id,facetSc,baseSc)+'</div></div>';
     var drain=drainSignal(id,facetSc,baseSc);
@@ -804,7 +823,7 @@ function showFacetResult(id){
     +(anyDone?'<button class="cbtn" onclick="showFacetMap()">看面向地圖</button>':'')
     +'<button class="cbtn ghost" onclick="backToResult()">回整體結果</button>'
   +'</div>'
-  +'<div class="foot">場域側寫和底色一樣，是自我覺察的鏡子——不同場域有不同的你，是適應，不是標籤。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+  +'<div class="foot">'+(isIdeal?'「慣用 vs 嚮往」照的是你想去的方向——不是現在不夠好，是給你一支溫柔的指南針。':'場域側寫和底色一樣，是自我覺察的鏡子——不同場域有不同的你，是適應，不是標籤。')+'<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
 
   var c=document.getElementById('compat');
   c.innerHTML=html;
