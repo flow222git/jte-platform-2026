@@ -147,12 +147,12 @@ document.getElementById('f').onload=function(){
     ok(d.getElementById('facet-banner').style.display==='block','底色測驗也顯示場景錨橫幅');
     ok(d.getElementById('fb-frame').textContent.indexOf('真實')>=0,'底色橫幅含『真實』場景錨');
     // 嚮往的你 facet：成長落差鏡
-    ok(w.FACET_BY_ID['ideal'] && w.FACET_BY_ID['ideal'].nm==='嚮往的你','ideal facet 存在');
+    ok(w.FACET_BY_ID['ideal'] && w.FACET_BY_ID['ideal'].nm==='想成為的你','ideal facet 存在');
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:{li:80,kan:75,gen:60,kun:65,xun:50,qian:40,dui:35,zhen:30},top:'li',title:w.E.li.title,ts:'x'}));
     w.localStorage.setItem('bagua_facets_v1', JSON.stringify({ideal:{scores:{zhen:75,dui:70,qian:65,li:70,xun:55,kun:50,gen:45,kan:35},ts:'x'}}));
     w.showFacetResult('ideal');
     var idTxt=d.getElementById('compat').textContent;
-    ok(idTxt.indexOf('慣用 vs 嚮往')>=0,'ideal 結果標題 慣用 vs 嚮往');
+    ok(idTxt.indexOf('現在 vs 想成為')>=0,'ideal 結果標題 現在 vs 想成為');
     ok(idTxt.indexOf('心裡想去的方向')>=0,'ideal 成長落差句');
     ok(idTxt.indexOf('消耗訊號')<0,'ideal 不走消耗訊號');
 
