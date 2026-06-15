@@ -1,186 +1,72 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Octenso 八態能格 · 看見你的能量，選擇你的流動</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
-    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
-    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
-    line-height:1.8;padding-bottom:50px}
-  .sans{font-family:ui-sans-serif,sans-serif}
-  .wrap{max-width:680px;margin:0 auto;padding:0 18px}
-  a{color:var(--pine)}
-  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
-    text-decoration:none;margin:18px 0 0;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
-  .home-link:hover{background:var(--surface2)}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.9;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
 
-  /* Hero */
-  .hero{text-align:center;padding:30px 18px 26px}
-  .hero .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.28em;color:var(--gold);
-    text-transform:uppercase;margin-bottom:14px}
-  .hero h1{font-size:34px;letter-spacing:.14em;margin-bottom:12px}
-  .hero .tagline{font-size:15px;color:var(--ink);max-width:420px;margin:0 auto 6px;line-height:1.95}
-  .hero .tagline .muted{color:var(--muted);font-size:13.5px}
-  .trigrams{font-size:30px;letter-spacing:.16em;margin:20px 0 22px;line-height:1}
-  .trigrams span{display:inline-block}
-  .cta-row{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
-  .cta{display:inline-block;text-decoration:none;font-family:"Songti TC","Noto Serif TC",serif;font-size:15.5px;
-    letter-spacing:.06em;padding:13px 26px;border-radius:999px;transition:transform .15s}
-  .cta:hover{transform:translateY(-2px)}
-  .cta.primary{background:var(--pine);color:#fff;box-shadow:0 8px 24px rgba(53,97,79,.22)}
-  .cta.ghost{background:var(--surface);color:var(--pine);border:1.5px solid var(--pine)}
+  .home-link{position:fixed;top:16px;left:16px;z-index:20;font-family:"Jost",sans-serif;font-size:11px;
+    letter-spacing:.08em;color:var(--muted);padding:6px 13px;border:1px solid var(--hair);border-radius:999px;
+    background:rgba(244,239,228,.7);backdrop-filter:blur(5px)}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
 
-  /* Section */
-  section{padding:26px 0 6px}
-  .sec-h{text-align:center;font-size:20px;letter-spacing:.06em;margin-bottom:6px}
-  .sec-sub{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);margin-bottom:20px}
+  .hero{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;padding:70px 22px 76px;position:relative}
 
-  /* 八卦是什麼 — 3 步 */
-  .what3{display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto}
-  .what3 .w3{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
-    border-radius:14px;padding:14px 16px}
-  .what3 .w3 .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--pine);color:#fff;
-    font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .what3 .w3 .t{font-size:14px;line-height:1.85}
-  .what3 .w3 .t b{color:var(--pine)}
+  .lockup{display:flex;align-items:center;justify-content:center;gap:clamp(4px,1.4vw,14px);margin-bottom:20px;
+    opacity:0;animation:rise 1.1s .25s ease-out forwards}
+  .lockup .enso{width:clamp(70px,16vw,96px);height:clamp(70px,16vw,96px);object-fit:contain;flex:none}
+  .lockup h1{font-family:"Jost",sans-serif;font-weight:200;font-size:clamp(38px,10vw,58px);letter-spacing:.04em;line-height:1}
+  .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:clamp(17px,4.8vw,23px);
+    letter-spacing:.5em;padding-left:.5em;margin-bottom:34px;opacity:0;animation:rise 1s .45s ease-out forwards}
 
-  /* 八種能量卡 */
-  .energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .ecard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 16px 15px;
-    border-top:4px solid var(--ec,var(--pine));box-shadow:0 4px 16px rgba(74,62,44,.05)}
-  .ecard .esym{font-size:34px;line-height:1;color:var(--ec)}
-  .ecard .etop{display:flex;align-items:baseline;gap:8px;margin-top:4px}
-  .ecard .enm{font-size:19px;font-weight:700}
-  .ecard .enat{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:#fff;background:var(--ec);
-    border-radius:999px;padding:1px 8px}
-  .ecard .efn{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);margin-top:5px}
-  .ecard .emeta{font-size:13.5px;line-height:1.8;margin-top:8px}
-  .ecard .emeta b{color:var(--ec)}
+  .intro{font-size:clamp(14.5px,3.9vw,16.5px);color:var(--ink-soft);letter-spacing:.1em;line-height:2;
+    max-width:430px;margin:0 auto;opacity:0;animation:rise 1s .65s ease-out forwards}
 
-  /* 怎麼用 */
-  .use-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .ucard{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);
-    border-radius:16px;padding:16px;transition:transform .15s,box-shadow .15s}
-  .ucard:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(74,62,44,.1);border-color:var(--pine)}
-  .ucard .uic{font-size:26px}
-  .ucard .unm{font-size:16px;font-weight:700;color:var(--pine);margin-top:8px;letter-spacing:.03em}
-  .ucard .uds{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);line-height:1.7;margin-top:4px}
-  .ucard .uarr{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--gold);margin-top:8px;font-weight:700}
+  .trigrams{font-size:clamp(20px,5.5vw,25px);letter-spacing:.2em;margin:40px 0 38px;color:var(--ink);
+    opacity:0;animation:rise 1s .85s ease-out forwards}
 
-  .learn-link{display:block;text-align:center;margin:20px auto 0;font-family:ui-sans-serif,sans-serif;font-size:13.5px}
+  .nav-links{display:flex;gap:clamp(20px,6vw,40px);justify-content:center;flex-wrap:wrap;
+    opacity:0;animation:rise 1s 1.05s ease-out forwards}
+  .tlink{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:15.5px;letter-spacing:.06em;color:var(--ink);
+    padding-bottom:4px;border-bottom:1px solid var(--hair);transition:border-color .2s,color .2s}
+  .tlink:hover{border-bottom-color:var(--ink)}
+  .tlink.sub{color:var(--muted)}
+  .tlink.sub:hover{color:var(--ink)}
 
-  .honest{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);background:var(--surface);
-    border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:13px 16px;margin:26px auto 0;
-    max-width:480px;line-height:1.95}
-  .foot{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);
-    margin-top:26px;line-height:1.9}
+  .foot{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-family:"Jost",sans-serif;
+    font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;line-height:2;
+    opacity:0;animation:rise 1s 1.3s ease-out forwards}
+
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;opacity:1!important;transform:none!important}}
 </style></head>
 <body>
-<div class="wrap"><a class="home-link" href="index.html">← 回練息場</a></div>
+<a class="home-link" href="index.html">← 練息場</a>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="eyebrow">OCTENSO ｜ 八態能格</div>
-  <svg viewBox="0 0 100 100" width="84" height="84" style="display:block;margin:6px auto 8px" aria-label="enso 禪圓">
-    <path d="M74 26 A38 38 0 1 1 58 87" fill="none" stroke="var(--ink)" stroke-width="6.5" stroke-linecap="round"/>
-  </svg>
-  <h1 style="font-size:38px;letter-spacing:.05em;margin-bottom:2px">Octenso</h1>
-  <div style="font-family:'Songti TC','Noto Serif TC',serif;font-size:20px;letter-spacing:.34em;color:var(--ink);margin-bottom:13px;padding-left:.34em">八態能格</div>
-  <p class="tagline" style="margin-bottom:4px"><span style="color:var(--pine);font-size:15.5px;letter-spacing:.04em">看見你的能量，選擇你的流動。</span><br><span class="muted" style="font-size:13px;letter-spacing:.03em">See your energy. Shape your flow.</span></p>
-  <p style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.9;max-width:440px;margin:12px auto 0">源自《易經》八卦——自然的八種能量，也住在你身上、化成八種「態」。它是一面鏡子，不是算命。</p>
-  <div class="trigrams" style="margin:18px 0 20px">
-    <span style="color:var(--metal)">☰</span> <span style="color:var(--metal)">☱</span>
-    <span style="color:var(--fire)">☲</span> <span style="color:var(--wood)">☴</span>
-    <span style="color:var(--wood)">☳</span> <span style="color:var(--water)">☵</span>
-    <span style="color:var(--earth)">☶</span> <span style="color:var(--earth)">☷</span>
+<header class="hero">
+  <div class="lockup">
+    <img class="enso" src="assets/enso.png" alt="enso 円相">
+    <h1>Octenso</h1>
   </div>
-  <div class="cta-row">
-    <a class="cta primary" href="bagua-persona.html">測測你是哪種能量人格 →</a>
-    <a class="cta ghost" href="bagua-map.html">先認識八種能量 →</a>
-  </div>
-</div>
+  <div class="zh">八態能格</div>
 
-<div class="wrap">
+  <p class="intro">用東方古老智慧，看八種能量狀態所形成的運作格局</p>
 
-  <!-- 八卦是什麼 -->
-  <section>
-    <h2 class="sec-h">八卦，其實很好懂</h2>
-    <p class="sec-sub">三句話帶你入門</p>
-    <div class="what3">
-      <div class="w3"><div class="n">1</div><div class="t">幾千年前，古人觀察天地，把世界歸納成<b>八種基本能量</b>——天、澤、火、雷、風、水、山、地。</div></div>
-      <div class="w3"><div class="n">2</div><div class="t">這八種能量，其實也<b>住在你身上</b>：有人擅長開創，有人擅長傾聽，有人需要安靜恢復⋯⋯只是比例不同。</div></div>
-      <div class="w3"><div class="n">3</div><div class="t">這套工具，幫你看見自己慣用哪幾種、又有哪些還沒長開——進而<b>認識自己、讀懂關係、面對處境</b>。</div></div>
-    </div>
-  </section>
+  <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
 
-  <!-- 八種能量 -->
-  <section>
-    <h2 class="sec-h">八種能量，一眼認識</h2>
-    <p class="sec-sub">每一種，都像生活裡的一個角色</p>
-    <div class="energy-grid" id="egrid"></div>
-  </section>
+  <nav class="nav-links">
+    <a class="tlink" href="bagua-persona.html">測測你是哪種能量 →</a>
+    <a class="tlink sub" href="bagua-map.html">先認識八種能量 →</a>
+  </nav>
 
-  <!-- 怎麼用 -->
-  <section>
-    <h2 class="sec-h">你可以怎麼用</h2>
-    <p class="sec-sub">從任何一個開始都可以——<b style="color:var(--pine)">第一次來，建議先「認識自己」</b></p>
-    <div class="use-grid">
-      <a class="ucard" href="bagua-persona.html">
-        <div class="uic">🧭</div><div class="unm">認識自己</div>
-        <div class="uds">24 題，測出你的能量人格型＋優勢、盲點、成長。</div>
-        <div class="uarr">開始測驗 →</div>
-      </a>
-      <a class="ucard" href="bagua-team.html">
-        <div class="uic">🔗</div><div class="unm">你和別人</div>
-        <div class="uds">雙人或團隊合盤——同頻、互補、共同盲點、誰滋養誰。</div>
-        <div class="uarr">看合盤 →</div>
-      </a>
-      <a class="ucard" href="bagua-field.html">
-        <div class="uic">🎯</div><div class="unm">你和處境</div>
-        <div class="uds">測一個「局」（情境，如新工作、新關係）會不會耗你；看適合的職業方向。</div>
-        <div class="uarr">測一個情境 →</div>
-      </a>
-      <a class="ucard" href="bagua-records.html">
-        <div class="uic">📒</div><div class="unm">回看自己</div>
-        <div class="uds">你的軌跡都在這——底色、場域、局、合盤，與消耗熱點。</div>
-        <div class="uarr">我的記錄 →</div>
-      </a>
-    </div>
-    <a class="learn-link" href="bagua-map.html">想更深入認識八卦與五行生剋？→ 八卦能量系統圖</a>
-    <a class="learn-link" href="bagua-guide.html" style="margin-top:8px;color:var(--muted)">完整功能說明與範例 →</a>
-    <a class="learn-link" href="bagua-concepts.html" style="margin-top:8px;color:var(--muted)">概念釐清 · 常見疑問（這是算命嗎？）→</a>
-  </section>
+  <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>
+</header>
 
-  <div class="honest">
-    這是一面<b>認識自己與關係的鏡子</b>，不是算命、不是命定。能量會流動、可以成長；所有結果都來自你的自我覺察，是反思的起點，不是定論。
-  </div>
-
-  <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>內部開發中 · 未公開</div>
-</div>
-
-<script>
-var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
-// 八種能量：卦象、名、自然象、五行、功能、生活化比喻
-var ENERGIES=[
- {sym:'☰',nm:'乾',nat:'天',wx:'metal',fn:'創造／決策',meta:'像<b>船長</b>——定方向、敢決定、開創新局。'},
- {sym:'☱',nm:'兌',nat:'澤',wx:'metal',fn:'交流／分享',meta:'像<b>主持人</b>——把人聚在一起、帶起氣氛、樂於分享。'},
- {sym:'☲',nm:'離',nat:'火',wx:'fire', fn:'顯現／覺察',meta:'像<b>探照燈</b>——看得清、想得明、看穿關鍵。'},
- {sym:'☴',nm:'巽',nat:'風',wx:'wood', fn:'擴散／連結',meta:'像<b>風</b>——把人與資源串起來、順勢滲透。'},
- {sym:'☳',nm:'震',nat:'雷',wx:'wood', fn:'啟動／突破',meta:'像<b>引擎</b>——有念頭就衝、開始、突破。'},
- {sym:'☵',nm:'坎',nat:'水',wx:'water',fn:'收藏／恢復',meta:'像<b>深井</b>——沉潛、休息、把力量蓄起來。'},
- {sym:'☶',nm:'艮',nat:'山',wx:'earth',fn:'停止／界線',meta:'像<b>山</b>——知道何時停、守得住界線。'},
- {sym:'☷',nm:'坤',nat:'地',wx:'earth',fn:'承載／滋養',meta:'像<b>大地</b>——包容、支持、承接住別人。'}
-];
-var g=document.getElementById('egrid');
-g.innerHTML=ENERGIES.map(function(e){
-  var c=W[e.wx];
-  return '<div class="ecard" style="--ec:'+c+'">'
-    +'<div class="esym">'+e.sym+'</div>'
-    +'<div class="etop"><span class="enm">'+e.nm+'</span><span class="enat">'+e.nat+'</span></div>'
-    +'<div class="efn">'+e.fn+'</div>'
-    +'<div class="emeta">'+e.meta+'</div>'
-    +'</div>';
-}).join('');
-</script>
 </body></html>
