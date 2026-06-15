@@ -302,6 +302,43 @@ document.getElementById('f').onload=function(){
     ok(c0 && c0.otherTop==='li' && c0.otherTitle===w.E.li.title,'compat record otherTop/Title (li/離火)');
     ok(c0 && typeof c0.sim==='number' && typeof c0.comp==='number' && !!c0.ts,'compat record has sim/comp/ts');
 
+    // ── 能量提醒 memo ──────────────────────────────────────
+    // 33. buildMemo 對某 scores → 最低2 nudges、最高1 watch
+    var ms={qian:90,li:70,zhen:60,dui:50,kun:40,kan:30,gen:20,xun:10};
+    var memo=w.buildMemo(ms);
+    ok(memo.nudges.length===2,'buildMemo 2 nudges');
+    var nkeys=memo.nudges.map(function(n){return n.k;});
+    ok(nkeys.indexOf('xun')>=0 && nkeys.indexOf('gen')>=0,'nudges = 最低2 (xun/gen), got '+nkeys.join(','));
+    ok(memo.watch.k==='qian','watch = 最高1 (qian), got '+memo.watch.k);
+    ok(memo.nudges[0].text===w.MEMO_NUDGE[nkeys[0]],'nudge text from MEMO_NUDGE');
+    ok(memo.watch.text===w.MEMO_WATCH['qian'],'watch text from MEMO_WATCH');
+    // qian 句修正（不含 всё / 含「不用都等別人點頭」）
+    ok(w.MEMO_NUDGE.qian.indexOf('不用都等別人點頭')>=0 && w.MEMO_NUDGE.qian.indexOf('всё')<0,'qian nudge 修正版');
+
+    // 34. memoCheck/memoChecked round-trip
+    w.localStorage.removeItem('bagua_memo_v1');
+    ok(w.memoChecked('xun')===false,'memoChecked false before check');
+    w.memoCheck('xun');
+    ok(w.memoChecked('xun')===true,'memoChecked true after memoCheck (7天內)');
+    // 8 天前打勾 → 不算本週
+    w.localStorage.setItem('bagua_memo_v1', JSON.stringify({xun:new Date(Date.now()-8*86400000).toISOString()}));
+    ok(w.memoChecked('xun')===false,'memoChecked false when >7天');
+
+    // 35. 結果頁 render 出 memo 區塊（含「能量提醒」＋2 條 nudge）
+    w.localStorage.removeItem('bagua_memo_v1');
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='li') w.answers[i]=3; });
+    w.currentFacet=null; w.showResult();
+    var mb=d.querySelector('.memo-block');
+    ok(mb,'memo block rendered in result');
+    ok(mb.querySelector('h3').textContent.indexOf('能量提醒')>=0,'memo title 能量提醒');
+    ok(mb.querySelectorAll('.memo-row').length===2,'memo 2 nudge rows in result, got '+mb.querySelectorAll('.memo-row').length);
+    ok(mb.querySelector('.memo-watch'),'memo watch present in result');
+    // 點打勾 → memoCheck 寫入＋重繪後顯示 on
+    var firstBtn=mb.querySelector('.memo-chk');
+    firstBtn.click();
+    ok(d.querySelector('.memo-block .memo-chk.on'),'after click, nudge shows ✓ on state');
+
     // 分享結果圖卡
     ok(typeof w.buildResultCanvas==='function','buildResultCanvas present');
     ok(typeof w.shareResultImage==='function','shareResultImage present');

@@ -92,6 +92,20 @@
   .portrait-close{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-style:italic;
     color:var(--pine);font-size:13.5px;line-height:1.8}
 
+  /* ── 能量提醒 memo ── */
+  .memo-block{border-left:4px solid var(--pine)}
+  .memo-sub{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:-4px 0 10px}
+  .memo-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .memo-txt{flex:1;font-size:14px;line-height:1.7;color:var(--ink)}
+  .memo-chk{flex:none;background:none;border:1px solid var(--line);border-radius:999px;
+    font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);padding:7px 13px;cursor:pointer;
+    white-space:nowrap;transition:all .15s}
+  .memo-chk:hover{background:var(--surface2);color:var(--ink)}
+  .memo-chk.on{background:var(--pine);border-color:var(--pine);color:#fff}
+  .memo-watch{font-size:13.5px;line-height:1.8;color:var(--muted);background:var(--surface2);
+    border-radius:0 10px 10px 0;border-left:3px solid var(--gold);padding:10px 14px;margin:12px 0 4px}
+  .memo-foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:10px}
+
   .tool{display:flex;align-items:center;gap:13px;background:var(--surface2);border-radius:12px;padding:12px 14px;
     margin-bottom:9px;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s}
   .tool:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(74,62,44,.1)}
@@ -561,6 +575,75 @@ function buildPortrait(sc,sorted){
   return {p:p,close:close};
 }
 
+// ── 能量提醒 memo（依底色：弱項鼓勵＋強項叮嚀，可打勾自我檢查）──
+// 弱項提醒（該能量偏低時：鼓勵多用，關懷問句）
+var MEMO_NUDGE={
+ qian:'有沒有試試看自己做個決定、開個頭？不用都等別人點頭。',
+ dui:'有沒有把心裡的話說出口、找人聊聊？別總是自己收著。',
+ li:'有沒有停下來看清楚、想明白再走？給自己一點「看見」的時間。',
+ xun:'有沒有把人和資源連起來、借點力？不必一個人硬扛。',
+ zhen:'有沒有別想太多、直接動手試一個小步？',
+ kan:'有沒有好好休息、留點時間回到自己？',
+ gen:'有沒有適時停下、對不適合的事說「不」？',
+ kun:'有沒有放軟一點，承接別人、也照顧好自己？'
+};
+// 強項叮嚀（該能量偏高時：別過頭，補對極）
+var MEMO_WATCH={
+ qian:'你很能扛、能決定——記得也讓別人接手、給自己喘息。',
+ dui:'你很會連結表達——記得也留白、聽聽自己。',
+ li:'你看得很清楚——別困在想，有些事先動了才會懂。',
+ xun:'你很能鋪開——記得收斂焦點，別攤太散。',
+ zhen:'你衝得很快——記得也踩煞車、留恢復的時間。',
+ kan:'你很能沉潛——記得別躲太久，也把想法顯現、行動出來。',
+ gen:'你守得很穩——記得對的時候鬆開煞車、允許冒一次險。',
+ kun:'你很會承接——先把自己接住，再去托住別人。'
+};
+// 依分數：最低 2 個 → nudges、最高 1 個 → watch
+function buildMemo(scores){
+  var sorted=EKEYS.slice().sort(function(a,b){
+    return (scores[a]||0)-(scores[b]||0) || EKEYS.indexOf(a)-EKEYS.indexOf(b);
+  });
+  var low=sorted.slice(0,2);
+  var high=sorted[sorted.length-1];
+  return {
+    nudges:low.map(function(k){ return {k:k,text:MEMO_NUDGE[k]}; }),
+    watch:{k:high,text:MEMO_WATCH[high]}
+  };
+}
+// 打勾儲存：{ energyKey: ISO日期 }（最後打勾日）；7 天內算本週做到
+function getMemoChecks(){
+  try{ var raw=localStorage.getItem('bagua_memo_v1'); if(!raw) return {}; var o=JSON.parse(raw); return (o&&typeof o==='object')?o:{}; }
+  catch(e){ return {}; }
+}
+function memoChecked(k){
+  var all=getMemoChecks(); var ts=all[k]; if(!ts) return false;
+  var then=new Date(ts).getTime(); if(isNaN(then)) return false;
+  return (Date.now()-then) < 7*86400000;
+}
+function memoCheck(k){
+  try{ var all=getMemoChecks(); all[k]=new Date().toISOString(); localStorage.setItem('bagua_memo_v1',JSON.stringify(all)); }catch(e){}
+  // 重繪結果頁（維持目前畫面，勾選即時反映）
+  if(document.getElementById('result') && document.getElementById('result').style.display==='block'){ showResult(); }
+}
+// memo 區塊 HTML（兩檔共用同一份結構）
+function memoBlockHtml(scores){
+  var m=buildMemo(scores);
+  var nudgeHtml=m.nudges.map(function(n){
+    var done=memoChecked(n.k);
+    var btn=done
+      ? '<button class="memo-chk on" onclick="memoCheck(\''+n.k+'\')">✓ 最近有做到</button>'
+      : '<button class="memo-chk" onclick="memoCheck(\''+n.k+'\')">最近有做到？</button>';
+    return '<div class="memo-row"><div class="memo-txt">'+n.text+'</div>'+btn+'</div>';
+  }).join('');
+  return '<div class="block memo-block">'
+    +'<h3>🌱 給你的能量提醒</h3>'
+    +'<div class="memo-sub">依你的底色，這陣子最值得留意的（溫柔版，不是功課）</div>'
+    +nudgeHtml
+    +'<div class="memo-watch">⚠️ 小叮嚀：'+m.watch.text+'</div>'
+    +'<div class="memo-foot">不用每條都做到，挑一個現在做得到的就好。</div>'
+  +'</div>';
+}
+
 // ── 此刻（問易快照）讀取與對照 ────────────────────────────
 function readNow(){
   try{
@@ -664,6 +747,7 @@ function showResult(){
      +'<div class="portrait">'+port.p+'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
+   +memoBlockHtml(sc)
    +'<div class="block">'
      +'<h3>適合你的下一步</h3>'+toolsHtml
    +'</div>'
