@@ -137,6 +137,7 @@
 
   <div class="block">
     <h3>＋ 加入成員</h3>
+    <input class="add-input" id="add-name" placeholder="他的名字（方便解讀，可留空）" autocomplete="off" spellcheck="false" style="font-family:'Songti TC','Noto Serif TC',serif;letter-spacing:0;margin-bottom:9px">
     <input class="add-input" id="add-code" placeholder="貼上別人的合盤碼或連結（B1 開頭）" autocomplete="off" spellcheck="false">
     <div style="text-align:center;margin-top:11px"><button class="cbtn" onclick="addFromInput()">加入</button></div>
     <div class="or-divider">或上傳含 QR 的圖</div>
@@ -343,11 +344,13 @@ function addMember(scores, name){
 function addFromInput(){
   var err=document.getElementById('add-err'); err.textContent='';
   var inp=document.getElementById('add-code');
+  var nmEl=document.getElementById('add-name');
+  var nm=(nmEl.value||'').trim();
   var code=extractCode(inp.value);
   var sc=code?decodeCode(code):null;
   if(!sc){ err.textContent='讀不到這個盤。請貼合盤碼（B1 開頭 16 位數字）、整段分享連結，或改上傳含 QR 的圖。'; return; }
-  addMember(sc);
-  inp.value='';
+  addMember(sc, nm);
+  inp.value=''; nmEl.value='';
   renderMembers();
 }
 
@@ -414,7 +417,9 @@ function onQRFile(ev){
       if(!code){ if(err) err.textContent='這張圖裡找不到合盤碼——試試更清楚的截圖，或改貼連結／合盤碼。'; return; }
       var sc=decodeCode(code);
       if(!sc){ if(err) err.textContent='這張 QR 不是有效的合盤碼。'; return; }
-      addMember(sc);
+      var nmEl=document.getElementById('add-name'); var nm=nmEl?(nmEl.value||'').trim():'';
+      addMember(sc, nm);
+      if(nmEl) nmEl.value='';
       renderMembers();
     }catch(e){ if(err) err.textContent='讀這張圖時出了點問題——換一張或改貼連結／合盤碼。'; }
   };
