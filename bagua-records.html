@@ -89,6 +89,38 @@
     border-radius:0 10px 10px 0;border-left:3px solid var(--gold);padding:10px 14px;margin:12px 0 4px}
   .memo-foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:10px}
 
+  /* ── 能量調節 regulate ── */
+  .reg-block{border-left:4px solid var(--pine)}
+  .reg-sub{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:12px}
+  .reg-card{background:var(--surface2);border-radius:12px;padding:13px 15px;margin-bottom:12px}
+  .reg-card:last-of-type{margin-bottom:6px}
+  .reg-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:6px}
+  .reg-say{font-size:14px;line-height:1.8;color:var(--ink);margin-bottom:10px}
+  .reg-say .em{color:var(--pine);font-weight:700}
+  .reg-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .reg-pill{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface);
+    border:1px solid var(--line);border-radius:999px;padding:7px 15px;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .reg-pill:hover{background:#fff}
+  .reg-did{font-family:ui-sans-serif,sans-serif;font-size:12.5px;background:none;border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--muted);white-space:nowrap;transition:all .15s}
+  .reg-did:hover{background:var(--surface);color:var(--ink)}
+  .reg-did.done{background:var(--pine);border-color:var(--pine);color:#fff;cursor:default}
+  .reg-felt{display:flex;gap:8px;align-items:center;margin-top:9px}
+  .reg-felt .q{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted)}
+  .reg-felt button{font-family:ui-sans-serif,sans-serif;font-size:12.5px;background:none;border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink)}
+  .reg-felt button:hover{background:var(--surface)}
+  .reg-recent{margin-top:14px;border-top:1px solid var(--line);padding-top:11px}
+  .reg-recent-h{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.06em;color:var(--pine);
+    font-weight:700;margin-bottom:8px}
+  .reg-log-row{display:flex;align-items:baseline;gap:8px;font-family:ui-sans-serif,sans-serif;font-size:12.5px;
+    color:var(--ink);padding:4px 0;line-height:1.6}
+  .reg-log-row .t{flex:none;color:var(--muted);font-size:11px}
+  .reg-log-row .a{flex:1;min-width:0}
+  .reg-log-row .felt{flex:none}
+  .reg-foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:10px}
+
   .clear-wrap{text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
   .clear-btn{background:none;border:1px solid var(--cinnabar);color:var(--cinnabar);
     font-family:ui-sans-serif,sans-serif;font-size:13px;padding:9px 22px;border-radius:999px;cursor:pointer}
@@ -371,6 +403,39 @@ function buildRadar(sc,topKey){
   return svg;
 }
 
+// ── 能量調節（看見消耗 → 選一個行動 → 去做 → 回來記）──────
+var REGULATE_ACTION={
+ qian:'自己做一個今天的小決定，不用等別人。',
+ dui:'找一個人，說一句真心話。',
+ li:'先別想了，直接做一個小動作試試。',
+ xun:'找一個人借點力，或把兩件事/兩個人連起來。',
+ zhen:'挑一件拖很久的事，只做 5 分鐘就好。',
+ kan:'留 10 分鐘獨處，什麼都不做。',
+ gen:'今天對一件不想做的事，溫和地說「不」。',
+ kun:'先照顧自己一件小事，再去顧別人。'
+};
+function getRegulateLog(){
+  try{ var raw=localStorage.getItem('bagua_regulate_v1'); if(!raw) return []; var a=JSON.parse(raw); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function logRegulate(key,action){
+  try{
+    var log=getRegulateLog();
+    log.unshift({key:key, action:action, ts:new Date().toISOString(), felt:null});
+    if(log.length>30) log=log.slice(0,30);
+    localStorage.setItem('bagua_regulate_v1', JSON.stringify(log));
+  }catch(e){}
+  render();
+}
+function setFelt(idx,felt){
+  try{
+    var log=getRegulateLog();
+    if(log[idx]){ log[idx].felt=felt; localStorage.setItem('bagua_regulate_v1', JSON.stringify(log)); }
+  }catch(e){}
+  render();
+}
+function feltEmoji(f){ return f==='good'?'👍':(f==='ok'?'😐':''); }
+
 // ── Render ───────────────────────────────────────────────
 function allEmpty(){
   try{
@@ -397,6 +462,7 @@ function render(){
   app.appendChild(renderFacets());
   app.appendChild(renderFields());
   app.appendChild(renderDrain());
+  app.appendChild(renderRegulate());
   app.appendChild(renderCompat());
   app.appendChild(renderNow());
 }
@@ -596,6 +662,69 @@ function renderDrain(){
   return s;
 }
 
+// 3.6 能量調節（看見消耗→選一個行動→去做→回來記）
+function renderRegulate(){
+  var s=sec('🔄 能量調節');
+  var base=getBase();
+  if(!base){
+    s.appendChild(emptyNote('先測你的<b>底色</b>，這裡才會給你「現在做得到」的小調節——'
+      +'<a href="bagua-persona.html">去測你的底色 →</a>'));
+    return s;
+  }
+  var you=base.scores;
+  var block=document.createElement('div'); block.className='block reg-block';
+
+  // 針對性微調：取消耗熱點[0]，無則底色最弱[0]
+  var fields=getFields();
+  var hot=drainHotspots(you,fields);
+  var tk=hot.length?hot[0]:baseWeakest(you,1)[0];
+  var tNm=E[tk].nm+'·'+E[tk].fn.split('／')[0];
+
+  block.innerHTML='<div class="reg-sub">看見消耗，就給自己一個小調節。挑一個現在做得到的就好，不用全做。</div>'
+    // 1. 回到呼吸（通用恢復）
+    +'<div class="reg-card">'
+      +'<div class="reg-eyebrow">回到呼吸 · 通用恢復</div>'
+      +'<div class="reg-say">感覺被消耗時，給自己一次呼吸或小憩。</div>'
+      +'<div class="reg-acts">'
+        +'<a class="reg-pill" href="BreatheAware/">🫁 呼吸覺察</a>'
+        +'<a class="reg-pill" href="xiaoqi/">🍵 小憩·練息</a>'
+      +'</div>'
+    +'</div>'
+    // 2. 針對性微調（依消耗熱點 / 最弱能量）
+    +'<div class="reg-card">'
+      +'<div class="reg-eyebrow">針對性微調 · 依你最被消耗的能量</div>'
+      +'<div class="reg-say">你的『<span class="em">'+tNm+'</span>』容易被掏空——'+REGULATE_ACTION[tk]+'</div>'
+      +'<div class="reg-acts">'
+        +'<button class="reg-did" onclick="logRegulate(\''+tk+'\',\''+REGULATE_ACTION[tk].replace(/'/g,"\\'")+'\')">我做了</button>'
+      +'</div>'
+    +'</div>'
+    +'<div class="reg-foot">調節是邀請，不是功課。做了回來記一筆，看看自己有沒有在照顧自己。</div>';
+  s.appendChild(block);
+
+  // 最近的調節 log（最近 5 筆）＋ 未評 felt 的就地問
+  var log=getRegulateLog();
+  if(log.length){
+    var rec=document.createElement('div'); rec.className='reg-recent';
+    var html='<div class="reg-recent-h">最近的調節</div>';
+    log.slice(0,5).forEach(function(it,i){
+      var act=it.action||(E[it.key]?REGULATE_ACTION[it.key]:'')||'一個小調節';
+      var em=feltEmoji(it.felt);
+      html+='<div class="reg-log-row">'
+        +'<span class="t">'+escapeHtml(relTimeStr(it.ts)||'')+'</span>'
+        +'<span class="a">'+escapeHtml(act)+'</span>'
+        +'<span class="felt">'+em+'</span></div>';
+      if(it.felt===null||typeof it.felt==='undefined'){
+        html+='<div class="reg-felt"><span class="q">有感嗎？</span>'
+          +'<button onclick="setFelt('+i+',\'good\')">👍 有</button>'
+          +'<button onclick="setFelt('+i+',\'ok\')">😐 還好</button></div>';
+      }
+    });
+    rec.innerHTML=html;
+    block.appendChild(rec);
+  }
+  return s;
+}
+
 // 4. 合盤紀錄
 function renderCompat(){
   var s=sec('🔗 合盤紀錄');
@@ -630,7 +759,7 @@ function renderNow(){
 // ── 清空 ─────────────────────────────────────────────────
 function clearAll(){
   if(!confirm('確定清空所有八卦記錄嗎？\n會刪除：底色、場域側寫、測過的局、合盤紀錄、此刻。\n（本機，無法復原）')) return;
-  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1','bagua_compat_v1']
+  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1','bagua_compat_v1','bagua_regulate_v1']
     .forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
   location.reload();
 }
