@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>測一個局 · 八卦能量盤</title>
+<title>Octenso 八態能格 · 測一個局 · 八卦能量盤</title>
 <script src="lib/qrcode.js"></script>
 <style>
   :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
@@ -142,11 +142,11 @@
     border-top:1px solid var(--line);padding-top:16px}
 </style></head>
 <body>
-<a class="home-link" href="bagua.html">← 回八卦能量</a>
+<a class="home-link" href="bagua.html">← 回八態能格</a>
 
 <!-- ───────── COVER ───────── -->
 <div id="cover">
-  <div class="eyebrow">BAGUA ENERGY · FIELD</div>
+  <div class="eyebrow">OCTENSO ENERGY · FIELD</div>
   <h1>測一個局</h1>
   <p class="lead">一份新工作、一段新關係、一個專案……<br>測測它需要哪些能量，和你合不合、會不會耗你。</p>
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
@@ -567,7 +567,7 @@ function buildFieldCanvas(name, fieldScores, youScores, fit, qrImg){
   // 底部 QR + 引導
   if(qrImg){var qs=110;x.drawImage(qrImg,(Wd-qs)/2,y+10,qs,qs);
     x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 來測你的八卦能量',Wd/2,y+10+qs+24);}
-  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('來測你的八卦能量 · 練息場 Join to Enjoy',Wd/2,y+40);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,y+40);}
   return c;
 }
 function outputResultImage(name, fieldScores, youScores, fit, qrImg){
@@ -700,7 +700,7 @@ function showResult(fieldSc, doSave){
   +'</div>'
   +'<div style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink);background:var(--surface2);border:1px dashed var(--gold);border-radius:10px;padding:11px 15px;line-height:1.85;margin-bottom:14px">面對更<b>陌生</b>、根本答不出題的局？<a href="ven-i/" style="color:var(--pine);font-weight:700">去問易卜一卦 →</a>　當一面反思的鏡子。</div>'
   +'<div class="foot">這是幫你預想『你和這個局的能量合不合』的參考，不是吉凶判斷；'
-    +'局可以適應、你也會成長。<br><br>八卦能量盤 · 練息場 Join to Enjoy</div>';
+    +'局可以適應、你也會成長。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
   var r=document.getElementById('result');
   r.innerHTML=html;

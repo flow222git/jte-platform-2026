@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>八卦能量人格 · 測驗</title>
+<title>Octenso 八態能格 · 八卦能量人格 · 測驗</title>
 <style>
   :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
@@ -231,11 +231,11 @@
   .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 </style></head>
 <body>
-<a class="home-link" href="bagua.html">← 回八卦能量</a>
+<a class="home-link" href="bagua.html">← 回八態能格</a>
 
 <!-- ───────── COVER ───────── -->
 <div id="cover">
-  <div class="eyebrow">BAGUA ENERGY · PERSONA</div>
+  <div class="eyebrow">OCTENSO ENERGY · PERSONA</div>
   <h1>八卦能量人格</h1>
   <p class="lead">古人用八卦描述天地間八種基本能量。<br>其實，它們也住在你身上——<br>你慣用哪幾種？又有哪些還沒長開？</p>
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
@@ -822,7 +822,7 @@ function showResult(){
    +'<button class="retake" onclick="showCompat()">🔗 和別人合盤</button>'
    +'<button class="retake" onclick="location.href=\'bagua-team.html\'">👥 揪一群人團隊合盤</button>'
    +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
-   +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+   +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
   var r=document.getElementById('result');
   r.innerHTML=html;
@@ -971,7 +971,7 @@ function showFacetResult(id){
     +(anyDone?'<button class="cbtn" onclick="showFacetMap()">看面向地圖</button>':'')
     +'<button class="cbtn ghost" onclick="backToResult()">回整體結果</button>'
   +'</div>'
-  +'<div class="foot">'+(isIdeal?'「現在 vs 想成為」照的是你想去的方向——不是現在不夠好，是給你一支溫柔的指南針。':'場域側寫和底色一樣，是自我覺察的鏡子——不同場域有不同的你，是適應，不是標籤。')+'<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+  +'<div class="foot">'+(isIdeal?'「現在 vs 想成為」照的是你想去的方向——不是現在不夠好，是給你一支溫柔的指南針。':'場域側寫和底色一樣，是自我覺察的鏡子——不同場域有不同的你，是適應，不是標籤。')+'<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
   var c=document.getElementById('compat');
   c.innerHTML=html;
@@ -1031,7 +1031,7 @@ function showFacetMap(){
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回</a>'
-   +'<div class="compat-eyebrow">🗺️ BAGUA · 面向地圖</div>'
+   +'<div class="compat-eyebrow">🗺️ OCTENSO · 面向地圖</div>'
    +'<h2 style="font-size:23px;letter-spacing:.06em;text-align:center;margin-bottom:8px">面向地圖</h2>'
    +'<div class="honest" style="max-width:none;margin:6px 0 18px">'
      +'每一張是不同場域的你。<b>不同場域有不同的你，是適應、不是分裂</b>；'
@@ -1042,7 +1042,7 @@ function showFacetMap(){
   if(summary){ html+='<div class="block"><h3>最大落差</h3><div class="gap-line">'+summary+'</div></div>'; }
 
   html+='<div style="text-align:center;margin:18px 0 10px"><button class="cbtn ghost" onclick="backToResult()">返回</button></div>'
-   +'<div class="foot">面向地圖只是此刻一張側寫——能量會流動，場域也會。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+   +'<div class="foot">面向地圖只是此刻一張側寫——能量會流動，場域也會。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
   var c=document.getElementById('compat');
   c.innerHTML=html;
@@ -1155,7 +1155,7 @@ function buildResultCanvas(scores,topKey,title,qrImg){
   x.fillStyle='#35614f';x.font='600 16px sans-serif';x.fillText('我慣用：'+E[srt[0]].fn+'、'+E[srt[1]].fn,Wd/2,664);
   if(qrImg){var qs=116;x.drawImage(qrImg,(Wd-qs)/2,686,qs,qs);
     x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 測你的八卦能量',Wd/2,824);}
-  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('來測你的八卦能量 · 練息場 Join to Enjoy',Wd/2,760);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,760);}
   return c;
 }
 function outputResultImage(scores,topKey,title,qrImg){
@@ -1208,7 +1208,7 @@ function buildCompatCanvas(myScores,otherScores,sim,comp,qrImg){
   // QR + 邀請
   if(qrImg){var qs=110;x.drawImage(qrImg,(Wd-qs)/2,604,qs,qs);
     x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 和我合盤',Wd/2,732);}
-  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('八卦能量人格 · 練息場 Join to Enjoy',Wd/2,640);}
+  else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,640);}
   return c;
 }
 function shareCompatImage(myScores,otherScores,sim,comp){
@@ -1281,7 +1281,7 @@ function showCompat(){
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回我的結果</a>'
-   +'<div class="compat-eyebrow">BAGUA · 雙人合盤</div>'
+   +'<div class="compat-eyebrow">OCTENSO · 雙人合盤</div>'
    +'<h2>雙人合盤</h2>'
    +'<div class="honest" style="max-width:none;margin:6px 0 18px">'
      +'這是一面<b>理解關係動態的鏡子</b>，不是相容度評分、也不是命定配對。'
@@ -1545,7 +1545,7 @@ function runCompat(){
    +'<div style="text-align:center;margin:18px 0 10px">'
      +'<button onclick="shareCompatImage(lastCompat.mine,lastCompat.other,lastCompat.sim,lastCompat.comp)" style="background:var(--pine);color:#fff;border:none;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;box-shadow:0 6px 18px rgba(53,97,79,.22);margin-right:10px">📤 下載合盤圖</button>'
      +'<button class="cbtn ghost" onclick="backToResult()">返回我的結果</button></div>'
-   +'<div class="foot">合盤是理解關係的鏡子，不是配對評分。<br>能量會流動，關係也會——這只是此刻的一張側寫。<br><br>八卦能量人格 · 練息場 Join to Enjoy</div>';
+   +'<div class="foot">合盤是理解關係的鏡子，不是配對評分。<br>能量會流動，關係也會——這只是此刻的一張側寫。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
   var ow=document.getElementById('compat-out');
   ow.innerHTML=out;
