@@ -1,0 +1,114 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Octenso · 線條極簡 八角輪 preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&family=Noto+Sans+TC:wght@200;300&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--ink:#23241f;--muted:#857c6d;--line:#cdc1ad;--hair:#b9ad97}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    line-height:1.85;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:30px 22px 70px;text-align:center}
+  .topline{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 50px}
+  .topline img{width:40px;height:40px;object-fit:contain}
+  .topline .nm{font-family:"Jost",sans-serif;font-weight:200;font-size:26px;letter-spacing:.03em}
+  .topline .div{width:1px;height:24px;background:var(--ink);opacity:.45}
+  .topline .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:18px;letter-spacing:.2em;padding-left:.2em}
+
+  .lead{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:clamp(18px,4.6vw,22px);
+    letter-spacing:.06em;line-height:1.7;margin-bottom:6px}
+  .sub{font-size:12.5px;color:var(--muted);letter-spacing:.04em;max-width:380px;margin:0 auto 6px;line-height:1.95}
+
+  .wheel-wrap{max-width:500px;margin:14px auto 0}
+  #wheel{width:100%;height:auto;display:block;overflow:visible}
+
+  /* hairline geometry */
+  .ringline{fill:none;stroke:var(--hair);stroke-width:1}
+  .spoke{stroke:var(--hair);stroke-width:1}
+  .axis{stroke:var(--ink);stroke-width:1;opacity:.32;stroke-dasharray:3 5}
+  .draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.5s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  .node-disc{fill:var(--paper);stroke:var(--ink);stroke-width:1.3}
+  .node-sym{font-family:"Songti TC",serif;font-size:25px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+  .node-nm{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;fill:var(--ink);text-anchor:middle}
+  .node-fn{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:10px;fill:var(--muted);text-anchor:middle}
+  .node{opacity:0;animation:pop .6s ease forwards}
+  @keyframes pop{from{opacity:0}to{opacity:1}}
+  .hub{fill:var(--ink)}
+
+  .caption{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:12.5px;color:var(--muted);
+    letter-spacing:.16em;margin-top:24px;line-height:2}
+  .caption b{color:var(--ink);font-weight:400}
+  .hr{width:38px;height:1px;background:var(--hair);margin:34px auto 0}
+  .foot{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--muted);margin-top:34px;text-transform:uppercase}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}.draw{stroke-dashoffset:0!important}.node{opacity:1!important}}
+</style></head>
+<body>
+<div class="wrap">
+
+  <div class="topline">
+    <img src="assets/enso.png" alt="enso">
+    <span class="nm">Octenso</span>
+    <span class="div"></span>
+    <span class="zh">八態能格</span>
+  </div>
+
+  <p class="lead">八種能量，循環流動</p>
+  <p class="sub">天 澤 火 雷 風 水 山 地 — 兩兩相對，構成一個整體</p>
+
+  <div class="wheel-wrap">
+    <svg viewBox="-60 -66 520 532" id="wheel" aria-label="八種能量輪">
+      <circle class="ringline draw" cx="200" cy="200" r="140" style="--len:880"/>
+      <g id="axes"></g>
+      <g id="octa"></g>
+      <circle class="hub" cx="200" cy="200" r="3"/>
+      <g id="nodes"></g>
+    </svg>
+  </div>
+
+  <p class="caption">給出 ⇄ 接納　·　顯現 ⇄ 收藏<br>啟動 ⇄ 停止　·　表達 ⇄ 連結</p>
+  <div class="hr"></div>
+  <div class="foot">line · minimal · preview</div>
+
+</div>
+<script>
+var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
+           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
+var RING=['qian','li','zhen','dui','kun','kan','gen','xun']; // 順時針一圈
+var E={qian:{s:'☰',n:'乾',f:'創造'},li:{s:'☲',n:'離',f:'覺察'},zhen:{s:'☳',n:'震',f:'啟動'},
+       dui:{s:'☱',n:'兌',f:'交流'},kun:{s:'☷',n:'坤',f:'承載'},kan:{s:'☵',n:'坎',f:'恢復'},
+       gen:{s:'☶',n:'艮',f:'界線'},xun:{s:'☴',n:'巽',f:'連結'}};
+var NS='http://www.w3.org/2000/svg';
+function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+// 極性直徑（hairline 虛線）
+var PAIRS=[['qian','kun'],['li','kan'],['zhen','gen'],['dui','xun']];
+var axes=document.getElementById('axes');
+PAIRS.forEach(function(p,i){
+  var a=POLAR[p[0]],b=POLAR[p[1]];
+  axes.appendChild(el('line',{'class':'axis',x1:a.x,y1:a.y,x2:b.x,y2:b.y}));
+});
+
+// 八角形外框（hairline，描出）
+var octa=document.getElementById('octa');
+var d='M'+RING.map(function(k){return POLAR[k].x+' '+POLAR[k].y;}).join(' L ')+' Z';
+octa.appendChild(el('path',{'class':'ringline spoke draw',d:d,style:'--len:1100;animation-delay:.2s'}));
+
+// 節點：開口圓＋卦象＋名＋功能
+var nodes=document.getElementById('nodes');
+RING.forEach(function(k,i){
+  var p=POLAR[k],d=E[k];
+  var dx=p.x-200,dy=p.y-200,len=Math.hypot(dx,dy)||1,ox=dx/len,oy=dy/len;
+  var g=el('g',{'class':'node'});
+  g.style.animationDelay=(0.7+i*0.1)+'s';
+  g.appendChild(el('circle',{'class':'node-disc',cx:p.x,cy:p.y,r:24}));
+  var sym=el('text',{'class':'node-sym',x:p.x,y:p.y+1});sym.textContent=d.s;g.appendChild(sym);
+  var lx=p.x+ox*46,ly=p.y+oy*46;
+  var nm=el('text',{'class':'node-nm',x:lx,y:ly+(oy>=0?14:-4)});nm.textContent=d.n;g.appendChild(nm);
+  var fn=el('text',{'class':'node-fn',x:lx,y:ly+(oy>=0?28:10)});fn.textContent=d.f;g.appendChild(fn);
+  nodes.appendChild(g);
+});
+</script>
+</body></html>

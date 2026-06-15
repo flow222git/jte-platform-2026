@@ -1,232 +1,179 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Octenso 八態能格 · 看見你的能量，選擇你的流動</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
-    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
-    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);
-    font-family:"Songti TC","Noto Serif TC",ui-serif,serif;line-height:1.85;overflow-x:hidden}
-  .sans{font-family:ui-sans-serif,sans-serif}
-  a{color:var(--pine)}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.9;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
 
-  /* paper grain — extremely subtle radial wash */
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(120% 80% at 50% -10%, rgba(169,130,59,.06), transparent 55%),
-               radial-gradient(90% 60% at 50% 120%, rgba(53,97,79,.05), transparent 60%);}
-  .stage{position:relative;z-index:1}
+  .home-link{position:fixed;top:16px;left:16px;z-index:20;font-family:"Jost",sans-serif;font-size:11px;
+    letter-spacing:.08em;color:var(--muted);padding:6px 13px;border:1px solid var(--hair);border-radius:999px;
+    background:rgba(244,239,228,.7);backdrop-filter:blur(5px)}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
 
-  .home-link{position:fixed;top:14px;left:14px;z-index:20;display:inline-block;
-    font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:none;
-    padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,253,246,.8);
-    backdrop-filter:blur(4px)}
-  .home-link:hover{background:var(--surface)}
-
-  /* ───────── HERO ───────── */
+  /* ───── HERO ───── */
   .hero{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center;padding:60px 22px 40px;position:relative}
-  .hero .eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.34em;color:var(--gold);
-    text-transform:uppercase;margin-bottom:26px;opacity:0;animation:rise .9s .15s ease-out forwards}
-  .enso-wrap{margin-bottom:22px;opacity:0;animation:ensoIn 1.6s .3s cubic-bezier(.22,1,.36,1) forwards}
-  .enso{display:block}
-  .enso path{stroke-dasharray:760;stroke-dashoffset:760;animation:draw 1.9s .35s cubic-bezier(.5,0,.2,1) forwards}
-  .hero h1{font-size:clamp(40px,11vw,62px);letter-spacing:.06em;margin-bottom:6px;font-weight:600;
-    opacity:0;animation:rise 1s .55s ease-out forwards}
-  .hero .zh{font-family:"Songti TC","Noto Serif TC",serif;font-size:clamp(20px,5.5vw,26px);
-    letter-spacing:.42em;padding-left:.42em;color:var(--ink);margin-bottom:24px;
-    opacity:0;animation:rise 1s .7s ease-out forwards}
-  .hero .tagline{font-size:clamp(15px,4vw,17px);line-height:2;max-width:440px;
-    opacity:0;animation:rise 1s .9s ease-out forwards}
-  .hero .tagline .zh-t{color:var(--pine);letter-spacing:.05em}
-  .hero .tagline .en-t{color:var(--muted);font-size:.82em;letter-spacing:.03em}
-  .hero .lede{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);line-height:1.95;
-    max-width:430px;margin:22px auto 0;opacity:0;animation:rise 1s 1.1s ease-out forwards}
-  .scrollcue{position:absolute;bottom:26px;left:0;right:0;text-align:center;
-    font-family:ui-sans-serif,sans-serif;font-size:11.5px;letter-spacing:.18em;color:var(--muted);
-    opacity:0;animation:rise 1s 1.5s ease-out forwards}
-  .scrollcue .arrow{display:block;font-size:18px;margin-top:6px;animation:bob 2.2s ease-in-out infinite}
+    justify-content:center;text-align:center;padding:64px 22px 44px;position:relative}
+  .eyebrow{font-family:"Jost",sans-serif;font-weight:400;font-size:11px;letter-spacing:.36em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:30px;opacity:0;animation:rise .9s .15s ease-out forwards}
+  .enso-wrap{opacity:0;animation:ensoIn 1.7s .3s cubic-bezier(.22,1,.36,1) forwards}
+  .enso{display:block;width:112px;height:112px;object-fit:contain}
+  .hero h1{font-family:"Jost",sans-serif;font-weight:200;font-size:clamp(44px,12.5vw,66px);letter-spacing:.05em;
+    margin:18px 0 8px;opacity:0;animation:rise 1s .55s ease-out forwards}
+  .hero .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:clamp(19px,5.2vw,25px);
+    letter-spacing:.46em;padding-left:.46em;margin-bottom:30px;opacity:0;animation:rise 1s .7s ease-out forwards}
+  .hairmark{width:34px;height:1px;background:var(--hair);margin-bottom:28px;opacity:0;animation:rise 1s .8s ease-out forwards}
+  .tagline{font-size:clamp(15px,4vw,17px);line-height:2;opacity:0;animation:rise 1s .95s ease-out forwards}
+  .tagline .zh-t{color:var(--ink);letter-spacing:.08em;font-weight:300}
+  .tagline .en-t{font-family:"Jost",sans-serif;color:var(--muted);font-size:.8em;letter-spacing:.04em}
+  .lede{font-size:13px;color:var(--muted);line-height:2;max-width:420px;margin:24px auto 0;
+    opacity:0;animation:rise 1s 1.15s ease-out forwards}
+  .scrollcue{position:absolute;bottom:28px;left:0;right:0;text-align:center;font-family:"Jost",sans-serif;
+    font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;
+    opacity:0;animation:rise 1s 1.55s ease-out forwards}
+  .scrollcue .arrow{display:block;font-size:16px;margin-top:8px;animation:bob 2.2s ease-in-out infinite}
 
-  @keyframes draw{to{stroke-dashoffset:0}}
-  @keyframes ensoIn{from{opacity:0;transform:rotate(-8deg) scale(.9)}to{opacity:1;transform:rotate(0) scale(1)}}
-  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes ensoIn{from{opacity:0;transform:rotate(-7deg) scale(.92)}to{opacity:1;transform:none}}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
 
-  /* ───────── WHEEL SEGMENT ───────── */
-  .seg{max-width:680px;margin:0 auto;padding:34px 20px 60px;text-align:center}
-  .seg .lead{font-size:clamp(19px,5vw,24px);letter-spacing:.05em;line-height:1.7;margin-bottom:8px}
-  .seg .lead b{color:var(--pine)}
-  .seg .sub{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);
-    max-width:430px;margin:0 auto 8px;line-height:1.9}
-  .wheel-wrap{position:relative;width:100%;max-width:540px;margin:6px auto 0}
+  /* ───── WHEEL SEGMENT ───── */
+  .seg{max-width:640px;margin:0 auto;padding:30px 22px 56px;text-align:center}
+  .seg .lead{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:clamp(19px,5vw,23px);
+    letter-spacing:.07em;line-height:1.7;margin-bottom:8px}
+  .seg .sub{font-size:12.5px;color:var(--muted);letter-spacing:.05em;max-width:400px;margin:0 auto;line-height:2}
+
+  .wheel-wrap{max-width:480px;margin:14px auto 0}
   #wheel{width:100%;height:auto;display:block;overflow:visible}
+  .ringline{fill:none;stroke:var(--hair);stroke-width:1}
+  .axis{stroke:var(--ink);stroke-width:1;opacity:.3;stroke-dasharray:3 5}
+  .draw{stroke-dashoffset:var(--len)}
+  .reveal .draw{animation:draw 1.5s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .node-disc{fill:var(--paper);stroke:var(--ink);stroke-width:1.3}
+  .node-sym{font-family:"Songti TC","Noto Serif TC",serif;font-size:25px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+  .node-nm{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;fill:var(--ink);text-anchor:middle}
+  .node-fn{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:10px;fill:var(--muted);text-anchor:middle}
+  .node{opacity:0}
+  .reveal .node{animation:pop .6s ease forwards}
+  @keyframes pop{from{opacity:0}to{opacity:1}}
+  .hub{fill:var(--ink)}
+  .pairs{font-size:12.5px;color:var(--muted);letter-spacing:.16em;margin-top:24px;line-height:2.1}
+  .pairs b{color:var(--ink);font-weight:400}
 
-  /* nodes pop in one by one */
-  .node{opacity:0;transform:scale(.35);transform-box:fill-box;transform-origin:center;
-    transition:opacity .6s ease,transform .7s cubic-bezier(.34,1.56,.64,1)}
-  .reveal .node{opacity:1;transform:scale(1)}
-  .node .disc{filter:drop-shadow(0 4px 10px rgba(74,62,44,.16))}
-  .node .sym{font-size:30px;fill:#fff;text-anchor:middle;dominant-baseline:central;
-    font-family:serif;pointer-events:none}
-  .node .nm{font-size:15px;fill:var(--ink);text-anchor:middle;font-weight:700;
-    font-family:"Songti TC",serif;pointer-events:none}
-  .node .fn{font-size:10.5px;fill:var(--muted);text-anchor:middle;
-    font-family:ui-sans-serif,sans-serif;pointer-events:none}
+  /* ───── CLOSING ───── */
+  .closing{max-width:560px;margin:0 auto;padding:6px 22px 30px;text-align:center}
+  .closing .big{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,25px);
+    letter-spacing:.06em;line-height:1.7;margin-bottom:12px}
+  .closing .note{font-size:13px;color:var(--muted);line-height:2;max-width:410px;margin:0 auto}
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+  .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14.5px;letter-spacing:.05em;
+    padding:12px 24px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);
+    transition:background .2s,color .2s}
+  .cta:hover{background:var(--ink);color:var(--paper)}
+  .cta.ghost{border-color:var(--hair);color:var(--muted)}
+  .cta.ghost:hover{border-color:var(--ink);background:transparent;color:var(--ink)}
 
-  /* polarity axes draw after nodes */
-  .axis{stroke:var(--line);stroke-width:1.6;stroke-dasharray:300;stroke-dashoffset:300;
-    transition:stroke-dashoffset 1s ease 1.0s}
-  .reveal .axis{stroke-dashoffset:0}
-  .hub{opacity:0;transition:opacity .6s ease 1.6s}
-  .reveal .hub{opacity:1}
+  .honest{font-size:11.5px;color:var(--muted);line-height:2;max-width:430px;margin:36px auto 0;
+    padding-left:14px;border-left:1px solid var(--hair);text-align:left}
+  .foot{text-align:center;font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.14em;color:var(--muted);
+    text-transform:uppercase;margin:34px 0 48px;line-height:2.2}
 
-  .pairs{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:2;
-    margin-top:18px;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease}
-  .reveal .pairs{opacity:1;transform:none;transition-delay:1.4s}
-  .pairs b{color:var(--ink);font-weight:600}
-
-  .closing{max-width:560px;margin:0 auto;padding:8px 20px 30px;text-align:center}
-  .closing .big{font-size:clamp(20px,5.5vw,26px);letter-spacing:.05em;line-height:1.7;margin-bottom:10px}
-  .closing .big b{color:var(--pine)}
-  .closing .note{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);
-    line-height:1.95;max-width:420px;margin:0 auto}
-  .cta-row{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-top:26px}
-  .cta{display:inline-block;text-decoration:none;font-family:"Songti TC","Noto Serif TC",serif;
-    font-size:15.5px;letter-spacing:.06em;padding:13px 26px;border-radius:999px;transition:transform .15s}
-  .cta:hover{transform:translateY(-2px)}
-  .cta.primary{background:var(--pine);color:#fff;box-shadow:0 8px 24px rgba(53,97,79,.22)}
-  .cta.ghost{background:var(--surface);color:var(--pine);border:1.5px solid var(--pine)}
-
-  .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
-    border-left:3px solid var(--gold);background:var(--surface);border-radius:0 10px 10px 0;
-    padding:12px 16px;margin:34px auto 0;max-width:440px;line-height:1.95;text-align:left}
-  .foot{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);
-    margin:30px 0 46px;line-height:1.9}
-
-  .reveal-up{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease}
+  .reveal-up{opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s ease}
   .reveal-up.in{opacity:1;transform:none}
 
-  @media (prefers-reduced-motion:reduce){
+  @media(prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
-    *,.node,.axis,.hub,.pairs,.reveal-up{animation:none!important;transition:none!important;
-      opacity:1!important;transform:none!important;stroke-dashoffset:0!important}
-    .enso path{stroke-dashoffset:0!important}
+    *{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}
+    .draw{stroke-dashoffset:0!important}
   }
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 練息場</a>
-<div class="stage">
 
-  <!-- ───────── HERO ───────── -->
-  <header class="hero">
-    <div class="eyebrow">OCTENSO ｜ 八態能格</div>
-    <div class="enso-wrap">
-      <svg class="enso" viewBox="0 0 200 200" width="118" height="118" aria-label="enso 禪圓">
-        <path d="M150 44 A72 72 0 1 1 118 168" fill="none" stroke="var(--ink)"
-              stroke-width="8.5" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <h1>Octenso</h1>
-    <div class="zh">八態能格</div>
-    <p class="tagline">
-      <span class="zh-t">看見你的能量，選擇你的流動。</span><br>
-      <span class="en-t">See your energy. Shape your flow.</span>
-    </p>
-    <p class="lede">源自《易經》八卦——自然的八種能量，也住在你身上、化成八種「態」。<br>它是一面鏡子，不是算命。</p>
-    <div class="scrollcue">往下，看見八種能量<span class="arrow">↓</span></div>
-  </header>
+<!-- HERO -->
+<header class="hero">
+  <div class="eyebrow">Octenso ｜ 八態能格</div>
+  <div class="enso-wrap"><img class="enso" src="assets/enso.png" width="112" height="112" alt="enso 円相"></div>
+  <h1>Octenso</h1>
+  <div class="zh">八態能格</div>
+  <div class="hairmark"></div>
+  <p class="tagline">
+    <span class="zh-t">看見你的能量　選擇你的流動</span><br>
+    <span class="en-t">See your energy. Shape your flow.</span>
+  </p>
+  <p class="lede">源自《易經》八卦——自然的八種能量，也住在你身上、化成八種「態」。<br>它是一面鏡子，不是算命。</p>
+  <div class="scrollcue">Scroll<span class="arrow">↓</span></div>
+</header>
 
-  <!-- ───────── WHEEL ───────── -->
-  <section class="seg">
-    <p class="lead reveal-up">古人觀察天地，把世界<br>歸納成 <b>八種基本能量</b></p>
-    <p class="sub reveal-up">天、澤、火、雷、風、水、山、地——<br>它們兩兩相對，循環流動，構成一個整體。</p>
-    <div class="wheel-wrap" id="wheelWrap">
-      <svg viewBox="-58 -64 516 528" id="wheel" aria-label="八種能量輪">
-        <g id="axes"></g>
-        <circle class="hub" cx="200" cy="200" r="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-        <g id="nodes"></g>
-      </svg>
-    </div>
-    <p class="pairs" id="pairs">
-      <b>給出</b> ⇄ <b>接納</b>　　<b>顯現</b> ⇄ <b>收藏</b><br>
-      <b>啟動</b> ⇄ <b>停止</b>　　<b>表達</b> ⇄ <b>連結</b>
-    </p>
-  </section>
+<!-- WHEEL -->
+<section class="seg">
+  <p class="lead reveal-up">八種能量，循環流動</p>
+  <p class="sub reveal-up">天 澤 火 雷 風 水 山 地 — 兩兩相對，構成一個整體</p>
+  <div class="wheel-wrap" id="wheelWrap">
+    <svg viewBox="-60 -66 520 532" id="wheel" aria-label="八種能量輪">
+      <circle class="ringline draw" cx="200" cy="200" r="140" style="--len:880"/>
+      <g id="axes"></g>
+      <g id="octa"></g>
+      <circle class="hub" cx="200" cy="200" r="3"/>
+      <g id="nodes"></g>
+    </svg>
+  </div>
+  <p class="pairs reveal-up">給出 ⇄ 接納　·　顯現 ⇄ 收藏<br>啟動 ⇄ 停止　·　表達 ⇄ 連結</p>
+</section>
 
-  <!-- ───────── CLOSING / CTA ───────── -->
-  <section class="closing">
-    <p class="big reveal-up">而這八種能量，<br><b>也住在你身上</b>。</p>
-    <p class="note reveal-up">只是比例不同——有人擅長開創，有人擅長傾聽，有人需要安靜恢復。<br>看見自己慣用哪幾種、又有哪些還沒長開，是認識自己的起點。</p>
-    <div class="cta-row reveal-up">
-      <a class="cta primary" href="bagua-persona.html">測測你是哪種能量 →</a>
-      <a class="cta ghost" href="bagua-map.html">先認識八種能量 →</a>
-    </div>
-    <div class="honest reveal-up">這是一面認識自己與關係的鏡子，不是算命、不是命定。能量會流動、可以成長；所有結果都是反思的起點，不是定論。</div>
-    <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>內部開發中 · 未公開</div>
-  </section>
-
-</div>
+<!-- CLOSING -->
+<section class="closing">
+  <p class="big reveal-up">而這八種能量，也住在你身上</p>
+  <p class="note reveal-up">只是比例不同——有人擅長開創，有人擅長傾聽，有人需要安靜恢復。看見自己慣用哪幾種、又有哪些還沒長開，是認識自己的起點。</p>
+  <div class="cta-row reveal-up">
+    <a class="cta" href="bagua-persona.html">測測你是哪種能量 →</a>
+    <a class="cta ghost" href="bagua-map.html">先認識八種能量 →</a>
+  </div>
+  <div class="honest reveal-up">這是一面認識自己與關係的鏡子，不是算命、不是命定。能量會流動、可以成長；所有結果都是反思的起點，不是定論。</div>
+  <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>內部開發中 · 未公開</div>
+</section>
 
 <script>
-// ── 五行色 ──
-var WX={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
-// ── 極性對成直徑的座標（重用 bagua-map 的 POLAR）──
 var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
            kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
-// ── 後天卦序（節點浮現順序）──
-var CYCLE_ORDER=['zhen','xun','li','kun','dui','qian','kan','gen'];
-// ── 八能量：卦象、名、五行、功能 ──
-var E={
- qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造'},
- dui :{sym:'☱',nm:'兌',wx:'metal',fn:'交流'},
- li  :{sym:'☲',nm:'離',wx:'fire', fn:'覺察'},
- zhen:{sym:'☳',nm:'震',wx:'wood', fn:'啟動'},
- xun :{sym:'☴',nm:'巽',wx:'wood', fn:'連結'},
- kan :{sym:'☵',nm:'坎',wx:'water',fn:'恢復'},
- gen :{sym:'☶',nm:'艮',wx:'earth',fn:'界線'},
- kun :{sym:'☷',nm:'坤',wx:'earth',fn:'承載'}
-};
-// 名稱在輪外側的偏移方向（讓字往圓外擺，不壓住節點）
-function labelOffset(p){
-  var dx=p.x-200, dy=p.y-200, len=Math.hypot(dx,dy)||1;
-  return {ox:dx/len, oy:dy/len};
-}
+var RING=['qian','li','zhen','dui','kun','kan','gen','xun'];
+var E={qian:{s:'☰',n:'乾',f:'創造'},li:{s:'☲',n:'離',f:'覺察'},zhen:{s:'☳',n:'震',f:'啟動'},
+       dui:{s:'☱',n:'兌',f:'交流'},kun:{s:'☷',n:'坤',f:'承載'},kan:{s:'☵',n:'坎',f:'恢復'},
+       gen:{s:'☶',n:'艮',f:'界線'},xun:{s:'☴',n:'巽',f:'連結'}};
+var NS='http://www.w3.org/2000/svg';
+function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
 
-var SVGNS='http://www.w3.org/2000/svg';
-function el(name,attrs){var e=document.createElementNS(SVGNS,name);
-  for(var k in attrs) e.setAttribute(k,attrs[k]); return e;}
-
-// ── 極性對角線（四條直徑，畫出動畫）──
 var PAIRS=[['qian','kun'],['li','kan'],['zhen','gen'],['dui','xun']];
 var axes=document.getElementById('axes');
-PAIRS.forEach(function(pr){
-  var a=POLAR[pr[0]], b=POLAR[pr[1]];
-  axes.appendChild(el('line',{'class':'axis',x1:a.x,y1:a.y,x2:b.x,y2:b.y}));
-});
+PAIRS.forEach(function(p){var a=POLAR[p[0]],b=POLAR[p[1]];
+  axes.appendChild(el('line',{'class':'axis',x1:a.x,y1:a.y,x2:b.x,y2:b.y}));});
 
-// ── 節點（依後天卦序排，stagger 浮現）──
+var octa=document.getElementById('octa');
+var d='M'+RING.map(function(k){return POLAR[k].x+' '+POLAR[k].y;}).join(' L ')+' Z';
+octa.appendChild(el('path',{'class':'ringline draw',d:d,style:'--len:1100;animation-delay:.2s'}));
+
 var nodes=document.getElementById('nodes');
-CYCLE_ORDER.forEach(function(k,i){
-  var p=POLAR[k], d=E[k], c=WX[d.wx], off=labelOffset(p);
-  var g=el('g',{'class':'node'});
-  g.style.transitionDelay=(i*0.12)+'s, '+(i*0.12)+'s';
-  g.appendChild(el('circle',{'class':'disc',cx:p.x,cy:p.y,r:37,fill:c}));
-  var sym=el('text',{'class':'sym',x:p.x,y:p.y}); sym.textContent=d.sym; g.appendChild(sym);
-  // 名稱＋功能放圓外側
-  var lx=p.x+off.ox*60, ly=p.y+off.oy*60;
-  var nm=el('text',{'class':'nm',x:lx,y:ly+ (off.oy>=0?14:-2)}); nm.textContent=d.nm; g.appendChild(nm);
-  var fn=el('text',{'class':'fn',x:lx,y:ly+ (off.oy>=0?29:13)}); fn.textContent=d.fn; g.appendChild(fn);
+RING.forEach(function(k,i){
+  var p=POLAR[k],dd=E[k],dx=p.x-200,dy=p.y-200,len=Math.hypot(dx,dy)||1,ox=dx/len,oy=dy/len;
+  var g=el('g',{'class':'node'});g.style.animationDelay=(0.7+i*0.1)+'s';
+  g.appendChild(el('circle',{'class':'node-disc',cx:p.x,cy:p.y,r:24}));
+  var sym=el('text',{'class':'node-sym',x:p.x,y:p.y+1});sym.textContent=dd.s;g.appendChild(sym);
+  var lx=p.x+ox*46,ly=p.y+oy*46;
+  var nm=el('text',{'class':'node-nm',x:lx,y:ly+(oy>=0?14:-4)});nm.textContent=dd.n;g.appendChild(nm);
+  var fn=el('text',{'class':'node-fn',x:lx,y:ly+(oy>=0?28:10)});fn.textContent=dd.f;g.appendChild(fn);
   nodes.appendChild(g);
 });
 
-// ── 捲動揭示 ──
-var io=new IntersectionObserver(function(ents){
-  ents.forEach(function(en){
-    if(en.isIntersecting){ en.target.classList.add(en.target.id==='wheelWrap'?'reveal':'in');
-      io.unobserve(en.target); }
-  });
-},{threshold:.35});
+var io=new IntersectionObserver(function(es){es.forEach(function(en){
+  if(en.isIntersecting){en.target.classList.add(en.target.id==='wheelWrap'?'reveal':'in');io.unobserve(en.target);}
+});},{threshold:.3});
 io.observe(document.getElementById('wheelWrap'));
 [].forEach.call(document.querySelectorAll('.reveal-up'),function(n){io.observe(n);});
 </script>

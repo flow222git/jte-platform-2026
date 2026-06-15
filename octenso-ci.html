@@ -1,0 +1,308 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Octenso ｜ 八態能格 · 品牌識別 CI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ── 品牌主色 Brand core ── */
+    --ink:#23241f;          /* 墨 — logo / 標題 */
+    --ink-soft:#3a3a32;
+    --paper:#f4efe4;        /* 紙 — 產品底 */
+    --paper-card:#fffdf6;   /* 卡面 */
+    --white:#ffffff;        /* logo 淨空白 */
+    --line:#d8cdbc;
+    --hair:#bcb09a;
+    --muted:#7d7568;
+    /* ── 輔助 Accent ── */
+    --pine:#35614f;         /* CTA / 連結 */
+    --gold:#a9823b;
+    /* ── 能量色 Energy（五行・僅產品內語意）── */
+    --metal:#b0996a; --wood:#5f7d4a; --water:#4d6b86; --fire:#9d4b34; --earth:#a98238;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"Noto Sans TC",ui-sans-serif,sans-serif;line-height:1.8;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .wrap{max-width:920px;margin:0 auto;padding:0 22px}
+  a{color:var(--ink)}
+
+  /* wordmark / lockup */
+  .wm{font-family:"Jost",ui-sans-serif,sans-serif;font-weight:300;letter-spacing:.01em}
+
+  /* page head */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:12px;color:var(--muted)}
+  .topbar a{color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;
+    padding:5px 12px;background:var(--paper-card)}
+  .pagehead{text-align:center;padding:28px 0 6px}
+  .pagehead .k{font-family:"Jost",sans-serif;font-weight:400;font-size:12px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase}
+  .pagehead h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:26px;letter-spacing:.06em;margin:10px 0 4px}
+  .pagehead p{font-size:13px;color:var(--muted)}
+
+  /* section scaffolding */
+  section{margin:42px 0}
+  .sec-no{font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.2em;color:var(--muted)}
+  .sec-t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:19px;letter-spacing:.04em;margin:2px 0 4px}
+  .sec-d{font-size:12.5px;color:var(--muted);max-width:560px;line-height:1.85;margin-bottom:18px}
+  .panel{background:transparent;border:1px solid var(--hair);border-radius:16px;padding:30px}
+
+  /* ───── LOGO LOCKUP ───── */
+  .lockup{display:flex;align-items:center;gap:26px;justify-content:center;flex-wrap:wrap}
+  .enso{display:block;object-fit:contain}
+  .lock-txt{display:flex;flex-direction:column;gap:9px}
+  .lock-row{display:flex;align-items:center;gap:18px}
+  .lock-row .name{font-family:"Jost",sans-serif;font-weight:200;font-size:48px;letter-spacing:.012em;line-height:1;color:var(--ink)}
+  .lock-row .div{width:1.5px;height:42px;background:var(--ink);opacity:.6}
+  .lock-row .zh{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:33px;letter-spacing:.22em;
+    padding-left:.22em;color:var(--ink)}
+  .lock-tag{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;letter-spacing:.04em;
+    line-height:1.7;color:var(--ink-soft);text-align:left}
+  .lock-tag .en{font-family:"Jost",sans-serif;font-size:13px;letter-spacing:.02em;color:var(--muted)}
+  .logo-on-paper{background:var(--white)}
+
+  /* variations grid */
+  .vargrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .varbox{border:1px solid var(--line);border-radius:14px;padding:26px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;min-height:150px;background:var(--white)}
+  .varbox.dark{background:var(--ink);color:var(--white)}
+  .varbox.paper{background:var(--paper)}
+  .varbox .vlabel{font-size:11px;color:var(--muted);letter-spacing:.05em}
+  .varbox.dark .vlabel{color:#cfc8b8}
+  .vname{font-family:"Jost",sans-serif;font-weight:300;font-size:26px;line-height:1;color:inherit}
+  .vstack{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .vstack .zh{font-family:"Noto Sans TC",sans-serif;font-weight:300;letter-spacing:.2em;padding-left:.2em;font-size:15px}
+
+  /* clearspace */
+  .clear-demo{position:relative;display:inline-block;padding:38px;background:
+    repeating-linear-gradient(45deg,transparent,transparent 7px,rgba(53,97,79,.05) 7px,rgba(53,97,79,.05) 8px);
+    border:1px dashed var(--line);border-radius:10px}
+  .clear-demo .inner{background:var(--white);padding:8px 14px;border-radius:6px}
+
+  /* color swatches */
+  .swrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper-card)}
+  .sw .chip{height:64px}
+  .sw .meta{padding:8px 11px}
+  .sw .nm{font-size:12.5px;font-weight:500}
+  .sw .hex{font-family:"Jost",monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .sw .use{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.55}
+  .grp-l{font-size:12px;font-weight:500;color:var(--ink);margin:16px 0 9px;letter-spacing:.04em}
+  .grp-l span{color:var(--muted);font-weight:400}
+
+  /* type specimens */
+  .type-row{border-bottom:1px solid var(--line);padding:16px 0;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+  .type-row:last-child{border-bottom:none}
+  .type-tag{flex:none;width:130px;font-size:11px;color:var(--muted);line-height:1.5}
+  .type-tag b{display:block;color:var(--ink);font-size:12.5px;font-weight:500}
+  .ts-wm{font-family:"Jost",sans-serif;font-weight:200;font-size:40px;letter-spacing:.012em;color:var(--ink)}
+  .ts-h{font-family:"Noto Serif TC",serif;font-weight:600;font-size:25px}
+  .ts-b{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:15px;max-width:480px;color:var(--ink-soft)}
+  .ts-s{font-family:"Jost",sans-serif;font-weight:400;font-size:12px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
+
+  /* motif */
+  .trigrams{font-size:34px;letter-spacing:.14em;text-align:center;line-height:1.4}
+  .trigrams .t{display:inline-block}
+  .motif-note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+
+  /* voice do/dont */
+  .vt{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .vt-col{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--paper-card)}
+  .vt-col h4{font-size:13px;margin-bottom:10px;letter-spacing:.04em}
+  .vt-col.do h4{color:var(--pine)} .vt-col.dont h4{color:var(--fire)}
+  .vt-col li{list-style:none;font-size:13px;line-height:1.8;padding-left:20px;position:relative;color:var(--ink-soft)}
+  .vt-col.do li::before{content:"✓";position:absolute;left:0;color:var(--pine)}
+  .vt-col.dont li::before{content:"✕";position:absolute;left:0;color:var(--fire)}
+
+  .note-box{font-size:12px;color:var(--muted);background:var(--paper-card);border-left:3px solid var(--gold);
+    border-radius:0 10px 10px 0;padding:13px 16px;line-height:1.85;margin-top:14px}
+  .foot{text-align:center;font-size:11.5px;color:var(--muted);margin:46px 0;line-height:1.9}
+
+  @media(max-width:640px){
+    .lock-row .name{font-size:34px} .lock-row .zh{font-size:25px} .lock-row .div{height:32px}
+    .vargrid,.vt{grid-template-columns:1fr}
+    .panel{padding:22px}
+  }
+</style></head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <a href="index.html">← 練息場</a>
+    <span class="wm">OCTENSO · CI v0.1</span>
+  </div>
+
+  <div class="pagehead">
+    <div class="k">Brand Identity</div>
+    <h1>Octenso ｜ 八態能格</h1>
+    <p>品牌識別系統 · 內部草案，依你提供的 logo 圖檔長成</p>
+  </div>
+
+  <!-- 1 ─ PRIMARY LOGO -->
+  <section>
+    <div class="sec-no">01</div>
+    <div class="sec-t">主標誌 — 標準組合 Lockup</div>
+    <div class="sec-d">毛筆 enso（円相）＋幾何細無襯線字標，以細直線分隔中英；近正圓的「O」呼應 enso。這是對外的第一印象，優先使用此組合。</div>
+    <div class="panel logo-on-paper">
+      <div class="lockup">
+        <img class="enso" src="assets/enso.png" width="132" height="132" alt="enso 円相">
+        <div class="lock-txt">
+          <div class="lock-row">
+            <span class="name">Octenso</span>
+            <span class="div"></span>
+            <span class="zh">八態能格</span>
+          </div>
+          <div class="lock-tag">看見你的能量　選擇你的流動<br><span class="en">See your energy. Shape your flow.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note-box">enso ＝你提供的毛筆円相，已裁切去背為透明 PNG（<code>assets/enso.png</code>，深色底用 <code>enso-white.png</code>）。日後要換更高解析或岩無真跡，只需替換這兩個檔，不動其餘系統。</div>
+  </section>
+
+  <!-- 2 ─ VARIATIONS -->
+  <section>
+    <div class="sec-no">02</div>
+    <div class="sec-t">標誌變體 Variations</div>
+    <div class="sec-d">依場合選用。空間窄用「符號＋字標」橫式；社群頭像/favicon 用「純符號」；深色底用反白版。</div>
+    <div class="vargrid">
+      <div class="varbox paper">
+        <img class="enso" src="assets/enso.png" width="74" height="74" alt="enso">
+        <div class="vlabel">純符號 enso · 頭像 / favicon</div>
+      </div>
+      <div class="varbox">
+        <div class="vstack">
+          <img class="enso" src="assets/enso.png" width="56" height="56" alt="enso">
+          <span class="vname">Octenso</span>
+          <span class="zh wm" style="font-family:'Noto Sans TC';font-weight:300">八態能格</span>
+        </div>
+        <div class="vlabel">直式堆疊 · 名片 / 海報</div>
+      </div>
+      <div class="varbox">
+        <div style="display:flex;align-items:center;gap:12px">
+          <img class="enso" src="assets/enso.png" width="46" height="46" alt="enso">
+          <span class="vname">Octenso</span>
+        </div>
+        <div class="vlabel">橫式精簡 · 頁首 / 導覽</div>
+      </div>
+      <div class="varbox dark">
+        <div style="display:flex;align-items:center;gap:12px;color:var(--white)">
+          <img class="enso" src="assets/enso-white.png" width="46" height="46" alt="enso 反白">
+          <span class="vname">Octenso</span>
+        </div>
+        <div class="vlabel">反白 · 深色底 / 影片片頭</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ─ CLEAR SPACE -->
+  <section>
+    <div class="sec-no">03</div>
+    <div class="sec-t">淨空與最小尺寸 Clear space</div>
+    <div class="sec-d">標誌四周至少保留「一個 enso 直徑」的淨空，不被文字或邊框逼近。最小使用寬度：橫式 lockup ≥ 180px、純符號 ≥ 28px。</div>
+    <div class="panel" style="text-align:center">
+      <div class="clear-demo">
+        <div class="inner" style="display:flex;align-items:center;gap:14px">
+          <img class="enso" src="assets/enso.png" width="50" height="50" alt="enso">
+          <span class="vname" style="font-size:28px">Octenso</span>
+        </div>
+      </div>
+      <div class="motif-note">斜線區＝建議淨空（≈ 一個 enso）</div>
+    </div>
+  </section>
+
+  <!-- 4 ─ COLOR -->
+  <section>
+    <div class="sec-no">04</div>
+    <div class="sec-t">色彩系統 Color</div>
+    <div class="sec-d">品牌以「墨＋紙」為主，極簡乾淨；五行能量色<b>只在產品內承載語意</b>（八能量、雷達、資料），不當品牌底色。松綠為主要行動/連結色。</div>
+
+    <div class="grp-l">品牌主色 <span>Brand core — logo 與大面積</span></div>
+    <div class="swrow">
+      <div class="sw"><div class="chip" style="background:#23241f"></div><div class="meta"><div class="nm">墨 Ink</div><div class="hex">#23241F</div><div class="use">logo・標題・主文字</div></div></div>
+      <div class="sw"><div class="chip" style="background:#f4efe4"></div><div class="meta"><div class="nm">紙 Paper</div><div class="hex">#F4EFE4</div><div class="use">產品背景底</div></div></div>
+      <div class="sw"><div class="chip" style="background:#fffdf6;box-shadow:inset 0 0 0 1px #e6dcc9"></div><div class="meta"><div class="nm">卡 Card</div><div class="hex">#FFFDF6</div><div class="use">卡面・浮層</div></div></div>
+    </div>
+
+    <div class="grp-l">輔助 <span>Accent — 行動・連結・點綴</span></div>
+    <div class="swrow">
+      <div class="sw"><div class="chip" style="background:#35614f"></div><div class="meta"><div class="nm">松綠 Pine</div><div class="hex">#35614F</div><div class="use">主 CTA・連結</div></div></div>
+      <div class="sw"><div class="chip" style="background:#a9823b"></div><div class="meta"><div class="nm">金 Gold</div><div class="hex">#A9823B</div><div class="use">eyebrow・小標籤</div></div></div>
+    </div>
+
+    <div class="grp-l">能量色 <span>Energy / 五行 — 僅產品內承載語意</span></div>
+    <div class="swrow">
+      <div class="sw"><div class="chip" style="background:#b0996a"></div><div class="meta"><div class="nm">金 Metal</div><div class="hex">#B0996A</div><div class="use">乾・兌</div></div></div>
+      <div class="sw"><div class="chip" style="background:#5f7d4a"></div><div class="meta"><div class="nm">木 Wood</div><div class="hex">#5F7D4A</div><div class="use">震・巽</div></div></div>
+      <div class="sw"><div class="chip" style="background:#4d6b86"></div><div class="meta"><div class="nm">水 Water</div><div class="hex">#4D6B86</div><div class="use">坎</div></div></div>
+      <div class="sw"><div class="chip" style="background:#9d4b34"></div><div class="meta"><div class="nm">火 Fire</div><div class="hex">#9D4B34</div><div class="use">離</div></div></div>
+      <div class="sw"><div class="chip" style="background:#a98238"></div><div class="meta"><div class="nm">土 Earth</div><div class="hex">#A98238</div><div class="use">艮・坤</div></div></div>
+    </div>
+  </section>
+
+  <!-- 5 ─ TYPOGRAPHY -->
+  <section>
+    <div class="sec-no">05</div>
+    <div class="sec-t">字體 Typography</div>
+    <div class="sec-d">字標用幾何細無襯線（Jost，圓潤幾何、呼應 enso）；中文標題用襯線（思源宋體）求溫度；內文用無襯線（思源黑體）求清晰。</div>
+    <div class="panel">
+      <div class="type-row"><div class="type-tag"><b>字標 Wordmark</b>Jost Thin 200<br>(Futura 系幾何無襯線)</div><div class="ts-wm">Octenso</div></div>
+      <div class="type-row"><div class="type-tag"><b>中文標題 Heading</b>思源宋體 SemiBold</div><div class="ts-h serif">看見你的能量</div></div>
+      <div class="type-row"><div class="type-tag"><b>內文 Body</b>思源黑體 Regular</div><div class="ts-b">能量會流動、可以成長；所有結果都是反思的起點，不是定論。</div></div>
+      <div class="type-row"><div class="type-tag"><b>標籤 Label</b>Jost · 字距放寬</div><div class="ts-s">See your energy</div></div>
+    </div>
+  </section>
+
+  <!-- 6 ─ MOTIF -->
+  <section>
+    <div class="sec-no">06</div>
+    <div class="sec-t">母題 Motif — 八卦・八角輪</div>
+    <div class="sec-d">八卦象與八角能量輪是品牌的圖形語彙；enso（整體/円相）與八卦（八種能量）一體兩面。圖形用色取「能量色」，背景維持墨紙。</div>
+    <div class="panel">
+      <div class="trigrams">
+        <span class="t" style="color:var(--metal)">☰</span> <span class="t" style="color:var(--metal)">☱</span>
+        <span class="t" style="color:var(--fire)">☲</span> <span class="t" style="color:var(--wood)">☴</span>
+        <span class="t" style="color:var(--wood)">☳</span> <span class="t" style="color:var(--water)">☵</span>
+        <span class="t" style="color:var(--earth)">☶</span> <span class="t" style="color:var(--earth)">☷</span>
+      </div>
+      <div class="motif-note">乾 兌 ｜ 離 巽 ｜ 震 坎 ｜ 艮 坤 — 八種能量，循環流動</div>
+    </div>
+  </section>
+
+  <!-- 7 ─ VOICE -->
+  <section>
+    <div class="sec-no">07</div>
+    <div class="sec-t">語氣 Voice &amp; Tone</div>
+    <div class="sec-d">Octenso 是一面鏡子，不是算命。語氣克制、誠實、留白；描述而不判決。</div>
+    <div class="vt">
+      <div class="vt-col do">
+        <h4>該這樣</h4>
+        <li>說「傾向、能量、此刻」——可流動、可成長</li>
+        <li>描述狀態，把判斷權留給使用者</li>
+        <li>誠實標限制（這是反思起點，不是定論）</li>
+        <li>留白、不說滿；少而精準</li>
+      </div>
+      <div class="vt-col dont">
+        <h4>別這樣</h4>
+        <li>說「你就是 / 註定 / 命中」——貼死標籤</li>
+        <li>預測吉凶、給斬釘截鐵的結論</li>
+        <li>用神祕學包裝、嚇人或討好</li>
+        <li>滿版色彩與裝飾，搶過內容</li>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 ─ TAGLINE -->
+  <section>
+    <div class="sec-no">08</div>
+    <div class="sec-t">標語 Tagline</div>
+    <div class="panel" style="text-align:center;padding:40px 30px">
+      <div class="serif" style="font-size:23px;letter-spacing:.06em;color:var(--ink)">看見你的能量　選擇你的流動</div>
+      <div class="wm" style="font-size:15px;letter-spacing:.06em;color:var(--muted);margin-top:8px">See your energy. Shape your flow.</div>
+    </div>
+    <div class="note-box">哲學：能量會流動（易）＋你能選（「選」＝辶＋巽，巽＝風＝順流）→「看見，是為了能選」。</div>
+  </section>
+
+  <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>CI 草案 v0.1 · 內部開發中 · 未公開</div>
+</div>
+
+</body></html>
