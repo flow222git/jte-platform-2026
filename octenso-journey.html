@@ -1,0 +1,207 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Octenso 八態能格 · 專案歷程 The Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.9;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:640px;margin:0 auto;padding:0 22px}
+  .serif{font-family:"Noto Serif TC",serif}
+
+  .home-link{position:fixed;top:16px;left:16px;z-index:20;font-family:"Jost",sans-serif;font-size:11px;
+    letter-spacing:.08em;color:var(--muted);padding:6px 13px;border:1px solid var(--hair);border-radius:999px;
+    background:rgba(244,239,228,.7);backdrop-filter:blur(5px)}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
+
+  /* header */
+  .head{text-align:center;padding:80px 22px 18px}
+  .lockup{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px}
+  .lockup .enso{width:58px;height:58px;object-fit:contain}
+  .lockup .nm{font-family:"Jost",sans-serif;font-weight:200;font-size:31px;letter-spacing:.04em}
+  .lockup .div{width:1px;height:27px;background:var(--ink);opacity:.4}
+  .lockup .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:18px;letter-spacing:.2em;padding-left:.2em}
+  .head .k{font-family:"Jost",sans-serif;font-weight:400;font-size:11.5px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-bottom:9px}
+  .head h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:clamp(25px,7vw,32px);letter-spacing:.06em;margin-bottom:10px}
+  .head .ask{font-size:13px;color:var(--muted);letter-spacing:.08em}
+
+  /* depth tabs */
+  .tabs{display:flex;justify-content:center;gap:clamp(18px,6vw,40px);margin:26px auto 0;flex-wrap:wrap}
+  .tab{background:none;border:none;cursor:pointer;text-align:center;padding:4px 2px 8px;color:var(--muted);
+    border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+  .tab .tm{display:block;font-family:"Jost",sans-serif;font-weight:300;font-size:18px;letter-spacing:.04em;line-height:1.2}
+  .tab .tl{display:block;font-family:"Noto Sans TC",sans-serif;font-size:11.5px;letter-spacing:.12em;margin-top:3px}
+  .tab:hover{color:var(--ink-soft)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+  .stage{max-width:640px;margin:0 auto;padding:8px 22px 0}
+  .depth{display:none}
+  .depth.show{display:block;animation:fade .5s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .depth .hint{text-align:center;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.18em;
+    color:var(--muted);text-transform:uppercase;margin:30px 0 26px}
+
+  /* 1min — essence */
+  .essence{max-width:500px;margin:0 auto}
+  .lead-line{text-align:center;font-family:"Noto Serif TC",serif;font-size:clamp(17px,4.6vw,20px);
+    line-height:1.85;letter-spacing:.04em;margin-bottom:30px}
+  .lead-line b{color:var(--ink);font-weight:600}
+  .pt{display:flex;gap:16px;align-items:flex-start;padding:16px 2px;border-top:1px solid var(--hair)}
+  .pt:last-of-type{border-bottom:1px solid var(--hair)}
+  .pt .pn{flex:none;font-family:"Jost",sans-serif;font-size:13px;color:var(--muted);width:22px;line-height:1.7}
+  .pt .pc{font-size:14px;line-height:1.85;color:var(--ink-soft)}
+  .pt .pc b{color:var(--ink);font-weight:400}
+
+  /* 5min — logic */
+  .blk{margin-bottom:30px}
+  .blk h3{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;letter-spacing:.04em;margin-bottom:8px}
+  .blk h3 .gl{font-family:"Songti TC",serif;font-size:14px;color:var(--muted);margin-left:8px;font-weight:400}
+  .blk p{font-size:13.5px;color:var(--ink-soft);line-height:1.95}
+  .blk p b{color:var(--ink);font-weight:400}
+  .layers{margin:14px 0 0;border-top:1px solid var(--hair)}
+  .layer{display:flex;gap:14px;padding:13px 2px;border-bottom:1px solid var(--hair)}
+  .layer .lk{flex:none;width:34px;font-family:"Jost",sans-serif;font-size:13px;color:var(--muted)}
+  .layer .lt{font-size:13.5px;line-height:1.8}
+  .layer .lt b{color:var(--ink);font-weight:400}
+  .creed{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+  .creed span{font-size:12px;color:var(--muted);border:1px solid var(--hair);border-radius:999px;padding:4px 13px;letter-spacing:.04em}
+
+  /* 20min — structure timeline */
+  .timeline{position:relative;max-width:600px;margin:6px auto 0;padding-left:46px}
+  .timeline::before{content:"";position:absolute;left:14px;top:8px;bottom:8px;width:1px;background:var(--hair)}
+  .entry{position:relative;margin-bottom:42px}
+  .entry::before{content:"";position:absolute;left:-36px;top:7px;width:9px;height:9px;border:1px solid var(--ink);
+    border-radius:50%;background:var(--paper)}
+  .entry .no{font-family:"Jost",sans-serif;font-weight:300;font-size:12px;letter-spacing:.2em;color:var(--muted)}
+  .entry h2{font-family:"Noto Serif TC",serif;font-weight:600;font-size:18px;letter-spacing:.03em;margin:2px 0 7px}
+  .entry h2 .glyph{font-family:"Songti TC",serif;font-size:14px;color:var(--ink);margin-left:8px;font-weight:400;letter-spacing:.1em}
+  .entry p{font-size:13.5px;color:var(--ink-soft);line-height:1.95}
+  .entry p b{color:var(--ink);font-weight:400}
+
+  /* closing */
+  .closing{text-align:center;padding:18px 22px 10px;max-width:520px;margin:18px auto 0}
+  .hr{width:34px;height:1px;background:var(--hair);margin:0 auto 26px}
+  .closing .tag{font-family:"Noto Serif TC",serif;font-size:clamp(18px,5vw,22px);letter-spacing:.06em;line-height:1.7}
+  .closing .tag-en{font-family:"Jost",sans-serif;font-size:13px;letter-spacing:.05em;color:var(--muted);margin-top:8px}
+  .closing .now{font-size:12px;color:var(--muted);letter-spacing:.12em;margin-top:22px}
+  .foot{text-align:center;font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.13em;color:var(--muted);
+    text-transform:uppercase;margin:34px 0 50px;line-height:2.2}
+  .foot .ef{width:24px;height:24px;object-fit:contain;display:block;margin:0 auto 10px;opacity:.7}
+
+  .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}html{scroll-behavior:auto}.depth.show{animation:none}}
+</style></head>
+<body>
+<a class="home-link" href="bagua.html">← 八態能格</a>
+
+<header class="head">
+  <div class="lockup">
+    <img class="enso" src="assets/enso.png" alt="enso">
+    <span class="nm">Octenso</span><span class="div"></span><span class="zh">八態能格</span>
+  </div>
+  <div class="k">The Journey</div>
+  <h1>專案歷程</h1>
+  <p class="ask">你有多少時間？選一個深度。</p>
+
+  <div class="tabs">
+    <button class="tab on" data-d="d1"><span class="tm">1′</span><span class="tl">重點</span></button>
+    <button class="tab" data-d="d5"><span class="tm">5′</span><span class="tl">邏輯</span></button>
+    <button class="tab" data-d="d20"><span class="tm">20′</span><span class="tl">結構</span></button>
+  </div>
+</header>
+
+<div class="stage">
+
+  <!-- ───── 1 分鐘 · 重點 ───── -->
+  <section class="depth show" id="d1">
+    <div class="hint">1 分鐘 · 一眼看懂</div>
+    <div class="essence">
+      <p class="lead-line"><b>Octenso ｜ 八態能格</b><br>用《易經》八卦的八種能量，<br>做一面認識自己與關係的鏡子。</p>
+      <div class="pt"><div class="pn">01</div><div class="pc">這八種能量都<b>住在你身上</b>，只是比例不同——就是你的「<b>底色</b>」。</div></div>
+      <div class="pt"><div class="pn">02</div><div class="pc">從底色，延伸到<b>此刻、場域、與人 / 與處境</b>的合盤。</div></div>
+      <div class="pt"><div class="pn">03</div><div class="pc">再到<b>照顧自己</b>：看見消耗、學會調節、流動回平衡。</div></div>
+      <div class="pt"><div class="pn">04</div><div class="pc">它是<b>一面鏡子，不是算命</b>——能量會流動，而你能選。</div></div>
+    </div>
+  </section>
+
+  <!-- ───── 5 分鐘 · 邏輯 ───── -->
+  <section class="depth" id="d5">
+    <div class="hint">5 分鐘 · 它為什麼這樣長</div>
+
+    <div class="blk">
+      <h3>為什麼是八卦？<span class="gl">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</span></h3>
+      <p>把八卦理解成八種<b>功能化的能量</b>——乾創造、坎恢復、離覺察、艮界線⋯⋯。不談神祕，只談你怎麼運作。它們<b>兩兩相對、循環流動、五行相生相剋</b>，是一套有結構的語言，而不是一堆符號。</p>
+    </div>
+
+    <div class="blk">
+      <h3>四層邏輯</h3>
+      <p>從「你是誰」一路長到「怎麼照顧自己」，每一層都用<b>同一把量尺</b>，所以能彼此相減、對照。</p>
+      <div class="layers">
+        <div class="layer"><div class="lk">L0</div><div class="lt"><b>底色</b>　你慣用哪些能量＝整體的你。</div></div>
+        <div class="layer"><div class="lk">L1</div><div class="lt"><b>此刻 × 場域</b>　同一把尺，看你在不同情境怎麼變、哪裡硬撐。</div></div>
+        <div class="layer"><div class="lk">L2</div><div class="lt"><b>合盤</b>　你 × 他人、你 × 處境——萬物皆可化為一張八維盤。</div></div>
+        <div class="layer"><div class="lk">L3</div><div class="lt"><b>管理</b>　消耗預測 → 調節迴路 → 籤詩，從「了解」走向「照顧」。</div></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h3>三條誠實鐵則</h3>
+      <p>整套系統的底線，也是它和「算命」的分野：</p>
+      <div class="creed"><span>鏡子，不是算命</span><span>描述，不是判決</span><span>看見，是為了能選</span></div>
+    </div>
+
+    <div class="blk">
+      <h3>品牌的邏輯<span class="gl">○</span></h3>
+      <p>名字 <b>Octenso</b>＝Oct（八）＋enso（円相／禪圓），円相正是「鏡」。視覺走<b>線條極簡</b>：對外是克制有質感的線條，<b>顏色只在產品內承載意義</b>（能量、雷達、資料）——外靜內動。</p>
+    </div>
+  </section>
+
+  <!-- ───── 20 分鐘 · 結構 ───── -->
+  <section class="depth" id="d20">
+    <div class="hint">20 分鐘 · 一路走來</div>
+    <div class="timeline">
+      <div class="entry rv"><div class="no">01 · 緣起</div><h2>一面鏡子，不是算命<span class="glyph">☯</span></h2><p>把《易經》八卦理解成<b>八種功能化的能量</b>。定調：用占卜的具體性，做一面<b>誠實的反思鏡</b>。先做出「八卦能量系統圖」，把極性對、五行生剋、後天循環畫成一張可探索的輪。</p></div>
+      <div class="entry rv"><div class="no">02 · 認識自己</div><h2>你的底色<span class="glyph">☰ ☷</span></h2><p>八態能格<b>人格測驗</b>（24 題）測出你慣用的能量「底色」——八角雷達、八種型、優勢與盲點。誠實框架：底色是<b>傾向、會流動、可成長</b>，不是固定標籤。</p></div>
+      <div class="entry rv"><div class="no">03 · 此刻與場域</div><h2>整體的你，與當下的你<span class="glyph">☲ ☵</span></h2><p>底色是「整體的你」；再加<b>此刻</b>（接問易卜卦的能量快照）與<b>場域</b>（工作／關係／獨處，同題換框架）。同一把尺可直接相減，看見你在哪裡壓抑、哪裡硬撐。</p></div>
+      <div class="entry rv"><div class="no">04 · 你與他人、處境</div><h2>萬物皆可化為一張盤<span class="glyph">☱ ☴</span></h2><p>不只人——<b>「局」與「職業」也都是一張八維能量盤</b>。於是有了雙人與團隊<b>合盤</b>（同頻、互補、誰滋養誰），以及「測一個局」與「職業配對」。</p></div>
+      <div class="entry rv"><div class="no">05 · 照顧自己</div><h2>從「了解」走向「管理」<span class="glyph">☶</span></h2><p>消耗熱點預測（你弱、卻一再被要求的能量）、<b>能量調節迴路</b>（看見 → 選擇 → 行動 → 回看），以及與書法家<b>岩無</b>合作的「籤詩小卡」——失衡時，陪你一張籤。</p></div>
+      <div class="entry rv"><div class="no">06 · 都記在一頁</div><h2>你的軌跡<span class="glyph">☳</span></h2><p>把散落各處的紀錄收進「記錄中心」：底色、場域、局、合盤、此刻、消耗熱點。<b>本機、不上傳、不登入</b>。</p></div>
+      <div class="entry rv"><div class="no">07 · 命名與精神</div><h2>Octenso ｜ 八態能格</h2><p><b>Octenso</b>＝Oct（八）＋enso（円相／禪圓），呼應「成為一面鏡子」。靈魂標語：<b>「看見你的能量，選擇你的流動」</b>——能量會流動（易），而你能選。</p></div>
+      <div class="entry rv"><div class="no">08 · 品牌識別</div><h2>毛筆與幾何</h2><p>確立 CI：<b>毛筆 enso ＋ Jost 幾何字標</b>的標準組合。墨黑與紙白為主色，<b>五行色只在產品內承載語意</b>。語氣克制、誠實、留白——描述，而不判決。</p></div>
+      <div class="entry rv"><div class="no">09 · 線條極簡</div><h2>對外極簡，對內有意義</h2><p>全站收斂成<b>「線條極簡」</b>：hairline 線稿八角輪、純墨 chrome、文字連結取代大按鈕。對外是克制的線條，對內顏色才出場、承載意義。</p></div>
+    </div>
+  </section>
+
+</div>
+
+<section class="closing">
+  <div class="hr"></div>
+  <div class="tag">看見你的能量　選擇你的流動</div>
+  <div class="tag-en">See your energy. Shape your flow.</div>
+  <div class="now">— 持續生長中 —</div>
+</section>
+
+<div class="foot"><img class="ef" src="assets/enso.png" alt="">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>內部開發中 · 未公開</div>
+
+<script>
+var tabs=document.querySelectorAll('.tab'),depths=document.querySelectorAll('.depth');
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+// observe every .rv on load; entries reveal whenever their panel becomes visible (handles display:none→block)
+[].forEach.call(document.querySelectorAll('.rv'),function(n){io.observe(n);});
+function showDepth(id){
+  tabs.forEach(function(x){x.classList.toggle('on',x.dataset.d===id);});
+  depths.forEach(function(d){d.classList.toggle('show',d.id===id);});
+  // safety net: if any .rv in the shown panel is still hidden, force-reveal it
+  [].forEach.call(document.querySelectorAll('#'+id+' .rv'),function(n){n.classList.add('in');});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+tabs.forEach(function(t){t.addEventListener('click',function(){showDepth(t.dataset.d);});});
+</script>
+</body></html>
