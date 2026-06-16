@@ -52,6 +52,21 @@
   .ask li{margin:5px 0 5px 18px;font-size:14px}
   .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:16px;line-height:1.9}
   @media print{.top{display:none}body{max-width:none}details{break-inside:avoid}}
+
+    /* —— Octenso 視覺收斂 override v2：綠只留給雷達盤與圖例 —— */
+  :root{--surface:#f8f4ec;--surface2:#efe9dc;}
+  h1,h2,h3,h4,h5,summary,.fb-h{color:var(--ink)!important;}
+  a{color:var(--ink);}
+  .base-hint a,.sys-doc .sd-list a{color:var(--ink)!important;}
+  .honest,.closing,.cn,.compat-note,.pair-block,.memo-block,.memo-watch,.drain-ok,
+  .drain-honest,.reg-block,.base-hint,.view-copy,.v3-hint,.remind-text,.gc-remind,
+  .eight-closing,.field-banner,#facet-banner,.sd-note{border-left-color:var(--hair)!important;}
+  .toggle-bar button.active,.cbtn,.memo-chk.on,.reg-did.done,.swbtn.on,
+  .opt.sel .dot,.prog-fill{background:var(--ink)!important;border-color:var(--ink)!important;}
+  .sd-tag{background:var(--muted)!important;}
+  .opt.sel{border-color:var(--ink)!important;background:#f0ece2!important;}
+  .opt:hover .dot{border-color:var(--ink)!important;}
+  .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
 </style></head>
 <body>
 <div class="top">
