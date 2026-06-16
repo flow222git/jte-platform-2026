@@ -770,13 +770,31 @@ function showTeam(){
         +spread.miss.map(function(w){return WX_MISS_NOTE[w];}).join('；')+'。'
     : '金木水火土<b>五行齊全</b>——這支團隊的能量底盤很完整，各種調性都有人帶。';
 
-  // 具體建議：優先補共同盲點，沒有就補沒人罩的覆蓋缺口
+  // 具體建議：只在「真的有偏弱能量」時才出現（沒缺口就交給下方綜合結論）
+  var hasGaps=(blind&&blind.length)||(cov.gaps&&cov.gaps.length);
   var tipKeys=(blind&&blind.length)?blind.slice(0,3):cov.gaps.slice(0,3);
   var teamTipsTxt = tipKeys.filter(function(k){return TEAM_TIPS[k];}).map(function(k){
     return '<div style="font-size:14px;line-height:1.85;padding:12px 0;border-top:1px solid var(--line)">'
       +'<b style="display:block;color:var(--ink);margin-bottom:3px">補上「'+E[k].nm+'·'+E[k].fn.split('／')[0]+'」</b>'+TEAM_TIPS[k]+'</div>';
   }).join('');
-  if(!teamTipsTxt){ teamTipsTxt='<div style="font-size:14px;line-height:1.85;padding:12px 0;border-top:1px solid var(--line)">八種能量都有人罩，沒有明顯缺口——把現有的多樣性用好，留意別讓某種能量過度集中在一個人身上、把他燒乾。</div>'; }
+
+  // ── 綜合結論：唯一負責「解釋＋下結論」的一段（消除各區塊互相打架）──
+  var WX_TYPE={metal:'果斷決策',wood:'啟動連結',water:'沉潛恢復',fire:'敏銳洞察',earth:'穩定承載'};
+  var vHead, vBody;
+  if(cov.gaps.length){
+    vHead='有需要補的能量';
+    vBody='有 <b>'+cov.gaps.length+'</b> 種能量整隊偏弱（'+cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('、')+'）——遇到需要它的場面會吃力。<b>這是最該優先補的</b>：找一個這方面強的人，或指定有人補位。';
+  } else if((!pair||pair.score<=0)||spread.miss.length>=2){
+    var mt=spread.miss.map(function(w){return WLAB[w]+'('+WX_TYPE[w]+')';}).join('、');
+    vHead='基本盤夠用，但偏同質';
+    vBody='八種能量多數都有人能撐，短期不會整隊空著；但大家領頭的能量偏集中'+(spread.miss.length?('，少了 '+spread.miss.map(function(w){return WLAB[w];}).join('、')+' 的調性'):'')+'。<b>不缺救火的人，缺的是多樣性</b>——想更立體，可找一個調性明顯不同的夥伴'+(spread.miss.length?('（偏 '+mt+'）'):'')+'，或團隊裡有人刻意長出這方向。不急，但補了會更全面。';
+  } else {
+    vHead='底盤完整、又多元';
+    vBody='覆蓋夠廣、調性也多元——這支隊伍的能量底盤很完整。重點放在<b>發揮</b>現有的多樣性，不必急著補人。';
+  }
+  // 底盤資料行（覆蓋數＋最互補搭檔，純呈現、不再各自下判斷）
+  var baseLine='有人能撐起 <b>'+cov.coveredCount+'</b>／8 種能量';
+  if(pair&&pair.score>0){ baseLine+='　·　最互補搭檔：<b>'+esc(pair.a.name)+'</b> × <b>'+esc(pair.b.name)+'</b>'; }
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToManage()">← 回成員管理</a>'
@@ -801,24 +819,20 @@ function showTeam(){
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>🗺️ 能量角色地圖</h3>'+roleHtml
-     +'<div class="judge">'+divText+'</div>'
+   +'<div class="block"><h3>🧭 這支團隊</h3>'
+     +'<div class="judge" style="margin-top:0"><b style="color:var(--ink)">'+vHead+'</b><br>'+vBody+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>🕳️ 共同盲點</h3><div class="judge" style="margin-top:0">'+blindText+'</div></div>'
+   +'<div class="block"><h3>🗺️ 能量角色地圖</h3>'+roleHtml+'</div>'
 
-   +'<div class="block"><h3>🌳 五行分布</h3>'
+   +'<div class="block"><h3>🌳 能量底盤</h3>'
      +'<div class="wx-grid">'+wxChips+'</div>'
-     +'<div class="judge" style="margin-top:0">'+wxText+'</div>'
+     +'<div class="judge" style="margin-top:10px;font-size:13px;color:var(--muted)">'+baseLine+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>🛡️ 能量覆蓋度</h3><div class="judge" style="margin-top:0">'+covText+'</div></div>'
-
-   +'<div class="block"><h3>💡 給團隊的具體建議</h3>'+teamTipsTxt
+   +(hasGaps?('<div class="block"><h3>💡 給團隊的具體建議</h3>'+teamTipsTxt
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個團隊做得到的先試。</div>'
-   +'</div>'
-
-   +(pairText?('<div class="block"><h3>🤝 最佳互補配對</h3><div class="judge" style="margin-top:0">'+pairText+'</div></div>'):'')
+   +'</div>'):'')
 
    +'<div style="text-align:center;margin:18px 0 6px">'
      +'<button onclick="shareTeamImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer">📤 下載團隊圖</button>'

@@ -201,12 +201,13 @@ document.getElementById('f').onload=function(){
     var bp2=w.bestPair(two);
     ok(bp2 && [bp2.a.name,bp2.b.name].sort().join('')==='pq','bestPair with exactly 2 returns that pair');
 
-    // 17. 結果渲染：新區塊出現在 showTeam 輸出
+    // 17. 結果渲染：整合後的區塊（綜合結論＋能量底盤＋具體建議）
     w.members=mp; w.showTeam();
     var rhtml=d.getElementById('result').innerHTML;
-    ok(rhtml.indexOf('能量覆蓋度')>=0,'coverage block rendered in result');
-    ok(rhtml.indexOf('最佳互補配對')>=0,'best-pair block rendered in result');
-    ok(rhtml.indexOf('給團隊的具體建議')>=0,'team shows concrete 建議 tips block');
+    ok(rhtml.indexOf('這支團隊')>=0,'synthesis verdict block (這支團隊) rendered');
+    ok(rhtml.indexOf('能量底盤')>=0,'energy-base block (五行+coverage) rendered');
+    ok(rhtml.indexOf('有人能撐起')>=0,'coverage count line rendered in 能量底盤');
+    ok(rhtml.indexOf('給團隊的具體建議')>=0,'concrete 建議 shown when gaps exist (mp has gaps)');
 
     // 18. 底色 gloss 出現在封面/提示
     ok(d.body.innerHTML.indexOf('底色（你慣用的能量）')>=0,'底色 gloss present once');
