@@ -768,18 +768,6 @@ function showTeam(){
     }
   }
 
-  // 五行分布
-  var spread=elementSpread(members);
-  var wxChips=WX_ALL.map(function(w){
-    var has=spread.have.indexOf(w)>=0;
-    return '<span class="wx-chip '+(has?'have':'miss')+'"'+(has?' style="background:'+W[w]+';border-color:'+W[w]+'"':'')+'>'
-      +WLAB[w]+(has?'':' ·缺')+'</span>';
-  }).join('');
-  var wxText = spread.miss.length
-    ? '你們的主能量缺了「<span class="down">'+spread.miss.map(function(w){return WLAB[w];}).join('』『')+'</span>」——'
-        +spread.miss.map(function(w){return WX_MISS_NOTE[w];}).join('；')+'。'
-    : '金木水火土<b>五行齊全</b>——這支團隊的能量底盤很完整，各種調性都有人帶。';
-
   // 具體建議：只在「真的有偏弱能量」時才出現（沒缺口就交給下方綜合結論）
   var hasGaps=(blind&&blind.length)||(cov.gaps&&cov.gaps.length);
   var tipKeys=(blind&&blind.length)?blind.slice(0,3):cov.gaps.slice(0,3);
@@ -789,7 +777,6 @@ function showTeam(){
   }).join('');
 
   // ── 綜合結論：唯一負責「解釋＋下結論」的一段（消除各區塊互相打架）──
-  var WX_TYPE={metal:'果斷決策',wood:'啟動連結',water:'沉潛恢復',fire:'敏銳洞察',earth:'穩定承載'};
   function bullets(arr){ return arr.map(function(t){return '<div style="display:flex;gap:8px;margin:6px 0;line-height:1.8"><span style="color:var(--muted);flex:none">•</span><span>'+t+'</span></div>';}).join(''); }
   var vHead, vBody;
   if(cov.gaps.length){
@@ -798,13 +785,12 @@ function showTeam(){
       '有 <b>'+cov.gaps.length+'</b> 種能量整隊偏弱（'+cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('、')+'）——遇到需要它的場面會吃力。',
       '<b>最該優先補</b>：找一個這方面強的人，或團隊裡指定有人補位。'
     ]);
-  } else if((!pair||pair.score<=0)||spread.miss.length>=2){
-    var mt=spread.miss.map(function(w){return WLAB[w]+'('+WX_TYPE[w]+')';}).join('、');
+  } else if((!pair||pair.score<=0)||dv.concentrated){
     vHead='基本盤夠用，但偏同質';
     vBody=bullets([
       '<b>基本盤夠</b>：多數能量都有人能撐，短期不會整隊空著。',
-      '<b>偏同質</b>：大家領頭的能量偏集中'+(spread.miss.length?('，少了 '+spread.miss.map(function(w){return WLAB[w];}).join('、')+' 的調性'):'')+'。',
-      '<b>想更立體</b>：缺的不是救火的人、是多樣性——找一個調性明顯不同的夥伴'+(spread.miss.length?('（偏 '+mt+'）'):'')+'，或團隊裡有人刻意長。不急，但補了會更全面。'
+      '<b>偏同質</b>：大家領頭的主能量偏集中'+(dv.concentrated?('（'+dv.distinct+' 種主能量）'):'')+'。',
+      '<b>想更立體</b>：缺的不是救火的人、是多樣性——找一個主能量明顯不同的夥伴，或團隊裡有人刻意長。不急，但補了會更全面。'
     ]);
   } else {
     vHead='底盤完整、又多元';
@@ -844,8 +830,7 @@ function showTeam(){
    +'<div class="block"><h3>能量角色地圖</h3>'+roleHtml+'</div>'
 
    +'<div class="block"><h3>能量底盤</h3>'
-     +'<div class="wx-grid">'+wxChips+'</div>'
-     +'<div class="judge" style="margin-top:10px;font-size:13px;color:var(--muted)">'+baseLine+'</div>'
+     +'<div class="judge" style="margin-top:0;font-size:13px;color:var(--muted)">'+baseLine+'</div>'
    +'</div>'
 
    +(hasGaps?('<div class="block"><h3>給團隊的具體建議</h3>'+teamTipsTxt

@@ -49,14 +49,9 @@ document.getElementById('f').onload=function(){
     var idle=w.idleStrength(you,field);
     ok(idle.indexOf('kun')>=0,'idleStrength includes kun (you high field low), got '+JSON.stringify(idle));
 
-    // 5. 五行流向: field top=metal(qian), you top=wood(zhen) → 金剋木 → 局剋你
-    var fieldMetal={qian:90,li:10,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10}; // top qian=metal
-    var youWood={qian:10,li:10,zhen:90,dui:10,kun:10,kan:10,gen:10,xun:10};   // top zhen=wood
-    ok(w.topElement(fieldMetal)==='metal','field topElement metal');
-    ok(w.topElement(youWood)==='wood','you topElement wood');
-    var flow=w.elementFlow(w.topElement(fieldMetal), w.topElement(youWood));
-    ok(flow.type==='fieldKeYou','metal field kills wood you → fieldKeYou, got '+flow.type);
-    ok(flow.text.indexOf('壓到你的主場')>=0,'flow text says 壓到你的主場');
+    // 5. 測試用底色（後續 result render 使用；五行流向已全站移除）
+    var fieldMetal={qian:90,li:10,zhen:10,dui:10,kun:10,kan:10,gen:10,xun:10};
+    var youWood={qian:10,li:10,zhen:90,dui:10,kun:10,kan:10,gen:10,xun:10};
 
     // 6. result render with base overlay + fit + strategy
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:youWood,top:'zhen',title:'震木 · 行動者'}));
@@ -69,8 +64,7 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('.fit-card .fc-num'),'適配度 number shown');
     ok(/%$/.test(d.querySelector('.fit-card .fc-num').textContent),'適配度 ends with %');
     ok(d.querySelector('.block h3') && r.innerHTML.indexOf('應對策略')>=0,'應對策略 section present');
-    ok(r.innerHTML.indexOf('五行能量流向')>=0,'五行流向 section present');
-    ok(r.innerHTML.indexOf('壓到你的主場')>=0,'result shows 局剋你 flow text');
+    ok(r.innerHTML.indexOf('五行')<0,'結果頁不再出現五行（已移除）');
 
     // 7. 發揮點 / 消耗點 文案出現對應能量
     // you qian high+field qian high → shine '創造／決策' ; field li high you li low → forcedWeak '顯現／覺察'

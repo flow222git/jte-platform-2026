@@ -1594,8 +1594,6 @@ function runCompat(){
     .sort(function(a,b){ return (mine[a]+other[a])-(mine[b]+other[b]); }).slice(0,2);
   // 摩擦點：|a-b| 最大前 1–2
   var fric=EKEYS.slice().sort(function(a,b){ return Math.abs(mine[b]-other[b])-Math.abs(mine[a]-other[a]); }).slice(0,2);
-  // 五行流向
-  var flow=elementFlow(topElement(mine),topElement(other));
   // 合成人物
   var merged={}; EKEYS.forEach(function(k){ merged[k]=Math.round((mine[k]+other[k])/2); });
   var mSorted=Object.keys(E).slice().sort(function(a,b){ return merged[b]-merged[a]; });
@@ -1660,11 +1658,6 @@ function runCompat(){
    +'<div class="block"><h3>你們這一對</h3><div style="font-size:14px;line-height:1.9"><b>'+pairKind+'</b><br>'+pairBody+'</div></div>'
    +'<div class="block"><h3>給你們的相處重點</h3>'+tipsTxt
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個你們做得到的試試就好。</div>'
-   +'</div>'
-   +'<div class="block"><h3>五行能量流向</h3>'
-     +'<div class="flowline">'+flow.text+'</div>'
-     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7">'
-       +'生未必是好（一直給，也會洩）；剋未必是壞（適度的約束，反而把人接住）。方向只是描述能量怎麼走。</div>'
    +'</div>'
    +'<div class="block">'
      +'<h3>合成的你們</h3>'

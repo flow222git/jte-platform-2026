@@ -79,21 +79,6 @@ document.getElementById('f').onload=function(){
     ];
     ok(w.blindSpots(nob).length===0,'no blind spot when each energy covered');
 
-    // 6. 五行分布：缺某五行時正確標出缺
-    //   兩人 top = qian(metal) 與 zhen(wood) → have metal,wood; miss water,fire,earth
-    var spread=w.elementSpread([{name:'a',scores:sheet('qian',90,10)},{name:'b',scores:sheet('zhen',90,10)}]);
-    ok(spread.have.indexOf('metal')>=0 && spread.have.indexOf('wood')>=0,'spread has metal+wood');
-    ok(spread.miss.indexOf('water')>=0 && spread.miss.indexOf('fire')>=0 && spread.miss.indexOf('earth')>=0,'spread misses water/fire/earth');
-    // 五行齊全
-    var full=w.elementSpread([
-      {name:'a',scores:sheet('qian',90,10)}, // metal
-      {name:'b',scores:sheet('zhen',90,10)}, // wood
-      {name:'c',scores:sheet('kan',90,10)},  // water
-      {name:'d',scores:sheet('li',90,10)},   // fire
-      {name:'e',scores:sheet('kun',90,10)}   // earth
-    ]);
-    ok(full.miss.length===0,'5 elements covered → no miss, got miss='+JSON.stringify(full.miss));
-
     // 7. 結果渲染：≥2 成員 → 合成盤雷達(svg polygon)＋角色地圖＋共同盲點區
     w.members=[
       {name:'你',scores:{qian:90,li:10,zhen:80,dui:10,kun:10,kan:10,gen:10,xun:10}},
@@ -105,8 +90,7 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('#team-radar svg polygon'),'team radar svg polygon rendered');
     ok(d.querySelectorAll('.role-row').length===3,'3 role-rows in 角色地圖, got '+d.querySelectorAll('.role-row').length);
     ok(d.querySelector('.typecard .tc-title'),'composite type card title present');
-    ok(d.querySelectorAll('.block h3').length>=4,'≥4 result blocks (合成盤/角色/盲點/五行)');
-    ok(d.querySelectorAll('.wx-chip').length===5,'5 五行 chips, got '+d.querySelectorAll('.wx-chip').length);
+    ok(d.querySelectorAll('.block h3').length>=4,'≥4 result blocks (合成盤/角色/盲點/底盤)');
 
     // 8. 角色地圖反映成員名字（escape）
     ok(d.getElementById('result').innerHTML.indexOf('阿明')>=0,'role map shows member name 阿明');
@@ -205,7 +189,7 @@ document.getElementById('f').onload=function(){
     w.members=mp; w.showTeam();
     var rhtml=d.getElementById('result').innerHTML;
     ok(rhtml.indexOf('這支團隊')>=0,'synthesis verdict block (這支團隊) rendered');
-    ok(rhtml.indexOf('能量底盤')>=0,'energy-base block (五行+coverage) rendered');
+    ok(rhtml.indexOf('能量底盤')>=0,'energy-base block (覆蓋度) rendered');
     ok(rhtml.indexOf('有人能撐起')>=0,'coverage count line rendered in 能量底盤');
     ok(rhtml.indexOf('給團隊的具體建議')>=0,'concrete 建議 shown when gaps exist (mp has gaps)');
 

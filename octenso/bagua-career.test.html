@@ -76,7 +76,6 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('#radar-wrap svg polygon[stroke-dasharray]'),'底色 overlay polygon (dashed) in detail');
     ok(d.querySelector('.fit-card .fc-num') && /%$/.test(d.querySelector('.fit-card .fc-num').textContent),'detail fit% shown');
     ok(dr.innerHTML.indexOf('應對策略')>=0,'detail 應對策略 present');
-    ok(dr.innerHTML.indexOf('五行能量流向')>=0,'detail 五行流向 present');
     ok(dr.innerHTML.indexOf('你會在哪發光')>=0,'detail 發揮點 present');
 
     // 9. fitScore identical career == high; same career盤 high score

@@ -107,14 +107,9 @@ document.getElementById('f').onload=function(){
     var cSim=w.cosineSim(hi,lo), cComp=w.complementarity(hi,lo);
     ok(cComp>cSim,'opposite profiles: comp('+cComp.toFixed(2)+') > sim('+cSim.toFixed(2)+')');
 
-    // 13. element flow: elemA(wood) sheng elemB(fire) → 你滋養他 (aToB)
-    //  zhen=wood top for A; li=fire top for B
-    var fa={qian:0,li:0,zhen:90,dui:0,kun:0,kan:0,gen:0,xun:0}; // top wood
-    var fb={qian:0,li:90,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0}; // top fire
-    ok(w.topElement(fa)==='wood','topElement A → wood');
-    ok(w.topElement(fb)==='fire','topElement B → fire');
-    var fl=w.elementFlow('wood','fire');
-    ok(fl.type==='aToB' && fl.text.indexOf('你滋養他')>=0,'wood→fire = 你滋養他, got '+fl.type);
+    // 13. 合盤測試用底色（五行流向已移除）
+    var fa={qian:0,li:0,zhen:90,dui:0,kun:0,kan:0,gen:0,xun:0};
+    var fb={qian:0,li:90,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0};
 
     // 14. runCompat flow: set my scores, showCompat, fill other code, runCompat → radar(2 poly)+numbers
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:fa,top:'zhen',title:w.E.zhen.title}));
@@ -129,7 +124,6 @@ document.getElementById('f').onload=function(){
     var nums=d.querySelectorAll('#compat-out .readcard .rc-num');
     ok(nums.length===2,'two reading cards (同頻/互補), got '+nums.length);
     ok(/%$/.test(nums[0].textContent) && /%$/.test(nums[1].textContent),'reading cards show % numbers');
-    ok(d.querySelector('#compat-out .flowline').innerHTML.indexOf('你滋養他')>=0,'flow shows 你滋養他');
     ok(d.querySelector('#compat-out .typecard .tc-title'),'merged 合成人物 type shown');
     ok(d.getElementById('compat-out').innerHTML.indexOf('給你們的相處重點')>=0,'compat shows 相處重點 tips block');
     ok(d.getElementById('compat-out').innerHTML.indexOf('你們這一對')>=0,'compat shows 🧭 synthesis verdict');
@@ -273,7 +267,6 @@ document.getElementById('f').onload=function(){
     ok(d.getElementById('compat-err').textContent==='','runCompat(URL) no error');
     var unums=d.querySelectorAll('#compat-out .readcard .rc-num');
     ok(unums.length===2,'runCompat(URL) renders 2 reading cards, got '+unums.length);
-    ok(d.querySelector('#compat-out .flowline'),'runCompat(URL) renders flowline');
 
     // 28. 分享區：QR img + 複製連結/下載圖鈕 + 上傳區 + 誠實小字
     ok(d.getElementById('share-qr'),'share QR img present');
