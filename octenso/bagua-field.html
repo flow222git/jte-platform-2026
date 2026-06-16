@@ -160,7 +160,7 @@
   .opt:hover .dot{border-color:var(--ink)!important;}
   .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
   /* 修正：填色主按鈕白字、ghost 維持墨字（避免黑底黑字） */
-  .cbtn:not(.ghost){color:var(--paper)!important;}
+  .cbtn:not(.ghost){color:#fff!important;}
   .cbtn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--hair)!important;}
 </style></head>
 <body>
@@ -467,7 +467,7 @@ function fitScore(you,field){
   return sw===0?0:Math.round(sc/sw*100);
 }
 function fitSentence(fit){
-  if(fit>=70) return '你大致具備這個局要的能量——它要什麼，你身上多半有。<br>上手不會太吃力。';
+  if(fit>=70) return '你大致具備這個局要的能量——<br>它要什麼，你身上多半有。<br>上手不會太吃力。';
   if(fit>=45) return '你有它要的一部分，也有缺口——<br>能做，但某些地方得多花力氣或找人補。';
   return '它要的能量你比較缺——<br>不是做不來，而是要常常動用你不擅長的部分，要留意別硬撐。';
 }
