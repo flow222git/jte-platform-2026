@@ -248,9 +248,9 @@
   .opt.sel{border-color:var(--ink)!important;background:#f0ece2!important;}
   .opt:hover .dot{border-color:var(--ink)!important;}
   .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
-  /* 修正：填色主按鈕白字、ghost 維持墨字（避免黑底黑字） */
-  .cbtn:not(.ghost){color:#fff!important;}
-  .cbtn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--hair)!important;}
+  /* 全站按鈕統一細框（墨字外框、無實心填色） */
+  .cbtn{background:transparent!important;color:var(--ink)!important;border:1px solid var(--hair)!important;font-weight:400!important;box-shadow:none!important;}
+  .cbtn:hover{background:var(--surface)!important;transform:none!important;border-color:var(--ink)!important;}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
