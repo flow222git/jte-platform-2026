@@ -1,0 +1,95 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title></head><body>
+<pre id="out">running...</pre>
+<script src="profile.js"></script>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+try{
+  var P=window.OctensoProfile;
+  ok(!!P,'OctensoProfile exists');
+  ok(P.EKEYS.length===8,'8 EKEYS');
+
+  // helper：全 8 卦同分
+  function flat(v){ var o={}; P.EKEYS.forEach(function(k){o[k]=v;}); return o; }
+
+  // ── 1. 核心修正：水平 × 形狀 分開讀 ──
+  // A：坎90 其他80（高能量，坎只是稍領先） vs B：坎50 其他20（低能量）
+  var A=flat(80); A.kan=90;
+  var B=flat(20); B.kan=50;
+  var pa=P.build(A), pb=P.build(B);
+  ok(pa.ranked[0].k==='kan' && pb.ranked[0].k==='kan','兩者最高都是坎(argmax 相同)');
+  ok(pa.level.band==='high','A 整體水平=高');
+  ok(pb.level.band==='low','B 整體水平=低');
+  ok(pa.level.band!==pb.level.band,'★同樣 top=坎，水平卻不同(修正核心)');
+
+  // ── 2. 主旋律並列 vs 單一主導 ──
+  var soleHigh=flat(20); soleHigh.qian=85; // qian 遙遙領先且高
+  var ph=P.build(soleHigh);
+  ok(ph.leads.length===1 && ph.leads[0]==='qian','差距大 → 單一主旋律');
+  ok(ph.single===true,'qian 85 且獨高 → single=true');
+
+  var coLead=flat(20); coLead.qian=85; coLead.kun=78; // 差7 < LEAD_GAP(15)
+  var pc=P.build(coLead);
+  ok(pc.leads.length===2 && pc.leads.indexOf('qian')>=0 && pc.leads.indexOf('kun')>=0,'差距<15 → 並列主旋律(乾+坤)');
+  ok(pc.single===false,'並列時 single=false');
+
+  var lowTop=flat(20); lowTop.li=48; // 最高但不到 LEAD_MIN(60)
+  var pl=P.build(lowTop);
+  ok(pl.single===false,'最高卦<60 → 不稱單一主導(能量不足)');
+
+  // ── 3. 向度 偏向 × 強度 ──
+  var ax=flat(30);
+  ax.li=70; ax.kan=70;                 // 顯現/收藏：兩極都高
+  ax.zhen=70; ax.gen=20;               // 啟動/停止：明確偏啟動
+  ax.dui=20; ax.xun=20;                // 表達/連結：兩極都低
+  ax.qian=50; ax.kun=46;               // 給出/接納：接近 → 平衡
+  var px=P.build(ax);
+  function axisOf(prof,key){ return prof.axes.filter(function(a){return a.key===key;})[0]; }
+  ok(axisOf(px,'show').intensity==='both-high','離70坎70 → 向度雙高');
+  ok(axisOf(px,'show').lean==='even','離70坎70 → 偏向平衡');
+  ok(axisOf(px,'start').intensity==='single' && axisOf(px,'start').lean==='left','震70艮20 → 單側、偏啟動');
+  ok(axisOf(px,'start').leanName==='啟動','leanName=啟動');
+  ok(axisOf(px,'relate').intensity==='both-low','兌20巽20 → 向度雙低');
+  ok(axisOf(px,'give').lean==='even','乾50坤46(差4<12) → 平衡');
+  ok(px.axes.length===4,'4 向度');
+
+  // ── 4. 資源 / 缺口 ──
+  var rg=flat(50); rg.qian=75; rg.li=62; rg.kan=30; rg.gen=20;
+  var pr=P.build(rg);
+  ok(pr.resources.indexOf('qian')>=0 && pr.resources.indexOf('li')>=0,'≥60 列為資源卦');
+  ok(pr.resources.indexOf('kan')<0,'50/30 不算資源');
+  ok(pr.gaps.indexOf('kan')>=0 && pr.gaps.indexOf('gen')>=0,'<40 列為缺口卦');
+  ok(pr.gaps.indexOf('qian')<0,'高分不算缺口');
+
+  // ── 5. 五行剖面（元素內取平均）──
+  var wx=flat(0); wx.qian=80; wx.dui=40; wx.kan=90; wx.li=30;
+  var pw=P.build(wx);
+  ok(pw.elements.metal===60,'金=(乾80+兌40)/2=60');
+  ok(pw.elements.water===90,'水=坎90');
+  ok(pw.elements.fire===30,'火=離30');
+  ok(pw.elements.wood===0 && pw.elements.earth===0,'木/土=0');
+  ok(pw.topElement==='water','五行剖面最強=水(90)');
+  // 證明剖面級 != 單卦級：單卦最高是坎(水)；但若金被拉高則 topElement 改變
+  var wx2=flat(0); wx2.qian=95; wx2.dui=95; wx2.kan=88;
+  ok(P.build(wx2).topElement==='metal','金(95/95→95) > 水(88) → 剖面級五行=金');
+
+  // ── 6. clamp / 防呆 ──
+  var dirty={qian:150, li:-20, zhen:'abc'}; // 超界/負/非數/缺鍵
+  var pd=P.build(dirty);
+  ok(pd.scores.qian===100,'>100 夾到 100');
+  ok(pd.scores.li===0,'<0 夾到 0');
+  ok(pd.scores.zhen===0,'非數字 → 0');
+  ok(pd.scores.kun===0,'缺鍵 → 0');
+  ok(typeof P.build({}).level.mean==='number','空輸入不爆，mean 為數字');
+
+  // ── 7. 與既有 argmax 一致（平手以 EKEYS 順序）──
+  var tie=flat(60); // 全同分 → ranked[0] 應為 EKEYS[0]=qian
+  ok(P.build(tie).ranked[0].k==='qian','全同分平手 → 取 EKEYS 首位(與 topKeyOf 一致)');
+
+}catch(e){ fail++; log.push('EXCEPTION: '+e.message+' @ '+(e.stack||'')); }
+
+var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
+document.title=msg;
+document.getElementById('out').textContent=msg;
+</script>
+</body></html>
