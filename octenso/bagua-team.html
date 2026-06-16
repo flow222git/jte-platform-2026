@@ -787,14 +787,22 @@ function showTeam(){
 
   // ── 綜合結論：唯一負責「解釋＋下結論」的一段（消除各區塊互相打架）──
   var WX_TYPE={metal:'果斷決策',wood:'啟動連結',water:'沉潛恢復',fire:'敏銳洞察',earth:'穩定承載'};
+  function bullets(arr){ return arr.map(function(t){return '<div style="display:flex;gap:8px;margin:6px 0;line-height:1.8"><span style="color:var(--muted);flex:none">•</span><span>'+t+'</span></div>';}).join(''); }
   var vHead, vBody;
   if(cov.gaps.length){
     vHead='有需要補的能量';
-    vBody='有 <b>'+cov.gaps.length+'</b> 種能量整隊偏弱（'+cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('、')+'）——遇到需要它的場面會吃力。<b>這是最該優先補的</b>：找一個這方面強的人，或指定有人補位。';
+    vBody=bullets([
+      '有 <b>'+cov.gaps.length+'</b> 種能量整隊偏弱（'+cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('、')+'）——遇到需要它的場面會吃力。',
+      '<b>最該優先補</b>：找一個這方面強的人，或團隊裡指定有人補位。'
+    ]);
   } else if((!pair||pair.score<=0)||spread.miss.length>=2){
     var mt=spread.miss.map(function(w){return WLAB[w]+'('+WX_TYPE[w]+')';}).join('、');
     vHead='基本盤夠用，但偏同質';
-    vBody='八種能量多數都有人能撐，短期不會整隊空著；但大家領頭的能量偏集中'+(spread.miss.length?('，少了 '+spread.miss.map(function(w){return WLAB[w];}).join('、')+' 的調性'):'')+'。<b>不缺救火的人，缺的是多樣性</b>——想更立體，可找一個調性明顯不同的夥伴'+(spread.miss.length?('（偏 '+mt+'）'):'')+'，或團隊裡有人刻意長出這方向。不急，但補了會更全面。';
+    vBody=bullets([
+      '<b>基本盤夠</b>：多數能量都有人能撐，短期不會整隊空著。',
+      '<b>偏同質</b>：大家領頭的能量偏集中'+(spread.miss.length?('，少了 '+spread.miss.map(function(w){return WLAB[w];}).join('、')+' 的調性'):'')+'。',
+      '<b>想更立體</b>：缺的不是救火的人、是多樣性——找一個調性明顯不同的夥伴'+(spread.miss.length?('（偏 '+mt+'）'):'')+'，或團隊裡有人刻意長。不急，但補了會更全面。'
+    ]);
   } else {
     vHead='底盤完整、又多元';
     vBody='覆蓋夠廣、調性也多元——這支隊伍的能量底盤很完整。重點放在<b>發揮</b>現有的多樣性，不必急著補人。';

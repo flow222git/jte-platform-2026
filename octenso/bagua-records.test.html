@@ -91,7 +91,7 @@ ifr.onload=function(){
     // 5. 此刻：卦象 + 去問易連結（now 後移到 7）
     var nowSec=d.querySelectorAll('.sec')[7];
     ok(nowSec.textContent.indexOf('節')>=0,'now shows mainHex 節');
-    ok(nowSec.querySelector('.r-link').getAttribute('href')==='ven-i/','now 去問易 link');
+    ok(nowSec.querySelector('.r-link').getAttribute('href')==='../ven-i/','now 去問易 link');
 
     // ── 消耗熱點：純函式 ──────────────────────────────────
     ok(typeof w.drainCounts==='function','drainCounts present');
@@ -201,8 +201,8 @@ ifr.onload=function(){
     // 通用呼吸連結
     var pills=regSec.querySelectorAll('.reg-pill');
     var hrefs=[].map.call(pills,function(a){return a.getAttribute('href');});
-    ok(hrefs.indexOf('BreatheAware/')>=0,'regulate has BreatheAware/ link');
-    ok(hrefs.indexOf('xiaoqi/')>=0,'regulate has xiaoqi/ link');
+    ok(hrefs.indexOf('../BreatheAware/')>=0,'regulate has BreatheAware/ link');
+    ok(hrefs.indexOf('../xiaoqi/')>=0,'regulate has xiaoqi/ link');
     // 針對性行動 = drainHotspots[0]=dui 的 REGULATE_ACTION
     ok(w.drainHotspots(youR,[{scores:fR1},{scores:fR2}])[0]==='dui','hotspot[0]=dui (sanity)');
     ok(regTxt.indexOf(w.REGULATE_ACTION.dui)>=0,'regulate shows dui action text');

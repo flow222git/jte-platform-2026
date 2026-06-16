@@ -29,7 +29,7 @@ document.getElementById('f').onload=function(){
     ok(title && title.textContent.indexOf('乾金')>=0,'top type 乾金, got '+(title?title.textContent:'none'));
     ok(d.querySelector('.radar-wrap svg'),'radar svg rendered');
     ok(d.querySelectorAll('.tool').length>=2,'tool recommendations present');
-    ok(d.querySelector('.cta-now a').getAttribute('href')==='ven-i/','問易 CTA link');
+    ok(d.querySelector('.cta-now a').getAttribute('href')==='../ven-i/','問易 CTA link');
     // localStorage saved
     var saved=w.localStorage.getItem('bagua_persona_v1');
     ok(saved && JSON.parse(saved).top==='qian','result saved to localStorage');

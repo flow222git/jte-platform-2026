@@ -248,6 +248,9 @@
   .opt.sel{border-color:var(--ink)!important;background:#f0ece2!important;}
   .opt:hover .dot{border-color:var(--ink)!important;}
   .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
+  /* 修正：填色主按鈕白字、ghost 維持墨字（避免黑底黑字） */
+  .cbtn:not(.ghost){color:var(--paper)!important;}
+  .cbtn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--hair)!important;}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
@@ -758,7 +761,7 @@ function ctaBlock(sc,now){
     return '<div class="cta-now">'
       +'<div class="cn-h">底色 vs 此刻</div>'
       +'<div class="cn-t">這張側寫是你的<b>「底色」</b>——你慣用的能量。<br>想看你<b>「此刻」</b>的能量狀態嗎？問易會依你當下的提問算出此刻卦象，回到這頁就會自動疊上對照。</div>'
-      +'<a href="ven-i/">去問易看此刻 →</a></div>';
+      +'<a href="../ven-i/">去問易看此刻 →</a></div>';
   }
   var base=Object.keys(E).slice().sort(function(a,b){return sc[b]-sc[a];});
   var nowSorted=Object.keys(E).slice().sort(function(a,b){return (now.raw[b]||0)-(now.raw[a]||0);});
@@ -781,7 +784,7 @@ function ctaBlock(sc,now){
   return '<div class="cta-now">'
     +'<div class="cn-h">底色 vs 此刻</div>'
     +'<div class="cn-t">雷達上的<b>金色虛線</b>＝你<b>此刻</b>的能量輪廓。'+(hexpart?'<br>'+hexpart:'')+'<br>'+sentence+'</div>'
-    +'<a href="ven-i/">重新去問易更新此刻 →</a></div>';
+    +'<a href="../ven-i/">重新去問易更新此刻 →</a></div>';
 }
 
 // ── Render result ────────────────────────────────────────
@@ -1582,16 +1585,26 @@ function runCompat(){
 
   // 你們這一對：唯一綜合結論（解釋集中於此；盲點/落差以資料帶過）
   function enName(k){ return E[k].nm+'·'+E[k].fn.split('／')[0]; }
+  function bullets(arr){ return arr.map(function(t){return '<div style="display:flex;gap:8px;margin:6px 0;line-height:1.8"><span style="color:var(--muted);flex:none">•</span><span>'+t+'</span></div>';}).join(''); }
   var pairKind, pairBody;
   if(sim>=75 && comp<50){
     pairKind='相近的一對';
-    pairBody='能量輪廓很像——默契高、溝通省力。要當心的是<b>盲點容易一起重疊</b>'+(blind.length?('（你們都偏低「'+blind.map(enName).join('』『')+'」，少了有人補位）'):'')+'。';
+    pairBody=bullets([
+      '能量輪廓很像——默契高、溝通省力。',
+      '當心<b>盲點容易一起重疊</b>'+(blind.length?('（你們都偏低「'+blind.map(enName).join('』『')+'」，少了有人補位）'):'')+'。'
+    ]);
   } else if(comp>=55){
     pairKind='互補的一對';
-    pairBody='你們補得上彼此的缺口、組合更完整；代價是<b>步調與做事方式要磨</b>'+(fric.length?('（落差最大在「'+enName(fric[0])+'」）'):'')+'。';
+    pairBody=bullets([
+      '補得上彼此的缺口、組合更完整。',
+      '代價是<b>步調與做事方式要磨</b>'+(fric.length?('（落差最大在「'+enName(fric[0])+'」）'):'')+'。'
+    ]);
   } else {
     pairKind='平衡的一對';
-    pairBody='你們既有相近、也有互補——不極端、彈性大。'+(blind.length?('把共同偏低的「'+blind.map(enName).join('』『')+'」一起補起來會更完整。'):'重點放在把各自的強項搭起來用。');
+    pairBody=bullets([
+      '既有相近、也有互補——不極端、彈性大。',
+      (blind.length?('把共同偏低的「'+blind.map(enName).join('』『')+'」一起補起來會更完整。'):'把各自的強項搭起來用，最有發揮。')
+    ]);
   }
 
   var oLabel = oname ? escH(oname) : '對方';

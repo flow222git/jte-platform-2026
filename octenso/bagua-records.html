@@ -150,6 +150,9 @@
   .opt.sel{border-color:var(--ink)!important;background:#f0ece2!important;}
   .opt:hover .dot{border-color:var(--ink)!important;}
   .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
+  /* 修正：填色主按鈕白字、ghost 維持墨字（避免黑底黑字） */
+  .cbtn:not(.ghost){color:var(--paper)!important;}
+  .cbtn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--hair)!important;}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
@@ -733,8 +736,8 @@ function renderRegulate(){
       +'<div class="reg-eyebrow">回到呼吸 · 通用恢復</div>'
       +'<div class="reg-say">感覺被消耗時，給自己一次呼吸或小憩。</div>'
       +'<div class="reg-acts">'
-        +'<a class="reg-pill" href="BreatheAware/">呼吸覺察</a>'
-        +'<a class="reg-pill" href="xiaoqi/">小憩·練息</a>'
+        +'<a class="reg-pill" href="../BreatheAware/">呼吸覺察</a>'
+        +'<a class="reg-pill" href="../xiaoqi/">小憩·練息</a>'
       +'</div>'
     +'</div>'
     // 2. 針對性微調（依消耗熱點 / 最弱能量）
@@ -801,13 +804,13 @@ function renderCompat(){
 function renderNow(){
   var s=sec('☯ 此刻');
   var now=getNow();
-  if(!now){ s.appendChild(emptyNote('還沒有「此刻」——<a href="ven-i/">去問易</a>卜一卦，回來這裡就會看見此刻的能量。')); return s; }
+  if(!now){ s.appendChild(emptyNote('還沒有「此刻」——<a href="../ven-i/">去問易</a>卜一卦，回來這裡就會看見此刻的能量。')); return s; }
   var row=document.createElement('div'); row.className='row';
   var hex=now.mainHex?('卦象 '+escapeHtml(now.mainHex)):'此刻能量';
   row.innerHTML='<span class="r-ic">☯</span>'
     +'<span class="r-body"><span class="r-nm">'+hex+'</span>'
     +'<span class="r-st">'+dateOrTested(now.ts)+'</span></span>'
-    +'<a class="r-link" href="ven-i/">去問易 →</a>';
+    +'<a class="r-link" href="../ven-i/">去問易 →</a>';
   s.appendChild(row);
   return s;
 }

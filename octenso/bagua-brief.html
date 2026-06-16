@@ -67,6 +67,9 @@
   .opt.sel{border-color:var(--ink)!important;background:#f0ece2!important;}
   .opt:hover .dot{border-color:var(--ink)!important;}
   .block,.card,details,.poem,.typecard,.surface{box-shadow:none!important;}
+  /* 修正：填色主按鈕白字、ghost 維持墨字（避免黑底黑字） */
+  .cbtn:not(.ghost){color:var(--paper)!important;}
+  .cbtn.ghost{background:transparent!important;color:var(--ink)!important;border-color:var(--hair)!important;}
 </style></head>
 <body>
 <div class="top">
