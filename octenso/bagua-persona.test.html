@@ -54,6 +54,13 @@ document.getElementById('f').onload=function(){
     ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
     ok(rc.indexOf('兩邊都高')>=0,'給出/接納 雙高 → 強度「兩邊都高」');
 
+    // 4d. 看完整解盤：showResult(帶入存檔分數) 不需答題即渲染、且不覆寫存檔 ts
+    w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:{qian:30,li:90,zhen:20,dui:25,kun:30,kan:40,gen:55,xun:30},top:'li',title:'離火 · 洞見者',ts:'KEEP-TS'}));
+    w.answers=new Array(24).fill(null);
+    w.showResult({qian:30,li:90,zhen:20,dui:25,kun:30,kan:40,gen:55,xun:30});
+    ok(d.querySelector('.tc-title').textContent.indexOf('離火')>=0,'看完整解盤：用帶入分數渲染(離火)');
+    ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).ts==='KEEP-TS','viewScores 不覆寫存檔 ts');
+
     // 5. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();

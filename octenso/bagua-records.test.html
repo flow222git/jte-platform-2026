@@ -51,7 +51,9 @@ ifr.onload=function(){
     ok(d.querySelector('.basecard'),'base card rendered');
     ok(d.querySelector('.basecard .bc-title').textContent.indexOf('乾金')>=0,'base shows title 乾金');
     ok(d.querySelector('.basecard #bc-radar svg'),'base mini radar svg');
-    ok(d.querySelector('.basecard .bc-link').getAttribute('href')==='bagua-persona.html','base 重測 link');
+    var blinks=d.querySelectorAll('.basecard .bc-link');
+    ok([].some.call(blinks,function(a){return a.getAttribute('href')==='bagua-persona.html#view';}),'base 看完整解盤 link (#view)');
+    ok([].some.call(blinks,function(a){return a.getAttribute('href')==='bagua-persona.html';}),'base 重測 link');
 
     // 1.5 能量提醒 memo（依底色；index 1，插在底色之後）
     var memoSec=d.querySelectorAll('.sec')[1];

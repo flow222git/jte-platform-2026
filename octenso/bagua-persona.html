@@ -827,8 +827,8 @@ function outlineBlock(sc,pf,now){
 }
 
 // ── Render result ────────────────────────────────────────
-function showResult(){
-  var sc=computeScores();
+function showResult(viewScores){
+  var sc=viewScores||computeScores(); // viewScores：從記錄「看完整解盤」帶入存檔底色，不重算、不覆寫存檔
   var sorted=Object.keys(E).sort(function(a,b){ return sc[b]-sc[a]; });
   var topKey=sorted[0];
   var top=E[topKey];
@@ -837,7 +837,7 @@ function showResult(){
   var pf=pfBuild(sc);
 
   // save
-  try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title,ts:new Date().toISOString()})); }catch(e){}
+  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title,ts:new Date().toISOString()})); }catch(e){} }
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -1687,6 +1687,11 @@ var pendingShareCode=null; // 沒有底色時暫存，測完可合
 function initFromHash(){
   var rawHash=location.hash||'';
   var code=extractCode(rawHash);
+  if(!code && /view/.test(rawHash)){ // 從記錄「看完整解盤」直達：用存檔底色渲染完整結果
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
+    var bv=getBase(); if(bv&&bv.scores) showResult(bv.scores); // 有底色才渲染，沒有就留封面
+    return;
+  }
   if(!code && /compat/.test(rawHash)){ // 從切換列「雙人合盤」直達
     try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
     if(getBase()) showCompat(); // 有底色才開合盤；沒底色就留在封面先測
