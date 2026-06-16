@@ -469,6 +469,18 @@ function render(){
   app.appendChild(renderRegulate());
   app.appendChild(renderCompat());
   app.appendChild(renderNow());
+  app.appendChild(renderExplore());
+}
+function renderExplore(){
+  var s=sec('探索更多');
+  var box=document.createElement('div'); box.style.cssText='display:flex;flex-wrap:wrap;gap:8px';
+  box.innerHTML=''
+    +'<a class="reg-pill" href="bagua-persona.html">🧭 人格測驗</a>'
+    +'<a class="reg-pill" href="bagua-field.html">🎯 測一個局</a>'
+    +'<a class="reg-pill" href="bagua-career.html">💼 職業配對</a>'
+    +'<a class="reg-pill" href="bagua-team.html">👥 團隊合盤</a>'
+    +'<a class="reg-pill" href="bagua-map.html">🗺️ 系統圖</a>';
+  s.appendChild(box); return s;
 }
 
 function sec(title){

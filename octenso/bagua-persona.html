@@ -786,8 +786,12 @@ function showResult(){
     + toolRow(TOOLS.baguamap);
 
   var html=''
-   +'<div style="text-align:center;margin-bottom:16px"><button onclick="shareResultImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer">📤 分享我的結果（下載圖卡）</button></div>'
-   +'<div class="share-hint" style="margin:-10px 0 16px">把你的型發給朋友 · 互相丟連結就能合盤 🔗</div>'
+   +'<div style="text-align:center;margin-bottom:8px;display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'
+     +'<button onclick="copyResultLink()" style="background:var(--ink);color:var(--surface);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">🔗 複製我的合盤連結</button>'
+     +'<button onclick="shareResultImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">📤 分享圖卡</button>'
+   +'</div>'
+   +'<div class="share-hint" style="margin:0 0 4px"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
+   +'<div class="share-hint" style="margin:0 0 16px">想和朋友合盤？把連結傳給他，他測完自己的底色就能跟你對盤——或下載圖卡，圖上有 QR 可掃。</div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你的八卦能量人格</div>'
      +'<div class="tc-sym">'+top.sym+'</div>'
@@ -821,6 +825,7 @@ function showResult(){
    +'</div>'
    +ctaBlock(sc,now)
    +'<div class="block" id="facet-menu"></div>'
+   +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，探索你和別人、和處境 —</div>'
    +'<button class="retake" onclick="location.href=\'bagua-field.html\'">🎯 測一個局（看會不會耗你）</button>'
    +'<button class="retake" onclick="location.href=\'bagua-career.html\'">💼 看適合你的職業方向</button>'
    +'<button class="retake" onclick="showCompat()">🔗 和別人合盤</button>'
@@ -1378,6 +1383,16 @@ function refreshShare(){
   var mc=document.getElementById('my-code'); if(mc) mc.textContent=code;
   var img=document.getElementById('share-qr');
   if(img){ try{ img.src=makeQRDataURL(shareURL(code)); }catch(e){} }
+}
+// 結果頁一鍵複製合盤連結（免進合盤畫面）
+function copyResultLink(){
+  var sc=shareScores(); if(!sc) return;
+  var link=shareURL(encodeCode(sc));
+  var tip=document.getElementById('result-copy-tip');
+  function done(){ if(tip){ tip.textContent='連結已複製 ✓ 傳給朋友、他測完就能跟你合盤'; setTimeout(function(){tip.textContent='';},3500);} }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done,function(){ selectFallback(link,done); });
+  } else { selectFallback(link,done); }
 }
 function copyShareLink(){
   var sc=shareScores(); if(!sc) return;
