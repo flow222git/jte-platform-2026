@@ -210,6 +210,73 @@ document.getElementById('f').onload=function(){
     // 18. 底色 gloss 出現在封面/提示
     ok(d.body.innerHTML.indexOf('底色（你慣用的能量）')>=0,'底色 gloss present once');
 
+    // ───────── 19–27. 多團隊（命名／切換／隔離／改名／刪除／清空／遷移）─────────
+    w.confirm=function(){return true;}; // 讓需要確認的操作在測試中通過
+    w.alert=function(){};               // 避免 headless 被 alert 卡住（刪到最後一支的守門會 alert）
+
+    // 19. 重置到乾淨的單一預設團隊
+    w.localStorage.removeItem('bagua_teams_v1');
+    w.teams=[]; w.currentId=null; w.initMembers();
+    ok(w.teams.length===1,'init → 1 default team, got '+w.teams.length);
+    ok(w.currentTeam() && w.currentTeam().name==='我的團隊','default team named 我的團隊');
+    ok(w.members===w.currentTeam().members,'members points to current team members (linked)');
+
+    // 20. 新增（命名）團隊 → 切過去、成員從零
+    w.addMember(sheet('qian',90,10),'A1');           // 加到「我的團隊」
+    var firstId=w.teams[0].id;
+    ok(w.currentTeam().members.length===1,'team1 has 1 member after add');
+    w.teamFormMode='new'; d.getElementById('ts-input').value='行銷組'; w.confirmTeamForm();
+    ok(w.teams.length===2,'new team → 2 teams, got '+w.teams.length);
+    ok(w.currentTeam().name==='行銷組','switched to new team 行銷組');
+    ok(w.members.length===0,'new team starts empty (no persona base in test)');
+
+    // 21. 成員隔離：行銷組加 2 人，不影響「我的團隊」
+    w.addMember(sheet('li',90,10),'B1'); w.addMember(sheet('zhen',90,10),'B2');
+    ok(w.currentTeam().members.length===2,'行銷組 has 2 members');
+    var team1=w.teams.filter(function(t){return t.id===firstId;})[0];
+    ok(team1.members.length===1,'我的團隊 still has 1 member (isolated), got '+team1.members.length);
+
+    // 22. 切換團隊 → 看到的是該團隊的成員
+    w.switchTeam(firstId);
+    ok(w.currentId===firstId,'switched back to team1');
+    ok(w.members.length===1 && w.members[0].name==='A1','team1 members active after switch');
+    ok(d.getElementById('member-list').innerHTML.indexOf('A1')>=0,'member list shows team1 member A1');
+
+    // 23. 改名（只動目前團隊）
+    w.startRenameTeam(); d.getElementById('ts-input').value='家人'; w.confirmTeamForm();
+    ok(w.currentTeam().name==='家人','rename → team1 now 家人');
+    ok(w.teams.filter(function(t){return t.name==='行銷組';}).length===1,'行銷組 untouched by rename');
+
+    // 24. 刪除目前團隊 → 少一支、自動跳到剩下的；最後一支不可刪
+    var beforeDel=w.teams.length;
+    w.deleteCurrentTeam();
+    ok(w.teams.length===beforeDel-1,'delete removes one team, got '+w.teams.length);
+    ok(w.currentTeam()!==null,'currentTeam still valid after delete');
+    while(w.teams.length>1){ w.deleteCurrentTeam(); }
+    var lastN=w.teams.length; w.deleteCurrentTeam();
+    ok(w.teams.length===lastN && lastN===1,'cannot delete the last remaining team');
+
+    // 25. 清空成員：清空目前團隊、團隊保留
+    w.addMember(sheet('qian',90,10),'Z');
+    ok(w.members.length>=1,'has member before clear');
+    w.clearTeam();
+    ok(w.teams.length===1,'team kept after clearTeam (only members cleared)');
+    ok(w.currentTeam().members.length===0,'members cleared in place');
+
+    // 26. 向後相容遷移：舊格式 {members:[...]} → 包成一支團隊、不丟人 ⭐
+    w.localStorage.setItem('bagua_teams_v1', JSON.stringify({members:[{name:'舊人',scores:sheet('qian',90,10)}],ts:'x'}));
+    var mig=w.loadAll();
+    ok(mig && mig.teams.length===1,'migration: old single-team format → 1 team');
+    ok(mig.teams[0].name==='我的團隊','migrated team named 我的團隊');
+    ok(mig.teams[0].members.length===1 && mig.teams[0].members[0].name==='舊人','migrated members preserved (舊人 not lost)');
+    ok(mig.currentId===mig.teams[0].id,'migrated currentId points to that team');
+
+    // 27. 新格式直接讀取（teams + currentId）
+    var nid='tABC';
+    w.localStorage.setItem('bagua_teams_v1', JSON.stringify({teams:[{id:nid,name:'隊X',members:[]}],currentId:nid,ts:'x'}));
+    var nl=w.loadAll();
+    ok(nl && nl.teams.length===1 && nl.teams[0].name==='隊X' && nl.currentId===nid,'new format loads teams+currentId intact');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
