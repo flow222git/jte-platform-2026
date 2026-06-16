@@ -1645,14 +1645,17 @@ function runCompat(){
 // ── 連結直達合盤（load 時檢查 #c=CODE） ──────────────────
 var pendingShareCode=null; // 沒有底色時暫存，測完可合
 function initFromHash(){
-  var code=extractCode(location.hash||'');
+  var rawHash=location.hash||'';
+  var code=extractCode(rawHash);
   if(!code) return; // 正常無 hash 開啟不受影響
+  var hn=''; var hm=rawHash.match(/[?&]n=([^&]+)/); if(hm){ try{ hn=decodeURIComponent(hm[1]); }catch(e){ hn=hm[1]; } }
   // 清掉 hash，避免重測時重觸發
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
   if(getBase()){
-    // 有自己的底色 → 直接合盤
+    // 有自己的底色 → 直接合盤（從記錄回放時帶入名字）
     showCompat();
     var oc=document.getElementById('other-code'); if(oc) oc.value=code;
+    var on=document.getElementById('other-name'); if(on&&hn) on.value=hn;
     runCompat();
   } else {
     // 還沒測 → 先提示測底色，暫存對方的碼

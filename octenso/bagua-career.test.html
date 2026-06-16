@@ -19,8 +19,8 @@ document.getElementById('f').onload=function(){
       });
     });
     ok(allValid,'every CAREER has 8 energy keys, values 0..100');
-    var allNm=A.CAREERS.every(function(c){ return c.nm && c.ic && c.blurb && c.id; });
-    ok(allNm,'every CAREER has id/nm/ic/blurb');
+    var allNm=A.CAREERS.every(function(c){ return c.nm && c.blurb && c.id; });
+    ok(allNm,'every CAREER has id/nm/blurb (ic 圖示已依無 emoji 設計移除)');
 
     // 2. fitScore consistency with bagua-field behavior
     var same={}; A.EKEYS.forEach(function(k){ same[k]=70; });

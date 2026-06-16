@@ -222,7 +222,7 @@ ifr.onload=function(){
     w.setFelt(0,'good');
     ok(w.getRegulateLog()[0].felt==='good','setFelt writes felt=good');
     var regSec3=d.querySelectorAll('.sec')[5];
-    ok(regSec3.querySelector('.reg-recent').textContent.indexOf('👍')>=0,'rated entry shows 👍 emoji');
+    ok(regSec3.querySelector('.reg-recent').textContent.indexOf('有感')>=0,'rated entry shows 有感 label (no emoji)');
     ok(!regSec3.querySelector('.reg-felt'),'no 有感 prompt once rated (only 1 entry)');
 
     // 沒底色 → 不顯示行動、給引導
