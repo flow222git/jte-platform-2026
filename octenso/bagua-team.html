@@ -877,5 +877,17 @@ function backToManage(){
 // ── init ──────────────────────────────────────────────────
 initMembers();
 renderMembers();
+// 從「我的記錄」直達某團隊結果（#t=ID）
+(function(){
+  var m=(location.hash||'').match(/[#&]t=([A-Za-z0-9]+)/);
+  if(!m) return;
+  var id=m[1];
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
+  for(var i=0;i<teams.length;i++){
+    if(teams[i].id===id){ currentId=id; members=currentTeam().members; saveAll();
+      if(members.length>=2) showTeam(); else { backToManage(); renderMembers(); }
+      return; }
+  }
+})();
 </script>
 </body></html>

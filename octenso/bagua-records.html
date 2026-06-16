@@ -243,6 +243,22 @@ function renameCompat(i){ var a=getCompat(); if(!a[i]) return; var v=prompt('對
 function delField(i){ if(!confirm('刪除這個局的紀錄？（無法復原）')) return; var a=getFields(); a.splice(i,1); try{localStorage.setItem('bagua_fields_v1',JSON.stringify(a));}catch(e){} render(); }
 function renameField(i){ var a=getFields(); if(!a[i]) return; var v=prompt('幫這個局取個名字：', a[i].name||''); if(v===null) return; a[i].name=String(v).trim().slice(0,24); try{localStorage.setItem('bagua_fields_v1',JSON.stringify(a));}catch(e){} render(); }
 function delFacet(id){ if(!confirm('刪除這個場域側寫？（無法復原）')) return; var o=getFacets(); delete o[id]; try{localStorage.setItem('bagua_facets_v1',JSON.stringify(o));}catch(e){} render(); }
+// ── 團隊合盤紀錄（bagua_teams_v1 = {teams:[{id,name,members}],currentId,ts}）──
+function getTeams(){
+  try{ var raw=localStorage.getItem('bagua_teams_v1'); if(!raw) return [];
+    var o=JSON.parse(raw);
+    if(o&&Array.isArray(o.teams)) return o.teams;
+    if(o&&Array.isArray(o.members)) return [{id:'legacy',name:'我的團隊',members:o.members}]; // 舊格式相容
+    return []; }catch(e){ return []; }
+}
+function saveTeamsObj(teams){
+  try{ var raw=localStorage.getItem('bagua_teams_v1'); var o=raw?JSON.parse(raw):{}; if(!o||typeof o!=='object') o={};
+    o.teams=teams; if((!o.currentId||!teams.some(function(x){return x.id===o.currentId;}))&&teams[0]) o.currentId=teams[0].id;
+    o.ts=new Date().toISOString(); localStorage.setItem('bagua_teams_v1',JSON.stringify(o)); }catch(e){}
+}
+function delTeam(id){ if(!confirm('刪除這個團隊紀錄？（無法復原）')) return; saveTeamsObj(getTeams().filter(function(x){return x.id!==id;})); render(); }
+function renameTeam(id){ var t=getTeams(),team=null; t.forEach(function(x){ if(x.id===id) team=x; }); if(!team) return;
+  var v=prompt('幫這個團隊取名：', team.name||''); if(v===null) return; team.name=String(v).trim().slice(0,16)||team.name; saveTeamsObj(t); render(); }
 var ROWACT='flex:none;background:none;border:none;cursor:pointer;font-family:ui-sans-serif,sans-serif;font-size:12px;padding:4px 5px';
 
 // ── localStorage 讀取 ────────────────────────────────────
@@ -500,6 +516,7 @@ function render(){
   app.appendChild(renderDrain());
   app.appendChild(renderRegulate());
   app.appendChild(renderCompat());
+  app.appendChild(renderTeams());
   app.appendChild(renderNow());
   app.appendChild(renderExplore());
 }
@@ -801,6 +818,28 @@ function renderCompat(){
   return s;
 }
 
+// 4b. 團隊合盤
+function renderTeams(){
+  var s=sec('團隊合盤紀錄');
+  var t=getTeams().filter(function(x){ return x&&x.members&&x.members.length>=2; });
+  if(!t.length){ s.appendChild(emptyNote('還沒有團隊合盤——去<a href="bagua-team.html">團隊合盤</a>加成員（至少 2 位）就會記下來。')); return s; }
+  t.forEach(function(team){
+    var names=team.members.map(function(m){ return escapeHtml((m&&m.name)||'成員'); }).join('、');
+    if(names.length>40) names=names.slice(0,38)+'…';
+    var row=document.createElement('div'); row.className='row tap';
+    row.setAttribute('onclick',"location.href='bagua-team.html#t="+team.id+"'");
+    row.innerHTML='<span class="r-ic"></span>'
+      +'<span class="r-body"><span class="r-nm">'+escapeHtml(team.name||'我的團隊')+'</span>'
+      +'<span class="r-st">'+team.members.length+' 位 · '+names+'</span></span>'
+      +'<span style="flex:none;display:flex;gap:2px">'
+        +'<button onclick="event.stopPropagation();renameTeam(\''+team.id+'\')" style="'+ROWACT+';color:var(--muted)">改名</button>'
+        +'<button onclick="event.stopPropagation();delTeam(\''+team.id+'\')" style="'+ROWACT+';color:var(--cinnabar)">刪除</button>'
+      +'</span><span class="r-go">›</span>';
+    s.appendChild(row);
+  });
+  return s;
+}
+
 // 5. 此刻
 function renderNow(){
   var s=sec('☯ 此刻');
@@ -819,7 +858,7 @@ function renderNow(){
 // ── 清空 ─────────────────────────────────────────────────
 function clearAll(){
   if(!confirm('確定清空所有八卦記錄嗎？\n會刪除：底色、場域側寫、測過的局、合盤紀錄、此刻。\n（本機，無法復原）')) return;
-  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1','bagua_compat_v1','bagua_regulate_v1']
+  ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1','bagua_compat_v1','bagua_regulate_v1','bagua_teams_v1']
     .forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
   location.reload();
 }

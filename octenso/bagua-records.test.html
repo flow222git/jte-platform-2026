@@ -88,8 +88,11 @@ ifr.onload=function(){
     ok(compatSec.textContent.indexOf('離火')>=0,'compat shows otherTitle 離火');
     ok(compatSec.textContent.indexOf('72%')>=0 && compatSec.textContent.indexOf('55%')>=0,'compat shows sim/comp %');
 
-    // 5. 此刻：卦象 + 去問易連結（now 後移到 7）
-    var nowSec=d.querySelectorAll('.sec')[7];
+    // 4b. 團隊合盤紀錄（compat 之後新增；此時無 teams → 空提示）
+    var teamSec=d.querySelectorAll('.sec')[7];
+    ok(teamSec.textContent.indexOf('團隊合盤紀錄')>=0,'team section present');
+    // 5. 此刻：卦象 + 去問易連結（now 後移到 8）
+    var nowSec=d.querySelectorAll('.sec')[8];
     ok(nowSec.textContent.indexOf('節')>=0,'now shows mainHex 節');
     ok(nowSec.querySelector('.r-link').getAttribute('href')==='../ven-i/','now 去問易 link');
 
