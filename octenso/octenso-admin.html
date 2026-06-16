@@ -1,0 +1,157 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Octenso · 白名單管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@300;400&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4;--card:#fffdf6;--cinnabar:#9d4b34;--pine:#35614f}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-weight:300;line-height:1.85;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:560px;margin:0 auto;padding:0 22px}
+  .home-link{position:fixed;top:16px;left:16px;z-index:5;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.08em;color:var(--muted);text-decoration:none;padding:6px 13px;border:1px solid var(--hair);border-radius:999px;background:rgba(244,239,228,.7)}
+  .center{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px}
+  .enso{width:60px;height:60px;object-fit:contain;display:block;margin:0 auto 14px}
+  .wm{font-family:"Jost",sans-serif;font-weight:200;font-size:30px;letter-spacing:.04em}
+  .zh{font-weight:200;font-size:14px;letter-spacing:.34em;padding-left:.34em;margin:6px 0 8px}
+  .msg{font-size:13px;color:var(--muted);line-height:1.95;max-width:340px;margin:14px auto 20px}
+  .head{text-align:center;padding:74px 22px 6px}
+  .head .k{font-family:"Jost",sans-serif;font-size:11.5px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+  .head h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:26px;letter-spacing:.05em;margin:8px 0 4px}
+  .head .who{font-size:12.5px;color:var(--muted)}
+  .sec{margin:26px 0}
+  .sec-t{font-family:"Jost",sans-serif;font-size:11.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  .sec-t .sub{text-transform:none;letter-spacing:.02em;font-family:"Noto Sans TC",sans-serif;color:var(--hair);margin-left:6px}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--hair)}
+  .row:last-child{border-bottom:1px solid var(--hair)}
+  .row .em{flex:1;min-width:0;font-size:14px;word-break:break-all}
+  .row .tag{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.05em;color:var(--muted);border:1px solid var(--hair);border-radius:999px;padding:2px 9px;flex:none}
+  .row .rm{flex:none;background:none;border:1px solid var(--hair);border-radius:999px;font-size:12px;color:var(--muted);padding:5px 12px;cursor:pointer}
+  .row .rm:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .addbar{display:flex;gap:9px;margin-top:14px}
+  .addbar input{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:14px;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--ink)}
+  .addbar input:focus{outline:none;border-color:var(--ink)}
+  .btn{background:transparent;color:var(--ink);border:1.5px solid var(--ink);border-radius:999px;font-size:14px;font-weight:400;letter-spacing:.04em;padding:11px 22px;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+  .btn:hover{background:var(--ink);color:var(--paper)}
+  .note{font-size:12px;color:var(--muted);line-height:1.9;border-left:1px solid var(--hair);padding-left:13px;margin-top:14px}
+  .err{color:var(--cinnabar);font-size:12.5px;margin-top:10px;min-height:1.2em}
+  .ok{color:var(--pine);font-size:12.5px;margin-top:10px;min-height:1.2em}
+  .foot{text-align:center;font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase;margin:34px 0 50px}
+  .gbtn{display:flex;justify-content:center;margin-top:6px}
+</style></head>
+<body>
+<a class="home-link" href="index.html">← 八態能格</a>
+<div id="app"><div class="center"><div class="msg">載入中…</div></div></div>
+
+<script>
+var CLIENT_ID='1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
+var ADMIN=['simon@medialand.tw','flow@jointoenjoy.com'];                       // 可進管理頁
+var BASE =['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com']; // 內建固定（程式碼，閘門永遠放行）
+var db=null, extras=[], myEmail='';
+function lc(s){return String(s||'').trim().toLowerCase();}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function isAdmin(e){return ADMIN.indexOf(lc(e))>=0;}
+function app(){return document.getElementById('app');}
+
+function ensureFirebase(){
+  if(typeof firebase==='undefined') return false;
+  if(!firebase.apps||!firebase.apps.length){
+    firebase.initializeApp({apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",authDomain:"jointoenjoy.firebaseapp.com",projectId:"jointoenjoy"});
+  }
+  db=firebase.firestore(); return true;
+}
+function docRef(){ return db.collection('octenso').doc('allowlist'); }
+
+// ── 畫面 ──
+function gate(html){ app().innerHTML='<div class="center">'+html+'</div>'; }
+function brand(){ return '<img class="enso" src="assets/enso.png" alt=""><div class="wm">Octenso</div><div class="zh">八 態 能 格</div>'; }
+
+function showLogin(){
+  gate(brand()+'<div class="msg">白名單管理頁。<br>請以<b>管理者帳號</b>登入。</div><div class="gbtn" id="gbtn"></div>');
+  var n=0,t=setInterval(function(){
+    if(window.google&&google.accounts){clearInterval(t);
+      try{ google.accounts.id.initialize({client_id:CLIENT_ID,callback:onCred,auto_select:false});
+        google.accounts.id.renderButton(document.getElementById('gbtn'),{theme:'outline',size:'large',width:260,text:'signin_with',locale:'zh-TW'}); }catch(e){}
+    } else if(++n>40){clearInterval(t);}
+  },150);
+}
+function showDenied(){
+  gate(brand()+'<div class="msg">此頁僅限<b>管理者</b>使用。<br>你登入的是 <b>'+esc(myEmail)+'</b>。</div>'
+    +'<button class="btn" onclick="switchAcct()">換一個帳號</button>');
+}
+function switchAcct(){
+  try{ if(window.google&&google.accounts) google.accounts.id.disableAutoSelect(); }catch(e){}
+  localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');
+  location.reload();
+}
+function onCred(resp){
+  try{ var p=JSON.parse(atob(resp.credential.split('.')[1]));
+    localStorage.setItem('jte_user_email',p.email); if(p.name)localStorage.setItem('jte_user_name',p.name); if(p.picture)localStorage.setItem('jte_user_picture',p.picture);
+  }catch(e){}
+  route();
+}
+
+function showManager(){
+  var baseRows=BASE.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span><span class="tag">內建固定</span></div>';}).join('');
+  var extraRows=extras.length
+    ? extras.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span><button class="rm" onclick="removeEmail(\''+esc(e)+'\')">移除</button></div>';}).join('')
+    : '<div class="row"><span class="em" style="color:var(--muted)">（還沒有額外放行的人）</span></div>';
+  app().innerHTML=
+    '<div class="head"><div class="k">Allowlist</div><h1>白名單管理</h1><div class="who">管理者 · '+esc(myEmail)+'</div></div>'
+    +'<div class="wrap">'
+      +'<div class="sec"><div class="sec-t">內建固定<span class="sub">寫在程式碼裡、永遠可進、無法在此移除</span></div>'+baseRows+'</div>'
+      +'<div class="sec"><div class="sec-t">額外白名單<span class="sub">即時增減、立刻生效</span></div>'+extraRows
+        +'<div class="addbar"><input id="newEmail" placeholder="someone@example.com" autocomplete="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')addEmail()"><button class="btn" onclick="addEmail()">加入</button></div>'
+        +'<div class="err" id="msg-err"></div><div class="ok" id="msg-ok"></div>'
+      +'</div>'
+      +'<div class="note">有人沒權限又想用，會在登入畫面看到「✉ 申請使用權」，寄信到 <b>flow@jointoenjoy.com</b> 給你審核——你在這裡把他加進「額外白名單」即可。<br>※ 誠實提醒：這是靜態站的客戶端閘門，屬軟性存取控制，非後端級安全。</div>'
+      +'<div class="foot">Octenso ｜ 八態能格 · 白名單管理</div>'
+    +'</div>';
+}
+
+function setErr(m){var e=document.getElementById('msg-err');if(e)e.textContent=m||'';var o=document.getElementById('msg-ok');if(o)o.textContent='';}
+function setOk(m){var o=document.getElementById('msg-ok');if(o)o.textContent=m||'';var e=document.getElementById('msg-err');if(e)e.textContent='';}
+
+function save(){
+  return docRef().set({emails:extras,updatedBy:myEmail,updatedAt:new Date().toISOString()});
+}
+function addEmail(){
+  var inp=document.getElementById('newEmail'); var v=lc(inp.value);
+  if(!v){ inp.focus(); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ setErr('這不像有效的 email。'); return; }
+  if(BASE.indexOf(v)>=0){ setErr('這個帳號已是「內建固定」，本來就能進。'); return; }
+  if(extras.indexOf(v)>=0){ setErr('這個帳號已經在白名單裡了。'); return; }
+  extras.push(v);
+  save().then(function(){ inp.value=''; showManager(); setOk('已加入 '+v); })
+        .catch(function(e){ extras.pop(); setErr('寫入失敗：'+(e&&e.message||e)+'（可能是 Firestore 權限設定）'); });
+}
+function removeEmail(e){
+  e=lc(e); var i=extras.indexOf(e); if(i<0) return;
+  if(!confirm('確定移除 '+e+' 的使用權？')) return;
+  var bak=extras.slice(); extras.splice(i,1);
+  save().then(function(){ showManager(); setOk('已移除 '+e); })
+        .catch(function(err){ extras=bak; setErr('寫入失敗：'+(err&&err.message||err)); });
+}
+
+function route(){
+  myEmail=lc(localStorage.getItem('jte_user_email'));
+  if(!myEmail){ showLogin(); return; }
+  if(!isAdmin(myEmail)){ showDenied(); return; }
+  if(!ensureFirebase()){ gate(brand()+'<div class="msg">Firebase 載入中…請稍候或重新整理。</div>'); setTimeout(route,400); return; }
+  gate(brand()+'<div class="msg">讀取白名單中…</div>');
+  docRef().get().then(function(snap){
+    var d=snap.exists?snap.data():null;
+    extras=(d&&Array.isArray(d.emails))?d.emails.map(lc):[];
+    showManager();
+  }).catch(function(e){
+    gate(brand()+'<div class="msg">讀取白名單失敗：<br>'+esc(e&&e.message||String(e))+'<br><br>（可能是 Firestore 安全規則未開放讀取 octenso/allowlist）</div>'
+      +'<button class="btn" onclick="location.reload()">重試</button>');
+  });
+}
+
+window.addEventListener('load',route);
+</script>
+</body></html>

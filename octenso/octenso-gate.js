@@ -6,7 +6,7 @@
   if (window.self !== window.top) return;
 
   // ── 白名單（小寫比對）。要放行誰就加進來 ──
-  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.tw','lyn.hsieh@gmail.com'];
+  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com'];
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function allowed(email){ return !!email && ALLOW.indexOf(String(email).trim().toLowerCase()) >= 0; }
@@ -76,11 +76,52 @@
     });
   }
 
+  // 額外白名單放在 Firestore（octenso/allowlist），由管理頁(simon)線上增減；用 REST 讀、免載 SDK
+  var FS_KEY='AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg';
+  var FS_URL='https://firestore.googleapis.com/v1/projects/jointoenjoy/databases/(default)/documents/octenso/allowlist?key='+FS_KEY;
+  function fetchExtras(cb){
+    try{
+      fetch(FS_URL).then(function(r){return r.ok?r.json():null;}).then(function(j){
+        var out=[];
+        try{ var vals=(j&&j.fields&&j.fields.emails&&j.fields.emails.arrayValue.values)||[];
+          out=vals.map(function(v){return String(v.stringValue||'').trim().toLowerCase();}); }catch(e){}
+        cb(out);
+      }).catch(function(){ cb([]); });
+    }catch(e){ cb([]); }
+  }
+  var REVIEW_EMAIL='flow@jointoenjoy.com'; // 使用權申請寄到這裡（審核者）
+  function denied(email){
+    var o=ensureOverlay(); lockScroll(); o.innerHTML='';
+    var safe=String(email).replace(/[<>&]/g,'');
+    var wrap=document.createElement('div'); wrap.style.cssText='max-width:340px';
+    wrap.innerHTML='<img src="assets/enso.png" alt="" style="width:62px;height:62px;object-fit:contain;display:block;margin:0 auto 14px">'
+      +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-weight:200;font-size:30px;letter-spacing:.04em">Octenso</div>'
+      +'<div style="font-weight:200;font-size:14px;letter-spacing:.34em;padding-left:.34em;margin:6px 0 20px">八 態 能 格</div>'
+      +'<div style="font-size:13px;color:#857c6d;line-height:1.95;margin-bottom:20px">帳號 <b style="color:#23241f">'+safe+'</b> 目前沒有使用權。<br>想使用的話，寄信申請，審核通過後就能進。</div>';
+    var req=document.createElement('a');
+    req.href='mailto:'+REVIEW_EMAIL+'?subject='+encodeURIComponent('Octenso 使用權申請')
+      +'&body='+encodeURIComponent('我想使用 Octenso ｜ 八態能格。\n我的登入信箱：'+email+'\n\n（麻煩審核後把我加進白名單，謝謝！）');
+    req.textContent='✉ 申請使用權';
+    req.style.cssText='display:inline-block;background:#23241f;color:#f4efe4;text-decoration:none;border-radius:999px;padding:11px 26px;font-size:14px;letter-spacing:.04em';
+    wrap.appendChild(req);
+    var sw=document.createElement('button'); sw.textContent='換一個帳號';
+    sw.style.cssText='display:block;margin:16px auto 0;background:none;border:none;color:#857c6d;font-size:12.5px;cursor:pointer;text-decoration:underline';
+    sw.onclick=function(){
+      try{ if(window.google&&google.accounts) google.accounts.id.disableAutoSelect(); }catch(e){}
+      localStorage.removeItem('jte_user_email'); localStorage.removeItem('jte_user_name'); localStorage.removeItem('jte_user_picture');
+      location.reload();
+    };
+    wrap.appendChild(sw);
+    o.appendChild(wrap);
+  }
+
   function check(){
-    var email=localStorage.getItem('jte_user_email');
-    if(allowed(email)){ reveal(); return; }
-    if(email){ paint('帳號 <b>'+String(email).replace(/[<>&]/g,'')+'</b> 沒有進入權限。<br>請改用授權的帳號。', true); }
-    else { showLogin(); }
+    var email=(localStorage.getItem('jte_user_email')||'').trim().toLowerCase();
+    if(!email){ showLogin(); return; }
+    if(allowed(email)){ reveal(); return; }            // 內建固定名單 → 直接放行
+    fetchExtras(function(extra){                        // 否則查 Firestore 額外名單
+      if(extra.indexOf(email)>=0) reveal(); else denied(email);
+    });
   }
 
   function start(){ lockScroll(); ensureOverlay(); check(); }
