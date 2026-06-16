@@ -117,7 +117,8 @@ document.getElementById('f').onload=function(){
     ok(/%$/.test(nums[0].textContent) && /%$/.test(nums[1].textContent),'reading cards show % numbers');
     ok(d.querySelector('#compat-out .flowline').innerHTML.indexOf('你滋養他')>=0,'flow shows 你滋養他');
     ok(d.querySelector('#compat-out .typecard .tc-title'),'merged 合成人物 type shown');
-    ok(d.getElementById('compat-out').innerHTML.indexOf('給你們的具體建議')>=0,'compat shows concrete 相處 tips block');
+    ok(d.getElementById('compat-out').innerHTML.indexOf('給你們的相處重點')>=0,'compat shows 相處重點 tips block');
+    ok(d.getElementById('compat-out').innerHTML.indexOf('你們這一對')>=0,'compat shows 🧭 synthesis verdict');
 
     // 15. runCompat bad code → friendly error, no out
     d.getElementById('other-code').value='nonsense';
