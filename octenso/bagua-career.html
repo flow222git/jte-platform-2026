@@ -3,14 +3,14 @@
 <script defer src="octenso-gate.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <title>Octenso 八態能格 · 職業能量配對 · 八卦能量盤</title>
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
     --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
     padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
   .sans{font-family:ui-sans-serif,sans-serif}
   .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
@@ -140,7 +140,7 @@
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <button class="start-btn" id="start-btn" onclick="showResult()">看我的配對</button>
   <div class="meta-line">即時比對 · 不需登入</div>
-  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">📒 我的記錄</a>
+  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">我的記錄</a>
   <div id="base-status"></div>
   <div class="honest">
     每個職業也是一張<b>八卦能量盤</b>——它需求哪些能量。把你的<b>底色</b>（你慣用的那組能量）疊上去，就能看出哪些方向跟你比較合、哪些可能比較耗你。
@@ -170,34 +170,34 @@ var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
 
 // ── 職業能量庫 ────────────────────────────────────────────
 var CAREERS=[
- {id:'sales',  nm:'業務／銷售', ic:'🤝', scores:{qian:65,dui:90,li:45,xun:55,zhen:80,kan:20,gen:30,kun:40}, blurb:'靠交流與行動推進、開拓客戶。'},
- {id:'mkt',    nm:'行銷／品牌', ic:'📣', scores:{qian:50,dui:80,li:70,xun:80,zhen:60,kan:30,gen:35,kun:35}, blurb:'把訊息擴散出去、連結受眾。'},
- {id:'founder',nm:'創業者', ic:'🚀', scores:{qian:90,dui:65,li:60,xun:65,zhen:88,kan:30,gen:40,kun:40}, blurb:'從無到有、開創與突破。'},
- {id:'mgr',    nm:'管理／主管', ic:'🧭', scores:{qian:80,dui:65,li:55,xun:60,zhen:45,kan:35,gen:65,kun:75}, blurb:'帶人、定方向、承接團隊。'},
- {id:'pm',     nm:'專案管理', ic:'🗂️', scores:{qian:65,dui:65,li:55,xun:88,zhen:45,kan:30,gen:75,kun:50}, blurb:'協調資源、把關進度與界線。'},
- {id:'research',nm:'研究／學術', ic:'🔬', scores:{qian:45,dui:25,li:90,xun:35,zhen:25,kan:88,gen:65,kun:35}, blurb:'深入鑽研、分析求真。'},
- {id:'eng',    nm:'工程／開發', ic:'⚙️', scores:{qian:60,dui:25,li:80,xun:45,zhen:45,kan:80,gen:75,kun:30}, blurb:'專注解題、嚴謹建構。'},
- {id:'design', nm:'設計／創意', ic:'🎨', scores:{qian:50,dui:60,li:80,xun:65,zhen:70,kan:55,gen:40,kun:30}, blurb:'覺察與創造、形塑體驗。'},
- {id:'writer', nm:'創作／寫作', ic:'✍️', scores:{qian:40,dui:40,li:80,xun:50,zhen:45,kan:88,gen:45,kun:30}, blurb:'沉潛內省、把世界寫出來。'},
- {id:'teacher',nm:'教育／教師', ic:'📚', scores:{qian:45,dui:78,li:65,xun:55,zhen:35,kan:35,gen:55,kun:85}, blurb:'滋養他人、傳遞與陪伴。'},
- {id:'care',   nm:'醫護／照護', ic:'🩺', scores:{qian:40,dui:50,li:60,xun:40,zhen:30,kan:55,gen:70,kun:90}, blurb:'承接需求、穩定地照顧人。'},
- {id:'counsel',nm:'諮商／心理', ic:'🫂', scores:{qian:35,dui:65,li:78,xun:45,zhen:25,kan:75,gen:50,kun:80}, blurb:'深聽與覺察、陪人走過。'},
- {id:'ops',    nm:'行政／營運', ic:'🗃️', scores:{qian:45,dui:45,li:55,xun:65,zhen:25,kan:40,gen:88,kun:70}, blurb:'穩定按部就班、讓事情運轉。'},
- {id:'finance',nm:'財務／會計', ic:'📊', scores:{qian:55,dui:30,li:75,xun:40,zhen:20,kan:70,gen:88,kun:35}, blurb:'嚴謹把關、精準分析數字。'},
- {id:'hr',     nm:'客服／人資', ic:'💁', scores:{qian:40,dui:80,li:50,xun:65,zhen:35,kan:30,gen:55,kun:80}, blurb:'接住人、協調與服務。'},
- {id:'perform',nm:'表演／運動', ic:'🎭', scores:{qian:55,dui:75,li:55,xun:40,zhen:88,kan:30,gen:60,kun:35}, blurb:'即時爆發、用身體表達。'},
- {id:'doctor', nm:'醫師', ic:'⚕️', scores:{qian:70,dui:45,li:88,xun:35,zhen:40,kan:60,gen:80,kun:78}, blurb:'覺察判斷、嚴謹下決定、照顧人。'},
- {id:'lawyer', nm:'律師／法務', ic:'⚖️', scores:{qian:85,dui:55,li:85,xun:45,zhen:50,kan:55,gen:88,kun:35}, blurb:'決策與分析、守住界線與規則。'},
- {id:'journ',  nm:'記者／編輯', ic:'📰', scores:{qian:50,dui:78,li:85,xun:70,zhen:75,kan:45,gen:45,kun:35}, blurb:'覺察議題、追問、把事寫清楚。'},
- {id:'chef',   nm:'廚師／職人', ic:'🍳', scores:{qian:50,dui:45,li:70,xun:35,zhen:55,kan:75,gen:88,kun:55}, blurb:'專注打磨手藝、講究細節火候。'},
- {id:'social', nm:'社工／輔導', ic:'🤲', scores:{qian:40,dui:70,li:60,xun:55,zhen:35,kan:55,gen:55,kun:90}, blurb:'承接弱勢、陪伴與穩定照顧。'},
- {id:'rescue', nm:'軍警／消防', ic:'🚒', scores:{qian:75,dui:45,li:55,xun:35,zhen:88,kan:50,gen:80,kun:55}, blurb:'臨場果斷、守紀律、即時行動。'},
- {id:'invest', nm:'金融／投資分析', ic:'📈', scores:{qian:75,dui:40,li:88,xun:45,zhen:45,kan:70,gen:80,kun:30}, blurb:'冷靜分析、嚴謹判斷與決策。'},
- {id:'ux',     nm:'UX／產品設計', ic:'🖌️', scores:{qian:55,dui:70,li:85,xun:80,zhen:55,kan:50,gen:55,kun:55}, blurb:'覺察需求、連結各方、形塑體驗。'},
- {id:'data',   nm:'資料科學／分析', ic:'🧮', scores:{qian:55,dui:30,li:88,xun:50,zhen:35,kan:85,gen:80,kun:30}, blurb:'深掘資料、嚴謹推理找洞見。'},
- {id:'music',  nm:'音樂／表演者', ic:'🎵', scores:{qian:45,dui:88,li:75,xun:50,zhen:75,kan:55,gen:40,kun:40}, blurb:'用表達感染人、即時綻放。'},
- {id:'farm',   nm:'農業／園藝', ic:'🌱', scores:{qian:40,dui:35,li:40,xun:50,zhen:40,kan:65,gen:75,kun:90}, blurb:'順節氣耐心栽培、滋養生長。'},
- {id:'event',  nm:'活動企劃', ic:'🎪', scores:{qian:55,dui:82,li:60,xun:85,zhen:75,kan:30,gen:55,kun:55}, blurb:'連結各方、把場子炒熱串起來。'}
+ {id:'sales',  nm:'業務／銷售', ic:'', scores:{qian:65,dui:90,li:45,xun:55,zhen:80,kan:20,gen:30,kun:40}, blurb:'靠交流與行動推進、開拓客戶。'},
+ {id:'mkt',    nm:'行銷／品牌', ic:'', scores:{qian:50,dui:80,li:70,xun:80,zhen:60,kan:30,gen:35,kun:35}, blurb:'把訊息擴散出去、連結受眾。'},
+ {id:'founder',nm:'創業者', ic:'', scores:{qian:90,dui:65,li:60,xun:65,zhen:88,kan:30,gen:40,kun:40}, blurb:'從無到有、開創與突破。'},
+ {id:'mgr',    nm:'管理／主管', ic:'', scores:{qian:80,dui:65,li:55,xun:60,zhen:45,kan:35,gen:65,kun:75}, blurb:'帶人、定方向、承接團隊。'},
+ {id:'pm',     nm:'專案管理', ic:'', scores:{qian:65,dui:65,li:55,xun:88,zhen:45,kan:30,gen:75,kun:50}, blurb:'協調資源、把關進度與界線。'},
+ {id:'research',nm:'研究／學術', ic:'', scores:{qian:45,dui:25,li:90,xun:35,zhen:25,kan:88,gen:65,kun:35}, blurb:'深入鑽研、分析求真。'},
+ {id:'eng',    nm:'工程／開發', ic:'⚙', scores:{qian:60,dui:25,li:80,xun:45,zhen:45,kan:80,gen:75,kun:30}, blurb:'專注解題、嚴謹建構。'},
+ {id:'design', nm:'設計／創意', ic:'', scores:{qian:50,dui:60,li:80,xun:65,zhen:70,kan:55,gen:40,kun:30}, blurb:'覺察與創造、形塑體驗。'},
+ {id:'writer', nm:'創作／寫作', ic:'', scores:{qian:40,dui:40,li:80,xun:50,zhen:45,kan:88,gen:45,kun:30}, blurb:'沉潛內省、把世界寫出來。'},
+ {id:'teacher',nm:'教育／教師', ic:'', scores:{qian:45,dui:78,li:65,xun:55,zhen:35,kan:35,gen:55,kun:85}, blurb:'滋養他人、傳遞與陪伴。'},
+ {id:'care',   nm:'醫護／照護', ic:'', scores:{qian:40,dui:50,li:60,xun:40,zhen:30,kan:55,gen:70,kun:90}, blurb:'承接需求、穩定地照顧人。'},
+ {id:'counsel',nm:'諮商／心理', ic:'', scores:{qian:35,dui:65,li:78,xun:45,zhen:25,kan:75,gen:50,kun:80}, blurb:'深聽與覺察、陪人走過。'},
+ {id:'ops',    nm:'行政／營運', ic:'', scores:{qian:45,dui:45,li:55,xun:65,zhen:25,kan:40,gen:88,kun:70}, blurb:'穩定按部就班、讓事情運轉。'},
+ {id:'finance',nm:'財務／會計', ic:'', scores:{qian:55,dui:30,li:75,xun:40,zhen:20,kan:70,gen:88,kun:35}, blurb:'嚴謹把關、精準分析數字。'},
+ {id:'hr',     nm:'客服／人資', ic:'', scores:{qian:40,dui:80,li:50,xun:65,zhen:35,kan:30,gen:55,kun:80}, blurb:'接住人、協調與服務。'},
+ {id:'perform',nm:'表演／運動', ic:'', scores:{qian:55,dui:75,li:55,xun:40,zhen:88,kan:30,gen:60,kun:35}, blurb:'即時爆發、用身體表達。'},
+ {id:'doctor', nm:'醫師', ic:'⚕', scores:{qian:70,dui:45,li:88,xun:35,zhen:40,kan:60,gen:80,kun:78}, blurb:'覺察判斷、嚴謹下決定、照顧人。'},
+ {id:'lawyer', nm:'律師／法務', ic:'⚖', scores:{qian:85,dui:55,li:85,xun:45,zhen:50,kan:55,gen:88,kun:35}, blurb:'決策與分析、守住界線與規則。'},
+ {id:'journ',  nm:'記者／編輯', ic:'', scores:{qian:50,dui:78,li:85,xun:70,zhen:75,kan:45,gen:45,kun:35}, blurb:'覺察議題、追問、把事寫清楚。'},
+ {id:'chef',   nm:'廚師／職人', ic:'', scores:{qian:50,dui:45,li:70,xun:35,zhen:55,kan:75,gen:88,kun:55}, blurb:'專注打磨手藝、講究細節火候。'},
+ {id:'social', nm:'社工／輔導', ic:'', scores:{qian:40,dui:70,li:60,xun:55,zhen:35,kan:55,gen:55,kun:90}, blurb:'承接弱勢、陪伴與穩定照顧。'},
+ {id:'rescue', nm:'軍警／消防', ic:'', scores:{qian:75,dui:45,li:55,xun:35,zhen:88,kan:50,gen:80,kun:55}, blurb:'臨場果斷、守紀律、即時行動。'},
+ {id:'invest', nm:'金融／投資分析', ic:'', scores:{qian:75,dui:40,li:88,xun:45,zhen:45,kan:70,gen:80,kun:30}, blurb:'冷靜分析、嚴謹判斷與決策。'},
+ {id:'ux',     nm:'UX／產品設計', ic:'', scores:{qian:55,dui:70,li:85,xun:80,zhen:55,kan:50,gen:55,kun:55}, blurb:'覺察需求、連結各方、形塑體驗。'},
+ {id:'data',   nm:'資料科學／分析', ic:'', scores:{qian:55,dui:30,li:88,xun:50,zhen:35,kan:85,gen:80,kun:30}, blurb:'深掘資料、嚴謹推理找洞見。'},
+ {id:'music',  nm:'音樂／表演者', ic:'', scores:{qian:45,dui:88,li:75,xun:50,zhen:75,kan:55,gen:40,kun:40}, blurb:'用表達感染人、即時綻放。'},
+ {id:'farm',   nm:'農業／園藝', ic:'', scores:{qian:40,dui:35,li:40,xun:50,zhen:40,kan:65,gen:75,kun:90}, blurb:'順節氣耐心栽培、滋養生長。'},
+ {id:'event',  nm:'活動企劃', ic:'', scores:{qian:55,dui:82,li:60,xun:85,zhen:75,kan:30,gen:55,kun:55}, blurb:'連結各方、把場子炒熱串起來。'}
 ];
 
 // ── 底色（人格）讀取 ─────────────────────────────────────
@@ -418,12 +418,12 @@ function showResult(){
 
   html+='<div class="resbtns">'
     +'<button class="cbtn" onclick="resetCover()">回封面</button>'
-    +'<a class="cbtn ghost" href="bagua-field.html">🎯 測一個情境（局）</a>'
+    +'<a class="cbtn ghost" href="bagua-field.html">測一個情境（局）</a>'
     +'<a class="cbtn ghost" href="bagua-persona.html">回人格測驗</a>'
   +'</div>'
   +'<div class="resbtns">'
-    +'<a class="cbtn ghost" href="bagua-records.html">📒 我的記錄</a>'
-    +'<a class="cbtn ghost" href="index.html">🧭 八卦能量</a>'
+    +'<a class="cbtn ghost" href="bagua-records.html">我的記錄</a>'
+    +'<a class="cbtn ghost" href="index.html">八卦能量</a>'
   +'</div>'
   +'<div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
@@ -517,7 +517,7 @@ function showDetail(id){
       html+='<div class="drain-ok">沒看到明顯的消耗點——這個職業要的，你大致接得住；你的強項也用得上，能量用起來算自然。</div>';
     }
 
-    html+='<div class="block"><h3>🧭 應對策略</h3>';
+    html+='<div class="block"><h3>應對策略</h3>';
     if(fw.length){
       fw.forEach(function(k){
         html+='<div class="strat-line">面對『<span class="em">'+energyLabel(k)+'</span>』：找人補位／刻意排恢復，別硬撐；用你的強項繞道完成。</div>';

@@ -3,14 +3,14 @@
 <script defer src="octenso-gate.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
-<title>Octenso 八態能格 · 📒 我的八卦記錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>Octenso 八態能格 · 我的八卦記錄</title>
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
     --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
     padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
   .sans{font-family:ui-sans-serif,sans-serif}
   .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
@@ -136,14 +136,14 @@
 <a class="home-link" href="index.html">← 回八態能格</a>
 
 <div class="page-head">
-  <h1>📒 我的八卦記錄</h1>
+  <h1>我的八卦記錄</h1>
   <div class="sub">都存在這台裝置上（本機、未上傳；清除瀏覽器資料會消失）</div>
 </div>
 
 <div id="app"></div>
 
 <div class="clear-wrap">
-  <button class="clear-btn" onclick="clearAll()">🧹 清空所有記錄</button>
+  <button class="clear-btn" onclick="clearAll()">清空所有記錄</button>
   <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>
 </div>
 
@@ -195,9 +195,9 @@ function downloadBaseQR(){
 
 // 場域 top → title map（從 persona E 複製）；場域名
 var FACETS=[
- {id:'work',     nm:'工作的你', ic:'💼'},
- {id:'relation', nm:'關係裡的你', ic:'💞'},
- {id:'solo',     nm:'獨處的你', ic:'🌙'}
+ {id:'work',     nm:'工作的你', ic:''},
+ {id:'relation', nm:'關係裡的你', ic:''},
+ {id:'solo',     nm:'獨處的你', ic:''}
 ];
 var FACET_BY_ID={}; FACETS.forEach(function(f){FACET_BY_ID[f.id]=f;});
 
@@ -446,7 +446,7 @@ function setFelt(idx,felt){
   }catch(e){}
   render();
 }
-function feltEmoji(f){ return f==='good'?'👍':(f==='ok'?'😐':''); }
+function feltEmoji(f){ return f==='good'?'':(f==='ok'?'':''); }
 
 // ── Render ───────────────────────────────────────────────
 function allEmpty(){
@@ -465,7 +465,7 @@ function render(){
   if(allEmpty()){
     var b=document.createElement('div'); b.className='block';
     b.style.cssText='border-left:4px solid var(--pine);text-align:center;margin-bottom:18px';
-    b.innerHTML='<div style="font-size:15px;margin-bottom:8px">還沒開始記錄 🌱</div>'
+    b.innerHTML='<div style="font-size:15px;margin-bottom:8px">還沒開始記錄 </div>'
       +'<div style="font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);line-height:1.85">先測你的<b>八卦能量底色</b>，這頁就會長出你的軌跡。<br><a href="bagua-persona.html" style="color:var(--pine);font-weight:700">去測我的底色 →</a></div>';
     app.appendChild(b);
   }
@@ -483,11 +483,11 @@ function renderExplore(){
   var s=sec('探索更多');
   var box=document.createElement('div'); box.style.cssText='display:flex;flex-wrap:wrap;gap:8px';
   box.innerHTML=''
-    +'<a class="reg-pill" href="bagua-persona.html">🧭 人格測驗</a>'
-    +'<a class="reg-pill" href="bagua-field.html">🎯 測一個局</a>'
-    +'<a class="reg-pill" href="bagua-career.html">💼 職業配對</a>'
-    +'<a class="reg-pill" href="bagua-team.html">👥 團隊合盤</a>'
-    +'<a class="reg-pill" href="bagua-map.html">🗺️ 系統圖</a>';
+    +'<a class="reg-pill" href="bagua-persona.html">人格測驗</a>'
+    +'<a class="reg-pill" href="bagua-field.html">測一個局</a>'
+    +'<a class="reg-pill" href="bagua-career.html">職業配對</a>'
+    +'<a class="reg-pill" href="bagua-team.html">團隊合盤</a>'
+    +'<a class="reg-pill" href="bagua-map.html">系統圖</a>';
   s.appendChild(box); return s;
 }
 
@@ -502,7 +502,7 @@ function emptyNote(html){
 
 // 1. 我的底色
 function renderBase(){
-  var s=sec('🎨 我的底色');
+  var s=sec('我的底色');
   var base=getBase();
   if(!base){ s.appendChild(emptyNote('還沒有你的底色——<a href="bagua-persona.html">去測你的八卦能量人格 →</a>')); return s; }
   var tk=base.top||topKeyOf(base.scores);
@@ -519,8 +519,8 @@ function renderBase(){
     +'<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:2px 0 12px">'+valsHtml+'</div>'
     +'<div class="bc-date">'+dateOrTested(base.ts)+'</div>'
     +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center;margin-top:8px">'
-      +'<button onclick="shareBaseLink()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">🔗 複製連結</button>'
-      +'<button onclick="downloadBaseQR()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">📥 下載 QR 圖</button>'
+      +'<button onclick="shareBaseLink()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">複製連結</button>'
+      +'<button onclick="downloadBaseQR()" style="font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--pine);background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer">下載 QR 圖</button>'
       +'<a class="bc-link" href="bagua-persona.html">重測 →</a>'
     +'</div>'
     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);margin-top:9px;line-height:1.65">連結／圖含你的 8 個數字（無個資）——給朋友，他就能和你合盤。</div>';
@@ -531,7 +531,7 @@ function renderBase(){
 
 // 1.5 能量提醒（依底色；回來打勾的主場）
 function renderMemo(){
-  var s=sec('🌱 給你的能量提醒');
+  var s=sec('給你的能量提醒');
   var base=getBase();
   if(!base){ s.appendChild(emptyNote('先測你的<b>底色</b>，這裡就會長出依你底色的溫柔提醒——<a href="bagua-persona.html">去測你的底色 →</a>')); return s; }
   var m=buildMemo(base.scores);
@@ -545,7 +545,7 @@ function renderMemo(){
   }).join('');
   block.innerHTML='<div class="memo-sub">依你的底色，這陣子最值得留意的（溫柔版，不是功課）。回來打個勾，給自己一個檢查的迴路。</div>'
     +nudgeHtml
-    +'<div class="memo-watch">⚠️ 小叮嚀：'+m.watch.text+'</div>'
+    +'<div class="memo-watch">小叮嚀：'+m.watch.text+'</div>'
     +'<div class="memo-foot">不用每條都做到，挑一個現在做得到的就好。</div>';
   s.appendChild(block);
   return s;
@@ -553,7 +553,7 @@ function renderMemo(){
 
 // 2. 場域側寫
 function renderFacets(){
-  var s=sec('🗺️ 場域側寫');
+  var s=sec('場域側寫');
   var all=getFacets();
   var done=FACETS.filter(function(f){ return all[f.id]&&all[f.id].scores; });
   if(!done.length){ s.appendChild(emptyNote('還沒有場域側寫——在<a href="bagua-persona.html">人格測驗</a>結果頁可以測「工作／關係／獨處」的你。')); return s; }
@@ -573,7 +573,7 @@ function renderFacets(){
 
 // 3. 測過的局
 function renderFields(){
-  var s=sec('🎯 測過的局');
+  var s=sec('測過的局');
   var fields=getFields();
   if(!fields.length){ s.appendChild(emptyNote('還沒有測過的局——<a href="bagua-field.html">去測一個局 →</a>（看一段關係、一份工作合不合你）')); return s; }
   var base=getBase();
@@ -596,7 +596,7 @@ function renderFields(){
 
 // 3.5 你的消耗熱點（縱觀所有局 × 底色）
 function renderDrain(){
-  var s=sec('🔥 你的消耗熱點');
+  var s=sec('你的消耗熱點');
   var base=getBase();
   if(!base){
     s.appendChild(emptyNote('先測你的<b>人格底色</b>，這裡才能對照——'
@@ -666,7 +666,7 @@ function renderDrain(){
   // 應對策略
   if(hotspots.length){
     var st=document.createElement('div'); st.className='block';
-    var stHtml='<h3>🧭 應對策略</h3>';
+    var stHtml='<h3>應對策略</h3>';
     hotspots.forEach(function(k){
       stHtml+='<div class="strat-line">'+strategyFor(k)+'</div>';
     });
@@ -691,7 +691,7 @@ function renderDrain(){
 
 // 3.6 能量調節（看見消耗→選一個行動→去做→回來記）
 function renderRegulate(){
-  var s=sec('🔄 能量調節');
+  var s=sec('能量調節');
   var base=getBase();
   if(!base){
     s.appendChild(emptyNote('先測你的<b>底色</b>，這裡才會給你「現在做得到」的小調節——'
@@ -713,8 +713,8 @@ function renderRegulate(){
       +'<div class="reg-eyebrow">回到呼吸 · 通用恢復</div>'
       +'<div class="reg-say">感覺被消耗時，給自己一次呼吸或小憩。</div>'
       +'<div class="reg-acts">'
-        +'<a class="reg-pill" href="BreatheAware/">🫁 呼吸覺察</a>'
-        +'<a class="reg-pill" href="xiaoqi/">🍵 小憩·練息</a>'
+        +'<a class="reg-pill" href="BreatheAware/">呼吸覺察</a>'
+        +'<a class="reg-pill" href="xiaoqi/">小憩·練息</a>'
       +'</div>'
     +'</div>'
     // 2. 針對性微調（依消耗熱點 / 最弱能量）
@@ -742,8 +742,8 @@ function renderRegulate(){
         +'<span class="felt">'+em+'</span></div>';
       if(it.felt===null||typeof it.felt==='undefined'){
         html+='<div class="reg-felt"><span class="q">有感嗎？</span>'
-          +'<button onclick="setFelt('+i+',\'good\')">👍 有</button>'
-          +'<button onclick="setFelt('+i+',\'ok\')">😐 還好</button></div>';
+          +'<button onclick="setFelt('+i+',\'good\')">有</button>'
+          +'<button onclick="setFelt('+i+',\'ok\')">還好</button></div>';
       }
     });
     rec.innerHTML=html;
@@ -754,7 +754,7 @@ function renderRegulate(){
 
 // 4. 合盤紀錄
 function renderCompat(){
-  var s=sec('🔗 合盤紀錄');
+  var s=sec('合盤紀錄');
   var hist=getCompat();
   if(!hist.length){ s.appendChild(emptyNote('還沒有合盤紀錄——在<a href="bagua-persona.html">人格測驗</a>結果頁點「和別人合盤」就會記下來。')); return s; }
   hist.forEach(function(r,i){
@@ -762,7 +762,7 @@ function renderCompat(){
     var who=r.otherName?escapeHtml(r.otherName):escapeHtml(title);
     var sub=r.otherName?(escapeHtml(title)+' · '):'';
     var row=document.createElement('div'); row.className='row';
-    row.innerHTML='<span class="r-ic">🔗</span>'
+    row.innerHTML='<span class="r-ic"></span>'
       +'<span class="r-body"><span class="r-nm">你 × '+who+'</span>'
       +'<span class="r-st">'+sub+'同頻 '+(r.sim||0)+'% ／ 互補 '+(r.comp||0)+'% · '+dateOrTested(r.ts)+'</span></span>'
       +'<button onclick="renameCompat('+i+')" style="'+ROWACT+';color:var(--muted)">改名</button>'

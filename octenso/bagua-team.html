@@ -6,128 +6,135 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <title>Octenso 八態能格 · 團隊合盤 · 八卦能量</title>
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+  :root{
+    --bg:#f4efe4;--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;
+    --hair:#bcb09a;--line:#d2c7b4;--surface:#faf7ee;--surface2:#efe9da;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
-    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
+    --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;
+    --serifglyph:"Songti TC","Noto Serif TC",ui-serif,serif;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
-    padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
-  .sans{font-family:ui-sans-serif,sans-serif}
-  .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
-    text-decoration:none;margin-bottom:14px;padding:5px 12px;border:1px solid var(--line);border-radius:999px}
-  .home-link:hover{background:var(--surface)}
+  body{background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
+    padding:26px 20px 64px;max-width:600px;margin:0 auto;line-height:1.9;-webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(53,97,79,.14)}
+  .sans{font-family:"Noto Sans TC",ui-sans-serif,sans-serif}
+  .home-link{display:inline-block;font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;
+    letter-spacing:.08em;color:var(--muted);text-decoration:none;margin-bottom:24px;
+    padding:6px 13px;border:1px solid var(--hair);border-radius:999px;transition:color .2s,border-color .2s}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
 
   /* ── Cover / 管理區 ── */
   #cover{padding:4px 0}
-  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
-    text-transform:uppercase;text-align:center;margin-bottom:8px}
-  h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px;text-align:center}
-  .lead{font-size:14px;color:var(--ink);max-width:430px;margin:0 auto 4px;line-height:1.9;text-align:center}
-  .nav-row{text-align:center;margin:12px 0 6px}
-  .nav-row a{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
-    text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin:0 4px 6px}
-  .nav-row a:hover{background:var(--surface)}
-  .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
-    border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;line-height:1.85;margin:14px 0}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-weight:400;font-size:11px;letter-spacing:.34em;
+    color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:14px}
+  h1{font-weight:200;font-size:34px;letter-spacing:.14em;margin-bottom:16px;text-align:center;line-height:1.2}
+  .lead{font-size:14px;color:var(--ink-soft);font-weight:300;max-width:420px;margin:0 auto;line-height:2;text-align:center}
+  .nav-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:24px 0 6px}
+  .nav-row a{font-family:"Noto Sans TC",sans-serif;font-size:12.5px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--hair);border-radius:999px;padding:7px 15px;transition:color .2s,border-color .2s}
+  .nav-row a:hover{color:var(--ink);border-color:var(--ink)}
+  .honest{font-size:12.5px;color:var(--muted);line-height:1.95;margin:26px auto 8px;max-width:460px;
+    padding-left:15px;border-left:1px solid var(--hair);text-align:left}
+  .honest b{color:var(--ink-soft);font-weight:400}
 
-  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
-  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);
-    margin-bottom:12px;font-weight:700}
+  /* ── Sections（去卡片，改留白＋細線） ── */
+  .block{padding:30px 0 4px;border-top:1px solid var(--line);margin-top:6px}
+  .block:first-of-type{border-top:none;padding-top:8px}
+  .block h3{font-family:"Noto Sans TC",sans-serif;font-size:13px;letter-spacing:.14em;color:var(--muted);
+    font-weight:400;margin-bottom:18px}
 
   /* ── 成員清單 ── */
-  .member-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .member-row{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line)}
   .member-row:last-child{border-bottom:none}
-  .member-row .m-sym{font-size:22px;flex:none;width:30px;text-align:center;color:var(--accent,var(--pine))}
+  .member-row .m-sym{font-family:var(--serifglyph);font-size:22px;flex:none;width:30px;text-align:center;color:var(--accent,var(--ink))}
   .member-row .m-body{flex:1;min-width:0}
-  .member-row .m-nm{font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:700;color:var(--ink);
+  .member-row .m-nm{font-family:"Noto Sans TC",sans-serif;font-size:14px;font-weight:400;color:var(--ink);
     background:none;border:none;border-bottom:1px dashed transparent;padding:1px 0;width:100%;max-width:160px}
-  .member-row .m-nm:focus{outline:none;border-bottom-color:var(--line)}
-  .member-row .m-type{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
-  .member-row .m-rm{flex:none;background:none;border:1px solid var(--line);border-radius:999px;
-    font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);padding:5px 12px;cursor:pointer}
-  .member-row .m-rm:hover{background:var(--surface2);color:var(--cinnabar)}
-  .empty-note{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.8;padding:4px 0}
+  .member-row .m-nm:focus{outline:none;border-bottom-color:var(--hair)}
+  .member-row .m-type{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .member-row .m-rm{flex:none;background:none;border:1px solid var(--hair);border-radius:999px;
+    font-family:"Noto Sans TC",sans-serif;font-size:12px;color:var(--muted);padding:5px 13px;cursor:pointer;transition:color .2s,border-color .2s}
+  .member-row .m-rm:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .empty-note{font-family:"Noto Sans TC",sans-serif;font-size:12.5px;color:var(--muted);line-height:1.9;padding:4px 0}
 
-  .add-input{width:100%;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:15px;letter-spacing:.06em;
-    background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--ink)}
-  .add-input:focus{outline:none;border-color:var(--pine);background:#fff}
-  .cbtn{display:inline-block;background:transparent;color:var(--ink);border:1.5px solid var(--ink);
-    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;
-    padding:10px 22px;border-radius:999px;cursor:pointer;transition:transform .15s}
-  .cbtn:hover{transform:translateY(-2px);background:var(--ink);color:#fff}
-  .cbtn:disabled{opacity:.4;cursor:default;transform:none}
-  .cbtn.ghost{background:none;color:var(--muted);border:1px solid var(--line);font-weight:400}
-  .cbtn.ghost:hover{background:var(--surface);transform:none}
-  .upload-btn{display:inline-block;background:none;color:var(--pine);border:1px solid var(--line);
-    font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;
-    padding:10px 18px;border-radius:999px;cursor:pointer;transition:all .15s}
-  .upload-btn:hover{background:var(--surface2);transform:translateY(-1px)}
-  .add-err{color:var(--cinnabar);font-family:ui-sans-serif,sans-serif;font-size:12.5px;margin-top:8px;min-height:1.2em}
-  .or-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:ui-sans-serif,sans-serif;
-    font-size:11.5px;margin:13px 0 11px}
+  .add-input{width:100%;font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-size:15px;letter-spacing:.04em;
+    background:transparent;border:1px solid var(--hair);border-radius:10px;padding:12px 14px;color:var(--ink);transition:border-color .2s}
+  .add-input:focus{outline:none;border-color:var(--ink)}
+  .add-input::placeholder{color:var(--muted);opacity:.75}
+  .cbtn{display:inline-block;background:transparent;color:var(--ink);border:1px solid var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:400;letter-spacing:.06em;
+    padding:11px 24px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s}
+  .cbtn:hover{background:var(--ink);color:var(--paper)}
+  .cbtn:disabled{opacity:.4;cursor:default}
+  .cbtn.ghost{background:none;color:var(--muted);border:1px solid var(--hair);font-weight:400}
+  .cbtn.ghost:hover{background:transparent;border-color:var(--ink);color:var(--ink)}
+  .upload-btn{display:inline-block;background:none;color:var(--muted);border:1px solid var(--hair);
+    font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:400;letter-spacing:.04em;
+    padding:10px 18px;border-radius:999px;cursor:pointer;transition:color .2s,border-color .2s}
+  .upload-btn:hover{color:var(--ink);border-color:var(--ink)}
+  .add-err{color:var(--cinnabar);font-family:"Noto Sans TC",sans-serif;font-size:12.5px;margin-top:8px;min-height:1.2em}
+  .or-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-family:"Noto Sans TC",sans-serif;
+    font-size:11.5px;letter-spacing:.04em;margin:16px 0 13px}
   .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
-  .go-btn{display:block;width:100%;background:transparent;color:var(--ink);border:1.5px solid var(--ink);
-    font-family:"Songti TC","Noto Serif TC",serif;font-size:16px;letter-spacing:.1em;
-    padding:14px 0;border-radius:999px;cursor:pointer;margin:8px 0 4px;
-    transition:transform .15s}
-  .go-btn:hover:not(:disabled){transform:translateY(-2px);background:var(--ink);color:#fff}
+  .go-btn{display:block;width:100%;background:transparent;color:var(--ink);border:1px solid var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:15px;letter-spacing:.16em;
+    padding:15px 0;border-radius:999px;cursor:pointer;margin:10px 0 4px;transition:background .2s,color .2s}
+  .go-btn:hover:not(:disabled){background:var(--ink);color:var(--paper)}
   .go-btn:disabled{opacity:.4;cursor:default}
-  .go-hint{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:8px}
+  .go-hint{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:10px;letter-spacing:.04em}
 
   /* ── Result ── */
   #result{display:none}
-  .radar-wrap{max-width:380px;margin:6px auto 4px}
+  .radar-wrap{max-width:380px;margin:10px auto 6px}
   .radar-wrap svg{width:100%;height:auto;display:block}
-  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
-  .rlabel.top{fill:var(--pine);font-weight:700}
-  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
-  .legend{display:flex;flex-wrap:wrap;gap:5px 13px;justify-content:center;font-size:11.5px;color:var(--muted);
-    font-family:ui-sans-serif,sans-serif;margin:2px 0 18px}
-  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
-  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px 20px;
-    box-shadow:none;position:relative;overflow:hidden;text-align:center;margin-bottom:18px}
-  .typecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,var(--pine))}
-  .tc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
-    text-transform:uppercase;margin-bottom:6px}
-  .tc-sym{font-size:48px;line-height:1;margin-bottom:6px;color:var(--accent,var(--pine))}
-  .tc-title{font-size:25px;letter-spacing:.08em;margin-bottom:9px}
-  .tc-essence{font-size:14.5px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
-  .portrait{font-size:14px;line-height:1.95;color:var(--ink)}
-  .portrait .em{color:var(--pine);font-weight:600}
-  .portrait-close{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-style:italic;
-    color:var(--pine);font-size:13.5px;line-height:1.8}
+  .rlabel{font-size:13px;font-family:"Noto Sans TC",sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--ink);font-weight:400}
+  .rscore{font-size:10px;font-family:"Noto Sans TC",sans-serif;fill:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font-size:11.5px;color:var(--muted);
+    font-family:"Noto Sans TC",sans-serif;margin:6px 0 20px;letter-spacing:.03em}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+  .typecard{text-align:center;padding:32px 18px 10px;margin-bottom:8px;position:relative}
+  .tc-eyebrow{font-family:"Noto Sans TC",sans-serif;font-size:11px;letter-spacing:.22em;color:var(--muted);margin-bottom:18px}
+  .tc-sym{font-family:var(--serifglyph);font-size:54px;line-height:1;margin-bottom:14px;color:var(--accent,var(--ink))}
+  .tc-title{font-weight:200;font-size:28px;letter-spacing:.12em;margin-bottom:16px}
+  .tc-essence{font-size:14.5px;color:var(--ink-soft);font-weight:300;line-height:2;max-width:420px;margin:0 auto}
+  .portrait{font-size:14px;line-height:2;color:var(--ink-soft);font-weight:300}
+  .portrait .em{color:var(--ink);font-weight:400}
+  .portrait-close{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.95}
 
-  .role-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .role-row{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid var(--line)}
   .role-row:last-child{border-bottom:none}
-  .role-row .r-sym{font-size:20px;flex:none;width:28px;text-align:center;color:var(--accent,var(--pine))}
+  .role-row .r-sym{font-family:var(--serifglyph);font-size:20px;flex:none;width:28px;text-align:center;color:var(--accent,var(--ink))}
   .role-row .r-body{flex:1;min-width:0}
-  .role-row .r-nm{font-family:ui-sans-serif,sans-serif;font-size:13.5px;font-weight:700;color:var(--ink)}
-  .role-row .r-ty{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:1px}
-  .judge{font-size:14px;line-height:1.9;color:var(--ink);margin-top:12px}
-  .judge .em{color:var(--pine);font-weight:600}
-  .judge .down{color:var(--cinnabar);font-weight:600}
+  .role-row .r-nm{font-family:"Noto Sans TC",sans-serif;font-size:14px;font-weight:400;color:var(--ink)}
+  .role-row .r-ty{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .judge{font-size:14px;line-height:2;color:var(--ink-soft);font-weight:300;margin-top:14px}
+  .judge .em{color:var(--ink);font-weight:400}
+  .judge .down{color:var(--cinnabar);font-weight:400}
+  .judge b{color:var(--ink);font-weight:400}
 
-  .wx-grid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
-  .wx-chip{font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;border-radius:999px;
-    padding:7px 16px;border:1.5px solid var(--line)}
-  .wx-chip.have{color:#fff}
-  .wx-chip.miss{color:var(--muted);background:var(--surface2);opacity:.6}
+  .wx-grid{display:flex;flex-wrap:wrap;gap:9px;margin:6px 0 14px}
+  .wx-chip{font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:400;border-radius:999px;
+    padding:7px 16px;border:1px solid var(--hair);color:var(--muted)}
+  .wx-chip.have{color:var(--paper)}
+  .wx-chip.miss{color:var(--muted);background:transparent;opacity:.55}
 
-  .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
-    border-top:1px solid var(--line);padding-top:16px;margin-top:6px}
-  .res-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:16px 0 10px}
+  .foot{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--muted);line-height:2;text-align:center;
+    border-top:1px solid var(--line);padding-top:22px;margin-top:28px}
+  .foot b{color:var(--ink-soft);font-weight:400}
+  .res-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0 10px}
   /* 多團隊切換 */
-  .ts-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
-  .ts-chip{font-family:'Songti TC','Noto Serif TC',serif;font-size:14px;padding:7px 15px;border:1px solid var(--line);
-    border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;transition:border-color .18s,color .18s}
+  .ts-chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:2px}
+  .ts-chip{font-family:"Noto Sans TC",sans-serif;font-size:13.5px;padding:7px 15px;border:1px solid var(--hair);
+    border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;transition:border-color .2s,color .2s}
   .ts-chip:hover{border-color:var(--ink);color:var(--ink)}
-  .ts-chip.on{border-color:var(--ink);color:var(--ink);font-weight:600}
-  .ts-chip .ts-cnt{font-family:ui-sans-serif,sans-serif;font-size:10.5px;color:var(--muted);margin-left:7px}
+  .ts-chip.on{border-color:var(--ink);color:var(--ink);font-weight:400}
+  .ts-chip .ts-cnt{font-family:"Jost",sans-serif;font-size:10.5px;color:var(--muted);margin-left:8px}
   .ts-chip.ts-new{color:var(--muted)}
-  .ts-act{display:flex;gap:16px;margin-top:11px}
-  .ts-mini{background:none;border:none;color:var(--muted);font-family:ui-sans-serif,sans-serif;font-size:12px;cursor:pointer;padding:0}
+  .ts-act{display:flex;gap:18px;margin-top:13px}
+  .ts-mini{background:none;border:none;color:var(--muted);font-family:"Noto Sans TC",sans-serif;font-size:12px;cursor:pointer;padding:0;transition:color .2s}
   .ts-mini:hover{color:var(--ink)}
-  .ts-form{margin-top:13px}
+  .ts-form{margin-top:14px}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
@@ -138,8 +145,8 @@
   <h1>團隊合盤</h1>
   <p class="lead">把一群人的八卦盤放在一起，看你們整體的樣子、誰補誰、和共同的盲點。</p>
   <div class="nav-row">
-    <a href="bagua-persona.html">🧭 先測我的八卦底色</a>
-    <a href="bagua-records.html">📒 我的記錄</a>
+    <a href="bagua-persona.html">先測我的八卦底色</a>
+    <a href="bagua-records.html">我的記錄</a>
   </div>
   <div class="honest">
     這是一面<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。
@@ -147,7 +154,7 @@
   </div>
 
   <div class="block">
-    <h3>📁 我的團隊</h3>
+    <h3>我的團隊</h3>
     <div class="ts-chips" id="ts-chips"></div>
     <div class="ts-act" id="ts-act"></div>
     <div class="ts-form" id="ts-form" hidden>
@@ -160,7 +167,7 @@
   </div>
 
   <div class="block">
-    <h3>👥 團隊成員</h3>
+    <h3>團隊成員</h3>
     <div id="member-list"></div>
   </div>
 
@@ -172,7 +179,7 @@
     <div class="or-divider">或上傳含 QR 的圖</div>
     <div style="text-align:center">
       <input type="file" id="qr-file" accept="image/*" style="display:none" onchange="onQRFile(event)">
-      <button class="upload-btn" onclick="document.getElementById('qr-file').click()">📷 上傳一張含 QR 的圖</button>
+      <button class="upload-btn" onclick="document.getElementById('qr-file').click()">上傳一張含 QR 的圖</button>
     </div>
     <div class="add-err" id="add-err"></div>
   </div>
@@ -406,8 +413,8 @@ function renderTeams(){
   }).join('')+'<button class="ts-chip ts-new" onclick="startNewTeam()">＋ 新團隊</button>';
   var act=document.getElementById('ts-act');
   if(act){ var c=currentTeam();
-    act.innerHTML=c?('<button class="ts-mini" onclick="startRenameTeam()">✎ 改名</button>'
-      +(teams.length>1?'<button class="ts-mini" onclick="deleteCurrentTeam()">🗑 刪除此團隊</button>':'')):''; }
+    act.innerHTML=c?('<button class="ts-mini" onclick="startRenameTeam()">改名</button>'
+      +(teams.length>1?'<button class="ts-mini" onclick="deleteCurrentTeam()">刪除此團隊</button>':'')):''; }
 }
 
 function addMember(scores, name){
@@ -819,23 +826,23 @@ function showTeam(){
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>🧭 這支團隊</h3>'
+   +'<div class="block"><h3>這支團隊</h3>'
      +'<div class="judge" style="margin-top:0"><b style="color:var(--ink)">'+vHead+'</b><br>'+vBody+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>🗺️ 能量角色地圖</h3>'+roleHtml+'</div>'
+   +'<div class="block"><h3>能量角色地圖</h3>'+roleHtml+'</div>'
 
-   +'<div class="block"><h3>🌳 能量底盤</h3>'
+   +'<div class="block"><h3>能量底盤</h3>'
      +'<div class="wx-grid">'+wxChips+'</div>'
      +'<div class="judge" style="margin-top:10px;font-size:13px;color:var(--muted)">'+baseLine+'</div>'
    +'</div>'
 
-   +(hasGaps?('<div class="block"><h3>💡 給團隊的具體建議</h3>'+teamTipsTxt
+   +(hasGaps?('<div class="block"><h3>給團隊的具體建議</h3>'+teamTipsTxt
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個團隊做得到的先試。</div>'
    +'</div>'):'')
 
    +'<div style="text-align:center;margin:18px 0 6px">'
-     +'<button onclick="shareTeamImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer">📤 下載團隊圖</button>'
+     +'<button onclick="shareTeamImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer">下載團隊圖</button>'
    +'</div>'
    +'<div class="res-btns">'
      +'<button class="cbtn ghost" onclick="backToManage()">回成員管理</button>'

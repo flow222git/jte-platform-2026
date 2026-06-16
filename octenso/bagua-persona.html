@@ -3,14 +3,14 @@
 <script defer src="octenso-gate.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <title>Octenso 八態能格 · 八卦能量人格 · 測驗</title>
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
     --metal:#b0996a;--wood:#5f7d4a;--water:#4d6b86;--fire:#9d4b34;--earth:#a98238;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
     padding:22px 18px 48px;max-width:600px;margin:0 auto;line-height:1.75}
   .sans{font-family:ui-sans-serif,sans-serif}
   .home-link{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
@@ -245,7 +245,7 @@
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <button class="start-btn" onclick="startQuiz()">開始測驗</button>
   <div class="meta-line">24 題 · 約 3 分鐘 · 不需登入</div>
-  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">📒 我的記錄</a>
+  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">我的記錄</a>
   <div class="honest">
     這測的是你的<b>「底色」</b>——你習慣動用的內在能量，是一種傾向，不是固定標籤。
     能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
@@ -323,13 +323,13 @@ var E={
 var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // clockwise from top
 
 var TOOLS={
- breathe:{nm:'呼吸覺察',url:'BreatheAware/',ic:'🌬',ds:'即時看見你的呼吸狀態。'},
- xiaoqi:{nm:'小憩 · 練息',url:'xiaoqi/',ic:'🍃',ds:'15 種呼吸法，選一個現在做。'},
- hrv:{nm:'心率變異 HRV',url:'hrv/',ic:'❤️',ds:'手指貼鏡頭，一分鐘量身體。'},
+ breathe:{nm:'呼吸覺察',url:'BreatheAware/',ic:'',ds:'即時看見你的呼吸狀態。'},
+ xiaoqi:{nm:'小憩 · 練息',url:'xiaoqi/',ic:'',ds:'15 種呼吸法，選一個現在做。'},
+ hrv:{nm:'心率變異 HRV',url:'hrv/',ic:'',ds:'手指貼鏡頭，一分鐘量身體。'},
  wenyi:{nm:'問易 · 卜卦',url:'ven-i/',ic:'☯',ds:'從易經，回來看此刻的自己。'},
- writespace:{nm:'心理位移書寫',url:'https://flow222git.github.io/writespace/',ic:'✍️',ds:'換個位置，把心裡的話寫出來。'},
- twct:{nm:'溝通類型測驗',url:'https://flow222git.github.io/twct/',ic:'💬',ds:'看你在壓力下怎麼溝通。'},
- bsrs:{nm:'心情溫度計',url:'bsrs/',ic:'🌡',ds:'一分鐘，看看最近的情緒。'},
+ writespace:{nm:'心理位移書寫',url:'https://flow222git.github.io/writespace/',ic:'',ds:'換個位置，把心裡的話寫出來。'},
+ twct:{nm:'溝通類型測驗',url:'https://flow222git.github.io/twct/',ic:'',ds:'看你在壓力下怎麼溝通。'},
+ bsrs:{nm:'心情溫度計',url:'bsrs/',ic:'',ds:'一分鐘，看看最近的情緒。'},
  baguamap:{nm:'八卦能量系統圖',url:'bagua-map.html',ic:'☯',ds:'認識這八種內在能量。'}
 };
 
@@ -367,10 +367,10 @@ var idx=0;
 
 // ── 多場域側寫 ────────────────────────────────────────────
 var FACETS=[
- {id:'work',     nm:'工作的你', ic:'💼', frame:'想著你在【工作／做事】時的樣子——回想一個真實的日常情境，不是理想中的你。'},
- {id:'relation', nm:'關係裡的你', ic:'💞', frame:'想著你在【親密關係／重要的人】面前的樣子——真實的你，不是理想的。'},
- {id:'solo',     nm:'獨處的你', ic:'🌙', frame:'想著你【一個人獨處】時的樣子——真實的你，不是理想的。'},
- {id:'ideal',    nm:'想成為的你', ic:'✨', frame:'這次想著你「想成為」的樣子來回答——不是某個場域，是你想長成的方向（和現在的落差，就是你想去的地方）。'}
+ {id:'work',     nm:'工作的你', ic:'', frame:'想著你在【工作／做事】時的樣子——回想一個真實的日常情境，不是理想中的你。'},
+ {id:'relation', nm:'關係裡的你', ic:'', frame:'想著你在【親密關係／重要的人】面前的樣子——真實的你，不是理想的。'},
+ {id:'solo',     nm:'獨處的你', ic:'', frame:'想著你【一個人獨處】時的樣子——真實的你，不是理想的。'},
+ {id:'ideal',    nm:'想成為的你', ic:'', frame:'這次想著你「想成為」的樣子來回答——不是某個場域，是你想長成的方向（和現在的落差，就是你想去的地方）。'}
 ];
 var FACET_BY_ID={}; FACETS.forEach(function(f){FACET_BY_ID[f.id]=f;});
 var FACET_COLOR='#35614f'; // 松綠（場域實線，沿用 --pine）
@@ -395,7 +395,7 @@ function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>
 function resetMyBagua(){
   if(!confirm('確定清空你的八卦紀錄嗎？\n會刪除：人格底色、各場域側寫、此刻、測過的局。\n（無法復原）')) return;
   ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
-  alert('已清空，可以重新乾淨體驗一輪了 🌱');
+  alert('已清空，可以重新乾淨體驗一輪了 ');
   location.reload();
 }
 
@@ -409,7 +409,7 @@ function showFacetBanner(){
     bn.style.display='block';
   } else {
     // 底色（整體的你）也給一個場景錨，引導答真實而非理想
-    document.getElementById('fb-ic').textContent='🪞';
+    document.getElementById('fb-ic').textContent='';
     document.getElementById('fb-nm').textContent='整體的你（底色）';
     document.getElementById('fb-frame').textContent='想一個真實的日常情境再回答——不是理想中的你，是平常真正的你。';
     bn.style.display='block';
@@ -528,7 +528,7 @@ function pairBlockHtml(sc){
     +'</div>';
   }).join('');
   return '<div class="block pair-block">'
-    +'<h3>🧭 四向度傾向</h3>'
+    +'<h3>四向度傾向</h3>'
     +'<div class="pair-sub">另一種看法：你在四組相對能量上各偏哪邊（偏多少，不是二選一）。</div>'
     +rows
     +'<div class="pair-foot">這只是把雷達換個角度看——是傾向、有程度，不是非此即彼。</div>'
@@ -703,10 +703,10 @@ function memoBlockHtml(scores){
     return '<div class="memo-row"><div class="memo-txt">'+n.text+'</div>'+btn+'</div>';
   }).join('');
   return '<div class="block memo-block">'
-    +'<h3>🌱 給你的能量提醒</h3>'
+    +'<h3>給你的能量提醒</h3>'
     +'<div class="memo-sub">依你的底色，這陣子最值得留意的（溫柔版，不是功課）</div>'
     +nudgeHtml
-    +'<div class="memo-watch">⚠️ 小叮嚀：'+m.watch.text+'</div>'
+    +'<div class="memo-watch">小叮嚀：'+m.watch.text+'</div>'
     +'<div class="memo-foot">不用每條都做到，挑一個現在做得到的就好。</div>'
   +'</div>';
 }
@@ -787,8 +787,8 @@ function showResult(){
 
   var html=''
    +'<div style="text-align:center;margin-bottom:8px;display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'
-     +'<button onclick="copyResultLink()" style="background:var(--ink);color:var(--surface);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">🔗 複製我的合盤連結</button>'
-     +'<button onclick="shareResultImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">📤 分享圖卡</button>'
+     +'<button onclick="copyResultLink()" style="background:var(--ink);color:var(--surface);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">複製我的合盤連結</button>'
+     +'<button onclick="shareResultImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">分享圖卡</button>'
    +'</div>'
    +'<div class="share-hint" style="margin:0 0 4px"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
    +'<div class="share-hint" style="margin:0 0 16px">想和朋友合盤？把連結傳給他，他測完自己的底色就能跟你對盤——或下載圖卡，圖上有 QR 可掃。</div>'
@@ -815,7 +815,7 @@ function showResult(){
      +'<div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>'
    +'</div>'
    +'<div class="block">'
-     +'<h3>🧍 人物速寫</h3>'
+     +'<h3>人物速寫</h3>'
      +'<div class="portrait">'+port.p+'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
@@ -826,10 +826,10 @@ function showResult(){
    +ctaBlock(sc,now)
    +'<div class="block" id="facet-menu"></div>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，探索你和別人、和處境 —</div>'
-   +'<button class="retake" onclick="location.href=\'bagua-field.html\'">🎯 測一個局（看會不會耗你）</button>'
-   +'<button class="retake" onclick="location.href=\'bagua-career.html\'">💼 看適合你的職業方向</button>'
-   +'<button class="retake" onclick="showCompat()">🔗 和別人合盤</button>'
-   +'<button class="retake" onclick="location.href=\'bagua-team.html\'">👥 揪一群人團隊合盤</button>'
+   +'<button class="retake" onclick="location.href=\'bagua-field.html\'">測一個局（看會不會耗你）</button>'
+   +'<button class="retake" onclick="location.href=\'bagua-career.html\'">看適合你的職業方向</button>'
+   +'<button class="retake" onclick="showCompat()">和別人合盤</button>'
+   +'<button class="retake" onclick="location.href=\'bagua-team.html\'">揪一群人團隊合盤</button>'
    +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
    +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
@@ -870,11 +870,11 @@ function renderFacetMenu(){
   }
   var rows=FACETS.filter(function(f){return f.id!=='ideal';}).map(rowFor).join('');
   var anyDone=FACETS.some(function(f){ return all[f.id]&&all[f.id].scores; });
-  var html='<h3>🗺️ 場域側寫</h3>'
+  var html='<h3>場域側寫</h3>'
     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:6px">'
     +'同一套題、換個場域再測一次，看看不同情境下的你，和你的底色差在哪。</div>'
     +rows
-    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:14px 0 6px">✨ 這一面<b>不是某個場域</b>，是你<b>想成為的樣子</b>——和現在的你比，照出你想去的方向：</div>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:14px 0 6px">這一面<b>不是某個場域</b>，是你<b>想成為的樣子</b>——和現在的你比，照出你想去的方向：</div>'
     +rowFor(FACET_BY_ID['ideal']);
   if(anyDone){ html+='<button class="facet-map-btn" onclick="showFacetMap()">看面向地圖 →</button>'; }
   box.innerHTML=html;
@@ -951,7 +951,7 @@ function showFacetResult(id){
     if(upi.d>0) gp.push('更想要『<span class="up">'+energyLabel(upi.k)+'</span>』');
     if(dni.d<0) gp.push('想放下一些『<span class="down">'+energyLabel(dni.k)+'</span>』');
     var gapTxt=gp.length?('和你<b>慣用的底色</b>相比，你'+gp.join('、')+'——這是你心裡想去的方向。')
-                        :'你想成為的你和現在的你幾乎一樣——你其實正活在你想要的樣子裡 🌱';
+                        :'你想成為的你和現在的你幾乎一樣——你其實正活在你想要的樣子裡 ';
     var totalGap=EKEYS.reduce(function(s,k){return s+Math.abs((facetSc[k]||0)-(baseSc[k]||0));},0);
     var note=totalGap>=120?'落差不小——適度的差距是動力，但別用「還不夠好」苛責自己；朝那個方向，一次長一點點就好。'
                           :'落差溫和——你正穩穩朝想要的自己靠近。';
@@ -1040,7 +1040,7 @@ function showFacetMap(){
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToResult()">← 返回</a>'
-   +'<div class="compat-eyebrow">🗺️ OCTENSO · 面向地圖</div>'
+   +'<div class="compat-eyebrow">OCTENSO · 面向地圖</div>'
    +'<h2 style="font-size:23px;letter-spacing:.06em;text-align:center;margin-bottom:8px">面向地圖</h2>'
    +'<div class="honest" style="max-width:none;margin:6px 0 18px">'
      +'每一張是不同場域的你。<b>不同場域有不同的你，是適應、不是分裂</b>；'
@@ -1338,7 +1338,7 @@ function showCompat(){
     +'<h3>合對方的盤</h3>'
     +'<div class="upload-row" style="margin-top:0;margin-bottom:6px">'
       +'<input type="file" id="qr-file" accept="image/*" style="display:none" onchange="onQRFile(event)">'
-      +'<button class="upload-btn" onclick="document.getElementById(\'qr-file\').click()">📷 上傳對方的圖（含 QR）</button>'
+      +'<button class="upload-btn" onclick="document.getElementById(\'qr-file\').click()">上傳對方的圖（含 QR）</button>'
     +'</div>'
     +'<div class="or-divider">或貼上連結／合盤碼</div>'
     +'<input class="compat-input" id="other-name" placeholder="對方的名字（選填，方便你記得是誰）" autocomplete="off" spellcheck="false" style="font-family:\'Songti TC\',\'Noto Serif TC\',serif;letter-spacing:0;margin-bottom:9px">'
@@ -1565,7 +1565,7 @@ function runCompat(){
       +'<b style="display:block;color:var(--ink);margin-bottom:3px">'+t.lab+'</b>'+t.tip+'</div>';
   }).join('');
 
-  // 🧭 你們這一對：唯一綜合結論（解釋集中於此；盲點/落差以資料帶過）
+  // 你們這一對：唯一綜合結論（解釋集中於此；盲點/落差以資料帶過）
   function enName(k){ return E[k].nm+'·'+E[k].fn.split('／')[0]; }
   var pairKind, pairBody;
   if(sim>=75 && comp<50){
@@ -1595,8 +1595,8 @@ function runCompat(){
      +'<div class="readcard"><div class="rc-num">'+comp+'%</div><div class="rc-lab">互補度</div><div class="rc-sub">彼此補上對方的缺口</div></div>'
    +'</div>'
    +'<div class="share-hint" style="margin:-6px 0 14px">兩個是<b>各自獨立</b>的讀數——高或低都沒有好壞，只是不同的關係樣貌。</div>'
-   +'<div class="block"><h3>🧭 你們這一對</h3><div style="font-size:14px;line-height:1.9"><b>'+pairKind+'</b><br>'+pairBody+'</div></div>'
-   +'<div class="block"><h3>💡 給你們的相處重點</h3>'+tipsTxt
+   +'<div class="block"><h3>你們這一對</h3><div style="font-size:14px;line-height:1.9"><b>'+pairKind+'</b><br>'+pairBody+'</div></div>'
+   +'<div class="block"><h3>給你們的相處重點</h3>'+tipsTxt
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個你們做得到的試試就好。</div>'
    +'</div>'
    +'<div class="block"><h3>五行能量流向</h3>'
@@ -1615,7 +1615,7 @@ function runCompat(){
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
    +'<div style="text-align:center;margin:18px 0 10px">'
-     +'<button onclick="shareCompatImage(lastCompat.mine,lastCompat.other,lastCompat.sim,lastCompat.comp)" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;margin-right:10px">📤 下載合盤圖</button>'
+     +'<button onclick="shareCompatImage(lastCompat.mine,lastCompat.other,lastCompat.sim,lastCompat.comp)" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 26px;border-radius:999px;cursor:pointer;margin-right:10px">下載合盤圖</button>'
      +'<button class="cbtn ghost" onclick="backToResult()">返回我的結果</button></div>'
    +'<div class="foot">合盤是理解關係的鏡子，不是配對評分。<br>能量會流動，關係也會——這只是此刻的一張側寫。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 

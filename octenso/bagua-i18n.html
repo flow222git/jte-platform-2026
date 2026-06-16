@@ -3,13 +3,13 @@
 <script defer src="octenso-gate.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <title>八卦能量 · 多國語言討論頁</title>
 <style>
-  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#22322c;--muted:#766f63;--line:#d8cdbc;
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;--hair:#bcb09a;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Songti TC","Noto Serif TC",ui-serif,serif;
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
     line-height:1.8;max-width:860px;margin:0 auto;padding:24px 18px 60px}
   .sans{font-family:ui-sans-serif,sans-serif}
   a{color:var(--pine)}
@@ -52,7 +52,7 @@
 <h1>八卦能量 · 多國語言討論頁</h1>
 <p class="lead">把翻譯的<b>文化框架、術語、草稿</b>放在一頁對照、討論、定稿。難的不是 UI 字串，是怎麼把易經/八卦介紹給非華語讀者——既清楚、又不失原味、也不誇大。<br>你在這頁打的筆記會<b>存在本機</b>（這台裝置）。<span id="saved" class="saved">已存 ✓</span></p>
 
-<h2>🧭 翻譯原則</h2>
+<h2>翻譯原則</h2>
 <ul class="sub" style="line-height:2;padding-left:18px">
   <li><b>拼音＋意譯並陳</b>：首次出現 <code>Qián (乾) — The Creative / Heaven</code>，之後可簡。</li>
   <li><b>不神祕化、不誇大</b>：是「古人觀察自然的歸納」「描述能量的語言」；沿用誠實框架（鏡子非算命）。</li>
@@ -74,7 +74,7 @@
   <div class="a">如「天行健，君子以自強不息」。可選：原文＋英譯對照（最有味道但較重）／只取精神意譯／略過。</div>
   <textarea data-note="d4" placeholder="先放著，想到再記…"></textarea></div>
 
-<h2>📖 核心術語對照</h2>
+<h2>核心術語對照</h2>
 <table>
 <tr><th>中文</th><th>English</th><th>日本語</th></tr>
 <tr><td class="zh">易經</td><td>I Ching / Yijing (Book of Changes)</td><td class="ja">易経（えききょう）</td></tr>
@@ -106,7 +106,7 @@
 </table>
 <textarea data-note="gua8" placeholder="八卦譯名筆記…"></textarea>
 
-<h2>🧭 八種人格型（好記意譯）</h2>
+<h2>八種人格型（好記意譯）</h2>
 <table>
 <tr><th>中文</th><th>English</th><th>日本語</th></tr>
 <tr><td class="zh">乾金 · 開創者</td><td>Qián · The Initiator (Metal)</td><td class="ja">（待）</td></tr>
@@ -120,21 +120,21 @@
 </table>
 <textarea data-note="types" placeholder="型稱號筆記（覺得哪個不夠好記/不夠準？）…"></textarea>
 
-<h2>📜 哲學導論（中 / EN 對照）</h2>
+<h2>哲學導論（中 / EN 對照）</h2>
 <div class="sbs">
   <div class="col"><h4>中文</h4>幾千年前，古人觀察天地，把世界歸納成八種基本能量——天、澤、火、雷、風、水、山、地，寫成《易經》的八卦。從陰（- -）與陽（—）三爻相疊而成。太極生兩儀，兩儀生四象，四象生八卦。兩卦相疊成六十四卦。八卦也像一家人：乾父、坤母與六個子女。在這套系統裡，我們把它重新詮釋成八種內在能量，讓古人的智慧成為認識自己的鏡子。</div>
   <div class="col"><h4>English (draft)</h4>Thousands of years ago, observers of nature in ancient China distilled the world into eight basic energies — Heaven, Lake, Fire, Thunder, Wind, Water, Mountain, Earth — written as the Eight Trigrams (Bagua) of the I Ching. They are built from just Yin (a broken line) and Yang (a solid line), stacked three high: Taiji gives rise to the two forms, the two forms to the four images, the four images to the eight trigrams. Stack two trigrams and you get a hexagram — the 64 of them describe life's situations. The trigrams are also a family: Qián the father, Kūn the mother, and their six children. Here we reinterpret them as eight inner energies — so this ancient wisdom becomes a mirror for knowing yourself.</div>
 </div>
 <textarea data-note="intro" placeholder="導論潤校筆記…"></textarea>
 
-<h2>🪞 誠實框架（中 / EN）</h2>
+<h2>誠實框架（中 / EN）</h2>
 <div class="sbs">
   <div class="col"><h4>中文</h4>這是一面認識自己與關係的鏡子，不是算命、不是命定、不是相容度評分。能量會流動、可以成長；結果是傾向，不是固定標籤。一切來自你的自我覺察——是反思的起點，不是定論。</div>
   <div class="col"><h4>English (draft)</h4>A mirror for understanding yourself and your relationships — not fortune-telling, not destiny, not a compatibility score. These energies flow and can grow; your result is a tendency, not a fixed label. Everything here comes from your own self-reflection — a starting point, not a verdict.</div>
 </div>
 <textarea data-note="honest" placeholder="誠實框架筆記…"></textarea>
 
-<h2>🧩 工具名</h2>
+<h2>工具名</h2>
 <table>
 <tr><th>中文</th><th>English</th></tr>
 <tr><td class="zh">八卦能量（門面）</td><td>Bagua Energy</td></tr>
