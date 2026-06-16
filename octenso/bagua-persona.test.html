@@ -40,10 +40,11 @@ document.getElementById('f').onload=function(){
     w.showResult();
     ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'kan profile → 坎水');
 
-    // 4b. Phase 2 剖面式判讀：整體輪廓 / 五行剖面 / 主調（單一主導）
+    // 4b. 剖面式判讀：八態輪廓（雷達+四向度合併）/ 突出·少用 / 主調；五行已移除
     var rk=d.getElementById('result').innerHTML;
-    ok(rk.indexOf('整體輪廓')>=0,'整體輪廓 block present');
-    ok(rk.indexOf('五行剖面')>=0,'五行剖面 block present');
+    ok(rk.indexOf('八態輪廓')>=0,'八態輪廓 合併大區塊存在');
+    ok(rk.indexOf('五行剖面')<0,'五行剖面 已從個人判讀移除');
+    ok(rk.indexOf('突出')>=0 && rk.indexOf('少用')>=0,'輪廓含 突出/少用 摘要');
     ok(rk.indexOf('最鮮明的主調')>=0,'kan 獨高 → 單一主導句');
     // 4c. 並列主旋律 + 向度強度（乾坤皆滿 → 並重 + 兩邊都高）
     w.answers=new Array(24).fill(0);
@@ -392,7 +393,8 @@ document.getElementById('f').onload=function(){
     w.answers=new Array(24).fill(2); w.currentFacet=null; w.showResult();
     var pblk=d.querySelector('.pair-block');
     ok(pblk,'pair block rendered in result');
-    ok(pblk && pblk.textContent.indexOf('四向度傾向')>=0,'pair block title 四向度傾向');
+    ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
+    ok(pblk && pblk.textContent.indexOf('四向度')>=0,'merged block 含四向度');
     ok(d.querySelectorAll('.pair-bar').length===4,'4 pair bars, got '+d.querySelectorAll('.pair-bar').length);
     ok(pblk && pblk.textContent.indexOf('不是非此即彼')>=0,'pair block honest line present');
 
