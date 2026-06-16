@@ -1333,6 +1333,7 @@ var shengNext={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'
 var keNext={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
 
 function topElement(sc){
+  if(window.OctensoProfile) return window.OctensoProfile.build(sc).topElement; // 剖面級五行（八卦收斂成五行後取最強，非單卦標籤）
   var bestK=EKEYS[0];
   EKEYS.forEach(function(k){ if(sc[k]>sc[bestK]) bestK=k; });
   return E[bestK].wx;

@@ -2,6 +2,7 @@
 <meta name="robots" content="noindex, nofollow">
 <script defer src="octenso-gate.js"></script>
 <script defer src="octenso-nav.js"></script>
+<script src="profile.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
@@ -492,7 +493,7 @@ function idleStrength(you,field){
 // ── 五行流向 ─────────────────────────────────────────────
 var shengNext={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
 var keNext={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
-function topElement(sc){ return E[topKeyOf(sc)].wx; }
+function topElement(sc){ return (window.OctensoProfile)?window.OctensoProfile.build(sc).topElement:E[topKeyOf(sc)].wx; } // 剖面級五行（非單卦標籤）
 // 回 {type,text}；type: same | fieldKeYou | youKeField | fieldShengYou | youShengField
 function elementFlow(fieldEl,youEl){
   if(fieldEl===youEl) return {type:'same',
