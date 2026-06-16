@@ -1,0 +1,191 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Octenso 八態能格 · 設計筆記 初衷與取捨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.95;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:620px;margin:0 auto;padding:0 22px}
+
+  .home-link{position:fixed;top:16px;left:16px;z-index:20;font-family:"Jost",sans-serif;font-size:11px;
+    letter-spacing:.08em;color:var(--muted);padding:6px 13px;border:1px solid var(--hair);border-radius:999px;
+    background:rgba(244,239,228,.7);backdrop-filter:blur(5px)}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
+
+  .head{text-align:center;padding:80px 22px 14px}
+  .lockup{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px}
+  .lockup .enso{width:56px;height:56px;object-fit:contain}
+  .lockup .nm{font-family:"Jost",sans-serif;font-weight:200;font-size:30px;letter-spacing:.04em}
+  .lockup .div{width:1px;height:26px;background:var(--ink);opacity:.4}
+  .lockup .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:17px;letter-spacing:.2em;padding-left:.2em}
+  .head .k{font-family:"Jost",sans-serif;font-weight:400;font-size:11.5px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-bottom:9px}
+  .head h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:clamp(25px,7vw,32px);letter-spacing:.06em;margin-bottom:12px}
+  .head p{font-size:13px;color:var(--muted);line-height:2;max-width:430px;margin:0 auto}
+
+  /* section */
+  .sec{max-width:600px;margin:0 auto;padding:40px 22px 6px}
+  .sec-no{font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.26em;color:var(--muted)}
+  .sec-t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:21px;letter-spacing:.05em;margin:4px 0 6px}
+  .sec-d{font-size:13px;color:var(--muted);line-height:1.95;margin-bottom:8px}
+
+  /* 初衷 prose */
+  .prose p{font-size:14px;color:var(--ink-soft);line-height:2.05;margin-top:14px}
+  .prose p b{color:var(--ink);font-weight:400}
+
+  /* Q&A */
+  .qa{border-top:1px solid var(--hair);padding:18px 2px}
+  .qa:last-of-type{border-bottom:1px solid var(--hair)}
+  .qa .q{display:flex;gap:11px;font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px;color:var(--ink);line-height:1.7}
+  .qa .q .mk,.qa .a .mk{flex:none;font-family:"Jost",sans-serif;font-weight:400;font-size:13px;color:var(--muted);width:16px;line-height:1.9}
+  .qa .a{display:flex;gap:11px;font-size:13.5px;color:var(--ink-soft);line-height:1.9;margin-top:8px}
+  .qa .a .mk{color:var(--ink)}
+  .qa .a b{color:var(--ink);font-weight:400}
+
+  /* principle / trade-off */
+  .pr{border-top:1px solid var(--hair);padding:16px 2px}
+  .pr:last-of-type{border-bottom:1px solid var(--hair)}
+  .pr .ph{font-family:"Noto Serif TC",serif;font-weight:600;font-size:15.5px;letter-spacing:.03em;margin-bottom:5px}
+  .pr .pd{font-size:13px;color:var(--ink-soft);line-height:1.9}
+  .pr .trade{font-size:12.5px;color:var(--muted);line-height:1.85;margin-top:7px;padding-left:13px;border-left:1px solid var(--hair)}
+  .pr .trade b{color:var(--ink-soft);font-weight:400}
+
+  /* detour */
+  .dt{border-top:1px solid var(--hair);padding:16px 2px}
+  .dt:last-of-type{border-bottom:1px solid var(--hair)}
+  .dt .dh{font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px;margin-bottom:8px}
+  .dt .step{display:flex;gap:10px;font-size:13px;line-height:1.85;color:var(--ink-soft);margin-top:4px}
+  .dt .step .ic{flex:none;width:16px;font-family:"Jost",sans-serif;font-size:13px;text-align:center}
+  .dt .step.bad .ic{color:var(--muted)}
+  .dt .step.fix .ic{color:var(--ink)}
+  .dt .step b{color:var(--ink);font-weight:400}
+
+  .closing{text-align:center;padding:30px 22px 10px;max-width:500px;margin:24px auto 0}
+  .hr{width:34px;height:1px;background:var(--hair);margin:0 auto 26px}
+  .closing .q{font-family:"Noto Serif TC",serif;font-size:clamp(16px,4.5vw,19px);line-height:1.85;letter-spacing:.04em}
+  .closing .q b{color:var(--ink);font-weight:600}
+  .foot{text-align:center;font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.13em;color:var(--muted);
+    text-transform:uppercase;margin:36px 0 50px;line-height:2.2}
+  .foot .ef{width:24px;height:24px;object-fit:contain;display:block;margin:0 auto 10px;opacity:.7}
+
+  .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}html{scroll-behavior:auto}}
+</style></head>
+<body>
+<a class="home-link" href="bagua.html">← 八態能格</a>
+
+<header class="head">
+  <div class="lockup">
+    <img class="enso" src="assets/enso.png" alt="enso">
+    <span class="nm">Octenso</span><span class="div"></span><span class="zh">八態能格</span>
+  </div>
+  <div class="k">Design Notes</div>
+  <h1>設計筆記</h1>
+  <p>初衷、發想時的重點問答、原則的取捨、走過的岔路。<br>這是做的時候，腦袋裡真正在想的事。</p>
+</header>
+
+<!-- 一 · 初衷 -->
+<section class="sec">
+  <div class="sec-no">一</div>
+  <div class="sec-t">初衷</div>
+  <div class="prose rv">
+    <p>練息場想做的，不只是一個個小工具，而是一套「<b>能量管理系統</b>」——幫人不只<b>了解</b>自己的狀態，還能<b>照顧、調節</b>它。</p>
+    <p>八態能格是其中一條路：借《易經》八卦這套古老的能量語言，做一面<b>認識自己與關係的鏡子</b>。把抽象的「能量」，變成看得見、能對照、能行動的東西。</p>
+    <p>但起點其實是一句提醒——<b>「很多東西做出來是沒用的。」</b> 所以每一步動手前都先戴上同一副眼鏡：這東西做出來，真的有用嗎？什麼會讓它有用、什麼讓它變雞肋？<b>少做，做對。</b></p>
+  </div>
+</section>
+
+<!-- 二 · 重點問答 -->
+<section class="sec">
+  <div class="sec-no">二</div>
+  <div class="sec-t">發想時的重點問答</div>
+  <div class="sec-d rv">真正左右方向的那幾個提問。</div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>這是算命嗎？</span></div><div class="a"><span class="mk">A</span><span>不是。八卦在這裡是「<b>八種功能化的能量</b>」，描述你怎麼運作。結果是<b>反思的起點，不是預測</b>。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>懂的情境和陌生的情境，怎麼處理？</span></div><div class="a"><span class="mk">A</span><span>懂的「局」用<b>測</b>的（答題、有資料）；陌生的局用<b>卜</b>的（問易，當反思鏡）——不為了完整而硬做第二套工具。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>要不要做 12 題快測，降低門檻？</span></div><div class="a"><span class="mk">A</span><span>不要。寧可 24 題<b>較準</b>，也不要為了快而失真——準度是這面鏡子的命。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>對外的 landing，改舊門面還是新建？</span></div><div class="a"><span class="mk">A</span><span>新建獨立頁，舊頁先留著；後來首頁再收成<b>乾淨的 splash</b>——元素不用多。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>logo 圖上寫的是 Octaform，要用嗎？</span></div><div class="a"><span class="mk">A</span><span>視覺照收，<b>名字維持 Octenso</b>。Octaform 撞名（早被否決），但字標只是一行字，換掉不影響整套視覺。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>顏色要保留，還是先拿掉？</span></div><div class="a"><span class="mk">A</span><span>先<b>純墨極簡</b>看看。五行色不當品牌裝飾，只在<b>產品內承載意義</b>時才出場。</span></div></div>
+
+  <div class="qa rv"><div class="q"><span class="mk">Q</span><span>歷程要做幾種版本？</span></div><div class="a"><span class="mk">A</span><span>三版——<b>1 分鐘講重點、5 分鐘講邏輯、20 分鐘講結構</b>。讓人選自己要多深。</span></div></div>
+</section>
+
+<!-- 三 · 原則與取捨 -->
+<section class="sec">
+  <div class="sec-no">三</div>
+  <div class="sec-t">原則與取捨</div>
+  <div class="sec-d rv">每一條原則，背後都放掉了某個東西。</div>
+
+  <div class="pr rv"><div class="ph">誠實，優先於漂亮話</div><div class="pd">承諾「連我們也解不開」，必須跟實際的加密<b>一起上線</b>，不能先掛嘴上。</div><div class="trade"><b>取捨：</b>行銷話術 ⇄ 誠實 —— 選誠實，哪怕慢一點。</div></div>
+
+  <div class="pr rv"><div class="ph">隱私，但不放棄洞察</div><div class="pd">兩層資料：可分析層（卦象、時間）明文上雲供後台看大數據；私密層（問題、筆記、書寫）預設只存本機，要同步才 E2E 加密。</div><div class="trade"><b>取捨：</b>後台分析力 ⇄ 使用者隱私 —— 用信封加密兩者兼顧，而不是二選一。</div></div>
+
+  <div class="pr rv"><div class="ph">少做，做對</div><div class="pd">不有求必應地亂做。提出的點子，也先誠實講風險與取捨，再動手。</div><div class="trade"><b>取捨：</b>做很多 ⇄ 做對的 —— 寧可少，也不要雞肋。</div></div>
+
+  <div class="pr rv"><div class="ph">色彩分工</div><div class="pd">品牌層墨黑＋紙白，極簡克制；五行五色只在雷達、能量卡、資料裡承載語意。</div><div class="trade"><b>取捨：</b>滿版五行教學 ⇄ 視覺克制 —— 外靜內動，顏色只在有意義時出場。</div></div>
+
+  <div class="pr rv"><div class="ph">線條極簡</div><div class="pd">hairline 線稿、純墨 chrome、文字連結取代大按鈕。對外是克制的線條。</div><div class="trade"><b>取捨：</b>大按鈕的明確 ⇄ 文字的質感 —— 這個階段選質感。</div></div>
+
+  <div class="pr rv"><div class="ph">先保密，但誠實說清楚</div><div class="pd">全站 noindex、不從首頁連入，留時間把細節做好。</div><div class="trade"><b>取捨：</b>但也誠實告知——靜態站的客戶端閘門是<b>軟性存取控制，不是密碼學級安全</b>。</div></div>
+</section>
+
+<!-- 四 · 走過的岔路 -->
+<section class="sec">
+  <div class="sec-no">四</div>
+  <div class="sec-t">走過的岔路</div>
+  <div class="sec-d rv">做錯、撞牆、再修正的地方——這些往往比成果更有用。</div>
+
+  <div class="dt rv"><div class="dh">HRV 的「壓力指數」</div>
+    <div class="step bad"><span class="ic">✗</span><span>先做了頻域四指數（含壓力 ← LF/HF）。</span></div>
+    <div class="step bad"><span class="ic">↳</span><span>深度研究發現：<b>LF/HF 當壓力指標在科學上站不住</b>，且 2 分鐘的頻域本就不可靠。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>改成單一溫暖的「<b>身體能量</b>」分數，跟你自己的 baseline 比。</span></div></div>
+
+  <div class="dt rv"><div class="dh">HRV baseline 的算法</div>
+    <div class="step bad"><span class="ic">✗</span><span>試了 K=4＋估個人標準差。</span></div>
+    <div class="step bad"><span class="ic">↳</span><span>審查發現：<b>常態本來就高的人，量自己平常值仍顯示高分</b>——失真。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>改 K=2＋固定母體 SD，分數才回到合理。</span></div></div>
+
+  <div class="dt rv"><div class="dh">enso 標誌</div>
+    <div class="step bad"><span class="ic">✗</span><span>先用 SVG 仿一條筆刷弧當佔位，看起來像細「C」。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>你給了真的毛筆円相圖，<b>裁切去背直接用</b>。</span></div>
+    <div class="step bad"><span class="ic">✗</span><span>第一刀裁太寬，誤抓了字標的「O」和標語文字。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>改用<b>欄位空白偵測</b>，只裁出乾淨的圓。</span></div></div>
+
+  <div class="dt rv"><div class="dh">命名</div>
+    <div class="step bad"><span class="ic">✗</span><span>Octaform（溫哥華建材）、Octaflow、OctaOne——查了都撞名。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span><b>Octenso</b>＝Oct＋enso（円相），查無撞名，且円相正好呼應「鏡」。</span></div></div>
+
+  <div class="dt rv"><div class="dh">首頁的範圍</div>
+    <div class="step bad"><span class="ic">✗</span><span>先做了「完整 hub」：hero＋三步入門＋八能量卡＋四張用途卡。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>「首頁範圍這些就好」——收成<b>純 splash</b>：lockup＋一句介紹＋文字連結。</span></div></div>
+
+  <div class="dt rv"><div class="dh">隱私的程式</div>
+    <div class="step bad"><span class="ic">✗</span><span>品質審查抓到 <b>fail-open</b>：出錯時竟會輸出明文；歷史卡片有 stored-XSS。</span></div>
+    <div class="step fix"><span class="ic">✓</span><span>改 <b>fail-closed</b>（寧可不顯示也不外洩）＋補完跳脫。誠實鐵則救了一次真漏洞。</span></div></div>
+</section>
+
+<section class="closing">
+  <div class="hr"></div>
+  <div class="q">走過的岔路不是浪費——<br><b>它們是「為什麼」最誠實的證據。</b></div>
+</section>
+
+<div class="foot"><img class="ef" src="assets/enso.png" alt="">Octenso ｜ 八態能格 · 設計筆記 · 練息場 Join to Enjoy<br>內部用 · 未公開</div>
+
+<script>
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+[].forEach.call(document.querySelectorAll('.rv'),function(n){io.observe(n);});
+</script>
+</body></html>
