@@ -40,6 +40,19 @@ document.getElementById('f').onload=function(){
     w.showResult();
     ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'kan profile → 坎水');
 
+    // 4b. Phase 2 剖面式判讀：整體輪廓 / 五行剖面 / 主調（單一主導）
+    var rk=d.getElementById('result').innerHTML;
+    ok(rk.indexOf('整體輪廓')>=0,'整體輪廓 block present');
+    ok(rk.indexOf('五行剖面')>=0,'五行剖面 block present');
+    ok(rk.indexOf('最鮮明的主調')>=0,'kan 獨高 → 單一主導句');
+    // 4c. 並列主旋律 + 向度強度（乾坤皆滿 → 並重 + 兩邊都高）
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian'||q.k==='kun') w.answers[i]=5; });
+    w.showResult();
+    var rc=d.getElementById('result').innerHTML;
+    ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
+    ok(rc.indexOf('兩邊都高')>=0,'給出/接納 雙高 → 強度「兩邊都高」');
+
     // 5. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();

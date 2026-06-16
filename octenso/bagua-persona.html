@@ -2,6 +2,7 @@
 <meta name="robots" content="noindex, nofollow">
 <script defer src="octenso-gate.js"></script>
 <script defer src="octenso-nav.js"></script>
+<script src="profile.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
@@ -528,13 +529,20 @@ function pairLean(sc,l,r){
 }
 // 四向度傾向區塊 HTML（雷達＋圖例之後、「這一型的你」之前）
 function pairBlockHtml(sc){
-  var rows=PAIRS.map(function(p){
+  var AX=(window.OctensoProfile)?window.OctensoProfile.axes(sc):null;
+  var rows=PAIRS.map(function(p,idx){
     var ln=pairLean(sc,p.l,p.r);
     // pct=A/(A+B)*100 → 越大越偏左；marker left% = 100-pct（marker 越右越偏右能量）
     var markLeft=Math.round(100-ln.pct);
     // marker 顏色取偏向那一邊能量的五行色；even 用中性色
     var col=(ln.side==='left')?W[E[p.l].wx]:(ln.side==='right')?W[E[p.r].wx]:'var(--muted)';
-    var verdict=(ln.side==='left')?('偏'+p.lname):(ln.side==='right')?('偏'+p.rname):'兩邊平衡';
+    var leanTxt=(ln.side==='left')?('偏'+p.lname):(ln.side==='right')?('偏'+p.rname):'兩邊接近';
+    var inten=AX?AX[idx].intensity:null;
+    var intenTxt=inten==='both-high'?'兩邊都高、都很活躍'
+               :inten==='both-low'?'兩邊都低、這面向少用'
+               :inten==='single'?'落差明顯'
+               :inten==='mid'?'落差不大':'';
+    var verdict=leanTxt+(intenTxt?(' · '+intenTxt):'');
     return '<div class="pair-bar">'
       +'<div class="pb-ends">'
         +'<span class="pb-l">'+E[p.l].nm+'·'+p.lname+'</span>'
@@ -789,6 +797,44 @@ function ctaBlock(sc,now){
     +'<a href="../ven-i/">重新去問易更新此刻 →</a></div>';
 }
 
+// ── Phase 2：剖面式判讀（用 OctensoProfile，整體觀取代單一最高卦）──
+function pfBuild(sc){ return (window.OctensoProfile)?window.OctensoProfile.build(sc):null; }
+function levelWord(b){ return b==='high'?'偏高':b==='low'?'偏低':'中等'; }
+function levelDesc(b){
+  return b==='high'?'多數面向你都在用、少有空白——最高的能量是「真的高」。'
+       : b==='low' ?'你大多省著用，最鮮明的也只是相對突出，未必代表那個狀態很強。'
+                    :'有明顯在用的、也有留白的面向——強弱分得出來。';
+}
+function leadSentence(pf){
+  var ld=pf.leads.map(function(k){return E[k];});
+  if(pf.single) return '你最鮮明的主調是<b>'+ld[0].nm+'·'+ld[0].fn+'</b>，明顯領先其他能量。';
+  if(ld.length===1) return '你沒有特別突出的單一主調——最高是<b>'+ld[0].nm+'·'+ld[0].fn+'</b>，但和其他差距不大、彼此接近。';
+  return '你有 '+ld.length+' 個<b>並重</b>的主調：'+ld.map(function(e){return '<b>'+e.nm+'·'+e.fn+'</b>';}).join('、')+'——強度接近、會輪流主導，不是單一性格。';
+}
+function overviewBlock(pf){
+  return '<div class="block" style="border-left:4px solid var(--pine)">'
+    +'<h3>整體輪廓</h3>'
+    +'<div class="trait-row"><b style="color:var(--pine)">水平</b><span>整體能量 '+levelWord(pf.level.band)+'（'+pf.level.mean+'/100）——'+levelDesc(pf.level.band)+'</span></div>'
+    +'<div class="trait-row"><b style="color:var(--pine)">主調</b><span>'+leadSentence(pf)+'</span></div>'
+    +'<div class="pair-foot">先看整體、再看單項：同樣某個能量最高，整體偏高或偏低，意義完全不同。</div>'
+  +'</div>';
+}
+function elementBarsHtml(pf){
+  if(!pf) return '';
+  var ord=[['metal','金','乾兌'],['wood','木','震巽'],['water','水','坎'],['fire','火','離'],['earth','土','艮坤']];
+  var rows=ord.map(function(o){
+    var v=pf.elements[o[0]]||0;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0">'
+      +'<span style="flex:none;width:58px;font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--ink)">'+o[1]+' <span style="color:var(--muted);font-size:11px">'+o[2]+'</span></span>'
+      +'<span style="flex:1;height:8px;background:var(--surface2);border-radius:999px;overflow:hidden;display:block"><span style="display:block;height:100%;width:'+v+'%;background:'+W[o[0]]+';border-radius:999px"></span></span>'
+      +'<span style="flex:none;width:26px;text-align:right;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted)">'+v+'</span>'
+    +'</div>';
+  }).join('');
+  return '<div class="block"><h3>五行剖面</h3>'
+    +'<div class="pair-sub">把 8 卦收斂成五行的整體分布——看的是輪廓，不是只看最強那一個。</div>'
+    +rows+'</div>';
+}
+
 // ── Render result ────────────────────────────────────────
 function showResult(){
   var sc=computeScores();
@@ -797,6 +843,7 @@ function showResult(){
   var top=E[topKey];
   var accent=W[top.wx];
   var now=readNow();
+  var pf=pfBuild(sc);
 
   // save
   try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title,ts:new Date().toISOString()})); }catch(e){}
@@ -816,6 +863,7 @@ function showResult(){
      +'<div class="tc-eyebrow">你的八卦能量人格</div>'
      +'<div class="tc-sym">'+top.sym+'</div>'
      +'<div class="tc-title">'+top.title+'</div>'
+     +(pf&&pf.leads.length>1?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">＋ '+pf.leads.slice(1).map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、')+'　並重</div>':'')
      +'<div class="tc-essence">'+top.essence+'</div>'
    +'</div>'
    +'<div class="radar-wrap" id="radar-wrap"></div>'
@@ -827,9 +875,12 @@ function showResult(){
      +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
    +'</div>'
    +(now?'<div class="share-hint" style="margin-top:-12px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'')
+   +(pf?overviewBlock(pf):'')
    +pairBlockHtml(sc)
+   +(pf?elementBarsHtml(pf):'')
    +'<div class="block">'
      +'<h3>這一型的你</h3>'
+     +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你是<b>'+E[pf.leads[0]].nm+'·'+E[pf.leads[0]].fn+'</b> × <b>'+E[pf.leads[1]].nm+'·'+E[pf.leads[1]].fn+'</b> 的組合——以下以最鮮明的<b>'+E[pf.leads[0]].nm+'</b>為主軸，但<b>'+E[pf.leads[1]].nm+'</b>同樣明顯，兩者會交替出現。</div>':'')
      +'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div>'
      +'<div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div>'
      +'<div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>'
