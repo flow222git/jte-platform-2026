@@ -115,6 +115,18 @@
   .foot{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.85;text-align:center;
     border-top:1px solid var(--line);padding-top:16px;margin-top:6px}
   .res-btns{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:16px 0 10px}
+  /* 多團隊切換 */
+  .ts-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .ts-chip{font-family:'Songti TC','Noto Serif TC',serif;font-size:14px;padding:7px 15px;border:1px solid var(--line);
+    border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;transition:border-color .18s,color .18s}
+  .ts-chip:hover{border-color:var(--ink);color:var(--ink)}
+  .ts-chip.on{border-color:var(--ink);color:var(--ink);font-weight:600}
+  .ts-chip .ts-cnt{font-family:ui-sans-serif,sans-serif;font-size:10.5px;color:var(--muted);margin-left:7px}
+  .ts-chip.ts-new{color:var(--muted)}
+  .ts-act{display:flex;gap:16px;margin-top:11px}
+  .ts-mini{background:none;border:none;color:var(--muted);font-family:ui-sans-serif,sans-serif;font-size:12px;cursor:pointer;padding:0}
+  .ts-mini:hover{color:var(--ink)}
+  .ts-form{margin-top:13px}
 </style></head>
 <body>
 <a class="home-link" href="bagua.html">← 回八態能格</a>
@@ -131,6 +143,19 @@
   <div class="honest">
     這是一面<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。
     每個人的能量都會流動、可以成長——這只是把你們此刻的<b>底色（你慣用的能量）</b>放在一起看看。
+  </div>
+
+  <div class="block">
+    <h3>📁 我的團隊</h3>
+    <div class="ts-chips" id="ts-chips"></div>
+    <div class="ts-act" id="ts-act"></div>
+    <div class="ts-form" id="ts-form" hidden>
+      <input class="add-input" id="ts-input" maxlength="16" placeholder="團隊名稱（例：行銷組、家人、桌遊團）" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')confirmTeamForm()">
+      <div style="text-align:center;margin-top:9px">
+        <button class="cbtn" onclick="confirmTeamForm()">確定</button>
+        <button class="cbtn ghost" onclick="cancelTeamForm()">取消</button>
+      </div>
+    </div>
   </div>
 
   <div class="block">
@@ -153,7 +178,7 @@
 
   <div class="go-hint" id="go-hint"></div>
   <button class="go-btn" id="go-btn" onclick="showTeam()" disabled>看團隊合盤</button>
-  <div style="text-align:center;margin-top:10px"><button class="cbtn ghost" onclick="clearTeam()">清空團隊</button></div>
+  <div style="text-align:center;margin-top:10px"><button class="cbtn ghost" onclick="clearTeam()">清空成員</button></div>
 </div>
 
 <!-- ───────── RESULT ───────── -->
@@ -313,30 +338,75 @@ function buildRadar(sc,topKey,nowNorm){
 // ════════════════════════════════════════════════════════════
 //  團隊成員管理
 // ════════════════════════════════════════════════════════════
-var members=[]; // [{name, scores}]
+var members=[];          // 目前團隊的成員 [{name, scores}]（指向 currentTeam().members）
+var teams=[];            // [{id, name, members:[]}]
+var currentId=null;
+var teamFormMode='new';  // 'new' | 'rename'
 var TEAM_KEY='bagua_teams_v1';
+
+function genId(){ return 't'+Date.now().toString(36)+Math.floor(Math.random()*10000); }
 
 // 自己若有底色 → 自動帶入「你」
 function loadMyBase(){
   try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null;
     var o=JSON.parse(raw); return (o&&o.scores)?o.scores:null; }catch(e){ return null; }
 }
+function autoMembers(){ var mine=loadMyBase(); return mine?[{name:'你',scores:mine}]:[]; }
 
-function saveTeam(){
-  try{ localStorage.setItem(TEAM_KEY, JSON.stringify({members:members,ts:new Date().toISOString()})); }catch(e){}
+function saveAll(){
+  try{ localStorage.setItem(TEAM_KEY, JSON.stringify({teams:teams,currentId:currentId,ts:new Date().toISOString()})); }catch(e){}
 }
-function loadTeam(){
+function saveTeam(){ saveAll(); } // 沿用舊名（addMember/removeMember/renameMember 仍呼叫）
+
+// 讀取＋向後相容：舊格式 {members:[...]} → 包成一支團隊
+function loadAll(){
   try{ var raw=localStorage.getItem(TEAM_KEY); if(!raw) return null;
-    var o=JSON.parse(raw); return (o&&Array.isArray(o.members))?o.members:null; }catch(e){ return null; }
+    var o=JSON.parse(raw); if(!o) return null;
+    if(Array.isArray(o.teams)) return {teams:o.teams, currentId:o.currentId||(o.teams[0]&&o.teams[0].id)||null};
+    if(Array.isArray(o.members)){ var id=genId(); return {teams:[{id:id,name:'我的團隊',members:o.members}], currentId:id}; }
+  }catch(e){}
+  return null;
+}
+function currentTeam(){ for(var i=0;i<teams.length;i++) if(teams[i].id===currentId) return teams[i]; return null; }
+
+// 初始化：讀存檔（含遷移），沒有就建一支預設團隊並自動帶入「你」
+function initMembers(){
+  var a=loadAll();
+  if(a && a.teams.length){ teams=a.teams; currentId=a.currentId; }
+  else { var id=genId(); teams=[{id:id,name:'我的團隊',members:autoMembers()}]; currentId=id; saveAll(); }
+  if(!currentTeam()) currentId=teams[0].id;
+  members=currentTeam().members;
 }
 
-// 初始化 members：先讀存檔，沒有再自動帶入「你」
-function initMembers(){
-  var saved=loadTeam();
-  if(saved && saved.length){ members=saved; return; }
-  members=[];
-  var mine=loadMyBase();
-  if(mine){ members.push({name:'你', scores:mine}); }
+// ── 多團隊：切換／新增／改名／刪除 ──────────────────────────
+function switchTeam(id){ if(id===currentId) return; currentId=id; members=currentTeam().members; saveAll(); backToManage(); renderMembers(); }
+function startNewTeam(){ teamFormMode='new'; var f=document.getElementById('ts-form'); document.getElementById('ts-input').value=''; f.hidden=false; document.getElementById('ts-input').focus(); }
+function startRenameTeam(){ teamFormMode='rename'; var c=currentTeam(); var f=document.getElementById('ts-form'); document.getElementById('ts-input').value=c?c.name:''; f.hidden=false; document.getElementById('ts-input').focus(); }
+function cancelTeamForm(){ document.getElementById('ts-form').hidden=true; }
+function confirmTeamForm(){
+  var v=(document.getElementById('ts-input').value||'').trim();
+  if(!v){ document.getElementById('ts-input').focus(); return; }
+  if(teamFormMode==='rename'){ var c=currentTeam(); if(c) c.name=v.slice(0,16); }
+  else { var id=genId(); teams.push({id:id,name:v.slice(0,16),members:autoMembers()}); currentId=id; members=currentTeam().members; }
+  saveAll(); document.getElementById('ts-form').hidden=true; backToManage(); renderMembers();
+}
+function deleteCurrentTeam(){
+  if(teams.length<=1){ alert('至少要保留一支團隊。'); return; }
+  var c=currentTeam(); if(!c) return;
+  if(!confirm('確定刪除團隊「'+c.name+'」嗎？（無法復原）')) return;
+  teams=teams.filter(function(t){return t.id!==currentId;});
+  currentId=teams[0].id; members=currentTeam().members; saveAll(); backToManage(); renderMembers();
+}
+function renderTeams(){
+  var box=document.getElementById('ts-chips'); if(!box) return;
+  box.innerHTML=teams.map(function(t){
+    return '<button class="ts-chip'+(t.id===currentId?' on':'')+'" onclick="switchTeam(\''+t.id+'\')">'
+      +esc(t.name)+'<span class="ts-cnt">'+t.members.length+'</span></button>';
+  }).join('')+'<button class="ts-chip ts-new" onclick="startNewTeam()">＋ 新團隊</button>';
+  var act=document.getElementById('ts-act');
+  if(act){ var c=currentTeam();
+    act.innerHTML=c?('<button class="ts-mini" onclick="startRenameTeam()">✎ 改名</button>'
+      +(teams.length>1?'<button class="ts-mini" onclick="deleteCurrentTeam()">🗑 刪除此團隊</button>':'')):''; }
 }
 
 function addMember(scores, name){
@@ -368,11 +438,12 @@ function renameMember(i, val){
 }
 
 function clearTeam(){
-  if(!confirm('確定清空整支團隊嗎？（無法復原）')) return;
-  members=[]; try{ localStorage.removeItem(TEAM_KEY); }catch(e){}
-  // 清空後若你還有底色，重新帶入「你」
+  var c=currentTeam();
+  if(!confirm('確定清空團隊「'+(c?c.name:'')+'」的成員嗎？（這支團隊會保留，但成員清空，無法復原）')) return;
+  members.length=0; // 就地清空（members 指向 currentTeam().members）
   var mine=loadMyBase();
-  if(mine){ members.push({name:'你', scores:mine}); saveTeam(); }
+  if(mine){ members.push({name:'你', scores:mine}); }
+  saveAll();
   backToManage();
   renderMembers();
 }
@@ -399,6 +470,7 @@ function renderMembers(){
   var hint=document.getElementById('go-hint');
   if(members.length>=2){ go.disabled=false; hint.textContent='共 '+members.length+' 位成員'; }
   else { go.disabled=true; hint.textContent='再加 '+(2-members.length)+' 位就能合盤（至少 2 位）'; }
+  renderTeams();
 }
 
 // ── 上傳含 QR 的圖 → 解碼 → 加入 ──────────────────────────
@@ -687,7 +759,7 @@ function showTeam(){
 
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToManage()">← 回成員管理</a>'
-   +'<div class="eyebrow">OCTENSO · 團隊合盤</div>'
+   +'<div class="eyebrow">OCTENSO · 團隊合盤'+(currentTeam()?' · '+esc(currentTeam().name):'')+'</div>'
 
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你們這個團隊整體</div>'
@@ -728,7 +800,7 @@ function showTeam(){
    +'</div>'
    +'<div class="res-btns">'
      +'<button class="cbtn ghost" onclick="backToManage()">回成員管理</button>'
-     +'<button class="cbtn ghost" onclick="clearTeam()">清空團隊</button>'
+     +'<button class="cbtn ghost" onclick="clearTeam()">清空成員</button>'
    +'</div>'
    +'<div class="foot">團隊合盤是<b>理解團隊動態的鏡子</b>，不是評分、也不是命定。<br>每個人都會成長，能量會流動——這只是你們此刻的一張側寫。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
