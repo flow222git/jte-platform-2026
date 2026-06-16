@@ -1470,6 +1470,26 @@ function selectFallback(code,done){
 }
 
 var lastCompat=null; // 最近一次合盤的值，供下載合盤圖用
+// 合盤具體建議：blind=兩人共同低（一起補）；fric=落差大（橋接落差）
+var COMPAT_TIPS={
+ qian:{blind:'你們都不愛拍板，重要的事容易懸著。輪流當「這次我來定」的人，並給彼此一個明確的截止點。',
+       fric:'一個果斷、一個猶豫——果斷的先說「這只是建議，你來定」，猶豫的把「我還缺什麼才能決定」講出來。'},
+ dui:{blind:'你們都不太主動開口，容易靠猜。把期待與不滿「說出來」，固定一段十分鐘的「我們聊聊」，別等對方讀心。',
+      fric:'一個愛聊、一個寡言——愛聊的多留白、多用問句，寡言的試著多回一句；用訊息文字溝通也算數，不必硬逼面對面。'},
+ li:{blind:'你們都容易悶著、看不清狀況。卡住時各自寫下「我覺得現在發生什麼」再對照，把模糊攤開來談。',
+     fric:'一個想很多、一個憑感覺——想多的把分析說成「我擔心的是…」，憑感覺的把直覺講出來，兩種都放上桌再決定。'},
+ xun:{blind:'你們都不擅長把關係往外連結。主動引入共同朋友、新活動或外部資源，別讓關係只困在兩人之間。',
+      fric:'一個到處連結、一個只想專注——連結強的先過濾再分享，專注的明說「我這陣子只想顧好一件事」。'},
+ zhen:{blind:'你們都容易拖、不敢開始。用「先做五分鐘」破冰，把大事切成第一小步，誰先動都好。',
+       fric:'一個衝得快、一個要醞釀——衝的給一點啟動前的緩衝，醞釀的先報「我需要多久」，把步調差變成分工而非催促。'},
+ kan:{blind:'你們都不會停下來休息，關係容易一起燒過頭。把「一起耍廢／各自充電」排進行事曆，恢復也要刻意。',
+      fric:'一個需要獨處充電、一個怕被冷落——需要空間的先說「我去回個血，不是不理你」，另一個把獨處讀成休息而非拒絕。'},
+ gen:{blind:'你們都不太會喊停、設界線，容易被外界拖著走。一起講好「我們不做什麼」，把界線寫下來。',
+      fric:'一個界線分明、一個來者不拒——界線分明的解釋「不是針對你」，沒界線的學著先說「讓我想一下再答」。'},
+ kun:{blind:'你們都不擅長承接彼此的情緒。難過時先別急著解決，練習一句「我在，你說」，把「被接住」補回來。',
+      fric:'一個全心付出、一個習慣被接受——付出的別把自己掏空、也要講需求，被照顧的主動回一份關心，避免單向。'}
+};
+
 function runCompat(){
   var err=document.getElementById('compat-err');
   err.textContent='';
@@ -1514,6 +1534,16 @@ function runCompat(){
     : '沒有明顯的共同盲點——你們在低分項上不太重疊，常能互相補位。';
   var fricTxt = '差最多的是「'+fric.map(function(k){return E[k].nm+'／'+E[k].fn.split('／')[0]+'」（你 '+mine[k]+'、他 '+other[k];}).join('）、「')+'）。這些落差可能是互補的養分，也可能是步調上的摩擦——看你們怎麼用它。';
 
+  // 具體建議：共同盲點→一起補；最大摩擦點→橋接落差
+  var tipItems=[];
+  blind.forEach(function(k){ if(COMPAT_TIPS[k]) tipItems.push({lab:'一起補上「'+E[k].nm+'·'+E[k].fn.split('／')[0]+'」',tip:COMPAT_TIPS[k].blind}); });
+  if(fric.length && COMPAT_TIPS[fric[0]]){ var fk=fric[0];
+    tipItems.push({lab:'用好「'+E[fk].nm+'·'+E[fk].fn.split('／')[0]+'」的落差',tip:COMPAT_TIPS[fk].fric}); }
+  var tipsTxt = tipItems.map(function(t){
+    return '<div style="font-size:14px;line-height:1.85;padding:12px 0;border-top:1px solid var(--line)">'
+      +'<b style="display:block;color:var(--ink);margin-bottom:3px">'+t.lab+'</b>'+t.tip+'</div>';
+  }).join('');
+
   var out=''
    +'<div class="block">'
      +'<h3>雙人能量雷達</h3>'
@@ -1530,6 +1560,9 @@ function runCompat(){
    +'<div class="share-hint" style="margin:-6px 0 14px">兩個是<b>各自獨立</b>的讀數——高或低都沒有好壞，只是不同的關係樣貌。</div>'
    +'<div class="block"><h3>共同盲點</h3><div style="font-size:14px;line-height:1.85">'+blindTxt+'</div></div>'
    +'<div class="block"><h3>摩擦點</h3><div style="font-size:14px;line-height:1.85">'+fricTxt+'</div></div>'
+   +'<div class="block"><h3>💡 給你們的具體建議</h3>'+tipsTxt
+     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個你們做得到的試試就好。</div>'
+   +'</div>'
    +'<div class="block"><h3>五行能量流向</h3>'
      +'<div class="flowline">'+flow.text+'</div>'
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7">'

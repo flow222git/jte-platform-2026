@@ -694,6 +694,18 @@ function shareTeamImage(){
 // ════════════════════════════════════════════════════════════
 //  結果畫面
 // ════════════════════════════════════════════════════════════
+// 團隊合盤具體建議：團隊缺某能量時該怎麼補（團隊框架，非雙人）
+var TEAM_TIPS={
+ qian:'團隊裡沒人敢拍板，事情容易卡在「再討論一下」。指定每件事的決策人與截止點，讓決定有人收尾。',
+ dui:'團隊少了把話說開的人，資訊容易靠猜、悶在各自心裡。固定一個同步管道或會議，鼓勵把假設與卡點公開講出來。',
+ li:'團隊容易埋頭做、沒人看清全局。每隔一段停下來問「我們現在到底在解什麼問題」，把方向講清楚再衝。',
+ xun:'團隊對外連結弱、資源串不起來。指派有人負責對外協調、把人和資源牽起來，別整隊只悶頭做。',
+ zhen:'團隊容易拖、沒人起頭。設一個「先動起來」的角色或機制，把大事切成可立刻開始的第一步。',
+ kan:'團隊不會停、容易集體過勞。把休息與緩衝排進節奏，別讓所有人一起燒到底。',
+ gen:'團隊什麼都接、不太會喊停，容易超載。一起定義「我們不做什麼」，練習對額外請求說不。',
+ kun:'團隊少了承接情緒、照顧彼此的人。刻意留意成員狀態，遇到低潮時先接住人、再談事情。'
+};
+
 function showTeam(){
   if(members.length<2) return;
   var comp=composite(members);
@@ -757,6 +769,14 @@ function showTeam(){
         +spread.miss.map(function(w){return WX_MISS_NOTE[w];}).join('；')+'。'
     : '金木水火土<b>五行齊全</b>——這支團隊的能量底盤很完整，各種調性都有人帶。';
 
+  // 具體建議：優先補共同盲點，沒有就補沒人罩的覆蓋缺口
+  var tipKeys=(blind&&blind.length)?blind.slice(0,3):cov.gaps.slice(0,3);
+  var teamTipsTxt = tipKeys.filter(function(k){return TEAM_TIPS[k];}).map(function(k){
+    return '<div style="font-size:14px;line-height:1.85;padding:12px 0;border-top:1px solid var(--line)">'
+      +'<b style="display:block;color:var(--ink);margin-bottom:3px">補上「'+E[k].nm+'·'+E[k].fn.split('／')[0]+'」</b>'+TEAM_TIPS[k]+'</div>';
+  }).join('');
+  if(!teamTipsTxt){ teamTipsTxt='<div style="font-size:14px;line-height:1.85;padding:12px 0;border-top:1px solid var(--line)">八種能量都有人罩，沒有明顯缺口——把現有的多樣性用好，留意別讓某種能量過度集中在一個人身上、把他燒乾。</div>'; }
+
   var html=''
    +'<a class="home-link" href="javascript:void(0)" onclick="backToManage()">← 回成員管理</a>'
    +'<div class="eyebrow">OCTENSO · 團隊合盤'+(currentTeam()?' · '+esc(currentTeam().name):'')+'</div>'
@@ -792,6 +812,10 @@ function showTeam(){
    +'</div>'
 
    +'<div class="block"><h3>🛡️ 能量覆蓋度</h3><div class="judge" style="margin-top:0">'+covText+'</div></div>'
+
+   +'<div class="block"><h3>💡 給團隊的具體建議</h3>'+teamTipsTxt
+     +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個團隊做得到的先試。</div>'
+   +'</div>'
 
    +(pairText?('<div class="block"><h3>🤝 最佳互補配對</h3><div class="judge" style="margin-top:0">'+pairText+'</div></div>'):'')
 

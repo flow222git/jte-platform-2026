@@ -206,6 +206,7 @@ document.getElementById('f').onload=function(){
     var rhtml=d.getElementById('result').innerHTML;
     ok(rhtml.indexOf('能量覆蓋度')>=0,'coverage block rendered in result');
     ok(rhtml.indexOf('最佳互補配對')>=0,'best-pair block rendered in result');
+    ok(rhtml.indexOf('給團隊的具體建議')>=0,'team shows concrete 建議 tips block');
 
     // 18. 底色 gloss 出現在封面/提示
     ok(d.body.innerHTML.indexOf('底色（你慣用的能量）')>=0,'底色 gloss present once');
