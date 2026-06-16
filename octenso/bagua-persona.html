@@ -1093,6 +1093,7 @@ function decodeCode(str){
 
 // ── 分享網址 / 解析（純函式，方便測試） ──────────────────
 function shareURL(code){ return location.origin + location.pathname + '#c=' + code; }
+function escH(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 // 從一段字串(純碼、或含 #c= / ?c= 的網址、或 QR 解出的文字)抽出合盤碼
 function extractCode(str){
   str=(str||'').trim();
@@ -1340,6 +1341,7 @@ function showCompat(){
       +'<button class="upload-btn" onclick="document.getElementById(\'qr-file\').click()">📷 上傳對方的圖（含 QR）</button>'
     +'</div>'
     +'<div class="or-divider">或貼上連結／合盤碼</div>'
+    +'<input class="compat-input" id="other-name" placeholder="對方的名字（選填，方便你記得是誰）" autocomplete="off" spellcheck="false" style="font-family:\'Songti TC\',\'Noto Serif TC\',serif;letter-spacing:0;margin-bottom:9px">'
     +'<input class="compat-input" id="other-code" placeholder="貼網址或 B1xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">'
     +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="runCompat()">合盤</button></div>'
     +'<div class="compat-err" id="compat-err"></div>'
@@ -1516,16 +1518,19 @@ function runCompat(){
   var other=code?decodeCode(code):null;
   if(!other){ err.textContent='讀不到對方的盤。可以貼合盤碼（B1 開頭 16 位數字）、整段分享連結，或上傳含 QR 的圖。'; return; }
 
+  var onameEl=document.getElementById('other-name');
+  var oname=(onameEl&&onameEl.value||'').trim().slice(0,16);
+
   // 四個讀數
   var sim=Math.round(cosineSim(mine,other)*100);
   var comp=Math.round(complementarity(mine,other)*100);
   // 存當下值供「下載合盤圖」按鈕用
-  lastCompat={mine:mine,other:other,sim:sim,comp:comp};
+  lastCompat={mine:mine,other:other,sim:sim,comp:comp,otherName:oname};
 
   // 存一筆合盤紀錄（本機；unshift、上限 20）
   try{
     var otherTop=topKeyOf(other);
-    var rec={ts:new Date().toISOString(),otherCode:code,otherTop:otherTop,otherTitle:E[otherTop].title,sim:sim,comp:comp};
+    var rec={ts:new Date().toISOString(),otherCode:code,otherTop:otherTop,otherTitle:E[otherTop].title,otherName:oname,sim:sim,comp:comp};
     var hist=[];
     try{ var rawH=localStorage.getItem('bagua_compat_v1'); if(rawH){ var a=JSON.parse(rawH); if(Array.isArray(a)) hist=a; } }catch(e2){}
     hist.unshift(rec); if(hist.length>20) hist=hist.slice(0,20);
@@ -1560,13 +1565,15 @@ function runCompat(){
       +'<b style="display:block;color:var(--ink);margin-bottom:3px">'+t.lab+'</b>'+t.tip+'</div>';
   }).join('');
 
+  var oLabel = oname ? escH(oname) : '對方';
   var out=''
+   +'<div style="text-align:center;font-family:\'Noto Serif TC\',\'Songti TC\',serif;font-size:19px;letter-spacing:.06em;margin:4px 0 16px">你 × '+oLabel+'</div>'
    +'<div class="block">'
      +'<h3>雙人能量雷達</h3>'
      +'<div class="radar-wrap" id="compat-radar"></div>'
      +'<div class="legend">'
        +'<span><i style="background:var(--pine)"></i>松綠實線＝你</span>'
-       +'<span><i style="background:var(--gold)"></i>金色虛線＝對方</span>'
+       +'<span><i style="background:var(--gold)"></i>金色虛線＝'+oLabel+'</span>'
      +'</div>'
    +'</div>'
    +'<div class="readcards">'

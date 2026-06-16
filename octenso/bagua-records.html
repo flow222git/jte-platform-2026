@@ -213,6 +213,14 @@ function relTimeStr(ts){
 }
 function dateOrTested(ts){ var r=ts?relTimeStr(ts):''; return r||'已測'; }
 
+// ── 單筆編輯／刪除 ────────────────────────────────────────
+function delCompat(i){ if(!confirm('刪除這筆合盤紀錄？（無法復原）')) return; var a=getCompat(); a.splice(i,1); try{localStorage.setItem('bagua_compat_v1',JSON.stringify(a));}catch(e){} render(); }
+function renameCompat(i){ var a=getCompat(); if(!a[i]) return; var v=prompt('對方的名字：', a[i].otherName||''); if(v===null) return; a[i].otherName=String(v).trim().slice(0,16); try{localStorage.setItem('bagua_compat_v1',JSON.stringify(a));}catch(e){} render(); }
+function delField(i){ if(!confirm('刪除這個局的紀錄？（無法復原）')) return; var a=getFields(); a.splice(i,1); try{localStorage.setItem('bagua_fields_v1',JSON.stringify(a));}catch(e){} render(); }
+function renameField(i){ var a=getFields(); if(!a[i]) return; var v=prompt('幫這個局取個名字：', a[i].name||''); if(v===null) return; a[i].name=String(v).trim().slice(0,24); try{localStorage.setItem('bagua_fields_v1',JSON.stringify(a));}catch(e){} render(); }
+function delFacet(id){ if(!confirm('刪除這個場域側寫？（無法復原）')) return; var o=getFacets(); delete o[id]; try{localStorage.setItem('bagua_facets_v1',JSON.stringify(o));}catch(e){} render(); }
+var ROWACT='flex:none;background:none;border:none;cursor:pointer;font-family:ui-sans-serif,sans-serif;font-size:12px;padding:4px 5px';
+
 // ── localStorage 讀取 ────────────────────────────────────
 function getBase(){
   try{ var raw=localStorage.getItem('bagua_persona_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.scores)?o:null; }
@@ -556,7 +564,8 @@ function renderFacets(){
     row.innerHTML='<span class="r-ic">'+f.ic+'</span>'
       +'<span class="r-body"><span class="r-nm">'+f.nm+'</span>'
       +'<span class="r-st">'+E[tk].title+' · '+dateOrTested(item.ts)+'</span></span>'
-      +'<a class="r-link" href="bagua-persona.html">重看 →</a>';
+      +'<a class="r-link" href="bagua-persona.html">重看 →</a>'
+      +'<button onclick="delFacet(\''+f.id+'\')" style="'+ROWACT+';color:var(--cinnabar)">刪除</button>';
     s.appendChild(row);
   });
   return s;
@@ -569,7 +578,7 @@ function renderFields(){
   if(!fields.length){ s.appendChild(emptyNote('還沒有測過的局——<a href="bagua-field.html">去測一個局 →</a>（看一段關係、一份工作合不合你）')); return s; }
   var base=getBase();
   var you=base?base.scores:null;
-  fields.forEach(function(f){
+  fields.forEach(function(f,i){
     var tk=topKeyOf(f.scores);
     var fitHtml='';
     if(you){ fitHtml='<span class="fit-badge">適配 '+fitScore(you,f.scores)+'%</span>'; }
@@ -577,7 +586,9 @@ function renderFields(){
     row.innerHTML='<span class="r-ic">'+E[tk].sym+'</span>'
       +'<span class="r-body"><span class="r-nm">'+escapeHtml(f.name||'這個局')+'</span>'
       +'<span class="r-st">最吃『'+E[tk].fn+'』 · '+dateOrTested(f.ts)+fitHtml+'</span></span>'
-      +'<a class="r-link" href="bagua-field.html">重看 →</a>';
+      +'<a class="r-link" href="bagua-field.html">重看 →</a>'
+      +'<button onclick="renameField('+i+')" style="'+ROWACT+';color:var(--muted)">改名</button>'
+      +'<button onclick="delField('+i+')" style="'+ROWACT+';color:var(--cinnabar)">刪除</button>';
     s.appendChild(row);
   });
   return s;
@@ -746,12 +757,16 @@ function renderCompat(){
   var s=sec('🔗 合盤紀錄');
   var hist=getCompat();
   if(!hist.length){ s.appendChild(emptyNote('還沒有合盤紀錄——在<a href="bagua-persona.html">人格測驗</a>結果頁點「和別人合盤」就會記下來。')); return s; }
-  hist.forEach(function(r){
+  hist.forEach(function(r,i){
     var title=r.otherTitle||(r.otherTop&&E[r.otherTop]?E[r.otherTop].title:'對方');
+    var who=r.otherName?escapeHtml(r.otherName):escapeHtml(title);
+    var sub=r.otherName?(escapeHtml(title)+' · '):'';
     var row=document.createElement('div'); row.className='row';
     row.innerHTML='<span class="r-ic">🔗</span>'
-      +'<span class="r-body"><span class="r-nm">'+escapeHtml(title)+'</span>'
-      +'<span class="r-st">同頻 '+(r.sim||0)+'% ／ 互補 '+(r.comp||0)+'% · '+dateOrTested(r.ts)+'</span></span>';
+      +'<span class="r-body"><span class="r-nm">你 × '+who+'</span>'
+      +'<span class="r-st">'+sub+'同頻 '+(r.sim||0)+'% ／ 互補 '+(r.comp||0)+'% · '+dateOrTested(r.ts)+'</span></span>'
+      +'<button onclick="renameCompat('+i+')" style="'+ROWACT+';color:var(--muted)">改名</button>'
+      +'<button onclick="delCompat('+i+')" style="'+ROWACT+';color:var(--cinnabar)">刪除</button>';
     s.appendChild(row);
   });
   return s;

@@ -110,6 +110,12 @@
     <span class="zh-t">看見你的能量　選擇你的流動</span><br>
     <span class="en-t">See your energy. Shape your flow.</span>
   </p>
+  <div id="welcome-back" style="display:none;margin-top:24px;font-family:'Noto Sans TC',ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.04em">
+    <span style="color:var(--muted)">歡迎回來 · </span>
+    <a href="bagua-persona.html" style="color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px">看我的能量盤</a>
+    <span style="color:var(--hair)">　·　</span>
+    <a href="bagua-records.html" style="color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px">我的記錄</a>
+  </div>
   <div class="scrollcue">Scroll<span class="arrow">↓</span></div>
 </header>
 
@@ -177,5 +183,8 @@ var io=new IntersectionObserver(function(es){es.forEach(function(en){
 });},{threshold:.3});
 io.observe(document.getElementById('wheelWrap'));
 [].forEach.call(document.querySelectorAll('.reveal-up'),function(n){io.observe(n);});
+
+// 回訪捷徑：已測過底色 → 顯示「歡迎回來」
+try{ if(localStorage.getItem('bagua_persona_v1')){ var wb=document.getElementById('welcome-back'); if(wb) wb.style.display='block'; } }catch(e){}
 </script>
 </body></html>
