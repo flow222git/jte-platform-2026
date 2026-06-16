@@ -242,7 +242,8 @@ var QUESTIONS=[
  {k:'gen', t:'這個局需要穩定、按部就班、不躁進。'},
  {k:'kun', t:'這個局需要耐心、長期穩定地承擔。'}
 ];
-var OPTS=[{t:'很需要',v:3},{t:'有點需要',v:2},{t:'不太需要',v:1},{t:'完全不需要',v:0}];
+var OPTS=[{t:'非常需要',v:5},{t:'大致需要',v:4},{t:'有點需要',v:3},{t:'有點不需要',v:2},{t:'大致不需要',v:1},{t:'完全不需要',v:0}];
+var SMAX=Math.max.apply(null,OPTS.map(function(o){return o.v;})); // 量表最高分，正規化用
 
 var answers=new Array(QUESTIONS.length).fill(null);
 var idx=0;
@@ -358,7 +359,7 @@ function computeScores(){
     raw[q.k]+=v; cnt[q.k]++;
   });
   var sc={};
-  EKEYS.forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*3)*100); });
+  EKEYS.forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*SMAX)*100); });
   return sc;
 }
 

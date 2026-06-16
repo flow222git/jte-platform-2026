@@ -378,7 +378,8 @@ var QUESTIONS=[
  {k:'gen', t:'我做事踏實穩定，知道適可而止，不喜歡硬撐。'},
  {k:'kun', t:'我有耐心、能包容，容得下不同的人和狀況。'}
 ];
-var OPTS=[{t:'很像我',v:3},{t:'有點像',v:2},{t:'不太像',v:1},{t:'很不像',v:0}];
+var OPTS=[{t:'非常像我',v:5},{t:'大致像我',v:4},{t:'有點像我',v:3},{t:'有點不像',v:2},{t:'大致不像',v:1},{t:'完全不像',v:0}];
+var SMAX=Math.max.apply(null,OPTS.map(function(o){return o.v;})); // 量表最高分，正規化用
 
 var answers=new Array(QUESTIONS.length).fill(null);
 var idx=0;
@@ -503,7 +504,7 @@ function computeScores(){
     raw[q.k]+=v; cnt[q.k]++;
   });
   var sc={};
-  Object.keys(E).forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*3)*100); });
+  Object.keys(E).forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*SMAX)*100); });
   return sc;
 }
 

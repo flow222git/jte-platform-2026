@@ -21,14 +21,14 @@ document.getElementById('f').onload=function(){
 
     // 2. scoring: both 3 → 100, both 0 → 0
     w.answers=new Array(16).fill(0);
-    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=3; });
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
     var sc=w.computeScores();
     ok(sc.qian===100,'qian=100 when both maxed, got '+sc.qian);
     ok(sc.kun===0,'kun=0 when both zero, got '+sc.kun);
     // partial: one 3 one 0 → 50
     w.answers=new Array(16).fill(0);
     var liIdx=[]; w.QUESTIONS.forEach(function(q,i){ if(q.k==='li') liIdx.push(i); });
-    w.answers[liIdx[0]]=3; w.answers[liIdx[1]]=0;
+    w.answers[liIdx[0]]=5; w.answers[liIdx[1]]=0;
     ok(w.computeScores().li===50,'li=50 when 3+0, got '+w.computeScores().li);
 
     // 3. fitScore: identical → ~100 ; you low field high → low

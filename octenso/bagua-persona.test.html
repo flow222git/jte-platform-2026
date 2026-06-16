@@ -18,7 +18,7 @@ document.getElementById('f').onload=function(){
 
     // 2. scoring — max out qian, zero others
     w.answers=new Array(24).fill(0);
-    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=3; });
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
     var sc=w.computeScores();
     ok(sc.qian===100,'qian=100 when maxed, got '+sc.qian);
     ok(sc.kun===0,'kun=0 when unanswered, got '+sc.kun);
@@ -36,7 +36,7 @@ document.getElementById('f').onload=function(){
 
     // 4. different profile — max out kan
     w.answers=new Array(24).fill(0);
-    w.QUESTIONS.forEach(function(q,i){ if(q.k==='kan') w.answers[i]=3; });
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='kan') w.answers[i]=5; });
     w.showResult();
     ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'kan profile → 坎水');
 
@@ -160,7 +160,7 @@ document.getElementById('f').onload=function(){
 
     // 18. 建底色（強震 zhen）→ showResult，存底色
     w.answers=new Array(24).fill(0);
-    w.QUESTIONS.forEach(function(q,i){ if(q.k==='zhen') w.answers[i]=3; });
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='zhen') w.answers[i]=5; });
     w.currentFacet=null; w.showResult();
     ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).top==='zhen','底色 top zhen saved');
     // facet menu rendered in result
@@ -329,7 +329,7 @@ document.getElementById('f').onload=function(){
     // 35. 結果頁 render 出 memo 區塊（含「能量提醒」＋2 條 nudge）
     w.localStorage.removeItem('bagua_memo_v1');
     w.answers=new Array(24).fill(0);
-    w.QUESTIONS.forEach(function(q,i){ if(q.k==='li') w.answers[i]=3; });
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='li') w.answers[i]=5; });
     w.currentFacet=null; w.showResult();
     var mb=d.querySelector('.memo-block');
     ok(mb,'memo block rendered in result');
