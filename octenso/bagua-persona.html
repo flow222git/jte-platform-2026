@@ -1,6 +1,7 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <script defer src="octenso-gate.js"></script>
+<script defer src="octenso-nav.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
@@ -1661,6 +1662,11 @@ var pendingShareCode=null; // 沒有底色時暫存，測完可合
 function initFromHash(){
   var rawHash=location.hash||'';
   var code=extractCode(rawHash);
+  if(!code && /compat/.test(rawHash)){ // 從切換列「雙人合盤」直達
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }
+    if(getBase()) showCompat(); // 有底色才開合盤；沒底色就留在封面先測
+    return;
+  }
   if(!code) return; // 正常無 hash 開啟不受影響
   var hn=''; var hm=rawHash.match(/[?&]n=([^&]+)/); if(hm){ try{ hn=decodeURIComponent(hm[1]); }catch(e){ hn=hm[1]; } }
   // 清掉 hash，避免重測時重觸發
