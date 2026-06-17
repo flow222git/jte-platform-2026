@@ -1,0 +1,189 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script defer src="octenso-gate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>Octenso 八態能格 · 使用回饋</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;font-weight:300;
+    padding:22px 18px 64px;max-width:600px;margin:0 auto;line-height:1.75}
+  .home-link{display:inline-block;font-family:"Jost",ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);
+    text-decoration:none;margin-bottom:18px;padding:6px 13px;border:1px solid var(--hair);border-radius:999px}
+  .home-link:hover{color:var(--ink);border-color:var(--ink)}
+  .head{text-align:center;margin:4px 0 24px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  h1{font-size:26px;letter-spacing:.06em;margin-bottom:10px;font-weight:300}
+  .sub{font-size:13.5px;color:var(--muted);line-height:1.9;max-width:460px;margin:0 auto}
+  .q{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 17px;margin-bottom:13px}
+  .q-t{font-size:15px;color:var(--ink);margin-bottom:11px;line-height:1.6}
+  .q-t .req{color:var(--cinnabar);font-size:12px}
+  .q-hint{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin:-6px 0 11px}
+  .opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;
+    font-size:14px;color:var(--ink);background:transparent;transition:border-color .15s,background .15s}
+  .opt:hover{border-color:var(--pine)}
+  .opt.on{border-color:var(--pine);background:#eef3ee}
+  .opt input{accent-color:var(--pine);width:16px;height:16px;flex:none}
+  .opt span{flex:1}
+  textarea{width:100%;font-family:"Noto Sans TC",sans-serif;font-size:14px;color:var(--ink);background:#fff;
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.7;resize:vertical;min-height:74px}
+  textarea:focus{outline:none;border-color:var(--pine)}
+  .scale{display:flex;gap:6px;flex-wrap:wrap}
+  .scale .opt{flex:1;min-width:0;justify-content:center;text-align:center;padding:9px 6px;font-size:13px}
+  .submit{display:block;width:100%;background:transparent;color:var(--ink);border:1.5px solid var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;letter-spacing:.08em;padding:15px 0;border-radius:999px;cursor:pointer;margin:22px 0 8px;transition:background .2s,color .2s}
+  .submit:hover{background:var(--ink);color:#fff}
+  .submit:disabled{opacity:.5;cursor:default}
+  .msg{text-align:center;font-size:13.5px;line-height:1.9;margin-top:14px;min-height:1.4em}
+  .msg.ok{color:var(--pine)} .msg.err{color:var(--cinnabar)}
+  .who{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:18px}
+  .foot{font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);text-align:center;margin-top:20px;line-height:1.7}
+  #thanks{display:none;text-align:center;padding:40px 10px}
+  #thanks .big{font-size:44px;color:var(--pine);margin-bottom:14px;font-family:"Songti TC","Noto Serif TC",serif}
+  #thanks h2{font-size:22px;font-weight:300;margin-bottom:12px}
+  #thanks p{font-size:14px;color:var(--muted);line-height:1.9}
+  #thanks a{color:var(--pine);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:8px 18px;display:inline-block;margin-top:18px}
+</style>
+</head>
+<body>
+  <a class="home-link" href="index.html">← 回八態能格</a>
+
+  <div id="form">
+    <div class="head">
+      <div class="eyebrow">OCTENSO · BETA FEEDBACK</div>
+      <h1>用起來如何？跟我們說</h1>
+      <p class="sub">這是測試版，你的回饋會直接決定它怎麼長大。大約 2 分鐘，選擇題為主。<br>沒有對錯，老實講最有用 🙏</p>
+    </div>
+    <div class="who" id="who"></div>
+
+    <div id="questions"></div>
+
+    <button class="submit" id="submit">送出回饋</button>
+    <div class="msg" id="msg"></div>
+    <div class="foot">不會公開你的回答；登入信箱只用來在需要時跟你確認，不做其他用途。</div>
+  </div>
+
+  <div id="thanks">
+    <div class="big">☯</div>
+    <h2>收到了，謝謝你 🙏</h2>
+    <p>你的每一句都會被我們認真看。<br>想到別的，隨時可以再回來填一次。</p>
+    <a href="index.html">回八態能格</a>
+  </div>
+
+<script>
+var FS_KEY='AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg';
+var FS_URL='https://firestore.googleapis.com/v1/projects/jointoenjoy/databases/(default)/documents/octenso_feedback?key='+FS_KEY;
+var REVIEW_EMAIL='flow@jointoenjoy.com';
+var SCALE5=['非常','蠻','普通','不太','完全不'];
+
+// 問卷定義：type single(單選)/multi(複選)/text(開放)
+var QS=[
+ {id:'used', type:'multi', req:true, t:'你這次用了哪些？（可複選）',
+   opts:['八卦人格測驗（底色）','雙人合盤','測一個局','職業配對','團隊合盤','我的記錄','八卦能量系統圖／概念']},
+ {id:'accuracy', type:'single', req:true, t:'測出來的結果，像你（或你看的關係／團隊）嗎？',
+   opts:['非常像','蠻像','普通','不太像','完全不像'], scale:true},
+ {id:'understand', type:'single', req:true, t:'解讀的文字，看得懂嗎？',
+   opts:['完全看得懂','大致懂','一半一半','有點吃力','看不太懂'], scale:true},
+ {id:'usability', type:'single', req:true, t:'操作起來順不順？',
+   opts:['很順','蠻順','普通','有點卡','很卡'], scale:true},
+ {id:'selfknow', type:'single', req:true, t:'看完之後，比較認識自己／關係／團隊「正在如何運作」了嗎？',
+   opts:['明顯更認識','有一些','普通','不太有','完全沒有'], scale:true},
+ {id:'sixiang', type:'single', req:false, t:'「四象 · 生命系統」（建構／推動／認知／調節）那段，對你有幫助嗎？',
+   opts:['很有幫助','有一點','普通','沒什麼感覺','沒注意到／沒看到']},
+ {id:'recommend', type:'single', req:false, t:'會推薦給朋友嗎？',
+   opts:['一定會','可能會','看情況','應該不會']},
+ {id:'love', type:'text', req:false, t:'最有感、最喜歡哪個部分？'},
+ {id:'stuck', type:'text', req:false, t:'哪裡看不懂、卡住、或覺得怪怪的？'},
+ {id:'wish', type:'text', req:false, t:'還想要什麼功能？或其他想跟我們說的話？'}
+];
+
+var answers={};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function render(){
+  var html=QS.map(function(q,qi){
+    var inner='';
+    if(q.type==='text'){
+      inner='<textarea id="t_'+q.id+'" placeholder="想到什麼就寫，一兩句也好"></textarea>';
+    } else {
+      var cls=q.scale?'scale':'';
+      inner='<div class="'+cls+'">'+q.opts.map(function(o,oi){
+        var inp=q.type==='multi'?'checkbox':'radio';
+        return '<label class="opt" data-q="'+qi+'" data-o="'+oi+'"><input type="'+inp+'" name="q'+qi+'" value="'+esc(o)+'"><span>'+esc(o)+'</span></label>';
+      }).join('')+'</div>';
+    }
+    return '<div class="q"><div class="q-t">'+esc(q.t)+(q.req?' <span class="req">*</span>':'')+'</div>'
+      +(q.type==='multi'?'<div class="q-hint">可以選多個</div>':'')+inner+'</div>';
+  }).join('');
+  document.getElementById('questions').innerHTML=html;
+
+  // 互動高亮 + 收集
+  [].forEach.call(document.querySelectorAll('.opt'),function(lab){
+    var inp=lab.querySelector('input');
+    inp.addEventListener('change',function(){
+      if(inp.type==='radio'){
+        [].forEach.call(lab.parentNode.querySelectorAll('.opt'),function(s){s.classList.remove('on');});
+        lab.classList.add('on');
+      } else { lab.classList.toggle('on', inp.checked); }
+    });
+  });
+}
+
+function collect(){
+  var miss=[];
+  QS.forEach(function(q,qi){
+    if(q.type==='text'){ answers[q.id]=(document.getElementById('t_'+q.id).value||'').trim(); return; }
+    var sel=[].slice.call(document.querySelectorAll('input[name="q'+qi+'"]:checked')).map(function(i){return i.value;});
+    answers[q.id]=(q.type==='multi')?sel:(sel[0]||'');
+    if(q.req && !sel.length) miss.push(qi);
+  });
+  return miss;
+}
+
+function fsBody(){
+  var f={};
+  f.ts={stringValue:new Date().toISOString()};
+  f.email={stringValue:(localStorage.getItem('jte_user_email')||'')};
+  f.name={stringValue:(localStorage.getItem('jte_user_name')||'')};
+  f.ua={stringValue:navigator.userAgent};
+  QS.forEach(function(q){
+    var v=answers[q.id];
+    if(q.type==='multi'){ f[q.id]={arrayValue:{values:(v||[]).map(function(x){return {stringValue:x};})}}; }
+    else { f[q.id]={stringValue:String(v||'')}; }
+  });
+  return JSON.stringify({fields:f});
+}
+
+function mailtoFallback(){
+  var lines=QS.map(function(q){
+    var v=answers[q.id]; return q.t+'\n→ '+(Array.isArray(v)?v.join('、'):(v||'(未填)'));
+  }).join('\n\n');
+  return 'mailto:'+REVIEW_EMAIL+'?subject='+encodeURIComponent('Octenso 使用回饋')
+    +'&body='+encodeURIComponent('（送出時連線失敗，改用 email 回傳）\n\n'+lines);
+}
+
+function done(){ document.getElementById('form').style.display='none'; document.getElementById('thanks').style.display='block'; window.scrollTo(0,0); }
+
+function submit(){
+  var miss=collect();
+  var msg=document.getElementById('msg');
+  if(miss.length){ msg.className='msg err'; msg.textContent='還有幾題必填（標 * 的）沒選喔～';
+    document.querySelectorAll('.q')[miss[0]].scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  var btn=document.getElementById('submit'); btn.disabled=true; msg.className='msg'; msg.textContent='送出中…';
+  fetch(FS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:fsBody()})
+    .then(function(r){ if(r.ok) done(); else throw new Error('fs'); })
+    .catch(function(){
+      btn.disabled=false; msg.className='msg err';
+      msg.innerHTML='送出失敗了，<a href="'+mailtoFallback()+'" style="color:var(--pine)">改用 email 寄給我們 →</a>（你的回答已自動帶入）';
+    });
+}
+
+function start(){
+  var email=(localStorage.getItem('jte_user_email')||'').trim();
+  document.getElementById('who').textContent=email?('以 '+email+' 的身分回饋'):'';
+  render();
+  document.getElementById('submit').addEventListener('click',submit);
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+</script>
+</body></html>

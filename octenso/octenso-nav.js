@@ -34,7 +34,10 @@
     +'padding:8px 16px;border-radius:999px;border:1px solid var(--hair,#bcb09a);background:transparent;'
     +'color:var(--ink,#23241f);text-decoration:none;transition:background .15s,border-color .15s}'
     +'#oc-nav a.oc-pill:hover{background:var(--surface,#fffdf6);border-color:var(--ink,#23241f)}'
-    +'#oc-nav span.oc-pill.cur{color:var(--muted,#857c6d);border-color:var(--line,#d2c7b4);background:var(--surface,#fffdf6);cursor:default}';
+    +'#oc-nav span.oc-pill.cur{color:var(--muted,#857c6d);border-color:var(--line,#d2c7b4);background:var(--surface,#fffdf6);cursor:default}'
+    +'#oc-nav .oc-fb{margin-top:16px;font-size:12.5px}'
+    +'#oc-nav .oc-fb a{color:var(--pine,#35614f);text-decoration:none;border-bottom:1px solid var(--hair,#bcb09a);padding-bottom:1px}'
+    +'#oc-nav .oc-fb a:hover{border-bottom-color:var(--pine,#35614f)}';
 
   var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
 
@@ -47,6 +50,7 @@
     return '<a class="oc-pill" href="'+it.href+'">'+it.label+'</a>';
   }).join('');
 
-  nav.innerHTML='<div class="oc-lab">切換其他功能</div><div class="oc-pills">'+pills+'</div>';
+  nav.innerHTML='<div class="oc-lab">切換其他功能</div><div class="oc-pills">'+pills+'</div>'
+    +'<div class="oc-fb">這是測試版 · <a href="octenso-feedback.html">給我們一點回饋 →</a></div>';
   document.body.appendChild(nav);
 })();
