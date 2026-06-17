@@ -106,7 +106,10 @@
   .pb-mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line);transform:translateX(-.5px)}
   .pb-mark{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;border:2px solid var(--surface);
     box-shadow:0 1px 3px rgba(74,62,44,.28);transform:translate(-50%,-50%);transition:left .4s ease}
-  .pb-verdict{font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-top:7px}
+  .pb-verdict{font-family:ui-sans-serif,sans-serif;text-align:center;margin-top:9px;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .pb-verdict .pbv-main{font-size:13.5px;color:var(--ink);line-height:1.8}
+  .pb-verdict .pbv-q{display:inline-block;margin-top:3px;font-size:12px;color:var(--muted)}
   .pair-foot{font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);line-height:1.7;
     margin-top:12px;font-style:italic}
 
@@ -898,7 +901,7 @@ function fourXiangHtml(sc){
       +'<div style="font-size:13px;color:var(--ink);line-height:1.7;margin:3px 0 7px">'+s.plain+'</div>'
       +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:1px 0 5px">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
       +'<div class="pb-track"><div class="pb-mid"></div><div class="pb-mark" style="left:'+markLeft+'%;background:'+col+'"></div></div>'
-      +'<div class="pb-verdict">'+desc+'<br><span style="color:var(--muted)">— '+s.q+'</span></div>'
+      +'<div class="pb-verdict"><span class="pbv-main">'+desc+'</span><br><span class="pbv-q">— '+s.q+'</span></div>'
       +(note?'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--gold);line-height:1.7;margin-top:6px"><b>提醒</b> · '+note+'</div>':'')
     +'</div>';
   }).join('');
