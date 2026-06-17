@@ -24,8 +24,7 @@
     ]},
     {lab:'認識', items:[
       {file:'bagua-map.html',      href:'bagua-map.html',      label:'系統圖'},
-      {file:'bagua-guide.html',    href:'bagua-guide.html',    label:'功能說明'},
-      {file:'bagua-concepts.html', href:'bagua-concepts.html', label:'概念 FAQ'},
+      {file:'bagua-guide.html',    href:'bagua-guide.html',    label:'說明 · FAQ'},
       {file:'octenso-journey.html',href:'octenso-journey.html',label:'專案歷程'}
     ]},
     {lab:'我的', items:[
