@@ -408,9 +408,9 @@ document.getElementById('f').onload=function(){
     var pblk=d.querySelector('.pair-block');
     ok(pblk,'pair block rendered in result');
     ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
-    ok(pblk && pblk.textContent.indexOf('四對')>=0,'merged block 含四對生命系統');
+    ok(d.querySelector('#result').textContent.indexOf('四個系統')>=0,'四個系統 section present');
     ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四對 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
-    ok(pblk && pblk.textContent.indexOf('不是非此即彼')>=0,'pair block honest line present');
+    ok(d.querySelector('#result').textContent.indexOf('不是非此即彼')>=0,'systems honest line present');
 
     // ── L1–L5 整合解讀 ──────────────────────────────────────
     var P=w.OctensoProfile;

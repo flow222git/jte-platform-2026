@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
-<title>Octenso 八態能格 · 八卦能量人格 · 測驗</title>
+<title>Octenso 八態能格 · 八態能量人格 · 測驗</title>
 <style>
   :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--line:#d2c7b4;--hair:#bcb09a;
     --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
@@ -263,6 +263,71 @@
   /* 全站按鈕統一細框（墨字外框、無實心填色） */
   .cbtn{background:transparent!important;color:var(--ink)!important;border:1px solid var(--hair)!important;font-weight:400!important;box-shadow:none!important;}
   .cbtn:hover{background:var(--surface)!important;transform:none!important;border-color:var(--ink)!important;}
+
+  /* ════════ 報告 v2：編排 / 老花友善 / 結果·說明區隔 / 雙向填色 ════════ */
+  :root{--fs:15.5px;}
+  html.fs-lg{--fs:17.5px;}
+  /* A／A⁺ 字級切換 */
+  .fsbar{display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-bottom:12px;
+    font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted)}
+  .fsbar button{font-family:ui-sans-serif,sans-serif;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink);border-radius:999px;cursor:pointer;line-height:1;padding:7px 12px}
+  .fsbar button.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+  .fsbar .a1{font-size:13px} .fsbar .a2{font-size:16px;font-weight:600}
+  /* 老花友善：結果區主要閱讀文字跟著 --fs（A⁺ 可再放大）、灰字加深對比 */
+  #result{--muted-r:#6f6657}
+  #result .tc-essence{font-size:calc(var(--fs) + 0.5px);line-height:1.9;text-wrap:balance}
+  #result .trait-row{font-size:var(--fs);line-height:1.85}
+  #result .portrait{font-size:var(--fs);line-height:1.95}
+  #result .memo-txt{font-size:var(--fs);line-height:1.8}
+  /* 卡片節奏：區段標題改襯線大字 */
+  #result .block > h3{font-family:"Songti TC","Noto Serif TC",serif;font-size:18px;font-weight:600;
+    letter-spacing:.03em;color:var(--ink)!important;margin-bottom:13px}
+  /* 折疊段 */
+  details.rsec{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+  details.rsec > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 18px;font-family:"Songti TC","Noto Serif TC",serif;font-size:18px;font-weight:600;letter-spacing:.03em;color:var(--ink)}
+  details.rsec > summary::-webkit-details-marker{display:none}
+  details.rsec > summary .rchev{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);transition:transform .2s}
+  details.rsec[open] > summary .rchev{transform:rotate(180deg)}
+  details.rsec > .rbody{padding:0 18px 16px}
+  .rsum-hint{display:block;font-family:ui-sans-serif,sans-serif;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px}
+  /* 精華 pull-quote（短英雄字才置中＋balance） */
+  .pullq{font-family:"Songti TC","Noto Serif TC",serif;font-size:20px;line-height:1.85;color:var(--ink);
+    text-align:center;text-wrap:balance;padding:4px 6px 22px}
+  .pullq .mk{color:var(--pine)}
+  /* 雷達獨立卡 */
+  .radar-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 12px 12px;margin-bottom:14px}
+  /* 系統：說明（淡）↔ 你的結果（pine 面板） */
+  #result .pb-name{font-family:"Songti TC","Noto Serif TC",serif;font-size:16.5px;font-weight:700;letter-spacing:.03em;display:block}
+  #result .pb-plain{font-size:13.5px;color:var(--muted);line-height:1.8;margin:5px 0 7px}
+  #result .pb-ax{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted)}
+  .rpanel{margin-top:12px;background:rgba(53,97,79,.05);border:1px solid var(--line);
+    border-left:3px solid var(--pine)!important;border-radius:0 12px 12px 0;padding:12px 15px 13px}
+  .rp-eb{font-family:ui-sans-serif,sans-serif;font-size:11.5px;letter-spacing:.06em;color:var(--pine);font-weight:700;margin-bottom:10px}
+  .rp-eb .tag{margin-left:7px;padding:2px 9px;border:1px solid var(--pine);border-radius:999px;font-size:11px}
+  /* 換行：verdict 左對齊，避免置中孤字 */
+  .rp-verdict .main{font-size:14.5px;color:var(--ink);line-height:1.85}
+  .rp-verdict .q{display:block;margin-top:5px;font-size:12.5px;color:var(--muted)}
+  .rp-note{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--gold);line-height:1.75;
+    margin-top:11px;padding-top:10px;border-top:1px dashed var(--hair)}
+  /* 雙向填色強度條 */
+  .vA{display:flex;align-items:center;margin:3px 0 11px}
+  .vA-track{flex:1;display:flex;height:15px;background:var(--bg);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .vA-half{width:50%;display:flex}
+  .vA-half.l{justify-content:flex-end;border-right:1px solid var(--hair)}
+  .vA-fill{height:100%;background:var(--pine);opacity:.82}
+  .vA-half.l .vA-fill{border-radius:999px 0 0 999px}
+  .vA-half.r .vA-fill{border-radius:0 999px 999px 0}
+  /* 分享區（移到底部） */
+  .sharev2{background:var(--surface);border:1.5px solid var(--pine)!important;border-radius:18px;padding:18px 17px;margin:22px 0 14px;text-align:center}
+  .sharev2 h3{font-family:"Songti TC","Noto Serif TC",serif;font-size:18px;font-weight:600;margin-bottom:4px;color:var(--ink)!important}
+  .sharev2 .sv-sub{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7}
+  .sv-row{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:10px}
+  .sv-btn{display:inline-flex;align-items:center;gap:6px;font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;
+    border-radius:999px;padding:11px 18px;cursor:pointer;border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+  .sv-btn.primary{background:var(--ink);color:var(--surface)}
+  .sv-btn.line{background:#06C755;color:#fff;border-color:#06C755}
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
@@ -270,7 +335,7 @@
 <!-- ───────── COVER ───────── -->
 <div id="cover">
   <div class="eyebrow">OCTENSO ENERGY · PERSONA</div>
-  <h1>八卦能量人格</h1>
+  <h1>八態能量人格</h1>
   <p class="lead">古人用八卦描述天地間八種基本能量。<br>其實，它們也住在你身上——<br>你慣用哪幾種？又有哪些還沒長開？</p>
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <div class="guide">
@@ -362,7 +427,7 @@ var TOOLS={
  writespace:{nm:'心理位移書寫',url:'https://flow222git.github.io/writespace/',ic:'',ds:'換個位置，把心裡的話寫出來。'},
  twct:{nm:'溝通類型測驗',url:'https://flow222git.github.io/twct/',ic:'',ds:'看你在壓力下怎麼溝通。'},
  bsrs:{nm:'心情溫度計',url:'bsrs/',ic:'',ds:'一分鐘，看看最近的情緒。'},
- baguamap:{nm:'八卦能量系統圖',url:'bagua-map.html',ic:'☯',ds:'認識這八種內在能量。'}
+ baguamap:{nm:'八態能量系統圖',url:'bagua-map.html',ic:'☯',ds:'認識這八種內在能量。'}
 };
 
 // 24 questions, 3 per energy, interleaved (round-robin over the 8)
@@ -426,7 +491,7 @@ function topKeyOf(sc){ var t=EKEYS[0]; EKEYS.forEach(function(k){ if((sc[k]||0)>
 
 // 清空所有八卦本機紀錄（底色／場域／此刻／測過的局），重新乾淨體驗
 function resetMyBagua(){
-  if(!confirm('確定清空你的八卦紀錄嗎？\n會刪除：人格底色、各場域側寫、此刻、測過的局。\n（無法復原）')) return;
+  if(!confirm('確定清空你的八態紀錄嗎？\n會刪除：人格底色、各場域側寫、此刻、測過的局。\n（無法復原）')) return;
   ['bagua_persona_v1','bagua_facets_v1','bagua_fields_v1','bagua_now_v1'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
   alert('已清空，可以重新乾淨體驗一輪了 ');
   location.reload();
@@ -895,14 +960,20 @@ function fourXiangHtml(sc){
     else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
     var hiv=Math.max(L,R);
     var note=hiv>=70?s.over:(hiv<=40?s.under:''); // 過強→過頭提醒；過弱→補強提醒
+    var Lw=Math.max(0,Math.min(100,L)), Rw=Math.max(0,Math.min(100,R));
     return '<div class="pair-bar">'
+      // 說明（人人一樣，放淡）
       +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px">'+s.en+'</div>'
-      +'<div class="pb-ends"><span class="pb-l">'+s.xiang+'·'+s.nm+'</span><span class="pb-r" style="color:var(--pine)">'+tag+'</span></div>'
-      +'<div style="font-size:13px;color:var(--ink);line-height:1.7;margin:3px 0 7px">'+s.plain+'</div>'
-      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:1px 0 5px">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
-      +'<div class="pb-track"><div class="pb-mid"></div><div class="pb-mark" style="left:'+markLeft+'%;background:'+col+'"></div></div>'
-      +'<div class="pb-verdict"><span class="pbv-main">'+desc+'</span><br><span class="pbv-q">— '+s.q+'</span></div>'
-      +(note?'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--gold);line-height:1.7;margin-top:6px"><b>提醒</b> · '+note+'</div>':'')
+      +'<span class="pb-name">'+s.xiang+'·'+s.nm+'</span>'
+      +'<div class="pb-plain">'+s.plain+'</div>'
+      +'<div class="pb-ax">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
+      // 你的結果（你專屬，pine 面板）
+      +'<div class="rpanel">'
+        +'<div class="rp-eb">你的結果<span class="tag">'+tag+'</span></div>'
+        +'<div class="vA"><div class="vA-track"><div class="vA-half l"><div class="vA-fill" style="width:'+Lw+'%"></div></div><div class="vA-half r"><div class="vA-fill" style="width:'+Rw+'%"></div></div></div></div>'
+        +'<div class="rp-verdict"><span class="main">'+desc+'</span><span class="q">— '+s.q+'</span></div>'
+        +(note?'<div class="rp-note"><b>提醒</b> · '+note+'</div>':'')
+      +'</div>'
     +'</div>';
   }).join('');
 }
@@ -997,28 +1068,40 @@ function strengthsHtml(pf){
       +'<div class="trait-row g"><b>成長</b><span>'+bg.grow+'</span></div>';
   }).join('');
 }
-// 八態輪廓：雷達(分數) + 四對(生命系統) 合為一個大區塊，一起讀
-function outlineBlock(sc,pf,now,conf){
-  var s='<div class="block pair-block">'
-    +'<h3>八態輪廓 · 高低與平衡</h3>'
-    +'<div class="radar-wrap" id="radar-wrap"></div>'
-    +(now?'<div class="share-hint" style="margin-top:8px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'');
-  if(pf){
-    s+='<div class="pair-sub" style="margin-top:8px;color:var(--gold);font-weight:700">每態 · 像不像你</div>'+bandListHtml(pf)+confLine(conf);
-    var res=pf.resources.length?fnList(pf.resources.slice(0,3)):'';
-    var gap=pf.gaps.length?fnList(pf.gaps.slice(0,3)):'';
-    s+='<div class="pair-sub" style="margin-top:8px">分數看高低、四對看系統——一起讀才是完整輪廓。</div>'
-      +'<div class="trait-row"><b style="color:var(--pine)">水平</b><span>整體能量 <b>'+levelWord(pf.level.band)+'</b>（'+pf.level.mean+'/100）——'+levelDesc(pf.level.band)+'</span></div>'
-      +'<div class="trait-row"><b style="color:var(--pine)">主調</b><span>'+leadSentence(pf,conf)+'</span></div>'
-      +'<div class="trait-row"><b style="color:var(--pine)">突出</b><span>'+(res?('你最強的是 <b>'+res+'</b>'):'沒有特別突出的——八種能量分布算平均')+'</span></div>'
-      +'<div class="trait-row"><b style="color:var(--pine)">少用</b><span>'+(gap?('比較少動用 <b>'+gap+'</b>，是還有空間的部分'):'沒有明顯空白，每種能量你多少都在用')+'</span></div>';
-  }
-  s+='<div class="pair-sub" style="margin:18px 0 4px;color:var(--gold);font-weight:700">四對 · 生命系統</div>'
-    +'<div class="pair-sub" style="margin:0 0 8px">八卦兩兩成一個系統：建構 → 推動 → 認知 → 調節，看每個系統怎麼運作。</div>'
-    +fourXiangHtml(sc)
-    +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；看的是系統怎麼運作，不是好壞。</div>'
+// 雷達獨立卡
+function radarCard(now){
+  return '<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div>'
+    +(now?'<div class="share-hint" style="margin-top:6px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'<div class="share-hint" style="margin-top:6px">越往外越強</div>')
   +'</div>';
-  return s;
+}
+// 八態輪廓（剖面：高低與平衡的文字；雷達與四對已獨立）
+function outlineBlock(sc,pf,now,conf){
+  if(!pf) return '';
+  var res=pf.resources.length?fnList(pf.resources.slice(0,3)):'';
+  var gap=pf.gaps.length?fnList(pf.gaps.slice(0,3)):'';
+  return '<div class="block pair-block">'
+    +'<h3>八態輪廓 · 高低與平衡</h3>'
+    +'<div class="pair-sub" style="color:var(--gold);font-weight:700">每態 · 像不像你</div>'+bandListHtml(pf)+confLine(conf)
+    +'<div class="trait-row"><b style="color:var(--pine)">水平</b><span>整體能量 <b>'+levelWord(pf.level.band)+'</b>（'+pf.level.mean+'/100）——'+levelDesc(pf.level.band)+'</span></div>'
+    +'<div class="trait-row"><b style="color:var(--pine)">主調</b><span>'+leadSentence(pf,conf)+'</span></div>'
+    +'<div class="trait-row"><b style="color:var(--pine)">突出</b><span>'+(res?('你最強的是 <b>'+res+'</b>'):'沒有特別突出的——八種能量分布算平均')+'</span></div>'
+    +'<div class="trait-row"><b style="color:var(--pine)">少用</b><span>'+(gap?('比較少動用 <b>'+gap+'</b>，是還有空間的部分'):'沒有明顯空白，每種能量你多少都在用')+'</span></div>'
+  +'</div>';
+}
+// 四個系統（折疊）：每系統＝說明（淡）＋你的結果（pine 面板）
+function systemsSection(sc){
+  return '<details class="rsec" open>'
+    +'<summary><span>四個系統 · 你怎麼運作<span class="rsum-hint">八態兩兩成一系統：建構 → 推動 → 認知 → 調節</span></span><span class="rchev">▾</span></summary>'
+    +'<div class="rbody">'+fourXiangHtml(sc)
+      +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；看的是系統怎麼運作，不是好壞。</div>'
+    +'</div>'
+  +'</details>';
+}
+// A／A⁺ 字級切換
+function setFs(big){
+  try{ document.documentElement.classList.toggle('fs-lg',!!big); localStorage.setItem('bagua_fs',big?'1':'0'); }catch(e){}
+  var a=document.getElementById('fsA'),aa=document.getElementById('fsAA');
+  if(a) a.classList.toggle('on',!big); if(aa) aa.classList.toggle('on',!!big);
 }
 
 // ── Render result ────────────────────────────────────────
@@ -1043,12 +1126,10 @@ function showResult(viewScores){
     + toolRow(TOOLS.baguamap);
 
   var html=''
-   +'<div style="text-align:center;margin-bottom:8px;display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'
-     +'<button onclick="copyResultLink()" style="background:var(--ink);color:var(--surface);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">複製我的合盤連結</button>'
-     +'<button onclick="shareResultImage()" style="background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:ui-sans-serif,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;padding:11px 22px;border-radius:999px;cursor:pointer">分享圖卡</button>'
+   +'<div class="fsbar">字級'
+     +'<button class="a1 on" id="fsA" onclick="setFs(0)">A</button>'
+     +'<button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button>'
    +'</div>'
-   +'<div class="share-hint" style="margin:0 0 4px"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
-   +'<div class="share-hint" style="margin:0 0 16px">想和朋友合盤？把連結傳給他，他測完自己的底色就能跟你對盤——或下載圖卡，圖上有 QR 可掃。</div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你的能量格局</div>'
      +'<div class="tc-sym">'+sig.sym+'</div>'
@@ -1056,7 +1137,9 @@ function showResult(viewScores){
      +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
+   +radarCard(now)
    +outlineBlock(sc,pf,now,conf)
+   +systemsSection(sc)
    +integratedBlock(pf)
    +'<div class="block">'
      +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
@@ -1070,11 +1153,18 @@ function showResult(viewScores){
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
    +memoBlockHtml(sc)
-   +'<div class="block">'
-     +'<h3>適合你的下一步</h3>'+toolsHtml
-   +'</div>'
+   +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'
    +ctaBlock(sc,now)
    +'<div class="block" id="facet-menu"></div>'
+   +'<div class="sharev2">'
+     +'<h3>把這份報告分享出去</h3>'
+     +'<div class="sv-sub">把連結傳給朋友看你的能量，或下載圖卡（圖上有 QR 可掃）。</div>'
+     +'<div class="sv-row">'
+       +'<button class="sv-btn primary" onclick="copyResultLink()">🔗 複製連結</button>'
+       +'<button class="sv-btn" onclick="shareResultImage()">⬇ 分享圖卡</button>'
+     +'</div>'
+     +'<div class="share-hint" style="margin:2px 0 0"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
+   +'</div>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，把底色用出去 —</div>'
    +'<button class="retake" style="background:var(--ink);color:var(--paper);border-color:var(--ink)" onclick="location.href=\'bagua-field.html\'">測一個局 · 看某件事會不會耗你 →</button>'
    +'<button class="retake" onclick="showCompat()">和某個人合盤</button>'
@@ -1089,6 +1179,7 @@ function showResult(viewScores){
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
   renderFacetMenu();
+  try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
 }
 
@@ -1413,7 +1504,7 @@ function buildResultCanvas(scores,topKey,title,qrImg){
   var srt=EKEYS.slice().sort(function(a,b){return (scores[b]||0)-(scores[a]||0);});
   x.fillStyle='#35614f';x.font='600 16px sans-serif';x.fillText('我慣用：'+E[srt[0]].fn+'、'+E[srt[1]].fn,Wd/2,664);
   if(qrImg){var qs=116;x.drawImage(qrImg,(Wd-qs)/2,686,qs,qs);
-    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 測你的八卦能量',Wd/2,824);}
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 測你的八態能量',Wd/2,824);}
   else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,760);}
   return c;
 }
@@ -1421,11 +1512,11 @@ function outputResultImage(scores,topKey,title,qrImg){
   var c=buildResultCanvas(scores,topKey,title,qrImg);
   c.toBlob(function(blob){
     if(!blob){alert('產圖失敗，可改用截圖分享');return;}
-    var file=null;try{file=new File([blob],'我的八卦能量人格.png',{type:'image/png'});}catch(e){}
+    var file=null;try{file=new File([blob],'我的八態能量人格.png',{type:'image/png'});}catch(e){}
     if(file && navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({files:[file],title:'我的八卦能量人格',text:title}).catch(function(){});
+      navigator.share({files:[file],title:'我的八態能量人格',text:title}).catch(function(){});
     }else{
-      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的八卦能量人格.png';
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的八態能量人格.png';
       document.body.appendChild(a);a.click();a.remove();
     }
   },'image/png');
@@ -1475,11 +1566,11 @@ function shareCompatImage(myScores,otherScores,sim,comp){
     var c=buildCompatCanvas(myScores,otherScores,sim,comp,qimg);
     c.toBlob(function(blob){
       if(!blob){alert('產圖失敗，可改用截圖分享');return;}
-      var file=null;try{file=new File([blob],'八卦雙人合盤.png',{type:'image/png'});}catch(e){}
+      var file=null;try{file=new File([blob],'八態雙人合盤.png',{type:'image/png'});}catch(e){}
       if(file && navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file],title:'八卦能量 · 雙人合盤',text:'同頻 '+sim+'% · 互補 '+comp+'%'}).catch(function(){});
+        navigator.share({files:[file],title:'八態能量 · 雙人合盤',text:'同頻 '+sim+'% · 互補 '+comp+'%'}).catch(function(){});
       }else{
-        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='八卦雙人合盤.png';
+        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='八態雙人合盤.png';
         document.body.appendChild(a);a.click();a.remove();
       }
     },'image/png');
@@ -1549,7 +1640,7 @@ function showCompat(){
       +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">'
         +'對方掃 QR、點連結、或丟這張圖／貼這段碼，就能直接合盤。</div>'
       +'<div class="honest" style="max-width:none;margin:12px 0 0">'
-        +'分享連結＝把你的八卦數值（8 個數字、無個資）給對方。</div>'
+        +'分享連結＝把你的八態數值（8 個數字、無個資）給對方。</div>'
     +'</div>';
   } else {
     html+='<div class="block">'
@@ -1652,11 +1743,11 @@ function downloadShareImage(){
     ctx.drawImage(img, qx, pad, qrSize, qrSize);
     ctx.textAlign='center'; ctx.fillStyle='#35614f';
     ctx.font='700 22px ui-sans-serif,sans-serif';
-    ctx.fillText('八卦能量人格 · 掃我合盤', W0/2, pad+qrSize+38);
+    ctx.fillText('八態能量人格 · 掃我合盤', W0/2, pad+qrSize+38);
     ctx.fillStyle='#766f63'; ctx.font='16px ui-sans-serif,sans-serif';
     var sub=shareLabel()+(typeTitle?' · '+typeTitle:'');
     ctx.fillText(sub, W0/2, pad+qrSize+66);
-    var fname='八卦合盤_'+code+'.png';
+    var fname='八態合盤_'+code+'.png';
     function trigger(url){ var a=document.createElement('a'); a.href=url; a.download=fname;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); }
     if(cv.toBlob){ cv.toBlob(function(blob){ var u=URL.createObjectURL(blob); trigger(u);
