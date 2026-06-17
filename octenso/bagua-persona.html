@@ -793,15 +793,17 @@ function ctaBlock(sc,now){
 function pfBuild(sc){ return (window.OctensoProfile)?window.OctensoProfile.build(sc):null; }
 function levelWord(b){ return b==='high'?'偏高':b==='low'?'偏低':'中等'; }
 function levelDesc(b){
-  return b==='high'?'多數面向你都在用、少有空白——最高的能量是「真的高」。'
+  return b==='high'?'多數能量你都在用、少有空白——整體偏滿。'
        : b==='low' ?'你大多省著用，最鮮明的也只是相對突出，未必代表那個狀態很強。'
-                    :'有明顯在用的、也有留白的面向——強弱分得出來。';
+                    :'有明顯在用的、也有留白的——強弱分得出來。';
 }
 function leadSentence(pf){
   var ld=pf.leads.map(function(k){return E[k];});
   if(pf.single) return '你最鮮明的主調是<b>'+ld[0].nm+'·'+ld[0].fn+'</b>，明顯領先其他能量。';
   if(ld.length===1) return '你沒有特別突出的單一主調——最高是<b>'+ld[0].nm+'·'+ld[0].fn+'</b>，但和其他差距不大、彼此接近。';
-  return '你有 '+ld.length+' 個<b>並重</b>的主調：'+ld.map(function(e){return '<b>'+e.nm+'·'+e.fn+'</b>';}).join('、')+'——強度接近、會輪流主導，不是單一性格。';
+  var gap=(pf.ranked[0].v||0)-(pf.ranked[1].v||0);
+  var howClose=gap<8?'幾乎不分上下':'相當接近';
+  return '你最鮮明的有 '+ld.length+' 股：'+ld.map(function(e){return '<b>'+e.nm+'·'+e.fn+'</b>';}).join('、')+'——它們'+howClose+'、會在你身上輪流主導，不是單一性格。';
 }
 function fnList(keys){ return keys.map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、'); }
 function fn1(k){ return E[k].fn.split('／')[0]; } // 取功能名第一段（顯現／覺察 → 顯現）
@@ -888,6 +890,26 @@ function fourXiangHtml(sc){
     +'</div>';
   }).join('');
 }
+// 你最鮮明的能量：優勢/盲點/成長跟著「格局」走（不再只描述單一最高卦，修正與標題自相矛盾）
+function strengthsHtml(pf){
+  if(pf.signature.kind==='pattern'){
+    var lv=pf.level.band;
+    var s1=lv==='high'?'你八種能量都用得上、不太偏廢——彈性大、能換檔，是你的本錢。'
+         :lv==='low' ?'你目前每種能量都收著用——還沒定型、可塑性高，正適合探索。'
+                      :'你沒有單一壓倒性的能量——均衡、不極端，遇事能多角度切換。';
+    return '<div class="trait-row s"><b>優勢</b><span>'+s1+'</span></div>'
+      +'<div class="trait-row b"><b>盲點</b><span>少了一股特別突出的主力，遇到需要「全力押一邊」的場面，可能會猶豫、不知道先動用哪個。</span></div>'
+      +'<div class="trait-row g"><b>成長</b><span>挑一個你想加強的能量刻意練，讓它長成你能依靠的主力。</span></div>';
+  }
+  var ld=pf.leads.slice(0,2);
+  return ld.map(function(k,i){
+    var e=E[k];
+    return (ld.length>1?'<div class="pair-sub" style="margin:'+(i?'12':'2')+'px 0 4px;color:var(--pine);font-weight:700">'+e.nm+'·'+fn1(k)+'</div>':'')
+      +'<div class="trait-row s"><b>優勢</b><span>'+e.str+'</span></div>'
+      +'<div class="trait-row b"><b>盲點</b><span>'+e.blind+'</span></div>'
+      +'<div class="trait-row g"><b>成長</b><span>'+e.grow+'</span></div>';
+  }).join('');
+}
 // 八態輪廓：雷達(分數) + 四象(生命系統) 合為一個大區塊，一起讀
 function outlineBlock(sc,pf,now,conf){
   var s='<div class="block pair-block">'
@@ -954,11 +976,10 @@ function showResult(viewScores){
    +'</div>'
    +outlineBlock(sc,pf,now,conf)
    +'<div class="block">'
-     +'<h3>這一型的你</h3>'
-     +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你是<b>'+E[pf.leads[0]].nm+'·'+E[pf.leads[0]].fn+'</b> × <b>'+E[pf.leads[1]].nm+'·'+E[pf.leads[1]].fn+'</b> 的組合——以下以最鮮明的<b>'+E[pf.leads[0]].nm+'</b>為主軸，但<b>'+E[pf.leads[1]].nm+'</b>同樣明顯，兩者會交替出現。</div>':'')
-     +'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div>'
-     +'<div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div>'
-     +'<div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>'
+     +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
+     +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你最鮮明的不只一股——下面分別說，它們會在你身上輪流主導。</div>':'')
+     +(pf?strengthsHtml(pf)
+         :'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div><div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div><div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>')
    +'</div>'
    +'<div class="block">'
      +'<h3>人物速寫</h3>'
