@@ -17,12 +17,12 @@
   var WX={qian:'metal',dui:'metal',li:'fire',zhen:'wood',xun:'wood',kan:'water',gen:'earth',kun:'earth'};
   var WX_ALL=['metal','wood','water','fire','earth'];
 
-  // 4 向度（八卦兩兩成極）
+  // 四象 · 生命系統（古典錯卦配對：天地/雷風/水火/山澤）
   var PAIRS=[
-    {key:'give',   l:'qian', r:'kun', ln:'給出', rn:'接納'},
-    {key:'show',   l:'li',   r:'kan', ln:'顯現', rn:'收藏'},
-    {key:'start',  l:'zhen', r:'gen', ln:'啟動', rn:'停止'},
-    {key:'relate', l:'dui',  r:'xun', ln:'表達', rn:'連結'}
+    {key:'build',    xiang:'天地', sys:'建構系統', en:'Purpose Engine',    l:'qian', r:'kun', ln:'創造', rn:'承載'},
+    {key:'drive',    xiang:'雷風', sys:'推動系統', en:'Action Engine',     l:'zhen', r:'xun', ln:'啟動', rn:'擴散'},
+    {key:'aware',    xiang:'水火', sys:'認知系統', en:'Awareness Engine',  l:'kan',  r:'li',  ln:'收藏', rn:'顯現'},
+    {key:'regulate', xiang:'山澤', sys:'調節系統', en:'Regulation Engine', l:'gen',  r:'dui', ln:'停止', rn:'交流'}
   ];
 
   // 可校準門檻
@@ -64,7 +64,7 @@
       else if(L<=TUNE.AXIS_LO && R<=TUNE.AXIS_LO) intensity='both-low';  // 這面向你比較少用
       else if(gap>=TUNE.AXIS_EVEN) intensity='single';                  // 明確偏一邊
       else intensity='mid';                                            // 中性、看情況
-      return { key:p.key, l:p.l, r:p.r, ln:p.ln, rn:p.rn, left:L, right:R,
+      return { key:p.key, xiang:p.xiang, sys:p.sys, en:p.en, l:p.l, r:p.r, ln:p.ln, rn:p.rn, left:L, right:R,
                lean:lean, gap:gap, sum:L+R, avg:Math.round((L+R)/2),
                leanName:(lean==='even'?null:(lean==='left'?p.ln:p.rn)), intensity:intensity };
     });

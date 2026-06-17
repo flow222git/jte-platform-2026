@@ -719,6 +719,36 @@ var TEAM_TIPS={
 };
 
 function fn1t(k){ return E[k].fn.split('／')[0]; }
+// 四象 · 生命系統（與 persona 同一套；團隊用合成盤）
+var FOURXIANG=[
+  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'這支隊怎麼定方向、又怎麼撐住它——訂目標、做決定、扛得起結果。',q:'要創造什麼？又如何承載它？'},
+  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'這支隊怎麼讓事情動起來——敢開始、推著往前、帶動彼此。',q:'要啟動什麼？又如何讓它擴散？'},
+  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'這支隊怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達被看見。',q:'真正看見了什麼？又如何顯現它？'},
+  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'這支隊怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通。',q:'該停下什麼？又如何重新交流？'}
+];
+function fourXiangHtml(sc){
+  return FOURXIANG.map(function(s){
+    var L=sc[s.l]||0, R=sc[s.r]||0, gap=Math.abs(L-R), sum=L+R;
+    var markLeft=sum?Math.round(100-L/sum*100):50;
+    var col=(gap<12)?'var(--muted)':(L>R?W[E[s.l].wx]:W[E[s.r].wx]);
+    var tag, desc;
+    if(L>=60&&R>=60){ tag='雙邊都旺'; desc='兩端都很活躍——這個系統用得多，留意別過載。'; }
+    else if(L<=40&&R<=40){ tag='偏少用'; desc='兩端目前都偏弱——這個系統較少啟動，是有空間的部分。'; }
+    else if(gap>=12){ var hp=(L>R?s.lL:s.rL); tag='偏'+hp; desc='明顯偏「'+hp+'」，另一端較少。'; }
+    else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
+    return '<div style="padding:12px 0 13px;border-bottom:1px solid var(--line)">'
+      +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px">'+s.en+'</div>'
+      +'<div style="display:flex;justify-content:space-between;font-family:\'Noto Sans TC\',sans-serif;font-size:13px;font-weight:700"><span>'+s.xiang+'·'+s.nm+'</span><span style="color:var(--pine)">'+tag+'</span></div>'
+      +'<div style="font-size:13px;color:var(--ink-soft);line-height:1.7;margin:4px 0 7px">'+s.plain+'</div>'
+      +'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--muted);margin:1px 0 5px">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
+      +'<div style="position:relative;height:8px;background:var(--surface2);border:1px solid var(--line);border-radius:999px">'
+        +'<div style="position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line)"></div>'
+        +'<div style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);left:'+markLeft+'%;background:'+col+'"></div>'
+      +'</div>'
+      +'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">'+desc+'<br><span>— '+s.q+'</span></div>'
+    +'</div>';
+  }).join('');
+}
 // 團隊整體也用格局標題（自適應形狀，依 MODEL.md）
 function teamSignatureTitle(comp){
   var pf=window.OctensoProfile?window.OctensoProfile.build(comp):null;
@@ -836,6 +866,11 @@ function showTeam(){
        +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
      +'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
+   +'</div>'
+
+   +'<div class="block"><h3>四象 · 生命系統</h3>'
+     +'<div class="lead" style="text-align:left;margin:0 0 12px">這支隊合起來，四個生命系統各自怎麼運作。</div>'
+     +fourXiangHtml(comp)
    +'</div>'
 
    +'<div class="block"><h3>這支團隊</h3>'

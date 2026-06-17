@@ -37,21 +37,22 @@ try{
   var pl=P.build(lowTop);
   ok(pl.single===false,'最高卦<60 → 不稱單一主導(能量不足)');
 
-  // ── 3. 向度 偏向 × 強度 ──
+  // ── 3. 四象系統 偏向 × 強度（古典錯卦配對）──
   var ax=flat(30);
-  ax.li=70; ax.kan=70;                 // 顯現/收藏：兩極都高
-  ax.zhen=70; ax.gen=20;               // 啟動/停止：明確偏啟動
-  ax.dui=20; ax.xun=20;                // 表達/連結：兩極都低
-  ax.qian=50; ax.kun=46;               // 給出/接納：接近 → 平衡
+  ax.kan=70; ax.li=70;                 // 認知 坎↔離：兩極都高
+  ax.zhen=70; ax.xun=20;               // 推動 震↔巽：明確偏啟動
+  ax.gen=20; ax.dui=20;                // 調節 艮↔兌：兩極都低
+  ax.qian=50; ax.kun=46;               // 建構 乾↔坤：接近 → 平衡
   var px=P.build(ax);
   function axisOf(prof,key){ return prof.axes.filter(function(a){return a.key===key;})[0]; }
-  ok(axisOf(px,'show').intensity==='both-high','離70坎70 → 向度雙高');
-  ok(axisOf(px,'show').lean==='even','離70坎70 → 偏向平衡');
-  ok(axisOf(px,'start').intensity==='single' && axisOf(px,'start').lean==='left','震70艮20 → 單側、偏啟動');
-  ok(axisOf(px,'start').leanName==='啟動','leanName=啟動');
-  ok(axisOf(px,'relate').intensity==='both-low','兌20巽20 → 向度雙低');
-  ok(axisOf(px,'give').lean==='even','乾50坤46(差4<12) → 平衡');
-  ok(px.axes.length===4,'4 向度');
+  ok(axisOf(px,'aware').intensity==='both-high','坎70離70 → 認知系統雙高');
+  ok(axisOf(px,'aware').lean==='even','坎70離70 → 偏向平衡');
+  ok(axisOf(px,'drive').intensity==='single' && axisOf(px,'drive').lean==='left','震70巽20 → 單側、偏啟動');
+  ok(axisOf(px,'drive').leanName==='啟動','leanName=啟動');
+  ok(axisOf(px,'regulate').intensity==='both-low','艮20兌20 → 調節系統雙低');
+  ok(axisOf(px,'build').lean==='even','乾50坤46(差4<12) → 平衡');
+  ok(px.axes.length===4,'4 系統');
+  ok(axisOf(px,'aware').sys==='認知系統','axes 帶系統名(認知系統)');
 
   // ── 4. 資源 / 缺口 ──
   var rg=flat(50); rg.qian=75; rg.li=62; rg.kan=30; rg.gen=20;

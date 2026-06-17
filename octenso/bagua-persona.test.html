@@ -409,7 +409,7 @@ document.getElementById('f').onload=function(){
     ok(pblk,'pair block rendered in result');
     ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
     ok(pblk && pblk.textContent.indexOf('四象')>=0,'merged block 含四象生命系統');
-    ok(d.querySelectorAll('.pair-bar').length===4,'4 pair bars, got '+d.querySelectorAll('.pair-bar').length);
+    ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四象 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
     ok(pblk && pblk.textContent.indexOf('不是非此即彼')>=0,'pair block honest line present');
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
