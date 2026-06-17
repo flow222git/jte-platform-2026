@@ -87,10 +87,23 @@
 
   function topElement(el){ var t=WX_ALL[0]; WX_ALL.forEach(function(w){ if(el[w]>el[t]) t=w; }); return t; }
 
+  // 每態六級評價：分數回推到最近的六點刻度（＝你那 3 題的平均選項）
+  var BANDS=['完全不像','大致不像','有點不像','有點像','大致像','非常像'];
+  function band(score){ var i=Math.round((+score||0)/100*5); i=Math.max(0,Math.min(5,i)); return {idx:i, label:BANDS[i], like:(i>=3)}; }
+  function bands(sc){ var o={}; EKEYS.forEach(function(k){ o[k]=band(sc[k]); }); return o; }
+
+  // persona 簽名：名字自適應形狀（不硬塞 1/8）。回傳 keys＋kind，標題文字由各頁用自己的卦資料組。
+  //  single＝單一明顯主峰；dual/multi＝並列主峰；pattern＝沒有明顯主峰，改用格局型（看整體水平）
+  function signature(pf){
+    if(pf.single) return {kind:'single', keys:[pf.leads[0]]};
+    if(pf.leads.length>=2) return {kind:(pf.leads.length===2?'dual':'multi'), keys:pf.leads.slice(0,3)};
+    return {kind:'pattern', keys:pf.leads.slice(), level:pf.level.band};
+  }
+
   function build(rawScores){
     var sc=clampScores(rawScores);
     var rk=ranked(sc), el=elements(sc), ld=leads(rk);
-    return {
+    var out={
       scores:sc,
       ranked:rk,
       level:level(sc),
@@ -100,13 +113,17 @@
       resources: rk.filter(function(o){ return o.v>=TUNE.RES; }).map(function(o){ return o.k; }),
       gaps: EKEYS.filter(function(k){ return (sc[k]||0)<TUNE.GAP; }),
       elements: el,
-      topElement: topElement(el)
+      topElement: topElement(el),
+      bands: bands(sc)
     };
+    out.signature = signature(out);
+    return out;
   }
 
   global.OctensoProfile={
-    EKEYS:EKEYS, WX:WX, WX_ALL:WX_ALL, PAIRS:PAIRS, TUNE:TUNE,
+    EKEYS:EKEYS, WX:WX, WX_ALL:WX_ALL, PAIRS:PAIRS, TUNE:TUNE, BANDS:BANDS,
     build:build, clampScores:clampScores, ranked:ranked, level:level,
-    axes:axes, leads:leads, elements:elements, topElement:topElement
+    axes:axes, leads:leads, elements:elements, topElement:topElement,
+    band:band, bands:bands, signature:signature
   };
 })(typeof window!=='undefined'?window:this);

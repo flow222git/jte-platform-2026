@@ -86,6 +86,23 @@ try{
   var tie=flat(60); // 全同分 → ranked[0] 應為 EKEYS[0]=qian
   ok(P.build(tie).ranked[0].k==='qian','全同分平手 → 取 EKEYS 首位(與 topKeyOf 一致)');
 
+  // ── 8. 每態六級評價 band（分數→最近的六點刻度）──
+  ok(P.band(0).label==='完全不像' && P.band(0).idx===0,'band 0 → 完全不像');
+  ok(P.band(100).label==='非常像' && P.band(100).idx===5,'band 100 → 非常像');
+  ok(P.band(90).idx===5,'band 90 → 非常像(round 4.5)');
+  ok(P.band(60).label==='有點像' && P.band(60).like===true,'band 60 → 有點像 (like)');
+  ok(P.band(40).label==='有點不像' && P.band(40).like===false,'band 40 → 有點不像 (not like)');
+  ok(P.band(10).label==='大致不像','band 10 → 大致不像');
+  var pb=P.build(flat(72)); ok(pb.bands.qian.label==='大致像','build.bands 每態都有評價(72→大致像)');
+
+  // ── 9. persona 簽名 signature（名字自適應形狀）──
+  var sgSingle=P.build(Object.assign(flat(20),{kan:85})).signature;
+  ok(sgSingle.kind==='single' && sgSingle.keys[0]==='kan','獨高坎 → signature single');
+  var sgDual=P.build(Object.assign(flat(20),{qian:85,kun:80})).signature;
+  ok(sgDual.kind==='dual' && sgDual.keys.indexOf('qian')>=0 && sgDual.keys.indexOf('kun')>=0,'乾坤並高 → signature dual');
+  var sgPat=P.build(Object.assign(flat(20),{li:45})).signature; // 弱峰(<60) → 格局型
+  ok(sgPat.kind==='pattern' && sgPat.level==='low','弱峰低能 → signature pattern(低能)');
+
 }catch(e){ fail++; log.push('EXCEPTION: '+e.message+' @ '+(e.stack||'')); }
 
 var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
