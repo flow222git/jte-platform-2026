@@ -863,10 +863,10 @@ function pairRowsHtml(sc){
 }
 // 四象 · 生命系統（古典錯卦配對 乾坤/震巽/坎離/艮兌，整理成四個生命功能系統）
 var FOURXIANG=[
-  {xiang:'天地',nm:'建立系統',l:'qian',r:'kun',lL:'創造',rL:'承載',q:'要創造什麼？又如何承載它？'},
-  {xiang:'雷風',nm:'推動系統',l:'zhen',r:'xun',lL:'啟動',rL:'擴散',q:'要啟動什麼？又如何讓它擴散？'},
-  {xiang:'水火',nm:'認識系統',l:'kan', r:'li', lL:'收藏',rL:'顯現',q:'真正看見了什麼？又如何顯現它？'},
-  {xiang:'山澤',nm:'調節系統',l:'gen', r:'dui',lL:'停止',rL:'交流',q:'該停下什麼？又如何重新交流？'}
+  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',q:'要創造什麼？又如何承載它？'},
+  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',q:'要啟動什麼？又如何讓它擴散？'},
+  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',q:'真正看見了什麼？又如何顯現它？'},
+  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',q:'該停下什麼？又如何重新交流？'}
 ];
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
@@ -879,6 +879,7 @@ function fourXiangHtml(sc){
     else if(gap>=12){ var hp=(L>R?s.lL:s.rL); tag='偏'+hp; desc='明顯偏「'+hp+'」，另一端較少。'; }
     else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
     return '<div class="pair-bar">'
+      +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px">'+s.en+'</div>'
       +'<div class="pb-ends"><span class="pb-l">'+s.xiang+'·'+s.nm+'</span><span class="pb-r" style="color:var(--pine)">'+tag+'</span></div>'
       +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:1px 0 5px">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
       +'<div class="pb-track"><div class="pb-mid"></div><div class="pb-mark" style="left:'+markLeft+'%;background:'+col+'"></div></div>'
@@ -908,7 +909,7 @@ function outlineBlock(sc,pf,now,conf){
       +'<div class="trait-row"><b style="color:var(--pine)">少用</b><span>'+(gap?('比較少動用 <b>'+gap+'</b>，是還有空間的部分'):'沒有明顯空白，每種能量你多少都在用')+'</span></div>';
   }
   s+='<div class="pair-sub" style="margin:18px 0 4px;color:var(--gold);font-weight:700">四象 · 生命系統</div>'
-    +'<div class="pair-sub" style="margin:0 0 8px">八卦兩兩成一個系統：建立 → 推動 → 認識 → 調節，看每個系統怎麼運作。</div>'
+    +'<div class="pair-sub" style="margin:0 0 8px">八卦兩兩成一個系統：建構 → 推動 → 認知 → 調節，看每個系統怎麼運作。</div>'
     +fourXiangHtml(sc)
     +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；看的是系統怎麼運作，不是好壞。</div>'
   +'</div>';
