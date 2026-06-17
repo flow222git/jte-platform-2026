@@ -515,7 +515,7 @@ function showFacetBanner(){
 }
 
 function startQuiz(){
-  currentFacet=null;
+  currentFacet=null; costMode=false;
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
@@ -526,7 +526,7 @@ function startQuiz(){
 }
 
 function startFacet(id){
-  currentFacet=id;
+  currentFacet=id; costMode=false;
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
@@ -566,11 +566,18 @@ function advance(){
   }
 }
 
-function goBack(){ if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);} }
+function goBack(){
+  if(costMode){ if(costQ.idx>0){ costQ.idx--; renderCostQ(); window.scrollTo(0,0); } return; }
+  if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);}
+}
 
 // quiz 完成分流：底色 → showResult；場域 → 存檔＋場域結果
 function finishQuiz(){
-  if(currentFacet===null){ showResult(); }
+  if(currentFacet===null){
+    var flagged=selectFlagged(computeScores());
+    if(flagged.length){ startCostPhase(flagged); }  // 有極端態 → 先做能格校準
+    else { showResult(); }                           // 全適中 → 直接出報告
+  }
   else { var fc=currentFacet; saveFacet(fc, computeScores()); showFacetResult(fc); }
 }
 
@@ -600,6 +607,99 @@ function computeConf(){
     else conf[k]='mild';                          // 一致但偏中 → 平淡
   });
   return conf;
+}
+
+// ════ 能格引擎（整體情境）：挑極端態 → 校準題 → 判定 ════
+var costMode=false, costQ={qs:[],ans:[],idx:0};
+// 挑極端態：≥HI 問過用、≤LO 問不足；上限 最強2+最弱2
+function selectFlagged(sc){
+  var over=[], under=[];
+  EKEYS.forEach(function(k){ var v=sc[k]||0;
+    if(v>=COST_HI) over.push({k:k,dir:'over',v:v});
+    else if(v<=COST_LO) under.push({k:k,dir:'under',v:v}); });
+  over.sort(function(a,b){return b.v-a.v;});
+  under.sort(function(a,b){return a.v-b.v;});
+  return over.slice(0,2).concat(under.slice(0,2));
+}
+function buildCostQs(flagged){
+  var qs=[];
+  flagged.forEach(function(f){ var items=(COST[f.k]||{})[f.dir]||[];
+    items.forEach(function(t){ qs.push({k:f.k,dir:f.dir,t:t}); }); });
+  return qs;
+}
+function costVerdict(k,dir,avg){
+  var c=COST[k]||{}, cost=avg>=COST_AGREE;
+  if(dir==='over') return cost?{s:'過用',a:c.aOver}:{s:'適中',a:c.aMidHi};
+  return cost?{s:'不足',a:c.aUnder}:{s:'適中',a:c.aMidLo};
+}
+function calibResults(){
+  try{ var raw=localStorage.getItem('bagua_cost_v1'); if(!raw) return null; var o=JSON.parse(raw); return (o&&o.items)?o:null; }catch(e){ return null; }
+}
+// 校準題階段（重用 #quiz DOM）
+function startCostPhase(flagged){
+  costMode=true;
+  costQ={qs:buildCostQs(flagged),ans:[],idx:0};
+  costQ.ans=new Array(costQ.qs.length).fill(null);
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  var bn=document.getElementById('facet-banner');
+  document.getElementById('fb-ic').textContent='';
+  document.getElementById('fb-nm').textContent='能格 · 用量校準';
+  document.getElementById('fb-frame').textContent='最後幾題——看你最強／最弱的能量，是用得過頭、不足、還是剛好。憑感覺選就好。';
+  bn.style.display='block';
+  renderCostQ(); window.scrollTo(0,0);
+}
+function renderCostQ(){
+  var q=costQ.qs[costQ.idx], n=costQ.qs.length;
+  document.getElementById('prog-label').textContent='能格 '+(costQ.idx+1)+' / '+n+' 題';
+  var pct=Math.round(costQ.idx/n*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('q-num').textContent=((COST[q.k]||{}).fn||'')+(q.dir==='over'?' · 會不會過頭？':' · 夠不夠用？');
+  document.getElementById('q-text').textContent=q.t;
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  OPTS.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='opt'+(costQ.ans[costQ.idx]===o.v?' sel':'');
+    b.innerHTML='<span class="dot"></span>'+o.t;
+    b.onclick=function(){ costQ.ans[costQ.idx]=o.v; advanceCost(); };
+    ow.appendChild(b);
+  });
+  document.getElementById('back-btn').disabled = costQ.idx===0;
+}
+function advanceCost(){
+  renderCostQ();
+  if(costQ.idx<costQ.qs.length-1){ setTimeout(function(){ costQ.idx++; renderCostQ(); window.scrollTo(0,0); },180); }
+  else { setTimeout(finishCost,200); }
+}
+function finishCost(){
+  var byK={};
+  costQ.qs.forEach(function(q,i){ (byK[q.k]=byK[q.k]||{dir:q.dir,vals:[]}).vals.push(costQ.ans[i]==null?0:costQ.ans[i]); });
+  var items=[];
+  Object.keys(byK).forEach(function(k){ var a=byK[k].vals, avg=a.reduce(function(s,v){return s+v;},0)/a.length; items.push({k:k,dir:byK[k].dir,avg:avg}); });
+  try{ localStorage.setItem('bagua_cost_v1', JSON.stringify({items:items,ts:new Date().toISOString()})); }catch(e){}
+  costMode=false;
+  showResult(); // 用 24 題 trait answers 重算並存底色；calibBlock 讀 bagua_cost_v1
+}
+// 能格·調校 報告段
+function calibBlock(sc){
+  var flagged=selectFlagged(sc);
+  if(!flagged.length){
+    return '<div class="block"><h3>能格 · 調校</h3><div class="trait-row"><span>目前你各態都在適中範圍，沒有明顯過用或不足——保持現在的節奏就好。</span></div></div>';
+  }
+  var res=calibResults(), byK={}; if(res){ res.items.forEach(function(it){ byK[it.k]=it; }); }
+  var rows=flagged.map(function(f){
+    var it=byK[f.k]; if(!it) return '';
+    var v=costVerdict(f.k,f.dir,it.avg);
+    return '<div class="rpanel" style="margin-top:10px"><div class="rp-eb">'+((COST[f.k]||{}).fn||'')+'<span class="tag">'+v.s+'</span></div>'
+      +'<div class="rp-verdict"><span class="main">'+v.a+'</span></div></div>';
+  }).join('');
+  if(!rows) return '';
+  return '<div class="block"><h3>能格 · 調校</h3>'
+    +'<div class="pair-sub">看你最強／最弱的能量，現在用得過頭、不足、還是剛好——以及怎麼調。</div>'
+    +rows+'</div>';
 }
 
 // ── 四向度傾向（MBTI 式「另一種看法」，連續不二分）──────────
@@ -948,6 +1048,71 @@ var FOURXIANG_TENSION={
   aware:'你同時很想被看見、又很想收進來沉澱——展現與沉澱的拉扯，是你的特色也是你的累。',
   regulate:'你既守得住界線、又很愛連結交流——收與放同時很強，拿捏好就很有彈性。'
 };
+
+// ════ 能格（耗能引擎·整體情境）：每態的過用/不足校準題＋建議 ════
+// over/under 校準題＝測「代價／後果」（同意度高＝有代價），非測「更多特質」。
+// a* = 建議：aOver 過用怎麼收、aUnder 不足怎麼補、aMidHi 強而適中肯定、aMidLo 弱而無礙肯定。【草稿，待潤】
+var COST={
+ qian:{ fn:'開創',
+  over:['我常什麼都想自己扛、自己決定，不太放得了手。','我給自己訂的目標和標準，常壓得自己很累。'],
+  under:['面對沒方向的局面，我傾向等別人決定，事後常有點後悔。','我很少替自己訂目標，日子常照著別人的安排走。'],
+  aOver:'開創是你的強項，但你扛太多在自己身上——把方向講清楚、放手讓別人接，你會更省力。',
+  aUnder:'你比較少替自己定方向——先從一件小事開始：訂一個你說了算的小目標。',
+  aMidHi:'你很能開創定向，又沒有硬扛——主導得剛好，保持。',
+  aMidLo:'你不特別主導，但目前沒造成困擾——需要時再跳出來就好。'},
+ kun:{ fn:'承接',
+  over:['我常承接別人的情緒和需要，把自己的擺到最後。','別人的事我很難拒絕，常默默扛下來、累積成壓力。'],
+  under:['我不太接得住別人的情緒，關係裡有時顯得疏離。','需要被依靠時我容易退開，事後覺得少了點什麼。'],
+  aOver:'你很能承接，但常把自己放最後——記得你也需要被接住，先照顧自己一點不是自私。',
+  aUnder:'承接是你較少動用的——試著在一件小事上主動接住某個人，關係會更有重量。',
+  aMidHi:'你接得住別人，又沒把自己掏空——拿捏得剛好。',
+  aMidLo:'你不特別承接，但目前關係沒因此卡住——順其自然就好。'},
+ zhen:{ fn:'行動',
+  over:['我常衝得太快，事後才發現做白工或要收拾。','身邊的人有時跟不上我的節奏，覺得被我推著走。'],
+  under:['我常有念頭卻遲遲不開始，後來有點後悔錯過。','面對該動的事，我容易拖延、等到不得不做。'],
+  aOver:'你的行動力很強，但容易停不下來——每開一件新的，先問「上一件收尾了嗎」，給衝勁一個煞車點。',
+  aUnder:'你常卡在「想」——挑一件最小的事，今天就先動一步，不求完美。',
+  aMidHi:'你敢動又收得住——行動力用得剛好，是你的本錢。',
+  aMidLo:'你不急著動，但目前沒因此誤事——穩著來也是一種節奏。'},
+ xun:{ fn:'拓展',
+  over:['我常同時串太多人和機會，分身乏術、收不太回來。','我容易一直鋪新的線，但很多都沒真正深入。'],
+  under:['我較少主動串連人脈或機會，有時錯過能借的力。','好的東西我不太推廣出去，常默默做完就算了。'],
+  aOver:'你很會拓展連結，但攤太開會稀釋——挑幾條真正重要的線深耕，比鋪滿更有累積。',
+  aUnder:'你較少向外串連——試著把一件好事，主動分享給一個可能受用的人。',
+  aMidHi:'你鋪得開又收得住，連結用得剛好。',
+  aMidLo:'你不特別擴張，但目前沒因此受限——需要時再借力即可。'},
+ li:{ fn:'展現',
+  over:['我很在意被看見，沒被注意到時會有點失落或焦慮。','我常想把自己表達得更好，反而給自己很大壓力。'],
+  under:['我有想法或成果卻不太表達，常被忽略或低估。','我不太讓人看見真正的我，有時覺得不被理解。'],
+  aOver:'你渴望被看見，這是動力，但太用力會累——記得你的價值不全靠別人看見，先自己認可一點。',
+  aUnder:'你常把自己收著——試著在一個安全的場合，把一個想法或成果說出來、被看見一次。',
+  aMidHi:'你表達得出來、又不靠掌聲過活——展現得剛好。',
+  aMidLo:'你不特別張揚，但目前沒因此被埋沒——低調也自在就好。'},
+ kan:{ fn:'沉澱',
+  over:['我常往內收太久，想太多、走不出來。','我需要的獨處時間多到有點影響和別人的連結。'],
+  under:['我很少給自己沉澱的空間，常一直往外衝到耗盡。','累的時候我不太停下來消化，情緒容易積著。'],
+  aOver:'沉澱讓你深刻，但泡太久會困住自己——給反思設個出口：想到一個程度，就帶一個小行動出來。',
+  aUnder:'你很少停下來回血——每天留十分鐘獨處、什麼都不做，能量會自己長回來。',
+  aMidHi:'你向內沉澱、又出得來——收放得剛好。',
+  aMidLo:'你不特別需要獨處，但目前沒因此透支——維持就好。'},
+ gen:{ fn:'喊停',
+  over:['我界線立得很硬，有時把人或機會也擋在外面。','我常太快說「不」，事後覺得也許可以更有彈性。'],
+  under:['我常想拒絕卻拒絕不了，把不適合的事攬上身。','我不太會替自己喊停，常拖到累垮才停。'],
+  aOver:'你守得住界線，但太硬會把好東西也擋掉——界線是為了保護你、不是築牆，留一道門。',
+  aUnder:'你不太替自己踩剎車——練習在「還行」的時候就先停，一週挑一件事說「不」。',
+  aMidHi:'你立得住界線、又不過度防備——喊停得剛好。',
+  aMidLo:'你不特別設限，但目前沒因此被消耗——需要時記得喊停就好。'},
+ dui:{ fn:'交流',
+  over:['我很愛和人交流，但常因此耗掉太多時間和精力。','我習慣把想法都說出來，有時話太多、收不太住。'],
+  under:['我心裡有話常悶著不說，事後覺得沒講清楚。','我較少主動和人連結，關係容易停在表面。'],
+  aOver:'你很能連結交流，但社交也會耗電——留一點安靜給自己，不必每場都到、每句都說。',
+  aUnder:'你常把話悶著——試著把一個真實的感受，對一個信任的人說出口。',
+  aMidHi:'你交流得開、又不被掏空——連結得剛好。',
+  aMidLo:'你不特別外向，但目前關係沒因此卡住——舒服就好。'}
+};
+// 能格門檻
+var COST_HI=68, COST_LO=35;   // 分數 ≥HI→問過用、≤LO→問不足
+var COST_AGREE=2.5;           // 校準題平均（0–5）≥此＝有代價
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
     var L=sc[s.l]||0, R=sc[s.r]||0, gap=Math.abs(L-R), sum=L+R;
@@ -1140,6 +1305,7 @@ function showResult(viewScores){
    +radarCard(now)
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
+   +calibBlock(sc)
    +integratedBlock(pf)
    +'<div class="block">'
      +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
@@ -1166,7 +1332,7 @@ function showResult(viewScores){
      +'<div class="share-hint" style="margin:2px 0 0"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
    +'</div>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，把底色用出去 —</div>'
-   +'<button class="retake" style="background:var(--ink);color:var(--paper);border-color:var(--ink)" onclick="location.href=\'bagua-field.html\'">測一個局 · 看某件事會不會耗你 →</button>'
+   +'<button class="retake" style="background:var(--ink);color:var(--surface);border-color:var(--ink)" onclick="location.href=\'bagua-field.html\'">測一個局 · 看某件事會不會耗你 →</button>'
    +'<button class="retake" onclick="showCompat()">和某個人合盤</button>'
    +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:2px 0 14px">職業配對・團隊合盤・系統圖…都在最下方的功能列 ↓</div>'

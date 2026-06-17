@@ -438,6 +438,41 @@ document.getElementById('f').onload=function(){
     ok(rhtml.indexOf('整合 · 立體的你')>=0,'整合區塊 render');
     ok(rhtml.indexOf('系統之間')>=0,'整合區塊含系統之間');
 
+    // ── 能格（耗能引擎·整體情境） ──────────────────────────
+    // 38. selectFlagged：高→over、低→under、上限4、全中→無
+    var fl=w.selectFlagged({qian:80,zhen:75,li:60,xun:50,dui:48,kan:40,gen:30,kun:25});
+    ok(fl.length===4,'selectFlagged 上限4, got '+fl.length);
+    ok(fl.filter(function(x){return x.dir==='over';}).length===2,'over 取最強2');
+    ok(fl[0].k==='qian' && fl[0].dir==='over','最強 qian·over 在前');
+    ok(w.selectFlagged({qian:50,zhen:50,li:50,xun:50,dui:50,kan:50,gen:50,kun:50}).length===0,'全中→無 flagged');
+    // 39. costVerdict 判定表
+    ok(w.costVerdict('zhen','over',4).s==='過用','over+高代價→過用');
+    ok(w.costVerdict('zhen','over',1).s==='適中','over+低代價→適中(強而剛好)');
+    ok(w.costVerdict('gen','under',4).s==='不足','under+高代價→不足');
+    ok(w.costVerdict('gen','under',1).s==='適中','under+低代價→適中(弱而無礙)');
+    // 40. buildCostQs：每態2題
+    ok(w.buildCostQs([{k:'zhen',dir:'over'},{k:'gen',dir:'under'}]).length===4,'buildCostQs 2 flagged→4題');
+    // 41. calibBlock：全中→適中訊息；有 flagged+代價→過用
+    ok(w.calibBlock({qian:50,zhen:50,li:50,xun:50,dui:50,kan:50,gen:50,kun:50}).indexOf('適中範圍')>=0,'calibBlock 全中→適中訊息');
+    localStorage.setItem('bagua_cost_v1', JSON.stringify({items:[{k:'zhen',dir:'over',avg:4}],ts:'t'}));
+    var cb=w.calibBlock({qian:50,zhen:80,li:50,xun:50,dui:50,kan:50,gen:50,kun:50});
+    ok(cb.indexOf('過用')>=0 && cb.indexOf('能格 · 調校')>=0,'calibBlock flagged+代價→過用段');
+    localStorage.removeItem('bagua_cost_v1');
+    // 42. finishQuiz 流程：有極端態→進能格校準→finishCost→出結果含調校段
+    w.answers=new Array(24).fill(5); w.currentFacet=null; w.finishQuiz();
+    ok(w.costMode===true,'極端→進入能格校準階段');
+    ok(d.getElementById('quiz').style.display==='block','能格階段顯示 quiz');
+    ok(w.costQ.qs.length===4,'能格題數 cap2over→4, got '+w.costQ.qs.length);
+    ok(d.getElementById('q-text').textContent.length>0,'能格題有題目');
+    w.costQ.ans=new Array(w.costQ.qs.length).fill(4); w.finishCost();
+    ok(w.costMode===false,'finishCost→離開能格階段');
+    ok(d.getElementById('result').style.display==='block','finishCost→顯示結果');
+    ok(d.querySelector('#result').textContent.indexOf('能格 · 調校')>=0,'結果含能格調校段');
+    // 43. 全中→不進校準，直接出結果
+    w.answers=new Array(24).fill(2); w.currentFacet=null; w.finishQuiz();
+    ok(w.costMode===false && d.getElementById('result').style.display==='block','全中→直接出結果不進校準');
+    localStorage.removeItem('bagua_cost_v1');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
