@@ -509,6 +509,21 @@ function computeScores(){
   Object.keys(E).forEach(function(k){ sc[k]=Math.round(raw[k]/(cnt[k]*SMAX)*100); });
   return sc;
 }
+// 確信度：同一態 3 題答得一致＋偏極端＝篤定；分散＝兩可；一致但偏中＝平淡。需 answers，存進存檔供回看。
+function computeConf(){
+  var byK={}; QUESTIONS.forEach(function(q,i){ (byK[q.k]=byK[q.k]||[]).push(answers[i]); });
+  var conf={};
+  EKEYS.forEach(function(k){
+    var a=(byK[k]||[]).filter(function(v){return v!=null;});
+    if(a.length<2){ conf[k]='mild'; return; }
+    var mn=Math.min.apply(null,a), mx=Math.max.apply(null,a);
+    var avg=a.reduce(function(s,v){return s+v;},0)/a.length;
+    if(mx-mn>=3) conf[k]='mixed';                 // 三題分散 → 兩可
+    else if(avg<=1.2||avg>=SMAX-1.2) conf[k]='firm'; // 一致且偏極端 → 篤定
+    else conf[k]='mild';                          // 一致但偏中 → 平淡
+  });
+  return conf;
+}
 
 // ── 四向度傾向（MBTI 式「另一種看法」，連續不二分）──────────
 // 每對極性用兩能量分數算偏向：pct=A/(A+B)*100（A=sc[l] 偏左、B=sc[r] 偏右）
@@ -780,6 +795,17 @@ function leadSentence(pf){
 }
 function fnList(keys){ return keys.map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、'); }
 function fn1(k){ return E[k].fn.split('／')[0]; } // 取功能名第一段（顯現／覺察 → 顯現）
+// 確信度摘要：列出最篤定／最兩可的態（資料來自存檔 conf；沒有就不顯示）
+function confLine(conf){
+  if(!conf) return '';
+  var firm=[], mixed=[];
+  EKEYS.forEach(function(k){ if(conf[k]==='firm') firm.push(k); else if(conf[k]==='mixed') mixed.push(k); });
+  if(!firm.length && !mixed.length) return '';
+  var parts=[];
+  if(firm.length) parts.push('你對 <b>'+firm.slice(0,3).map(function(k){return E[k].nm+'·'+fn1(k);}).join('、')+'</b> 的感覺很篤定');
+  if(mixed.length) parts.push('對 <b>'+mixed.slice(0,2).map(function(k){return E[k].nm+'·'+fn1(k);}).join('、')+'</b> 有點兩可（同一態三題答得不太一致）');
+  return '<div class="pair-foot" style="margin-top:10px"><b style="color:var(--gold)">確信度</b>：'+parts.join('；')+'。這跟分數高低無關，是你回答時的篤定程度。</div>';
+}
 // persona 標題自適應形狀：身分＝格局，卦只是峰名（依 MODEL.md）
 function signatureTitle(pf){
   var sig=pf.signature, k=sig.keys, lv=pf.level.band;
@@ -826,7 +852,7 @@ function pairRowsHtml(sc){
   }).join('');
 }
 // 八態輪廓：雷達(分數) + 四向度(平衡) 合為一個大區塊，一起讀
-function outlineBlock(sc,pf,now){
+function outlineBlock(sc,pf,now,conf){
   var s='<div class="block pair-block">'
     +'<h3>八態輪廓 · 高低與平衡</h3>'
     +'<div class="radar-wrap" id="radar-wrap"></div>'
@@ -837,7 +863,7 @@ function outlineBlock(sc,pf,now){
     +'</div>'
     +(now?'<div class="share-hint" style="margin-top:-8px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'');
   if(pf){
-    s+='<div class="pair-sub" style="margin-top:8px;color:var(--gold);font-weight:700">每態 · 像不像你</div>'+bandListHtml(pf);
+    s+='<div class="pair-sub" style="margin-top:8px;color:var(--gold);font-weight:700">每態 · 像不像你</div>'+bandListHtml(pf)+confLine(conf);
     var res=pf.resources.length?fnList(pf.resources.slice(0,3)):'';
     var gap=pf.gaps.length?fnList(pf.gaps.slice(0,3)):'';
     var even=pf.axes.filter(function(a){return a.lean==='even';}).map(function(a){return a.ln+'↔'+a.rn;});
@@ -865,9 +891,12 @@ function showResult(viewScores){
   var now=readNow();
   var pf=pfBuild(sc);
   var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
+  var conf=viewScores
+    ? (function(){ try{ var b=JSON.parse(localStorage.getItem('bagua_persona_v1')); return (b&&b.conf)||null; }catch(e){ return null; } })()
+    : computeConf();
 
   // save
-  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,ts:new Date().toISOString()})); }catch(e){} }
+  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,conf:conf,ts:new Date().toISOString()})); }catch(e){} }
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -887,7 +916,7 @@ function showResult(viewScores){
      +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
-   +outlineBlock(sc,pf,now)
+   +outlineBlock(sc,pf,now,conf)
    +'<div class="block">'
      +'<h3>這一型的你</h3>'
      +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你是<b>'+E[pf.leads[0]].nm+'·'+E[pf.leads[0]].fn+'</b> × <b>'+E[pf.leads[1]].nm+'·'+E[pf.leads[1]].fn+'</b> 的組合——以下以最鮮明的<b>'+E[pf.leads[0]].nm+'</b>為主軸，但<b>'+E[pf.leads[1]].nm+'</b>同樣明顯，兩者會交替出現。</div>':'')

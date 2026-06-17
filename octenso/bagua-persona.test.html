@@ -57,6 +57,17 @@ document.getElementById('f').onload=function(){
     ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
     ok(rc.indexOf('兩邊都高')>=0,'給出/接納 雙高 → 強度「兩邊都高」');
 
+    // 4e. 確信度：qian 三題都 5（一致＋極端→篤定）；kan 三題 0/5/2（分散→兩可）
+    w.answers=new Array(24).fill(2);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
+    var kanIdx=[]; w.QUESTIONS.forEach(function(q,i){ if(q.k==='kan') kanIdx.push(i); });
+    w.answers[kanIdx[0]]=0; w.answers[kanIdx[1]]=5; w.answers[kanIdx[2]]=2;
+    w.showResult();
+    var rconf=d.getElementById('result').innerHTML;
+    ok(rconf.indexOf('確信度')>=0,'八態輪廓含確信度摘要');
+    ok(rconf.indexOf('篤定')>=0,'qian 三題極端一致 → 篤定');
+    ok(rconf.indexOf('兩可')>=0,'kan 三題分散 → 兩可');
+
     // 4d. 看完整解盤：showResult(帶入存檔分數) 不需答題即渲染、且不覆寫存檔 ts
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:{qian:30,li:90,zhen:20,dui:25,kun:30,kan:40,gen:55,xun:30},top:'li',title:'離火 · 洞見者',ts:'KEEP-TS'}));
     w.answers=new Array(24).fill(null);
