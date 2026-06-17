@@ -148,6 +148,14 @@
   .vC-dot{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;background:var(--pine);color:#fff;font-family:ui-sans-serif,sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.15);}
   .vC-dot.r{background:var(--gold);}
   .vC-axis{display:flex;justify-content:space-between;font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);}
+  /* Viz D 翹翹板 */
+  .vD{position:relative;height:96px;margin:2px 0;}
+  .vD-beam{position:absolute;left:13%;right:13%;top:48px;height:9px;background:var(--pine);border-radius:999px;transform-origin:50% 50%;transition:transform .25s;}
+  .vD-ball{position:absolute;top:50%;border-radius:50%;border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;color:#fff;font-family:ui-sans-serif,sans-serif;font-size:11px;}
+  .vD-ball.l{left:0;transform:translate(-50%,-50%);background:var(--pine);}
+  .vD-ball.r{right:0;transform:translate(50%,-50%);background:var(--gold);}
+  .vD-pivot{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:18px solid var(--hair);}
+  .vD-base{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);width:50px;height:5px;background:var(--hair);border-radius:3px;}
 </style></head>
 <body>
 <div class="demo-flag">DEMO 排版稿 · 非正式頁 · 內容為範例</div>
@@ -203,6 +211,19 @@
         <div class="vC-track"><div class="vC-dot l" style="left:30%">開</div><div class="vC-dot r" style="left:28%">承</div></div><div class="vC-axis"><span>弱</span><span>強</span></div></div>
       <div class="st"><div class="st-lab"><b>偏開創</b> — 兩點分得很開</div>
         <div class="vC-track"><div class="vC-dot l" style="left:82%">開</div><div class="vC-dot r" style="left:46%">承</div></div><div class="vC-axis"><span>弱</span><span>強</span></div></div>
+    </div>
+
+    <!-- 方案 D 翹翹板 -->
+    <div class="opt">
+      <h3>方案 D · 翹翹板（球大小＝強度，傾斜＝平衡）</h3>
+      <div class="st"><div class="st-lab"><b>雙邊都旺</b> 78／74 — 兩顆都大、橫桿幾乎水平＝都強又平衡</div>
+        <div class="vD"><div class="vD-beam" style="transform:rotate(1.2deg)"><div class="vD-ball l" style="width:35px;height:35px">開</div><div class="vD-ball r" style="width:34px;height:34px">承</div></div><div class="vD-pivot"></div><div class="vD-base"></div></div></div>
+      <div class="st"><div class="st-lab"><b>拿捏均衡</b> 52／50 — 兩顆中等、水平</div>
+        <div class="vD"><div class="vD-beam" style="transform:rotate(0.6deg)"><div class="vD-ball l" style="width:29px;height:29px">開</div><div class="vD-ball r" style="width:29px;height:29px">承</div></div><div class="vD-pivot"></div><div class="vD-base"></div></div></div>
+      <div class="st"><div class="st-lab"><b>偏少用</b> 30／28 — 兩顆都小、水平＝這系統少用</div>
+        <div class="vD"><div class="vD-beam" style="transform:rotate(0.6deg)"><div class="vD-ball l" style="width:24px;height:24px">開</div><div class="vD-ball r" style="width:24px;height:24px">承</div></div><div class="vD-pivot"></div><div class="vD-base"></div></div></div>
+      <div class="st"><div class="st-lab"><b>偏開創</b> 82／46 — 開創那顆大又沉下去＝明顯偏一邊</div>
+        <div class="vD"><div class="vD-beam" style="transform:rotate(12deg)"><div class="vD-ball l" style="width:36px;height:36px">開</div><div class="vD-ball r" style="width:27px;height:27px">承</div></div><div class="vD-pivot"></div><div class="vD-base"></div></div></div>
     </div>
   </div>
 
