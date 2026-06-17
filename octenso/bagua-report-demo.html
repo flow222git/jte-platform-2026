@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEMO · 報告編排 + 老花友善</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#fffdf6;--surface2:#f0eadb;--ink:#23241f;--ink-soft:#3a3a32;
+    --muted:#6f6657;/* 比原本 #857c6d 深一階，提高對比 */ --line:#d2c7b4;--hair:#bcb09a;
+    --pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86;
+    --fs:15.5px;/* 基準字級，A+ 時放大 */ --lh:1.85;}
+  html.fs-lg{--fs:17.5px;--lh:2.0;}
+  *{box-sizing:border-box;-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-weight:300;
+    font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-size:var(--fs);line-height:var(--lh);}
+  .wrap{max-width:440px;margin:0 auto;padding:14px 18px 60px;}
+
+  /* top bar：返回 + 字級切換 */
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .back{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);text-decoration:none;
+    padding:6px 13px;border:1px solid var(--line);border-radius:999px;}
+  .fs-toggle{display:flex;gap:6px;align-items:center;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);}
+  .fs-toggle button{font-family:ui-sans-serif,sans-serif;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink);border-radius:999px;cursor:pointer;line-height:1;padding:7px 11px;}
+  .fs-toggle button.on{background:var(--ink);color:var(--surface);border-color:var(--ink);}
+  .fs-toggle .a1{font-size:13px;} .fs-toggle .a2{font-size:16px;font-weight:600;}
+
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.22em;
+    color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px;}
+
+  /* 型卡 */
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:22px 20px 24px;text-align:center;margin-bottom:18px;}
+  .tc-sym{font-size:46px;color:var(--pine);line-height:1;margin:2px 0 6px;}
+  .tc-title{font-family:"Songti TC","Noto Serif TC",serif;font-size:27px;font-weight:600;letter-spacing:.04em;margin-bottom:10px;}
+  .tc-essence{font-size:calc(var(--fs) + 0.5px);color:var(--ink-soft);line-height:1.9;max-width:340px;margin:0 auto;}
+
+  /* 雷達 一屏 */
+  .radar-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 12px 16px;margin-bottom:18px;text-align:center;}
+  .radar-card svg{width:300px;max-width:100%;height:auto;}
+  .radar-cap{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);margin-top:4px;}
+
+  /* 精華 pull-quote */
+  .pullquote{font-family:"Songti TC","Noto Serif TC",serif;font-size:21px;line-height:1.85;
+    color:var(--ink);text-align:center;padding:6px 4px 22px;}
+  .pullquote .mk{color:var(--pine);}
+
+  /* 區段 */
+  .sec{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px;margin-bottom:14px;}
+  .sec > h3{font-family:"Songti TC","Noto Serif TC",serif;font-size:18.5px;font-weight:600;margin:0 0 12px;letter-spacing:.03em;}
+  .sec-icon{margin-right:7px;}
+
+  /* 折疊段 */
+  details.sec{padding:0;}
+  details.sec > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 17px;font-family:"Songti TC","Noto Serif TC",serif;font-size:18.5px;font-weight:600;letter-spacing:.03em;}
+  details.sec > summary::-webkit-details-marker{display:none;}
+  details.sec > summary .chev{font-family:ui-sans-serif,sans-serif;font-size:14px;color:var(--muted);transition:transform .2s;}
+  details.sec[open] > summary .chev{transform:rotate(180deg);}
+  details.sec > .body{padding:0 17px 16px;}
+  .sum-hint{display:block;font-family:ui-sans-serif,sans-serif;font-size:12.5px;font-weight:400;color:var(--muted);margin-top:3px;}
+
+  /* 優勢/盲點/成長 row */
+  .trait{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .trait:last-child{border-bottom:none;}
+  .trait b{flex:0 0 42px;font-family:ui-sans-serif,sans-serif;font-size:13px;font-weight:700;padding-top:2px;}
+  .trait.s b{color:var(--pine);} .trait.b b{color:var(--cinnabar);} .trait.g b{color:var(--gold);}
+  .trait span{flex:1;color:var(--ink-soft);}
+
+  /* 系統 pair-bar（新版 verdict 卡） */
+  .pair{padding:13px 0;border-bottom:1px solid var(--line);}
+  .pair:last-child{border-bottom:none;}
+  .pb-eng{font-family:"Jost",ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+  .pb-head{display:flex;justify-content:space-between;font-family:ui-sans-serif,sans-serif;font-size:14px;}
+  .pb-head .nm{font-weight:700;} .pb-head .tag{color:var(--pine);font-weight:700;}
+  .pb-plain{font-size:14px;color:var(--ink);line-height:1.8;margin:4px 0 8px;}
+  .pb-ends{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .pb-track{position:relative;height:9px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;margin:5px 0 9px;}
+  .pb-mark{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;border:2px solid var(--surface);transform:translate(-50%,-50%);}
+  .pb-verdict{text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:11px 14px;}
+  .pb-verdict .main{font-size:14px;color:var(--ink);line-height:1.8;}
+  .pb-verdict .q{display:inline-block;margin-top:4px;font-size:12.5px;color:var(--muted);}
+  .pb-note{font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--gold);line-height:1.75;margin-top:8px;}
+
+  /* memo */
+  .memo-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-soft);line-height:1.8;}
+  .memo-item:last-child{border-bottom:none;}
+  .memo-item .mk{flex:0 0 18px;color:var(--pine);font-weight:700;}
+
+  /* tools */
+  .tool{display:flex;gap:12px;align-items:center;padding:12px 13px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;text-decoration:none;color:var(--ink);background:var(--bg);}
+  .tool .ic{font-size:22px;} .tool .nm{font-weight:600;font-size:15px;} .tool .ds{display:block;font-size:12.5px;color:var(--muted);margin-top:1px;}
+  .tool .arr{margin-left:auto;color:var(--muted);}
+
+  /* 分享 bar（底部） */
+  .share{background:var(--surface);border:1.5px solid var(--pine);border-radius:18px;padding:18px 17px;margin:22px 0 14px;text-align:center;}
+  .share h3{font-family:"Songti TC","Noto Serif TC",serif;font-size:19px;font-weight:600;margin:0 0 4px;}
+  .share .sub{font-family:ui-sans-serif,sans-serif;font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7;}
+  .share-row{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:12px;}
+  .sbtn{display:inline-flex;align-items:center;gap:7px;font-family:ui-sans-serif,sans-serif;font-size:14.5px;font-weight:600;
+    border-radius:999px;padding:12px 20px;cursor:pointer;border:1.5px solid var(--ink);}
+  .sbtn.primary{background:var(--ink);color:var(--surface);}
+  .sbtn.ghost{background:transparent;color:var(--ink);}
+  .sbtn.line{background:#06C755;color:#fff;border-color:#06C755;}
+  .share-note{display:flex;gap:12px;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-top:6px;}
+  .share-note .qr{width:64px;height:64px;border:1px solid var(--line);border-radius:8px;background:
+    repeating-linear-gradient(45deg,#23241f 0 4px,#fffdf6 4px 8px);flex:0 0 auto;}
+  .share-note .txt{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);line-height:1.6;text-align:left;}
+
+  .retake{display:block;width:100%;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);
+    font-family:"Songti TC","Noto Serif TC",serif;font-size:15.5px;border-radius:13px;padding:13px;margin-bottom:10px;cursor:pointer;}
+  .divider{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:20px 0 12px;}
+  .foot{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.9;margin-top:22px;}
+  .demo-flag{position:fixed;top:0;left:0;right:0;background:var(--cinnabar);color:#fff;font-family:ui-sans-serif,sans-serif;font-size:11px;text-align:center;padding:3px;z-index:99;letter-spacing:.1em;}
+</style></head>
+<body>
+<div class="demo-flag">DEMO 排版稿 · 非正式頁 · 內容為範例</div>
+<div class="wrap" style="margin-top:18px">
+
+  <div class="topbar">
+    <a class="back" href="#">← 八態能格</a>
+    <div class="fs-toggle"><span>字級</span>
+      <button class="a1 on" id="fsA" onclick="setFs(false)">A</button>
+      <button class="a2" id="fsAA" onclick="setFs(true)">A⁺</button>
+    </div>
+  </div>
+
+  <div class="eyebrow">Octenso Energy · Persona</div>
+
+  <!-- 型卡 -->
+  <div class="typecard">
+    <div class="tc-sym">☳</div>
+    <div class="tc-title">震 · 行動者</div>
+    <div class="tc-essence">你天生帶著一股「先動起來」的能量——敢開始、推著往前，還能把身邊的人一起帶動。</div>
+  </div>
+
+  <!-- 雷達 一屏 -->
+  <div class="radar-card">
+    <svg viewBox="0 0 300 290" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="150,37 226,69 258,145 226,221 150,253 74,221 42,145 74,69" fill="none" stroke="#d2c7b4" stroke-width="1"/>
+      <polygon points="150,91 188,107 204,145 188,183 150,199 112,183 96,145 112,107" fill="none" stroke="#e3dac6" stroke-width="1"/>
+      <line x1="150" y1="145" x2="150" y2="37" stroke="#e3dac6"/><line x1="150" y1="145" x2="258" y2="145" stroke="#e3dac6"/>
+      <line x1="150" y1="145" x2="150" y2="253" stroke="#e3dac6"/><line x1="150" y1="145" x2="42" y2="145" stroke="#e3dac6"/>
+      <polygon points="150,46 211,84 243,145 213,208 150,236 90,205 66,145 83,78"
+        fill="rgba(53,97,79,0.16)" stroke="#35614f" stroke-width="2"/>
+      <text x="150" y="28" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">行動</text>
+      <text x="268" y="78" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">拓展</text>
+      <text x="278" y="149" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">展現</text>
+      <text x="268" y="216" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">交流</text>
+      <text x="150" y="270" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">承接</text>
+      <text x="32" y="216" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">喊停</text>
+      <text x="22" y="149" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">沉澱</text>
+      <text x="32" y="78" text-anchor="middle" font-size="12" fill="#3a3a32" font-family="sans-serif">開創</text>
+    </svg>
+    <div class="radar-cap">松綠＝你的能量輪廓 · 越往外越強</div>
+  </div>
+
+  <!-- 精華 -->
+  <div class="pullquote">「敢衝、敢開始，<span class="mk">還能帶動別人一起</span>——<br>你的能量天生要往前。」</div>
+
+  <!-- 你最鮮明的能量（常開） -->
+  <div class="sec">
+    <h3><span class="sec-icon">◆</span>你最鮮明的能量</h3>
+    <div class="trait s"><b>優勢</b><span>起步快、不怕開始，帶著一股把事情推動起來的衝勁，旁邊的人容易被你點燃。</span></div>
+    <div class="trait b"><b>盲點</b><span>容易一直開新局、停不下來，戰線拉太長，旁邊的人有時跟不上你的節奏。</span></div>
+    <div class="trait g"><b>成長</b><span>學會「收」——把一件事推到完成再開下一件，你的爆發力會更有累積。</span></div>
+  </div>
+
+  <!-- 四個系統（預設展開） -->
+  <details class="sec" open>
+    <summary><span>四個系統 · 你怎麼運作<span class="sum-hint">展開／收合 — 四組能量的並存與拉扯</span></span><span class="chev">▾</span></summary>
+    <div class="body">
+
+      <div class="pair">
+        <div class="pb-eng">Purpose Engine</div>
+        <div class="pb-head"><span class="nm">天地 · 建構系統</span><span class="tag">雙邊都旺</span></div>
+        <div class="pb-plain">你怎麼定方向、又怎麼撐住它——訂目標、下決定，然後扛得起結果。</div>
+        <div class="pb-ends">乾·開創　↔　承接·坤</div>
+        <div class="pb-track"><div class="pb-mark" style="left:50%;background:#857c6d"></div></div>
+        <div class="pb-verdict"><span class="main">你同時很想開創定向、又很能承接託底——主導與承接並存，張力大但很完整。</span><br><span class="q">— 要開創什麼？又如何承接它？</span></div>
+        <div class="pb-note"><b>提醒</b> · 建構你使得很重——過頭時容易什麼都自己扛、抓著方向不放、難放手授權。</div>
+      </div>
+
+      <div class="pair">
+        <div class="pb-eng">Action Engine</div>
+        <div class="pb-head"><span class="nm">雷風 · 推動系統</span><span class="tag">雙邊都旺</span></div>
+        <div class="pb-plain">你怎麼讓事情動起來——敢開始、推著往前，還能帶動別人一起。</div>
+        <div class="pb-ends">震·行動　↔　拓展·巽</div>
+        <div class="pb-track"><div class="pb-mark" style="left:52%;background:#9d4b34"></div></div>
+        <div class="pb-verdict"><span class="main">你既衝得動、又鋪得開——爆發與滲透並存，能量很滿，留意停不下來。</span><br><span class="q">— 該先動起什麼？又如何讓它拓展？</span></div>
+        <div class="pb-note"><b>提醒</b> · 推動你使得很重——過頭時容易一直開新局、停不下來，旁邊的人跟不上。</div>
+      </div>
+
+      <div class="pair">
+        <div class="pb-eng">Awareness Engine</div>
+        <div class="pb-head"><span class="nm">水火 · 認知系統</span><span class="tag">雙邊都旺</span></div>
+        <div class="pb-plain">你怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達、被看見。</div>
+        <div class="pb-ends">坎·沉澱　↔　展現·離</div>
+        <div class="pb-track"><div class="pb-mark" style="left:48%;background:#857c6d"></div></div>
+        <div class="pb-verdict"><span class="main">你同時很想被看見、又很想收進來沉澱——展現與沉澱的拉扯，是你的特色也是你的累。</span><br><span class="q">— 真正看見了什麼？又如何展現它？</span></div>
+        <div class="pb-note"><b>提醒</b> · 認知你使得很重——過頭時容易想太多、太敏感、或太想被看見，反而累。</div>
+      </div>
+
+      <div class="pair">
+        <div class="pb-eng">Regulation Engine</div>
+        <div class="pb-head"><span class="nm">山澤 · 調節系統</span><span class="tag">雙邊都旺</span></div>
+        <div class="pb-plain">你怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通交流。</div>
+        <div class="pb-ends">艮·喊停　↔　交流·兌</div>
+        <div class="pb-track"><div class="pb-mark" style="left:50%;background:#857c6d"></div></div>
+        <div class="pb-verdict"><span class="main">你既守得住界線、又懂得連結交流——收與放同時很強，拿捏好就很有彈性。</span><br><span class="q">— 該喊停什麼？又如何重新交流？</span></div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- 能量提醒（預設收合） -->
+  <details class="sec">
+    <summary><span>給你的能量提醒<span class="sum-hint">展開 — 依你的底色，3 則自我照顧提醒</span></span><span class="chev">▾</span></summary>
+    <div class="body">
+      <div class="memo-item"><span class="mk">·</span><span>你的「行動」很強，但記得替衝勁留一個煞車點——不是每件事都要馬上動。</span></div>
+      <div class="memo-item"><span class="mk">·</span><span>「喊停」對你是練習：把一件事收尾，比再開三件新的更有累積。</span></div>
+      <div class="memo-item"><span class="mk">·</span><span>累的時候，回到「沉澱」——獨處一下，能量會自己長回來。</span></div>
+    </div>
+  </details>
+
+  <!-- 下一步（預設收合） -->
+  <details class="sec">
+    <summary><span>適合你的下一步<span class="sum-hint">展開 — 接著可以試的工具</span></span><span class="chev">▾</span></summary>
+    <div class="body">
+      <a class="tool" href="#"><span class="ic">🎯</span><span><span class="nm">測一個局</span><span class="ds">看某件事會不會耗你</span></span><span class="arr">→</span></a>
+      <a class="tool" href="#"><span class="ic">🤝</span><span><span class="nm">和某個人合盤</span><span class="ds">看你們的能量怎麼互動</span></span><span class="arr">→</span></a>
+      <a class="tool" href="#"><span class="ic">🧭</span><span><span class="nm">八卦系統圖</span><span class="ds">認識八種能量的全貌</span></span><span class="arr">→</span></a>
+    </div>
+  </details>
+
+  <!-- 分享（底部） -->
+  <div class="share">
+    <h3>把這份報告分享出去</h3>
+    <div class="sub">傳給朋友看你的能量，他點進來能看完整報告，也能測自己的。</div>
+    <div class="share-row">
+      <button class="sbtn primary">🔗 複製連結</button>
+      <button class="sbtn line">LINE 分享</button>
+    </div>
+    <div class="share-row">
+      <button class="sbtn ghost">⤴ 系統分享</button>
+      <button class="sbtn ghost">⬇ 下載 PDF</button>
+    </div>
+    <div class="share-note">
+      <div class="qr"></div>
+      <div class="txt">想分享「專屬視覺」？用<b>圖卡</b>（型＋雷達＋QR）——LINE 自動預覽是通用卡，圖卡才有你本人的雷達。</div>
+    </div>
+  </div>
+
+  <div class="divider">— 接著，把底色用出去 —</div>
+  <button class="retake">測一個局 · 看某件事會不會耗你 →</button>
+  <button class="retake">和某個人合盤</button>
+  <button class="retake">重新測一次</button>
+
+  <div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>
+
+</div>
+<script>
+function setFs(big){
+  document.documentElement.classList.toggle('fs-lg',big);
+  document.getElementById('fsA').classList.toggle('on',!big);
+  document.getElementById('fsAA').classList.toggle('on',big);
+}
+</script>
+</body></html>
