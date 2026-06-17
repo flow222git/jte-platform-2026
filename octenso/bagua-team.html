@@ -657,8 +657,9 @@ function buildTeamCanvas(composite,compositeTop,members,blindKeys,qrImg){
   // 標頭
   x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('八 卦 能 量 · 團 隊 合 盤',Wd/2,52);
   // 團隊型
-  x.fillStyle=W[E[compositeTop].wx];x.font='48px serif';x.fillText(E[compositeTop].sym,Wd/2,112);
-  x.fillStyle='#22322c';x.font='bold 30px serif';x.fillText(E[compositeTop].title,Wd/2,156);
+  var _ts=teamSignatureTitle(composite);
+  x.fillStyle=W[E[compositeTop].wx];x.font='48px serif';x.fillText(_ts.sym,Wd/2,112);
+  x.fillStyle='#22322c';x.font='bold 26px serif';x.fillText(_ts.title,Wd/2,156);
   x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('你們這個團隊整體',Wd/2,182);
   // 合成盤雷達
   drawRadarOn(x,composite,compositeTop,320,360,140);
@@ -717,6 +718,18 @@ var TEAM_TIPS={
  kun:'團隊少了承接情緒、照顧彼此的人。刻意留意成員狀態，遇到低潮時先接住人、再談事情。'
 };
 
+function fn1t(k){ return E[k].fn.split('／')[0]; }
+// 團隊整體也用格局標題（自適應形狀，依 MODEL.md）
+function teamSignatureTitle(comp){
+  var pf=window.OctensoProfile?window.OctensoProfile.build(comp):null;
+  if(!pf){ var t0=E[topKeyOf(comp)]; return {sym:t0.sym,title:t0.title,sub:''}; }
+  var sig=pf.signature, k=sig.keys, lv=pf.level.band;
+  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym,title:e.title,sub:''}; }
+  if(sig.kind==='dual'){ var a=E[k[0]],b=E[k[1]]; return {sym:a.sym+b.sym,title:a.nm+'×'+b.nm+' · '+fn1t(k[0])+'與'+fn1t(k[1])+'並重',sub:'兩股並重的主能量'}; }
+  if(sig.kind==='multi'){ return {sym:k.map(function(x){return E[x].sym;}).join(''),title:k.map(function(x){return E[x].nm;}).join('×')+' · 多主調型',sub:k.length+' 股主能量並重'}; }
+  var nm=lv==='high'?'高能多元型':lv==='low'?'低調蓄能型':'均衡型';
+  return {sym:E[pf.leads[0]].sym,title:nm,sub:'沒有單一主導，以整體格局描述'};
+}
 function showTeam(){
   if(members.length<2) return;
   var comp=composite(members);
@@ -725,6 +738,7 @@ function showTeam(){
   var top=E[compTop];
   var accent=W[top.wx];
   var port=buildPortrait(comp,sorted);
+  var tsig=teamSignatureTitle(comp);
 
   // 角色地圖
   var roleHtml=members.map(function(m){
@@ -806,8 +820,9 @@ function showTeam(){
 
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你們這個團隊整體</div>'
-     +'<div class="tc-sym">'+top.sym+'</div>'
-     +'<div class="tc-title">'+top.title+'</div>'
+     +'<div class="tc-sym">'+tsig.sym+'</div>'
+     +'<div class="tc-title">'+tsig.title+'</div>'
+     +(tsig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px">'+tsig.sub+'</div>':'')
      +'<div class="tc-essence">'+port.p+'</div>'
    +'</div>'
 

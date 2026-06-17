@@ -1658,6 +1658,7 @@ function runCompat(){
   var mSorted=Object.keys(E).slice().sort(function(a,b){ return merged[b]-merged[a]; });
   var mTop=E[mSorted[0]];
   var port=buildPortrait(merged,mSorted);
+  var msig=signatureTitle(pfBuild(merged)); // 合成人物也用格局標題（自適應形狀）
 
   var blindTxt = blind.length
     ? '你們都偏低「'+blind.map(function(k){return E[k].nm+'／'+E[k].fn.split('／')[0];}).join('』『')+'」——這是兩人<b>共同的空白處</b>，這段關係容易在這裡一起卡住、少了這份能量。'
@@ -1721,9 +1722,10 @@ function runCompat(){
    +'<div class="block">'
      +'<h3>合成的你們</h3>'
      +'<div class="typecard" style="--accent:'+W[mTop.wx]+';box-shadow:none;margin-bottom:0">'
-       +'<div class="tc-eyebrow">兩人能量平均後的型</div>'
-       +'<div class="tc-sym">'+mTop.sym+'</div>'
-       +'<div class="tc-title">'+mTop.title+'</div>'
+       +'<div class="tc-eyebrow">兩人能量平均後的格局</div>'
+       +'<div class="tc-sym">'+msig.sym+'</div>'
+       +'<div class="tc-title">'+msig.title+'</div>'
+       +(msig.sub?'<div class="tc-eyebrow" style="margin:2px 0 0;color:var(--pine)">'+msig.sub+'</div>':'')
      +'</div>'
      +'<div class="portrait" style="margin-top:14px">'+port.p+'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
