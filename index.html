@@ -121,6 +121,36 @@ window.JTE_I18N = {
   }
 };
 </script>
+<script>
+/* 內嵌瀏覽器（App webview）防呆：Google 禁止在 webview 登入→白畫面。放最前面、不等任何外部腳本。 */
+function isInAppBrowser(){
+  var ua=navigator.userAgent||'';
+  if(/FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|WeChat|Twitter|TikTok|musical_ly|; wv\)/i.test(ua))return true;
+  if(/iPhone|iPad|iPod/i.test(ua)&&!/Safari\//i.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua))return true;
+  return false;
+}
+var _iahShown=false;
+function showInAppHelp(){
+  if(_iahShown)return; _iahShown=true;
+  function build(){
+    if(document.getElementById('jte-inapp-help'))return;
+    var url=location.href, box=document.createElement('div');
+    box.id='jte-inapp-help';
+    box.style.cssText='position:fixed;top:12px;left:10px;right:10px;z-index:99999;max-width:440px;margin:0 auto';
+    box.innerHTML='<div style="background:#fff;border:1px solid rgba(0,61,124,.18);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:13px 15px;font-family:-apple-system,BlinkMacSystemFont,\'Noto Sans TC\',sans-serif">'
+      +'<div style="font-size:13.5px;font-weight:700;color:#003D7C;margin-bottom:6px">⚠️ Google 登入要用瀏覽器開啟</div>'
+      +'<div style="font-size:12.5px;color:#3a3a32;line-height:1.7">你正在 App 內建瀏覽器，Google 不允許在這裡登入（會白畫面）。請點畫面<b style="color:#003D7C">右上角 ⋯ 或分享鈕</b>，選「<b style="color:#003D7C">用 Safari／Chrome 開啟</b>」，再登入。</div>'
+      +'<div style="display:flex;gap:8px;margin-top:11px">'
+      +'<button id="jte-iah-copy" style="flex:1;background:#003D7C;color:#fff;border:none;border-radius:999px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer">複製網址</button>'
+      +'<button id="jte-iah-x" style="background:#F2F4F7;color:#6B7A8D;border:none;border-radius:999px;padding:9px 16px;font-size:12.5px;cursor:pointer">知道了</button></div></div>';
+    document.body.appendChild(box);
+    document.getElementById('jte-iah-x').onclick=function(){if(box.parentNode)box.parentNode.removeChild(box);};
+    document.getElementById('jte-iah-copy').onclick=function(){var b=this;function d(){b.textContent='已複製 ✓';setTimeout(function(){b.textContent='複製網址';},1800);}function fb(){var ta=document.createElement('textarea');ta.value=url;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}ta.parentNode.removeChild(ta);d();}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(d,fb);}else fb();};
+  }
+  if(document.body)build(); else document.addEventListener('DOMContentLoaded',build);
+}
+try{ if(isInAppBrowser() && !localStorage.getItem('jte_user_email')) showInAppHelp(); }catch(e){}
+</script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -565,11 +595,12 @@ window.addEventListener('load',function(){
   initFirebase();
   var saved=localStorage.getItem('jte_user_email');
   if(saved){applyUser(saved,localStorage.getItem('jte_user_name')||'',localStorage.getItem('jte_user_picture')||'');}
+  if(!saved && isInAppBrowser()) showInAppHelp(); // 主動提示，免得他點到白畫面
   var t=setInterval(function(){
     if(window.google&&google.accounts){
       clearInterval(t);
       google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredential,auto_select:false});
-      if(!localStorage.getItem('jte_user_email'))google.accounts.id.prompt();
+      if(!localStorage.getItem('jte_user_email') && !isInAppBrowser())google.accounts.id.prompt();
     }
   },300);
 });
@@ -749,6 +780,10 @@ function showSettings(){
     btn.style.cssText='width:100%;background:var(--pp);border:1.5px solid var(--p);border-radius:var(--rp);padding:9px;font-size:11px;color:var(--p);cursor:pointer;font-family:Inter,sans-serif;font-weight:500;margin-top:8px';
     btn.onclick=function(){signOut();closeSettings();};
     loginBtn.appendChild(btn);
+  } else if(isInAppBrowser()){
+    info.innerHTML='<div style="color:var(--m)">尚未登入</div>';
+    loginBtn.innerHTML='<div style="font-size:12px;color:var(--p);line-height:1.7">⚠️ 請改用 <b>Safari／Chrome</b> 開啟才能登入<br><span style="color:var(--m)">（App 內建瀏覽器登 Google 會白畫面）</span></div>';
+    setTimeout(showInAppHelp,50);
   } else {
     info.innerHTML='<div style="color:var(--m)">尚未登入 Google 帳號</div>';
     loginBtn.innerHTML='<div id="g_signin_btn"></div>';

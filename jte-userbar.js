@@ -47,7 +47,18 @@
       'border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.16);padding:12px 14px;min-width:180px;display:none;pointer-events:auto}',
       '.jte-ub-menu.open{display:block}',
       '.jte-ub-menu .em{font-size:11px;color:#6B7A8D;word-break:break-all;margin-bottom:10px;line-height:1.5}',
-      '.jte-ub-menu .out{width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:9px;font-size:12px;color:#003D7C;cursor:pointer;font-weight:600}'
+      '.jte-ub-menu .out{width:100%;background:#F2F4F7;border:none;border-radius:999px;padding:9px;font-size:12px;color:#003D7C;cursor:pointer;font-weight:600}',
+      // —— 內嵌瀏覽器防呆卡 ——
+      '#jte-inapp-help{position:fixed;top:46px;left:8px;right:8px;z-index:2147483602;pointer-events:none}',
+      '.jte-iah-card{pointer-events:auto;max-width:440px;margin:0 auto;background:#fff;border:1px solid rgba(0,61,124,.18);',
+      'border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:13px 15px;animation:jteIahIn .25s ease}',
+      '@keyframes jteIahIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}',
+      '.jte-iah-t{font-size:13.5px;font-weight:700;color:#003D7C;margin-bottom:6px}',
+      '.jte-iah-b{font-size:12.5px;color:#3a3a32;line-height:1.7}',
+      '.jte-iah-b b{color:#003D7C}',
+      '.jte-iah-row{display:flex;gap:8px;margin-top:11px}',
+      '.jte-iah-copy{flex:1;background:#003D7C;color:#fff;border:none;border-radius:999px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer}',
+      '.jte-iah-x{background:#F2F4F7;color:#6B7A8D;border:none;border-radius:999px;padding:9px 16px;font-size:12.5px;cursor:pointer}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -98,6 +109,8 @@
       document.getElementById('jte-ub-logout').onclick = doLogout;
     } else {
       document.getElementById('jte-ub-login').onclick = doLogin;
+      // 未登入 + 內嵌瀏覽器 → 主動提示（在他點到白畫面之前）
+      if (isInAppBrowser()) showInAppHelp();
     }
   }
 
@@ -111,7 +124,44 @@
     }, 100);
   }
 
+  // —— 內嵌瀏覽器（App webview）偵測 + 防呆卡 ——
+  // Google 禁止在 in-app webview 完成登入 → 會白畫面。偵測到就引導用 Safari/Chrome 開。
+  function isInAppBrowser(){
+    var ua = navigator.userAgent || '';
+    if (/FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|WeChat|Twitter|TikTok|musical_ly|; wv\)/i.test(ua)) return true;
+    // iOS 的 in-app WKWebView 不含 "Safari/"；排除已知獨立瀏覽器
+    if (/iPhone|iPad|iPod/i.test(ua) && !/Safari\//i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua)) return true;
+    return false;
+  }
+  window.jteIsInAppBrowser = isInAppBrowser; // 給各頁自己的登入流程也能用
+  var _iahDismissed = false;
+  function showInAppHelp(){
+    if (_iahDismissed || document.getElementById('jte-inapp-help')) return;
+    injectStyles();
+    var url = location.href;
+    var box = document.createElement('div');
+    box.id = 'jte-inapp-help';
+    box.innerHTML =
+      '<div class="jte-iah-card">'
+      + '<div class="jte-iah-t">⚠️ Google 登入要用瀏覽器開啟</div>'
+      + '<div class="jte-iah-b">你正在 App 內建瀏覽器，Google 不允許在這裡登入（會白畫面）。請點畫面<b>右上角 ⋯ 或分享鈕</b>，選「<b>用 Safari／Chrome 開啟</b>」，再登入。</div>'
+      + '<div class="jte-iah-row"><button class="jte-iah-copy" id="jte-iah-copy">複製網址</button>'
+      + '<button class="jte-iah-x" id="jte-iah-x">知道了</button></div>'
+      + '</div>';
+    document.body.appendChild(box);
+    document.getElementById('jte-iah-x').onclick = function(){ _iahDismissed = true; if (box.parentNode) box.parentNode.removeChild(box); };
+    document.getElementById('jte-iah-copy').onclick = function(){
+      var btn = this;
+      function done(){ btn.textContent = '已複製 ✓'; setTimeout(function(){ btn.textContent = '複製網址'; }, 1800); }
+      function fallback(){ var ta = document.createElement('textarea'); ta.value = url; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); done(); }
+      if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done, fallback); } else fallback();
+    };
+  }
+  window.jteShowInAppHelp = showInAppHelp;
+
   function doLogin(){
+    // 0) 內嵌瀏覽器 → Google 登入會白畫面，先引導用真正的瀏覽器開
+    if (isInAppBrowser()){ showInAppHelp(); return; }
     // 1) 頁面已有登入流程 → 用它（避免重複初始化 GSI）
     if (typeof window.jteLogin === 'function'){ window.jteLogin(); watchLoginThenReload(); return; }
     // 2) 否則由本檔自行跳 Google 登入
