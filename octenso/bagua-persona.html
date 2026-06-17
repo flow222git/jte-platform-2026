@@ -779,6 +779,34 @@ function leadSentence(pf){
   return '你有 '+ld.length+' 個<b>並重</b>的主調：'+ld.map(function(e){return '<b>'+e.nm+'·'+e.fn+'</b>';}).join('、')+'——強度接近、會輪流主導，不是單一性格。';
 }
 function fnList(keys){ return keys.map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、'); }
+function fn1(k){ return E[k].fn.split('／')[0]; } // 取功能名第一段（顯現／覺察 → 顯現）
+// persona 標題自適應形狀：身分＝格局，卦只是峰名（依 MODEL.md）
+function signatureTitle(pf){
+  var sig=pf.signature, k=sig.keys, lv=pf.level.band;
+  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym, title:e.title, sub:'', essence:e.essence}; }
+  if(sig.kind==='dual'){ var a=E[k[0]],b=E[k[1]];
+    return {sym:a.sym+b.sym, title:a.nm+'×'+b.nm+' · '+fn1(k[0])+'與'+fn1(k[1])+'並重', sub:'兩個並重的主調，會交替出現',
+      essence:a.essence+'　同時，「'+fn1(k[1])+'」也同樣鮮明——你不是單一性格，而是這兩種能量輪流主導。'}; }
+  if(sig.kind==='multi'){
+    return {sym:k.map(function(x){return E[x].sym;}).join(''), title:k.map(function(x){return E[x].nm;}).join('×')+' · 多主調型', sub:k.length+' 個主調並重',
+      essence:'你有多個並重的主調（'+k.map(function(x){return E[x].nm+'·'+fn1(x);}).join('、')+'）——是個多面、不被單一傾向定義的人。'}; }
+  var nm=lv==='high'?'高能多面型':lv==='low'?'低調蓄能型':'均衡型';
+  var ess=lv==='high'?'你八種能量都用得不少、沒有特別偏廢——是個能量飽滿的多面手。'
+        : lv==='low' ?'你整體比較收著，最鮮明的也只是淡淡突出——像在蓄能，安靜地醞釀。'
+                      :'你各能量有高有低、但沒有單一主峰——均衡而有彈性，看情境換檔。';
+  return {sym:E[pf.leads[0]].sym, title:nm, sub:'沒有單一主峰，以整體格局描述', essence:ess};
+}
+// 每態六級評價列：卦·功能 ＋ 分數 ＋ 一句話評價（數字＋意義一起讀）
+function bandListHtml(pf){
+  return '<div style="margin:12px 0 2px">'+pf.ranked.map(function(o){
+    var b=pf.bands[o.k], e=E[o.k];
+    return '<div style="display:flex;align-items:center;gap:8px;font-family:ui-sans-serif,sans-serif;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--line)">'
+      +'<span style="flex:none;width:74px;color:var(--ink)">'+e.nm+'·'+fn1(o.k)+'</span>'
+      +'<span style="flex:none;width:30px;text-align:right;color:var(--muted)">'+o.v+'</span>'
+      +'<span style="flex:1;color:'+(b.like?'var(--pine)':'var(--muted)')+'">'+b.label+(b.like?'你':'')+'</span>'
+    +'</div>';
+  }).join('')+'</div>';
+}
 // 四向度 bars（偏向 × 強度），供「八態輪廓」大區塊內嵌
 function pairRowsHtml(sc){
   var AX=(window.OctensoProfile)?window.OctensoProfile.axes(sc):null;
@@ -809,6 +837,7 @@ function outlineBlock(sc,pf,now){
     +'</div>'
     +(now?'<div class="share-hint" style="margin-top:-8px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'');
   if(pf){
+    s+='<div class="pair-sub" style="margin-top:8px;color:var(--gold);font-weight:700">每態 · 像不像你</div>'+bandListHtml(pf);
     var res=pf.resources.length?fnList(pf.resources.slice(0,3)):'';
     var gap=pf.gaps.length?fnList(pf.gaps.slice(0,3)):'';
     var even=pf.axes.filter(function(a){return a.lean==='even';}).map(function(a){return a.ln+'↔'+a.rn;});
@@ -835,9 +864,10 @@ function showResult(viewScores){
   var accent=W[top.wx];
   var now=readNow();
   var pf=pfBuild(sc);
+  var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
 
   // save
-  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:top.title,ts:new Date().toISOString()})); }catch(e){} }
+  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,ts:new Date().toISOString()})); }catch(e){} }
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -851,11 +881,11 @@ function showResult(viewScores){
    +'<div class="share-hint" style="margin:0 0 4px"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
    +'<div class="share-hint" style="margin:0 0 16px">想和朋友合盤？把連結傳給他，他測完自己的底色就能跟你對盤——或下載圖卡，圖上有 QR 可掃。</div>'
    +'<div class="typecard" style="--accent:'+accent+'">'
-     +'<div class="tc-eyebrow">你的八卦能量人格</div>'
-     +'<div class="tc-sym">'+top.sym+'</div>'
-     +'<div class="tc-title">'+top.title+'</div>'
-     +(pf&&pf.leads.length>1?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">＋ '+pf.leads.slice(1).map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、')+'　並重</div>':'')
-     +'<div class="tc-essence">'+top.essence+'</div>'
+     +'<div class="tc-eyebrow">你的能量格局</div>'
+     +'<div class="tc-sym">'+sig.sym+'</div>'
+     +'<div class="tc-title">'+sig.title+'</div>'
+     +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
+     +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
    +outlineBlock(sc,pf,now)
    +'<div class="block">'

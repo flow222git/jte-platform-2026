@@ -46,6 +46,9 @@ document.getElementById('f').onload=function(){
     ok(rk.indexOf('五行剖面')<0,'五行剖面 已從個人判讀移除');
     ok(rk.indexOf('突出')>=0 && rk.indexOf('少用')>=0,'輪廓含 突出/少用 摘要');
     ok(rk.indexOf('最鮮明的主調')>=0,'kan 獨高 → 單一主導句');
+    ok(rk.indexOf('每態 · 像不像你')>=0,'八態輪廓含每態六級評價列');
+    ok(rk.indexOf('完全不像')>=0,'kan獨高其餘低 → 出現「完全不像」評價');
+    ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'單一主導 → 標題用卦稱號(坎水)');
     // 4c. 並列主旋律 + 向度強度（乾坤皆滿 → 並重 + 兩邊都高）
     w.answers=new Array(24).fill(0);
     w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian'||q.k==='kun') w.answers[i]=5; });
