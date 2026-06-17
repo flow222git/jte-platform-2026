@@ -37,6 +37,13 @@
     transition:transform .15s}
   .start-btn:hover{transform:translateY(-2px);background:var(--ink);color:#fff}
   .meta-line{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-bottom:18px}
+  .guide{font-family:ui-sans-serif,sans-serif;text-align:left;max-width:440px;margin:16px auto 6px;
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pine);border-radius:0 12px 12px 0;
+    padding:14px 16px;line-height:1.85;font-size:13px;color:var(--ink)}
+  .guide .guide-h{font-size:11px;letter-spacing:.18em;color:var(--pine);font-weight:700;margin-bottom:8px}
+  .guide p{margin:6px 0}
+  .guide b{color:var(--pine)}
+  .guide .guide-meta{color:var(--muted);font-size:11.5px;margin-top:10px}
   .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
     border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;text-align:left;
     max-width:440px;margin:14px auto 0;line-height:1.85}
@@ -176,8 +183,13 @@
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <label class="name-lab" for="field-name">這個局叫什麼？（可留空）</label>
   <input class="name-input" id="field-name" placeholder="例：新工作 · 產品經理" autocomplete="off" spellcheck="false">
+  <div class="guide">
+    <div class="guide-h">施測指導語</div>
+    <p><b>情境</b>：先想一個<b>具體</b>的「局」（上面填名字）——一份工作、一段關係、一個專案。</p>
+    <p><b>怎麼答</b>：接下來每一題，請<b>站在這個局裡</b>問：「這個局<b>需不需要</b>這種能量？」——你評的是這個局的需求，不是你自己。沒有對錯，憑你對它的理解選一邊。</p>
+    <p class="guide-meta">讀完上面，再開始 · 16 題 · 約 2 分鐘 · 不需登入</p>
+  </div>
   <button class="start-btn" onclick="startQuiz()">開始測這個局</button>
-  <div class="meta-line">16 題 · 約 2 分鐘 · 不需登入</div>
   <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">我的記錄</a>
   <div id="base-status"></div>
   <div class="honest">

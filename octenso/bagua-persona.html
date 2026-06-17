@@ -31,6 +31,13 @@
     transition:transform .15s,background .15s,color .15s}
   .start-btn:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
   .meta-line{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-bottom:18px}
+  .guide{font-family:ui-sans-serif,sans-serif;text-align:left;max-width:440px;margin:18px auto 6px;
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pine);border-radius:0 12px 12px 0;
+    padding:14px 16px;line-height:1.85;font-size:13px;color:var(--ink)}
+  .guide .guide-h{font-size:11px;letter-spacing:.18em;color:var(--pine);font-weight:700;margin-bottom:8px}
+  .guide p{margin:6px 0}
+  .guide b{color:var(--pine)}
+  .guide .guide-meta{color:var(--muted);font-size:11.5px;margin-top:10px}
   .honest{font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);background:var(--surface);
     border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 15px;text-align:left;
     max-width:430px;margin:14px auto 0;line-height:1.85}
@@ -263,13 +270,16 @@
   <h1>八卦能量人格</h1>
   <p class="lead">古人用八卦描述天地間八種基本能量。<br>其實，它們也住在你身上——<br>你慣用哪幾種？又有哪些還沒長開？</p>
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
-  <button class="start-btn" onclick="startQuiz()">開始測驗</button>
-  <div class="meta-line">24 題 · 約 3 分鐘 · 不需登入</div>
-  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:6px">我的記錄</a>
+  <div class="guide">
+    <div class="guide-h">施測指導語</div>
+    <p><b>情境</b>：這測的是你的「<b>底色</b>」——平常、整體的你，不特指某個情境或角色。</p>
+    <p><b>怎麼答</b>：憑直覺、照你<b>最常</b>的樣子選，沒有對錯。這份量表<b>沒有中間值</b>，就算只是「有點像／有點不像」，也請選一邊。</p>
+    <p class="guide-meta">讀完上面，再開始 · 24 題 · 約 3 分鐘 · 不需登入</p>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">開始施測</button>
+  <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin:8px 0 6px">我的記錄</a>
   <div class="honest">
-    這測的是你的<b>「底色」</b>——你習慣動用的內在能量，是一種傾向，不是固定標籤。
-    能量會流動、可以成長；今天的你和半年後的你，可能不一樣。
-    這不是算命，是一面認識自己的鏡子。
+    這是你的<b>傾向</b>，不是固定標籤——能量會流動、可以成長；今天的你和半年後的你，可能不一樣。這不是算命，是一面認識自己的鏡子。
   </div>
   <a href="bagua-records.html" style="margin:18px auto 0;display:block;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:underline">想清空重新體驗？到「我的記錄」清空 →</a>
 </div>
