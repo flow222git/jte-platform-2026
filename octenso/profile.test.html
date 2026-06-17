@@ -37,7 +37,7 @@ try{
   var pl=P.build(lowTop);
   ok(pl.single===false,'最高卦<60 → 不稱單一主導(能量不足)');
 
-  // ── 3. 四象系統 偏向 × 強度（古典錯卦配對）──
+  // ── 3. 四對系統 偏向 × 強度（古典錯卦配對）──
   var ax=flat(30);
   ax.kan=70; ax.li=70;                 // 認知 坎↔離：兩極都高
   ax.zhen=70; ax.xun=20;               // 推動 震↔巽：明確偏啟動
@@ -47,8 +47,8 @@ try{
   function axisOf(prof,key){ return prof.axes.filter(function(a){return a.key===key;})[0]; }
   ok(axisOf(px,'aware').intensity==='both-high','坎70離70 → 認知系統雙高');
   ok(axisOf(px,'aware').lean==='even','坎70離70 → 偏向平衡');
-  ok(axisOf(px,'drive').intensity==='single' && axisOf(px,'drive').lean==='left','震70巽20 → 單側、偏啟動');
-  ok(axisOf(px,'drive').leanName==='啟動','leanName=啟動');
+  ok(axisOf(px,'drive').intensity==='single' && axisOf(px,'drive').lean==='left','震70巽20 → 單側、偏行動');
+  ok(axisOf(px,'drive').leanName==='行動','leanName=行動');
   ok(axisOf(px,'regulate').intensity==='both-low','艮20兌20 → 調節系統雙低');
   ok(axisOf(px,'build').lean==='even','乾50坤46(差4<12) → 平衡');
   ok(px.axes.length===4,'4 系統');
@@ -62,17 +62,12 @@ try{
   ok(pr.gaps.indexOf('kan')>=0 && pr.gaps.indexOf('gen')>=0,'<40 列為缺口卦');
   ok(pr.gaps.indexOf('qian')<0,'高分不算缺口');
 
-  // ── 5. 五行剖面（元素內取平均）──
+  // ── 5. 五行已全站移除：引擎不再輸出 elements / topElement ──
   var wx=flat(0); wx.qian=80; wx.dui=40; wx.kan=90; wx.li=30;
   var pw=P.build(wx);
-  ok(pw.elements.metal===60,'金=(乾80+兌40)/2=60');
-  ok(pw.elements.water===90,'水=坎90');
-  ok(pw.elements.fire===30,'火=離30');
-  ok(pw.elements.wood===0 && pw.elements.earth===0,'木/土=0');
-  ok(pw.topElement==='water','五行剖面最強=水(90)');
-  // 證明剖面級 != 單卦級：單卦最高是坎(水)；但若金被拉高則 topElement 改變
-  var wx2=flat(0); wx2.qian=95; wx2.dui=95; wx2.kan=88;
-  ok(P.build(wx2).topElement==='metal','金(95/95→95) > 水(88) → 剖面級五行=金');
+  ok(pw.elements===undefined,'五行剖面 elements 已移除');
+  ok(pw.topElement===undefined,'五行 topElement 已移除');
+  ok(typeof P.elements==='undefined' && typeof P.topElement==='undefined','API 不再導出 elements/topElement');
 
   // ── 6. clamp / 防呆 ──
   var dirty={qian:150, li:-20, zhen:'abc'}; // 超界/負/非數/缺鍵

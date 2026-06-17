@@ -24,7 +24,7 @@ document.getElementById('f').onload=function(){
     d.getElementById('add-code').value=w.encodeCode(s1);
     w.addFromInput();
     ok(w.members.length===1,'valid code adds 1 member, got '+w.members.length);
-    ok(d.getElementById('member-list').innerHTML.indexOf('乾金')>=0,'member list shows 乾金 title');
+    ok(d.getElementById('member-list').innerHTML.indexOf('開創者')>=0,'member list shows 乾·開創者 title');
     ok(d.getElementById('add-err').textContent==='','no error on valid add');
 
     // 2. 貼亂碼 → 錯誤訊息、members 不變
@@ -262,6 +262,20 @@ document.getElementById('f').onload=function(){
     w.localStorage.setItem('bagua_teams_v1', JSON.stringify({teams:[{id:nid,name:'隊X',members:[]}],currentId:nid,ts:'x'}));
     var nl=w.loadAll();
     ok(nl && nl.teams.length===1 && nl.teams[0].name==='隊X' && nl.currentId===nid,'new format loads teams+currentId intact');
+
+    // 28. L2/L3/L5 整合解讀（團隊版）
+    var P=w.OctensoProfile;
+    ok(typeof w.systemsRead==='function' && typeof w.shapeRead==='function' && typeof w.integratedBlock==='function','團隊整合解讀函式就位');
+    var crossSc={kan:82,li:80,qian:50,kun:46,zhen:46,xun:44,gen:12,dui:14};
+    ok(w.systemsRead(P.build(crossSc),'這支隊').indexOf('這支隊')===0,'L2 系統之間前置主語「這支隊」');
+    ok(w.systemsRead(P.build(crossSc),'這支隊').indexOf('難收')>=0,'L2 認知高×調節低→看太多難收');
+    ok(w.shapeRead(P.build({li:82,kan:68,qian:55,xun:45,dui:40,zhen:35,kun:28,gen:20})).indexOf('雙峰型')>=0,'L3 團隊雙峰型');
+    ok(w.fourXiangHtml({kan:70,li:70,qian:30,kun:30,zhen:30,xun:30,gen:30,dui:30}).indexOf('展現與沉澱')>=0,'L5 認知雙高→展現與沉澱張力');
+    w.members=[{name:'A',scores:{qian:80,li:40,zhen:40,dui:40,kun:40,kan:40,gen:40,xun:40}},{name:'B',scores:{li:80,kan:70,qian:40,dui:40,kun:40,zhen:40,gen:20,xun:40}}];
+    w.showTeam();
+    var trh=d.getElementById('result').innerHTML;
+    ok(trh.indexOf('整合 · 立體的這支隊')>=0,'團隊整合區塊 render');
+    ok(trh.indexOf('系統之間')>=0,'團隊整合區塊含系統之間');
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 

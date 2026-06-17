@@ -220,20 +220,19 @@
 <div id="result"></div>
 
 <script>
-var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
-var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'}; // 八態雷達配色（內部色盤，非五行語意）
 var NS='http://www.w3.org/2000/svg';
 
 // 8 energies — 精簡版（局頁只需 nm/fn/wx/pos，外加 sym 供標題用）
 var E={
- qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',pos:{x:200,y:60}},
- li:  {sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',pos:{x:299,y:101}},
- zhen:{sym:'☳',nm:'震',wx:'wood', fn:'啟動／突破',pos:{x:340,y:200}},
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'開創／決策',pos:{x:200,y:60}},
+ li:  {sym:'☲',nm:'離',wx:'fire', fn:'展現／覺察',pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood', fn:'行動／突破',pos:{x:340,y:200}},
  dui: {sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',pos:{x:299,y:299}},
- kun: {sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',pos:{x:200,y:340}},
- kan: {sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',pos:{x:101,y:299}},
- gen: {sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',pos:{x:60,y:200}},
- xun: {sym:'☴',nm:'巽',wx:'wood', fn:'擴散／連結',pos:{x:101,y:101}}
+ kun: {sym:'☷',nm:'坤',wx:'earth',fn:'承接／滋養',pos:{x:200,y:340}},
+ kan: {sym:'☵',nm:'坎',wx:'water',fn:'沉澱／恢復',pos:{x:101,y:299}},
+ gen: {sym:'☶',nm:'艮',wx:'earth',fn:'喊停／界線',pos:{x:60,y:200}},
+ xun: {sym:'☴',nm:'巽',wx:'wood', fn:'拓展／連結',pos:{x:101,y:101}}
 };
 var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // clockwise from top
 
@@ -500,25 +499,6 @@ function forcedWeak(you,field){
 function idleStrength(you,field){
   return EKEYS.filter(function(k){ return (you[k]||0)>=60 && (field[k]||0)<=35; })
     .sort(function(a,b){ return (you[b]-field[b])-(you[a]-field[a]); });
-}
-
-// ── 五行流向 ─────────────────────────────────────────────
-var shengNext={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
-var keNext={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
-function topElement(sc){ return (window.OctensoProfile)?window.OctensoProfile.build(sc).topElement:E[topKeyOf(sc)].wx; } // 剖面級五行（非單卦標籤）
-// 回 {type,text}；type: same | fieldKeYou | youKeField | fieldShengYou | youShengField
-function elementFlow(fieldEl,youEl){
-  if(fieldEl===youEl) return {type:'same',
-    text:'這個局的主能量是「'+WLAB[fieldEl]+'」，你的主能量也是「'+WLAB[youEl]+'」——<b>同調</b>：好上手，但也容易和它一起偏。'};
-  if(keNext[fieldEl]===youEl) return {type:'fieldKeYou',
-    text:'這個局的「'+WLAB[fieldEl]+'」<span class="arrow">剋→</span>你的「'+WLAB[youEl]+'」：<b>這個局的調性會壓到你的主場，留意被消耗。</b>'};
-  if(keNext[youEl]===fieldEl) return {type:'youKeField',
-    text:'你的「'+WLAB[youEl]+'」<span class="arrow">剋→</span>這個局的「'+WLAB[fieldEl]+'」：<b>你的主能量能壓住這個局，你能主導它。</b>'};
-  if(shengNext[fieldEl]===youEl) return {type:'fieldShengYou',
-    text:'這個局的「'+WLAB[fieldEl]+'」<span class="arrow">生→</span>你的「'+WLAB[youEl]+'」：<b>這個局會滋養你，待在這裡你會長。</b>'};
-  if(shengNext[youEl]===fieldEl) return {type:'youShengField',
-    text:'你的「'+WLAB[youEl]+'」<span class="arrow">生→</span>這個局的「'+WLAB[fieldEl]+'」：<b>你會一直餵養這個局，小心過度付出。</b>'};
-  return {type:'same',text:'你和這個局的主能量彼此呼應。'};
 }
 
 // ── 分享結果圖卡（canvas 產圖：複用 persona 的畫法）─────────

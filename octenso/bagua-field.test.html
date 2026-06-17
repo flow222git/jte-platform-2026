@@ -67,16 +67,16 @@ document.getElementById('f').onload=function(){
     ok(r.innerHTML.indexOf('五行')<0,'結果頁不再出現五行（已移除）');
 
     // 7. 發揮點 / 消耗點 文案出現對應能量
-    // you qian high+field qian high → shine '創造／決策' ; field li high you li low → forcedWeak '顯現／覺察'
+    // you qian high+field qian high → shine '開創／決策' ; field li high you li low → forcedWeak '展現／覺察'
     var you2={qian:80,li:10,zhen:40,dui:40,kun:90,kan:40,gen:40,xun:40};
     var field2={qian:80,li:80,zhen:40,dui:40,kun:20,kan:40,gen:40,xun:40};
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:you2,top:'kun',title:'坤土'}));
     w.fieldName='測試局2';
     w.showResult(field2, false);
     var rh=d.getElementById('result').innerHTML;
-    ok(rh.indexOf('你會發光')>=0 && rh.indexOf('創造／決策')>=0,'發揮點 文案含 創造／決策 + 你會發光');
-    ok(rh.indexOf('長期容易耗你')>=0 && rh.indexOf('顯現／覺察')>=0,'消耗(硬撐弱項) 文案含 顯現／覺察');
-    ok(rh.indexOf('可能會悶')>=0 && rh.indexOf('承載／滋養')>=0,'消耗(強項閒置) 文案含 承載／滋養');
+    ok(rh.indexOf('你會發光')>=0 && rh.indexOf('開創／決策')>=0,'發揮點 文案含 開創／決策 + 你會發光');
+    ok(rh.indexOf('長期容易耗你')>=0 && rh.indexOf('展現／覺察')>=0,'消耗(硬撐弱項) 文案含 展現／覺察');
+    ok(rh.indexOf('可能會悶')>=0 && rh.indexOf('承接／滋養')>=0,'消耗(強項閒置) 文案含 承接／滋養');
     ok(rh.indexOf('別硬撐')>=0,'應對策略含 硬撐弱項對策');
 
     // 8. no base → no overlay, prompt to test base

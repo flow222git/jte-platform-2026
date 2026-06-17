@@ -115,12 +115,6 @@
   .judge .down{color:var(--cinnabar);font-weight:400}
   .judge b{color:var(--ink);font-weight:400}
 
-  .wx-grid{display:flex;flex-wrap:wrap;gap:9px;margin:6px 0 14px}
-  .wx-chip{font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:400;border-radius:999px;
-    padding:7px 16px;border:1px solid var(--hair);color:var(--muted)}
-  .wx-chip.have{color:var(--paper)}
-  .wx-chip.miss{color:var(--muted);background:transparent;opacity:.55}
-
   .foot{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--muted);line-height:2;text-align:center;
     border-top:1px solid var(--line);padding-top:22px;margin-top:28px}
   .foot b{color:var(--ink-soft);font-weight:400}
@@ -200,21 +194,19 @@
 <script src="lib/qrcode.js"></script>
 
 <script>
-var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
-var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
-var WX_ALL=['metal','wood','water','fire','earth'];
+var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'}; // 八態雷達配色（內部色盤，非五行語意）
 var NS='http://www.w3.org/2000/svg';
 
 // ── 8 能量模型（沿用 bagua-persona）──────────────────────
 var E={
- qian:{sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',state:'規劃、領導、創造',title:'乾金 · 開創者',pos:{x:200,y:60}},
- li:{sym:'☲',nm:'離',wx:'fire',fn:'顯現／覺察',state:'洞察、理解、看見',title:'離火 · 洞見者',pos:{x:299,y:101}},
- zhen:{sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',state:'行動、冒險、開始',title:'震木 · 行動者',pos:{x:340,y:200}},
- dui:{sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',state:'對話、連結、人際',title:'兌金 · 連結者',pos:{x:299,y:299}},
- kun:{sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',state:'接納、支持、穩定',title:'坤土 · 承載者',pos:{x:200,y:340}},
- kan:{sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',state:'沉澱、休息、反思',title:'坎水 · 沉潛者',pos:{x:101,y:299}},
- gen:{sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',state:'結束、拒絕、定界',title:'艮土 · 守界者',pos:{x:60,y:200}},
- xun:{sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',state:'推廣、成長、合作',title:'巽木 · 協作者',pos:{x:101,y:101}}
+ qian:{sym:'☰',nm:'乾',wx:'metal',fn:'開創／決策',state:'規劃、領導、開創',title:'乾 · 開創者',pos:{x:200,y:60}},
+ li:{sym:'☲',nm:'離',wx:'fire',fn:'展現／覺察',state:'洞察、理解、看見',title:'離 · 洞見者',pos:{x:299,y:101}},
+ zhen:{sym:'☳',nm:'震',wx:'wood',fn:'行動／突破',state:'行動、冒險、開始',title:'震 · 行動者',pos:{x:340,y:200}},
+ dui:{sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',state:'對話、連結、人際',title:'兌 · 連結者',pos:{x:299,y:299}},
+ kun:{sym:'☷',nm:'坤',wx:'earth',fn:'承接／滋養',state:'接納、支持、穩定',title:'坤 · 承載者',pos:{x:200,y:340}},
+ kan:{sym:'☵',nm:'坎',wx:'water',fn:'沉澱／恢復',state:'沉澱、休息、反思',title:'坎 · 沉潛者',pos:{x:101,y:299}},
+ gen:{sym:'☶',nm:'艮',wx:'earth',fn:'喊停／界線',state:'結束、拒絕、定界',title:'艮 · 守界者',pos:{x:60,y:200}},
+ xun:{sym:'☴',nm:'巽',wx:'wood',fn:'拓展／連結',state:'推廣、成長、合作',title:'巽 · 協作者',pos:{x:101,y:101}}
 };
 var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // clockwise from top
 
@@ -551,16 +543,6 @@ function blindSpots(mbrs){
   }).sort(function(a,b){ return comp[a]-comp[b]; }).slice(0,3);
 }
 
-// 4. 五行分布：統計每位成員 top 能量的五行 → have / miss
-function memberElement(sc){ return (window.OctensoProfile)?window.OctensoProfile.build(sc).topElement:E[topKeyOf(sc)].wx; } // 剖面級五行
-function elementSpread(mbrs){
-  var have={};
-  mbrs.forEach(function(m){ have[memberElement(m.scores)]=true; });
-  var haveList=WX_ALL.filter(function(w){ return have[w]; });
-  var missList=WX_ALL.filter(function(w){ return !have[w]; });
-  return {have:haveList, miss:missList};
-}
-
 // 5. 能量覆蓋度：8 種能量裡有「強者罩」(任一成員 ≥60) 的有幾種；
 //    完全沒人罩(沒人 ≥45)的能量 → 缺口（與盲點不同：盲點看全員偏低，覆蓋看有無強者）
 function energyCoverage(mbrs){
@@ -597,15 +579,6 @@ function bestPair(mbrs){
   }
   return best;
 }
-
-// 五行缺漏的調性提示
-var WX_MISS_NOTE={
-  metal:'少了果斷、定方向與收束的調性',
-  wood:'少了開創、行動與生長的衝勁',
-  water:'少了沉潛、休息與恢復的調性',
-  fire:'少了洞察、覺察與看清本質的眼睛',
-  earth:'少了承載、穩定與守界的底盤'
-};
 
 // ════════════════════════════════════════════════════════════
 //  團隊圖卡（canvas 產圖：合成盤雷達＋型＋盲點＋QR）
@@ -719,21 +692,28 @@ var TEAM_TIPS={
 };
 
 function fn1t(k){ return E[k].fn.split('／')[0]; }
-// 四象 · 生命系統（與 persona 同一套；團隊用合成盤）
+// 四對 · 生命系統（與 persona 同一套；團隊用合成盤）
 var FOURXIANG=[
-  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'這支隊怎麼定方向、又怎麼撐住它——訂目標、做決定、扛得起結果。',q:'要創造什麼？又如何承載它？',over:'建構這塊很強——過頭時容易方向太多頭、誰都想主導、難放手分工。',under:'建構偏弱時，容易沒共同方向、責任歸屬不清——先定一個大家認的目標。'},
-  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'這支隊怎麼讓事情動起來——敢開始、推著往前、帶動彼此。',q:'要啟動什麼？又如何讓它擴散？',over:'推動很強——過頭時容易一直開新案、節奏太快，有人被拖著跑、收尾沒人顧。',under:'推動偏弱時，容易議而不決、起步慢——指定有人負責「把事推出去」。'},
-  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'這支隊怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達被看見。',q:'真正看見了什麼？又如何顯現它？',over:'認知很強——過頭時容易陷入分析、開會太多、想太細而動不了。',under:'認知偏弱時，容易看不清狀況、訊息不流通——留時間一起把問題講清楚。'},
-  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'這支隊怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通。',q:'該停下什麼？又如何重新交流？',over:'調節很強——過頭時容易太守成、不敢冒險、或界線多到綁手綁腳。',under:'調節偏弱時，容易停不下來、不會收尾、衝突悶著沒處理——練習喊停與覆盤。'}
+  {key:'build',xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'開創',rL:'承接',plain:'這支隊怎麼定方向、又怎麼撐住它——訂目標、做決定、扛得起結果。',q:'要開創什麼？又如何承接它？',over:'建構這塊很強——過頭時容易方向太多頭、誰都想主導、難放手分工。',under:'建構偏弱時，容易沒共同方向、責任歸屬不清——先定一個大家認的目標。'},
+  {key:'drive',xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'行動',rL:'拓展',plain:'這支隊怎麼讓事情動起來——敢開始、推著往前、帶動彼此。',q:'該先動起什麼？又如何讓它拓展？',over:'推動很強——過頭時容易一直開新案、節奏太快，有人被拖著跑、收尾沒人顧。',under:'推動偏弱時，容易議而不決、起步慢——指定有人負責「把事推出去」。'},
+  {key:'aware',xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'沉澱',rL:'展現',plain:'這支隊怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達被看見。',q:'真正看見了什麼？又如何展現它？',over:'認知很強——過頭時容易陷入分析、開會太多、想太細而動不了。',under:'認知偏弱時，容易看不清狀況、訊息不流通——留時間一起把問題講清楚。'},
+  {key:'regulate',xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'喊停',rL:'交流',plain:'這支隊怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通。',q:'該喊停什麼？又如何重新交流？',over:'調節很強——過頭時容易太守成、不敢冒險、或界線多到綁手綁腳。',under:'調節偏弱時，容易停不下來、不會收尾、衝突悶著沒處理——練習喊停與覆盤。'}
 ];
+// L5 張力點名（團隊版）
+var FOURXIANG_TENSION={
+  build:'這支隊既很會開創定向、又很能承接託底——主導與承接並存，火力足，但留意誰都想主導。',
+  drive:'這支隊既衝得動、又鋪得開——爆發與滲透並存，動能很滿，留意節奏太快沒人收尾。',
+  aware:'這支隊既很想被看見、又很能向內沉澱——展現與沉澱並重，看得深也說得出，留意別卡在分析。',
+  regulate:'這支隊既守得住界線、又很愛連結交流——收與放都強，拿捏好就很有彈性。'
+};
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
     var L=sc[s.l]||0, R=sc[s.r]||0, gap=Math.abs(L-R), sum=L+R;
     var markLeft=sum?Math.round(100-L/sum*100):50;
     var col=(gap<12)?'var(--muted)':(L>R?W[E[s.l].wx]:W[E[s.r].wx]);
     var tag, desc;
-    if(L>=60&&R>=60){ tag='雙邊都旺'; desc='兩端都很活躍——這個系統用得多，留意別過載。'; }
-    else if(L<=40&&R<=40){ tag='偏少用'; desc='兩端目前都偏弱——這個系統較少啟動，是有空間的部分。'; }
+    if(L>=60&&R>=60){ tag='雙邊都旺'; desc=FOURXIANG_TENSION[s.key]||'兩端都很活躍——這個系統用得多，留意別過載。'; }
+    else if(L<=40&&R<=40){ tag='偏少用'; desc='兩端目前都偏弱——這個系統較少動用，是有空間的部分。'; }
     else if(gap>=12){ var hp=(L>R?s.lL:s.rL); tag='偏'+hp; desc='明顯偏「'+hp+'」，另一端較少。'; }
     else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
     var hiv=Math.max(L,R);
@@ -751,6 +731,53 @@ function fourXiangHtml(sc){
       +(note?'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--gold);line-height:1.7;margin-top:6px"><b>提醒</b> · '+note+'</div>':'')
     +'</div>';
   }).join('');
+}
+// ════ L2/L3 整合解讀（團隊版；句子不帶主語，systemsRead 前置 subj）════
+var SYS_CROSS={
+  build:{ drive:'很會定方向、規劃，但行動的爆發力相對保留——藍圖清楚，落地需要推一把。',
+          aware:'方向感強、敢拍板，卻較少停下來看清細節——大局清楚，容易漏掉徵兆。',
+          regulate:'很會開創、扛責任，卻不太會喊停、收尾——當心一路開到燒乾。' },
+  drive:{ build:'很能動、敢開始，但少了定方向的錨——衝勁夠、缺一張藍圖。',
+          aware:'動得快、敢開始，卻少了先看清——容易盲衝，慢半拍反而走得穩。',
+          regulate:'衝勁十足，但煞車偏弱——停不下來時最容易出狀況。' },
+  aware:{ build:'看得很清，卻較少把它變成方向與決斷——洞見豐富，缺一個拍板、收口的人。',
+          drive:'看得透、想得深，卻不一定動得了——想，常常多於做。',
+          regulate:'覺察敏銳，卻不太會喊停、設界——看太多有時反而難收。' },
+  regulate:{ build:'守得住界線、懂得停，但較少主動定方向——像穩定器多過引擎。',
+             drive:'很穩、很能守，啟動的衝勁偏保留——適合守成多過開疆。',
+             aware:'懂得收、守得住，但對細微的覺察少了點——穩，但有時鈍。' }
+};
+function systemsRead(pf,subj){
+  subj=subj||'這支隊';
+  var ax=pf.axes, hi=ax[0], lo=ax[0];
+  ax.forEach(function(a){ if(a.avg>hi.avg) hi=a; if(a.avg<lo.avg) lo=a; });
+  if(ax.every(function(a){return a.avg>=58;})) return subj+'四個系統都很活躍——火力飽滿、能換檔，但要留意全面開機的過載。';
+  if(ax.every(function(a){return a.avg<=42;})) return subj+'四個系統目前都收著——像在蓄能期，或還在找方向，可塑性很高。';
+  if(hi.avg-lo.avg<18) return subj+'四個系統發展得頗均衡，沒有明顯偏科——遇事能多角度切換。';
+  var s=SYS_CROSS[hi.key]&&SYS_CROSS[hi.key][lo.key];
+  return s ? (subj+s) : (subj+'的「'+hi.sys+'」最強、「'+lo.sys+'」最弱，落差明顯。');
+}
+function shapeRead(pf){
+  var spread=(pf.ranked[0].v||0)-(pf.ranked[pf.ranked.length-1].v||0), n=pf.leads.length, band=pf.level.band, shape;
+  if(pf.single) shape='單峰型——有一股明顯領頭的能量，輪廓集中';
+  else if(n===2) shape='雙峰型——兩股能量並立，輪廓有兩個高點';
+  else if(n>=3) shape='多峰型——好幾股能量並重，輪廓寬而多面';
+  else if(band==='high'&&spread<=30) shape='高原型——整體偏高、起伏不大，全面而飽滿';
+  else if(band==='low'&&spread<=30) shape='低谷型——整體偏收、起伏小，像在蓄能';
+  else if(spread>=50) shape='鋸齒型——強的很強、弱的很弱，落差大、很有個性';
+  else shape='均衡型——有高有低但不極端，彈性大、能換檔';
+  var bal=spread>=50?'偏科明顯':(spread<=25?'相當均衡':'強弱分得出、但不極端');
+  return '整體輪廓是'+shape+'；'+bal+'（最強到最弱差 '+spread+'）。';
+}
+function integratedBlock(pf,subj,heading){
+  if(!pf) return '';
+  function row(lab,txt){ return '<div style="display:flex;gap:10px;padding:7px 0;font-size:13px;line-height:1.7"><b style="flex:none;color:var(--pine);font-weight:700">'+lab+'</b><span style="color:var(--ink-soft)">'+txt+'</span></div>'; }
+  return '<div class="block">'
+    +'<h3>'+(heading||'整合 · 立體的這支隊')+'</h3>'
+    +row('輪廓',shapeRead(pf))
+    +row('系統之間',systemsRead(pf,subj))
+    +'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--muted);line-height:1.8;margin-top:6px">把高低、形狀、系統之間合起來看——這是這支隊此刻的立體輪廓，會隨成員與狀態變動。</div>'
+  +'</div>';
 }
 // 團隊整體也用格局標題（自適應形狀，依 MODEL.md）
 function teamSignatureTitle(comp){
@@ -842,20 +869,14 @@ function showTeam(){
 
    +'<div class="block"><h3>團隊合成盤</h3>'
      +'<div class="radar-wrap" id="team-radar"></div>'
-     +'<div class="legend">'
-       +'<span><i style="background:'+W.metal+'"></i>金 乾兌</span>'
-       +'<span><i style="background:'+W.wood+'"></i>木 震巽</span>'
-       +'<span><i style="background:'+W.water+'"></i>水 坎</span>'
-       +'<span><i style="background:'+W.fire+'"></i>火 離</span>'
-       +'<span><i style="background:'+W.earth+'"></i>土 艮坤</span>'
-     +'</div>'
      +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
 
-   +'<div class="block"><h3>四象 · 生命系統</h3>'
+   +'<div class="block"><h3>四對 · 生命系統</h3>'
      +'<div class="lead" style="text-align:left;margin:0 0 12px">這支隊合起來，四個生命系統各自怎麼運作。</div>'
      +fourXiangHtml(comp)
    +'</div>'
+   +integratedBlock(window.OctensoProfile?window.OctensoProfile.build(comp):null,'這支隊')
 
    +'<div class="block"><h3>這支團隊</h3>'
      +'<div class="judge" style="margin-top:0"><b style="color:var(--ink)">'+vHead+'</b><br>'+vBody+'</div>'

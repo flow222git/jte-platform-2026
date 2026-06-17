@@ -2,7 +2,7 @@
  *
  * 設計準繩：人性的判讀 × 理性的判斷。
  * 把 8 卦分數讀成「完整剖面」而非「單一最高卦標籤」：
- *   整體水平(level) + 4 向度(偏向×強度) + 主旋律(含並列) + 資源/缺口 + 五行剖面
+ *   整體水平(level) + 4 向度(偏向×強度) + 主旋律(含並列) + 資源/缺口
  *
  * 為什麼分「水平×形狀」：坎90其他80 與 坎50其他20，argmax 都判「坎」，
  * 但前者高能量不會沈默、後者才會。先讀水平再讀形狀才準。
@@ -14,15 +14,13 @@
   'use strict';
 
   var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun']; // 順時針，與各頁一致
-  var WX={qian:'metal',dui:'metal',li:'fire',zhen:'wood',xun:'wood',kan:'water',gen:'earth',kun:'earth'};
-  var WX_ALL=['metal','wood','water','fire','earth'];
 
-  // 四象 · 生命系統（古典錯卦配對：天地/雷風/水火/山澤）
+  // 四對 · 生命系統（古典錯卦配對：天地/雷風/水火/山澤，《說卦傳》「天地定位…」四對待）
   var PAIRS=[
-    {key:'build',    xiang:'天地', sys:'建構系統', en:'Purpose Engine',    l:'qian', r:'kun', ln:'創造', rn:'承載'},
-    {key:'drive',    xiang:'雷風', sys:'推動系統', en:'Action Engine',     l:'zhen', r:'xun', ln:'啟動', rn:'擴散'},
-    {key:'aware',    xiang:'水火', sys:'認知系統', en:'Awareness Engine',  l:'kan',  r:'li',  ln:'收藏', rn:'顯現'},
-    {key:'regulate', xiang:'山澤', sys:'調節系統', en:'Regulation Engine', l:'gen',  r:'dui', ln:'停止', rn:'交流'}
+    {key:'build',    xiang:'天地', sys:'建構系統', en:'Purpose Engine',    l:'qian', r:'kun', ln:'開創', rn:'承接'},
+    {key:'drive',    xiang:'雷風', sys:'推動系統', en:'Action Engine',     l:'zhen', r:'xun', ln:'行動', rn:'拓展'},
+    {key:'aware',    xiang:'水火', sys:'認知系統', en:'Awareness Engine',  l:'kan',  r:'li',  ln:'沉澱', rn:'展現'},
+    {key:'regulate', xiang:'山澤', sys:'調節系統', en:'Regulation Engine', l:'gen',  r:'dui', ln:'喊停', rn:'交流'}
   ];
 
   // 可校準門檻
@@ -77,16 +75,6 @@
     return out;
   }
 
-  // 五行剖面：元素內取平均（金=乾兌、木=震巽、土=坤艮 各2卦；火=離、水=坎 各1卦），避免單卦元素被低估
-  function elements(sc){
-    var agg={}, cnt={}; WX_ALL.forEach(function(w){ agg[w]=0; cnt[w]=0; });
-    EKEYS.forEach(function(k){ var w=WX[k]; agg[w]+=(sc[k]||0); cnt[w]++; });
-    var out={}; WX_ALL.forEach(function(w){ out[w]=cnt[w]?Math.round(agg[w]/cnt[w]):0; });
-    return out;
-  }
-
-  function topElement(el){ var t=WX_ALL[0]; WX_ALL.forEach(function(w){ if(el[w]>el[t]) t=w; }); return t; }
-
   // 每態六級評價：分數回推到最近的六點刻度（＝你那 3 題的平均選項）
   var BANDS=['完全不像','大致不像','有點不像','有點像','大致像','非常像'];
   function band(score){ var i=Math.round((+score||0)/100*5); i=Math.max(0,Math.min(5,i)); return {idx:i, label:BANDS[i], like:(i>=3)}; }
@@ -102,7 +90,7 @@
 
   function build(rawScores){
     var sc=clampScores(rawScores);
-    var rk=ranked(sc), el=elements(sc), ld=leads(rk);
+    var rk=ranked(sc), ld=leads(rk);
     var out={
       scores:sc,
       ranked:rk,
@@ -112,8 +100,6 @@
       single:(ld.length===1 && rk[0].v>=TUNE.LEAD_MIN), // 是否真有單一主導（否則並列／能量不足以稱主導）
       resources: rk.filter(function(o){ return o.v>=TUNE.RES; }).map(function(o){ return o.k; }),
       gaps: EKEYS.filter(function(k){ return (sc[k]||0)<TUNE.GAP; }),
-      elements: el,
-      topElement: topElement(el),
       bands: bands(sc)
     };
     out.signature = signature(out);
@@ -121,9 +107,9 @@
   }
 
   global.OctensoProfile={
-    EKEYS:EKEYS, WX:WX, WX_ALL:WX_ALL, PAIRS:PAIRS, TUNE:TUNE, BANDS:BANDS,
+    EKEYS:EKEYS, PAIRS:PAIRS, TUNE:TUNE, BANDS:BANDS,
     build:build, clampScores:clampScores, ranked:ranked, level:level,
-    axes:axes, leads:leads, elements:elements, topElement:topElement,
+    axes:axes, leads:leads,
     band:band, bands:bands, signature:signature
   };
 })(typeof window!=='undefined'?window:this);

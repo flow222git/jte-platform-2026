@@ -26,7 +26,7 @@ document.getElementById('f').onload=function(){
     // 3. result renders with qian as top
     w.showResult();
     var title=d.querySelector('.tc-title');
-    ok(title && title.textContent.indexOf('乾金')>=0,'top type 乾金, got '+(title?title.textContent:'none'));
+    ok(title && title.textContent.indexOf('開創者')>=0,'top type 乾·開創者, got '+(title?title.textContent:'none'));
     ok(d.querySelector('.radar-wrap svg'),'radar svg rendered');
     ok(d.querySelectorAll('.tool').length>=2,'tool recommendations present');
     ok(d.querySelector('.cta-now a').getAttribute('href')==='../ven-i/','問易 CTA link');
@@ -38,7 +38,7 @@ document.getElementById('f').onload=function(){
     w.answers=new Array(24).fill(0);
     w.QUESTIONS.forEach(function(q,i){ if(q.k==='kan') w.answers[i]=5; });
     w.showResult();
-    ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'kan profile → 坎水');
+    ok(d.querySelector('.tc-title').textContent.indexOf('沉潛者')>=0,'kan profile → 坎·沉潛者');
 
     // 4b. 剖面式判讀：八態輪廓（雷達+四向度合併）/ 突出·少用 / 主調；五行已移除
     var rk=d.getElementById('result').innerHTML;
@@ -48,7 +48,7 @@ document.getElementById('f').onload=function(){
     ok(rk.indexOf('最鮮明的主調')>=0,'kan 獨高 → 單一主導句');
     ok(rk.indexOf('每態 · 像不像你')>=0,'八態輪廓含每態六級評價列');
     ok(rk.indexOf('完全不像')>=0,'kan獨高其餘低 → 出現「完全不像」評價');
-    ok(d.querySelector('.tc-title').textContent.indexOf('坎水')>=0,'單一主導 → 標題用卦稱號(坎水)');
+    ok(d.querySelector('.tc-title').textContent.indexOf('沉潛者')>=0,'單一主導 → 標題用卦稱號(坎·沉潛者)');
     // 4c. 並列主旋律 + 向度強度（乾坤皆滿 → 並重 + 兩邊都高）
     w.answers=new Array(24).fill(0);
     w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian'||q.k==='kun') w.answers[i]=5; });
@@ -72,7 +72,7 @@ document.getElementById('f').onload=function(){
     w.localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:{qian:30,li:90,zhen:20,dui:25,kun:30,kan:40,gen:55,xun:30},top:'li',title:'離火 · 洞見者',ts:'KEEP-TS'}));
     w.answers=new Array(24).fill(null);
     w.showResult({qian:30,li:90,zhen:20,dui:25,kun:30,kan:40,gen:55,xun:30});
-    ok(d.querySelector('.tc-title').textContent.indexOf('離火')>=0,'看完整解盤：用帶入分數渲染(離火)');
+    ok(d.querySelector('.tc-title').textContent.indexOf('洞見者')>=0,'看完整解盤：用帶入分數渲染(離·洞見者)');
     ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).ts==='KEEP-TS','viewScores 不覆寫存檔 ts');
 
     // 5. all-null doesn't throw
@@ -216,7 +216,7 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('#facet-radar svg'),'facet radar svg');
     ok(d.querySelector('#facet-radar polygon[stroke-dasharray]'),'base overlay dashed polygon present');
     var gapHtml=d.querySelector('#compat .gap-line').innerHTML;
-    ok(gapHtml.indexOf('壓低了')>=0 && gapHtml.indexOf('啟動')>=0,'gap sentence: 壓低了…啟動, got '+gapHtml);
+    ok(gapHtml.indexOf('壓低了')>=0 && gapHtml.indexOf('行動')>=0,'gap sentence: 壓低了…行動, got '+gapHtml);
     // drain signal: base top3 includes zhen, work suppresses it by >=20 → drain note
     ok(d.querySelector('#compat .drain-note'),'drain note when base strength suppressed');
 
@@ -408,9 +408,35 @@ document.getElementById('f').onload=function(){
     var pblk=d.querySelector('.pair-block');
     ok(pblk,'pair block rendered in result');
     ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
-    ok(pblk && pblk.textContent.indexOf('四象')>=0,'merged block 含四象生命系統');
-    ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四象 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
+    ok(pblk && pblk.textContent.indexOf('四對')>=0,'merged block 含四對生命系統');
+    ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四對 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
     ok(pblk && pblk.textContent.indexOf('不是非此即彼')>=0,'pair block honest line present');
+
+    // ── L1–L5 整合解讀 ──────────────────────────────────────
+    var P=w.OctensoProfile;
+    // L3 形狀×均衡
+    ok(w.shapeRead(P.build({li:82,kan:68,qian:55,xun:45,dui:40,zhen:35,kun:28,gen:20})).indexOf('雙峰型')>=0,'L3 雙峰型');
+    ok(w.shapeRead(P.build({qian:80,li:78,zhen:76,dui:74,kun:72,kan:70,gen:70,xun:70})).indexOf('多峰型')>=0,'L3 全高並列→多峰型');
+    // L2 系統之間
+    ok(w.systemsRead(P.build({qian:80,li:80,zhen:80,dui:80,kun:80,kan:80,gen:80,xun:80})).indexOf('都很活躍')>=0,'L2 全高→都很活躍');
+    ok(w.systemsRead(P.build({qian:20,li:20,zhen:20,dui:20,kun:20,kan:20,gen:20,xun:20})).indexOf('都收著')>=0,'L2 全低→都收著');
+    ok(w.systemsRead(P.build({kan:82,li:80,qian:50,kun:46,zhen:46,xun:44,gen:12,dui:14})).indexOf('難收')>=0,'L2 認知高×調節低→看太多難收');
+    // L5 張力點名（認知雙高 → 展現與沉澱）
+    ok(w.fourXiangHtml({kan:70,li:70,qian:30,kun:30,zhen:30,xun:30,gen:30,dui:30}).indexOf('展現與沉澱')>=0,'L5 認知雙高→展現與沉澱張力');
+    // L1 剖面感知 盲點/成長
+    var pfMit=P.build({qian:80,kun:70,li:40,kan:40,zhen:40,xun:40,gen:10,dui:30});
+    ok(w.roleBlindGrow('qian',pfMit).blind.indexOf('小很多')>=0,'L1 互補高→盲點減輕');
+    ok(w.roleBlindGrow('qian',pfMit).grow.indexOf('其實夠用了')>=0,'L1 互補高→成長改指真正缺口');
+    ok(w.roleBlindGrow('qian',P.build({qian:80,kun:20,li:40,kan:40,zhen:40,xun:40,gen:40,dui:40})).blind.indexOf('更明顯')>=0,'L1 互補低→盲點加重');
+    // L4 確信度織入主調
+    var pfLead=P.build({li:80,kan:40,qian:40,kun:30,zhen:30,xun:30,gen:30,dui:30});
+    ok(w.leadSentence(pfLead,{li:'mixed'}).indexOf('兩可')>=0,'L4 主調兩可→加脈絡');
+    ok(w.leadSentence(pfLead,null).indexOf('兩可')<0,'L4 無 conf→不加脈絡');
+    // 整合區塊 render 在結果頁
+    w.answers=new Array(24).fill(2); w.currentFacet=null; w.showResult();
+    var rhtml=d.getElementById('result').innerHTML;
+    ok(rhtml.indexOf('整合 · 立體的你')>=0,'整合區塊 render');
+    ok(rhtml.indexOf('系統之間')>=0,'整合區塊含系統之間');
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 

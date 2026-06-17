@@ -54,7 +54,7 @@
   .detail .dsym{font-size:40px;line-height:1}
   .detail h2{font-size:20px;margin:0}
   .detail .dfn{font-size:13px;color:var(--muted);font-family:ui-sans-serif,sans-serif}
-  .detail .wuxing{font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;font-family:ui-sans-serif,sans-serif;margin-left:auto}
+  .detail .chip{font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;font-family:ui-sans-serif,sans-serif;margin-left:auto}
   .drow{display:flex;gap:8px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
   .drow:last-child{border-bottom:none}
   .drow b{flex:none;width:74px;color:var(--muted);font-weight:600;font-size:12.5px;font-family:ui-sans-serif,sans-serif}
@@ -70,11 +70,6 @@
 
   /* --- View-1 extras --- */
   #axes-panel{margin-bottom:4px}
-
-  /* --- View-4 wuxing SVG --- */
-  #wuxing-wrap{display:none;width:100%;max-width:600px;margin:8px auto 4px}
-  #wuxing-legend{display:none;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;
-    color:var(--muted);font-family:ui-sans-serif,sans-serif;margin:6px 0 14px}
 
   /* --- View-3 controls --- */
   #v3-controls{display:none;margin:4px 0 12px;font-family:ui-sans-serif,sans-serif}
@@ -169,7 +164,7 @@
 </style></head><body>
   <a href="index.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:12px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)">← 回八態能格</a>
   <h1>八卦能量系統圖</h1>
-  <p class="sub">八種內在能量 · 四組極性對 · 五行歸屬　|　點任一卦看內涵</p>
+  <p class="sub">八種內在能量 · 四組極性對　|　點任一卦看內涵</p>
 
   <!-- Toggle -->
   <div class="toggle-bar">
@@ -177,7 +172,6 @@
     <button id="btn-v1" onclick="switchView(1)">極性</button>
     <button id="btn-v2" onclick="switchView(2)">循環</button>
     <button id="btn-v3" onclick="switchView(3)">我的能量</button>
-    <button id="btn-v4" onclick="switchView(4)">五行</button>
   </div>
 
   <!-- View copy blocks -->
@@ -190,9 +184,6 @@
   <div class="view-copy hidden" id="copy-v3">
     這就是「問易」算完一個人之後、疊在輪盤上的樣子——哪些能量正旺、哪些過頭、哪些透支，一眼看見。點點看，自己擺一個側寫。
   </div>
-  <div class="view-copy hidden" id="copy-v4">
-    五行是八種能量之間「誰餵養誰、誰壓制誰」的網絡。<b>相生</b>＝補弱的供應鏈（要養某個弱能量，先養生它的「母」）；<b>相剋</b>＝解釋過強（某能量過旺，會壓住它所剋的那個）。
-  </div>
   <div class="view-copy hidden" id="copy-v5">
     八卦是古人觀察天地，歸納出的八種基本能量。每一卦從三條陰陽爻長出一種性情，對應自然界的一個象（天、澤、火、雷、風、水、山、地），也對應我們現代的一種內在功能。
   </div>
@@ -201,8 +192,8 @@
   <div id="axes-panel">
     <div class="axes-box">
       <span><b>給出 ⇄ 接納</b>　乾 ⇄ 坤</span>
-      <span><b>顯現 ⇄ 收藏</b>　離 ⇄ 坎</span>
-      <span><b>啟動 ⇄ 停止</b>　震 ⇄ 艮</span>
+      <span><b>展現 ⇄ 沉澱</b>　離 ⇄ 坎</span>
+      <span><b>行動 ⇄ 喊停</b>　震 ⇄ 艮</span>
       <span><b>表達 ⇄ 連結</b>　兌 ⇄ 巽</span>
     </div>
   </div>
@@ -230,40 +221,13 @@
       <g id="axis-labels-v1">
         <text class="axislbl" x="200" y="20">給出 乾</text>
         <text class="axislbl" x="200" y="390">接納 坤</text>
-        <text class="axislbl" x="374" y="200">啟動 震</text>
-        <text class="axislbl" x="26" y="200">停止 艮</text>
+        <text class="axislbl" x="374" y="200">行動 震</text>
+        <text class="axislbl" x="26" y="200">喊停 艮</text>
       </g>
     </svg>
   </div>
 
-  <div class="legend" id="bagua-legend">
-    <span><i style="background:var(--metal)"></i>金 乾兌</span>
-    <span><i style="background:var(--wood)"></i>木 震巽</span>
-    <span><i style="background:var(--water)"></i>水 坎</span>
-    <span><i style="background:var(--fire)"></i>火 離</span>
-    <span><i style="background:var(--earth)"></i>土 艮坤</span>
-  </div>
-
-  <!-- View-4 Wuxing SVG -->
-  <div id="wuxing-wrap">
-    <svg viewBox="0 0 400 400" id="wuxing-svg">
-      <defs>
-        <marker id="arrow-sheng" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-          <polygon points="0 0, 7 3.5, 0 7" fill="var(--pine)" opacity=".85"/>
-        </marker>
-      </defs>
-      <!-- sheng (相生) lines — green, drawn between pentagon vertices -->
-      <g id="wx-sheng"></g>
-      <!-- ke (相剋) lines — cinnabar dashed pentagram -->
-      <g id="wx-ke"></g>
-      <!-- nodes -->
-      <g id="wx-nodes"></g>
-    </svg>
-  </div>
-  <div id="wuxing-legend">
-    <span style="color:var(--pine)">&#8594; 綠＝相生（餵養）</span>
-    <span style="color:var(--cinnabar)">⤍ 朱紅虛線＝相剋（壓制）</span>
-  </div>
+  <div class="legend" id="bagua-legend"></div>
 
   <!-- View-5 認識八卦 -->
   <div id="eight-wrap"></div>
@@ -287,9 +251,9 @@
     <b>怎麼讀這張圖：</b><br>
     ・<b>八個節點</b>＝你內在的八種能量（功能）。<br>
     ・<b>四條軸線</b>＝四組互相平衡的極性；某個能量「過強」，往往是缺了它<b>對面那一極</b>。<br>
-    ・<b>顏色</b>＝五行歸屬（金木水火土）；五行間有生剋，是能量的供應鏈。<br>
+    ・<b>顏色</b>＝八種能量各自的色，方便在雷達上分辨。<br>
     ・每個卦由三條陰陽爻組成，功能其實從<b>陰陽結構</b>長出來（如乾純陽＝全動能、坤純陰＝全承接）。<br>
-    ・<b>循環</b>視圖依後天卦序排列，顯示能量流轉的自然節奏（啟動→成長→顯現→化育→收穫→收束→收藏→停轉）。<br>
+    ・<b>循環</b>視圖依後天卦序排列，顯示能量流轉的自然節奏（行動→成長→展現→化育→收穫→收束→沉澱→喊停）。<br>
     <span style="color:var(--muted);font-size:11px">＊此為「功能能量」的極性排列；古典先天八卦的陰陽全反對為 乾坤・離坎・震巽・兌艮，可另作深層對照。</span>
   </div>
 
@@ -321,35 +285,31 @@
 
     <details open>
       <summary>一、八種能量（八卦的功能化）</summary>
-      <div class="sd-body">乾 創造／決策・兌 交流／分享・離 顯現／覺察・巽 擴散／連結・震 啟動／突破・坎 收藏／恢復・艮 停止／界線・坤 承載／滋養。<br>每種能量都從卦的<b>陰陽結構</b>長出來（乾純陽＝全動能、坤純陰＝全承接），且都有「正常／過強／過弱」三態。</div>
+      <div class="sd-body">乾 開創／決策・兌 交流／分享・離 展現／覺察・巽 拓展／連結・震 行動／突破・坎 沉澱／恢復・艮 喊停／界線・坤 承接／滋養。<br>每種能量都從卦的<b>陰陽結構</b>長出來（乾純陽＝全動能、坤純陰＝全承接），且都有「正常／過強／過弱」三態。</div>
     </details>
     <details>
       <summary>二、四組極性對（平衡）</summary>
-      <div class="sd-body">給出⇄接納（乾⇄坤）、顯現⇄收藏（離⇄坎）、啟動⇄停止（震⇄艮）、表達⇄連結（兌⇄巽）。<br>健康不是把一種能量推到底，而是能在兩極間來回；某能量「過強」，往往是缺了它對面那一極。</div>
+      <div class="sd-body">給出⇄接納（乾⇄坤）、展現⇄沉澱（離⇄坎）、行動⇄喊停（震⇄艮）、表達⇄連結（兌⇄巽）。<br>健康不是把一種能量推到底，而是能在兩極間來回；某能量「過強」，往往是缺了它對面那一極。</div>
     </details>
     <details>
-      <summary>三、五行生剋（能量的網絡）</summary>
-      <div class="sd-body">金 乾兌・木 震巽・水 坎・火 離・土 艮坤。<br><b>相生</b>＝補弱的供應鏈（要養某個弱能量，先養生它的「母」）；<b>相剋</b>＝解釋過強（某能量過旺，會壓住它所剋的）。這層也是「誰滋養誰、誰消耗誰」的底層邏輯。</div>
+      <summary>三、循環與節律（後天卦序）</summary>
+      <div class="sd-body">行動→成長→展現→化育→收穫→收束→沉澱→喊停，像四季一樣流轉——每一段都有它的任務，也都會過去。</div>
     </details>
     <details>
-      <summary>四、循環與節律（後天卦序）</summary>
-      <div class="sd-body">啟動→成長→顯現→化育→收穫→收束→收藏→停轉，像四季一樣流轉——每一段都有它的任務，也都會過去。</div>
-    </details>
-    <details>
-      <summary>五、底色 vs 此刻</summary>
+      <summary>四、底色 vs 此刻</summary>
       <div class="sd-body"><b>底色</b>＝你慣用的能量（特質／氣候）；<b>此刻</b>＝你當下的能量狀態（狀態／天氣）。兩者的落差，本身就是洞察。</div>
     </details>
 
     <h2 class="sd-title" style="margin-top:24px">已經長出來的工具</h2>
     <ul class="sd-list">
       <li><a href="index.html"><b>八卦能量（門面）</b></a><span class="sd-tag">已上線</span>：低門檻圖文入口——三句入門＋八種能量生活比喻。</li>
-      <li><b>八卦能量系統圖</b>（就是這一頁）<span class="sd-tag">已上線</span>：認識八卦・極性・循環・我的能量・五行 五種看法。</li>
+      <li><b>八卦能量系統圖</b>（就是這一頁）<span class="sd-tag">已上線</span>：認識八卦・極性・循環・我的能量 四種看法。</li>
       <li><a href="bagua-persona.html"><b>八卦能量人格測驗</b></a><span class="sd-tag">已上線</span>：24 題 → 能量型＋雷達＋人物速寫＋優勢/盲點/成長＋導流。</li>
       <li><b>多場域側寫</b><span class="sd-tag">已上線</span>：工作／關係／獨處的你——落差＋消耗訊號＋面向地圖。</li>
       <li><b>底色 vs 此刻</b><span class="sd-tag">已上線</span>：疊上你最近一次「問易」的此刻能量輪廓做對照。</li>
-      <li><a href="bagua-field.html"><b>測一個局</b></a><span class="sd-tag">已上線</span>：你×情境——適配度、發揮點、消耗點、應對策略、五行流向。</li>
+      <li><a href="bagua-field.html"><b>測一個局</b></a><span class="sd-tag">已上線</span>：你×情境——適配度、發揮點、消耗點、應對策略。</li>
       <li><a href="bagua-career.html"><b>職業能量配對</b></a><span class="sd-tag">已上線</span>：依底色排出能量比較合／比較耗你的職業方向。</li>
-      <li><b>雙人合盤</b>＋<a href="bagua-team.html"><b>團隊合盤</b></a><span class="sd-tag">已上線</span>：同頻/互補、共同盲點、五行流向、合成人物、能量角色地圖。</li>
+      <li><b>雙人合盤</b>＋<a href="bagua-team.html"><b>團隊合盤</b></a><span class="sd-tag">已上線</span>：同頻/互補、共同盲點、合成人物、能量角色地圖。</li>
       <li><a href="bagua-records.html"><b>我的記錄 ＋ 消耗熱點</b></a><span class="sd-tag">已上線</span>：軌跡一頁看見，縱觀統計反覆消耗你的能量＋應對。</li>
       <li><b>分享</b><span class="sd-tag">已上線</span>：個人/雙人/團隊/局 結果都能下載漂亮圖卡；合盤碼／連結／QR。</li>
       <li><a href="bagua-concepts.html"><b>概念釐清</b></a><span class="sd-tag">已上線</span>：常見疑問（非算命／分數準度／真實vs理想／合盤怎麼算…），用岩無「自由心」的鏡子詩開場。</li>
@@ -369,7 +329,6 @@
 
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'};
-var WLAB={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
 var NS='http://www.w3.org/2000/svg';
 
 // Polarity wheel positions (對極成直徑)
@@ -388,45 +347,45 @@ CYCLE_ORDER.forEach(function(k,i){
 });
 
 var BAGUA=[
- {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'創造／決策',
+ {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'開創／決策',
   phase:'決斷·收束',
-  state:'規劃、領導、創造',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',
-  pair:'坤（承載）',struct:'純陽 ☰ — 全是動能，主開創',
+  state:'規劃、領導、開創',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',
+  pair:'坤（承接）',struct:'純陽 ☰ — 全是動能，主開創',
   remind:'能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。',level:0},
- {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'顯現／覺察',
-  phase:'顯現·夏盛',
+ {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'展現／覺察',
+  phase:'展現·夏盛',
   state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',
-  pair:'坎（收藏）',struct:'中陰 ☲ — 光向外照，主顯明',
+  pair:'坎（沉澱）',struct:'中陰 ☲ — 光向外照，主顯明',
   remind:'看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。',level:0},
- {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'啟動／突破',
-  phase:'啟動·春萌',
+ {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'行動／突破',
+  phase:'行動·春萌',
   state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',
-  pair:'艮（停止）',struct:'初陽 ☳ — 動能剛萌生，主啟動',
+  pair:'艮（喊停）',struct:'初陽 ☳ — 動能剛萌生，主行動',
   remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。',level:0},
  {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',
   phase:'交流·秋收',
   state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',
   pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達',
   remind:'表達與連結帶來喜悅；但說出口之外，也要懂得留白與傾聽。',level:0},
- {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承載／滋養',
-  phase:'承載·化育',
+ {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承接／滋養',
+  phase:'承接·化育',
   state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',
-  pair:'乾（創造）',struct:'純陰 ☷ — 全是承接，主涵養',
-  remind:'能涵容、能支持，是深厚的力量；但承載別人之前，先把自己接住。',level:0},
- {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'收藏／恢復',
+  pair:'乾（開創）',struct:'純陰 ☷ — 全是承接，主涵養',
+  remind:'能涵容、能支持，是深厚的力量；但承接別人之前，先把自己接住。',level:0},
+ {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'沉澱／恢復',
   phase:'休息·冬藏',
   state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',
-  pair:'離（顯現）',struct:'中陽 ☵ — 力量藏於內，主收藏',
+  pair:'離（展現）',struct:'中陽 ☵ — 力量藏於內，主沉澱',
   remind:'懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。',level:0},
- {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'停止／界線',
+ {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'喊停／界線',
   phase:'止·轉折',
-  state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法停止、無法拒絕',
-  pair:'震（啟動）',struct:'上陽 ☶ — 動到頂被止住，主停止',
-  remind:'知道何時停、何時說不，是難得的清醒；但別讓停止變成卡死不動。',level:0},
- {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'擴散／連結',
+  state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法喊停、無法拒絕',
+  pair:'震（行動）',struct:'上陽 ☶ — 動到頂被止住，主喊停',
+  remind:'知道何時停、何時說不，是難得的清醒；但別讓喊停變成卡死不動。',level:0},
+ {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'拓展／連結',
   phase:'連結·成長',
   state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',
-  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結擴散',
+  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結拓展',
   remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。',level:0}
 ];
 var BAGUA_MAP={};
@@ -435,21 +394,21 @@ BAGUA.forEach(function(b){BAGUA_MAP[b.k]=b;});
 // ── 古典資料（認識八卦 / view 5）by key ──────────────────────
 var CLASSIC={
   qian:{nature:'天',quality:'健',family:'父',
-    classic:'純陽至剛，象天運行不息——對應「創造／決策」：開創、領導、自強不息。'},
+    classic:'純陽至剛，象天運行不息——對應「開創／決策」：開創、領導、自強不息。'},
   dui:{nature:'澤',quality:'悅',family:'少女',
     classic:'澤水滋潤大地，象喜悅與交流——對應「交流／分享」：表達、連結、令人愉悅。'},
   li:{nature:'火',quality:'麗',family:'中女',
-    classic:'火附於物而生光明，象明察與依附——對應「顯現／覺察」：看見、洞察、使事物顯明。'},
+    classic:'火附於物而生光明，象明察與依附——對應「展現／覺察」：看見、洞察、使事物顯明。'},
   zhen:{nature:'雷',quality:'動',family:'長男',
-    classic:'雷出地奮，象奮起與開端——對應「啟動／突破」：行動、冒險、打破沉寂。'},
+    classic:'雷出地奮，象奮起與開端——對應「行動／突破」：行動、冒險、打破沉寂。'},
   xun:{nature:'風',quality:'入',family:'長女',
-    classic:'風無孔不入，象柔順滲透——對應「擴散／連結」：協調、滲透、順勢推進。'},
+    classic:'風無孔不入，象柔順滲透——對應「拓展／連結」：協調、滲透、順勢推進。'},
   kan:{nature:'水',quality:'陷',family:'中男',
-    classic:'水行於險而不失其信，象沉潛蓄力——對應「收藏／恢復」：內省、休養、蓄勢。'},
+    classic:'水行於險而不失其信，象沉潛蓄力——對應「沉澱／恢復」：內省、休養、蓄勢。'},
   gen:{nature:'山',quality:'止',family:'少男',
-    classic:'山靜止不動，象知止守界——對應「停止／界線」：適可而止、守住分寸。'},
+    classic:'山靜止不動，象知止守界——對應「喊停／界線」：適可而止、守住分寸。'},
   kun:{nature:'地',quality:'順',family:'母',
-    classic:'純陰至柔，象大地厚德載物——對應「承載／滋養」：包容、支持、滋養萬物。'}
+    classic:'純陰至柔，象大地厚德載物——對應「承接／滋養」：包容、支持、滋養萬物。'}
 };
 // 排列順序：乾兌離震巽坎艮坤
 var EIGHT_ORDER=['qian','dui','li','zhen','xun','kan','gen','kun'];
@@ -460,7 +419,7 @@ var GUA8={
   structure:'三爻皆陽，純陽之卦——至剛至健，全是動能。',
   family:'父',body:'首（頭）',animal:'馬',dir:'西北',season:'秋冬之交',
   spirit:'「天行健，君子以自強不息。」乾是創生的原動力、宇宙運行不息的力量，為開創、決斷、領導之源。',
-  func:'創造／決策。正常＝規劃、領導、開創；過強＝控制慾、獨斷、脫離現實；過弱＝缺方向、缺願景。',
+  func:'開創／決策。正常＝規劃、領導、開創；過強＝控制慾、獨斷、脫離現實；過弱＝缺方向、缺願景。',
   person:'天生的領導者與開創者，目標感強、敢做決定、推得動事情。要學的是放手與柔軟（坤）。',
   remind:'能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。'},
  dui:{sym:'☱',nm:'兌',pin:'duì',nature:'澤',wx:'metal',virtue:'悅（喜悅）',
@@ -474,44 +433,44 @@ var GUA8={
   structure:'外二陽、中爻陰——外明而中虛，如火附於物而生光明，中空故能明察。',
   family:'中女',body:'目（眼）',animal:'雉',dir:'南',season:'夏',
   spirit:'「明兩作，離；大人以繼明照于四方。」離是光明與覺察，是看見、理解、使事物顯明的能量，也象徵文明與智慧。',
-  func:'顯現／覺察。正常＝洞察、理解、看見；過強＝過度分析、想太多；過弱＝看不清方向。',
+  func:'展現／覺察。正常＝洞察、理解、看見；過強＝過度分析、想太多；過弱＝看不清方向。',
   person:'敏銳、善分析、看得透徹。要學的是行動與沉澱（震、坎），別困在想。',
   remind:'看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。'},
  zhen:{sym:'☳',nm:'震',pin:'zhèn',nature:'雷',wx:'wood',virtue:'動（震動、奮起）',
   structure:'初爻陽、上二爻陰——一陽動於下，象徵動能初生、由靜而動、奮起向上。',
   family:'長男',body:'足（腳）',animal:'龍',dir:'東',season:'春',
-  spirit:'「洊雷，震；君子以恐懼脩省。」震是奮起與開端——雷出地奮、萬物萌生，是打破沉寂、啟動、突破的能量。',
-  func:'啟動／突破。正常＝行動、冒險、開始；過強＝衝動、焦躁、停不下來；過弱＝拖延、不敢開始。',
+  spirit:'「洊雷，震；君子以恐懼脩省。」震是奮起與開端——雷出地奮、萬物萌生，是打破沉寂、行動、突破的能量。',
+  func:'行動／突破。正常＝行動、冒險、開始；過強＝衝動、焦躁、停不下來；過弱＝拖延、不敢開始。',
   person:'行動派、有衝勁、勇於開始與冒險。要學的是暫停與界線（艮）。',
   remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。'},
  xun:{sym:'☴',nm:'巽',pin:'xùn',nature:'風',wx:'wood',virtue:'入（順入、滲透）',
   structure:'初爻陰、上二爻陽——一陰伏於下，象徵柔順、潛入、無孔不入。',
   family:'長女',body:'股（大腿）',animal:'雞',dir:'東南',season:'春夏之交',
   spirit:'「隨風，巽；君子以申命行事。」巽是順入與滲透，像風無所不入、像木漸漸生長，是協調、連結、順勢推進的能量。',
-  func:'擴散／連結。正常＝推廣、成長、合作；過強＝擴張失控、分心；過弱＝缺資源連結。',
+  func:'拓展／連結。正常＝推廣、成長、合作；過強＝擴張失控、分心；過弱＝缺資源連結。',
   person:'柔軟有彈性、善協調與滲透、能把資源串起來。要學的是聚焦與界線（艮）。',
   remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。'},
  kan:{sym:'☵',nm:'坎',pin:'kǎn',nature:'水',wx:'water',virtue:'陷（險陷，亦主智）',
   structure:'中爻陽、上下爻陰——陽剛藏於中，象徵內實外柔、力量藏於內，行於險而不失其信。',
   family:'中男',body:'耳',animal:'豕（豬）',dir:'北',season:'冬',
   spirit:'「水洊至，習坎；君子以常德行，習教事。」坎是險陷也是智慧與信實——水雖陷於險，卻流動不息、就下不爭，是沉潛、內省、蓄力的能量。',
-  func:'收藏／恢復。正常＝沉澱、休息、反思；過強＝內耗、逃避、過度退縮；過弱＝不會休息、不會恢復。',
-  person:'深沉內斂、想得深、耐得住沉潛。要學的是顯現與行動（離、震），別讓退縮變逃避。',
+  func:'沉澱／恢復。正常＝沉澱、休息、反思；過強＝內耗、逃避、過度退縮；過弱＝不會休息、不會恢復。',
+  person:'深沉內斂、想得深、耐得住沉潛。要學的是展現與行動（離、震），別讓退縮變逃避。',
   remind:'懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。'},
  gen:{sym:'☶',nm:'艮',pin:'gèn',nature:'山',wx:'earth',virtue:'止（靜止）',
   structure:'上爻陽、下二爻陰——一陽止於上，象徵動到極處而止，如山之靜定。',
   family:'少男',body:'手',animal:'狗',dir:'東北',season:'冬春之交',
   spirit:'「兼山，艮；君子以思不出其位。」艮是靜止與守界——山靜止不移，是知道何時該停、守住分寸、安住當下的能量。',
-  func:'停止／界線。正常＝結束、拒絕、定界；過強＝固執、停滯、不變通；過弱＝無法停止、無法拒絕。',
-  person:'穩定可靠、有原則、守得住界線與節奏。要學的是啟動與彈性（震）。',
-  remind:'知道何時停、何時說不，是難得的清醒；但別讓停止變成卡死不動。'},
+  func:'喊停／界線。正常＝結束、拒絕、定界；過強＝固執、停滯、不變通；過弱＝無法喊停、無法拒絕。',
+  person:'穩定可靠、有原則、守得住界線與節奏。要學的是行動與彈性（震）。',
+  remind:'知道何時停、何時說不，是難得的清醒；但別讓喊停變成卡死不動。'},
  kun:{sym:'☷',nm:'坤',pin:'kūn',nature:'地',wx:'earth',virtue:'順（柔順）',
   structure:'三爻皆陰，純陰之卦——至柔至順，全是承接。',
   family:'母',body:'腹',animal:'牛',dir:'西南',season:'夏秋之交',
-  spirit:'「地勢坤，君子以厚德載物。」坤是大地般的承載與滋養——柔順而能容、能成全萬物，是包容、支持、孕育的能量。',
-  func:'承載／滋養。正常＝接納、支持、穩定；過強＝過度承擔、失去自我；過弱＝缺耐心、缺穩定。',
+  spirit:'「地勢坤，君子以厚德載物。」坤是大地般的承接與滋養——柔順而能容、能成全萬物，是包容、支持、孕育的能量。',
+  func:'承接／滋養。正常＝接納、支持、穩定；過強＝過度承擔、失去自我；過弱＝缺耐心、缺穩定。',
   person:'溫厚包容、有耐心、是大家的依靠。要學的是為自己開創與設界（乾、艮）。',
-  remind:'能涵容、能支持，是深厚的力量；但承載別人之前，先把自己接住。'}
+  remind:'能涵容、能支持，是深厚的力量；但承接別人之前，先把自己接住。'}
 };
 var GUA8_ORDER=['qian','dui','li','zhen','xun','kan','gen','kun'];
 
@@ -551,7 +510,6 @@ function renderEight(){
           '<span class="gc-pin">'+g.pin+'</span>'+
           '<span class="gc-nature">'+g.nature+'</span>'+
           '<span class="gc-virtue">'+g.virtue+'</span>'+
-          '<span class="gc-wx" style="background:'+col+'">'+WLAB[g.wx]+'</span>'+
         '</div>'+
         '<div class="gc-symbols"><b>象徵</b>　家人 '+g.family+'｜身體 '+g.body+'｜動物 '+g.animal+'｜方位 '+g.dir+'｜季節 '+g.season+'</div>'+
         '<div class="gc-sec">結構</div>'+
@@ -573,152 +531,6 @@ function renderEight(){
 
 var currentView=1;
 var activeKey='qian';
-
-// ── Wuxing (五行) data ────────────────────────────────────────
-// Pentagon layout: 木(top)→火(top-right)→土(bottom-right)→金(bottom-left)→水(top-left), clockwise
-// Center 200,200, radius 120; angles: -90, -18, 54, 126, 198 degrees
-var WX_CX=200, WX_CY=200, WX_R=120;
-var WX_ELEMENTS=[
-  {id:'wood', lbl:'木', guaLbl:'震巽', wx:'wood',
-   sheng:'火', shengBy:'水', ke:'土', keBy:'金',
-   angle:-90},
-  {id:'fire', lbl:'火', guaLbl:'離',   wx:'fire',
-   sheng:'土', shengBy:'木', ke:'金', keBy:'水',
-   angle:-18},
-  {id:'earth',lbl:'土', guaLbl:'艮坤',wx:'earth',
-   sheng:'金', shengBy:'火', ke:'水', keBy:'木',
-   angle:54},
-  {id:'metal',lbl:'金', guaLbl:'乾兌',wx:'metal',
-   sheng:'水', shengBy:'土', ke:'木', keBy:'火',
-   angle:126},
-  {id:'water',lbl:'水', guaLbl:'坎',  wx:'water',
-   sheng:'木', shengBy:'金', ke:'火', keBy:'土',
-   angle:198}
-];
-var WX_MAP={};
-WX_ELEMENTS.forEach(function(e){
-  var rad=e.angle*Math.PI/180;
-  e.x=Math.round(WX_CX+WX_R*Math.cos(rad));
-  e.y=Math.round(WX_CY+WX_R*Math.sin(rad));
-  WX_MAP[e.id]=e;
-});
-var WX_BY_LBL={};
-WX_ELEMENTS.forEach(function(e){ WX_BY_LBL[e.lbl]=e; });
-// 相生順序: 木→火→土→金→水→木
-var SHENG_ORDER=['wood','fire','earth','metal','water'];
-// 相剋順序: 木→土→水→火→金→木 (pentagram skip-one)
-var KE_ORDER=['wood','earth','water','fire','metal'];
-
-var activeWxId=null;
-
-// ── Wuxing render ─────────────────────────────────────────────
-function renderWuxing(){
-  var NR=36; // node radius
-  var OFFSET=6; // arrow gap from circle edge
-
-  // ─ 相生 lines ─
-  var sg=document.getElementById('wx-sheng');
-  sg.innerHTML='';
-  for(var i=0;i<SHENG_ORDER.length;i++){
-    var e1=WX_MAP[SHENG_ORDER[i]];
-    var e2=WX_MAP[SHENG_ORDER[(i+1)%SHENG_ORDER.length]];
-    var dx=e2.x-e1.x, dy=e2.y-e1.y;
-    var dist=Math.sqrt(dx*dx+dy*dy);
-    var ux=dx/dist, uy=dy/dist;
-    var sx=e1.x+ux*(NR+OFFSET), sy=e1.y+uy*(NR+OFFSET);
-    var ex=e2.x-ux*(NR+OFFSET+6), ey=e2.y-uy*(NR+OFFSET+6);
-    var path=document.createElementNS(NS,'path');
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke','var(--pine)');
-    path.setAttribute('stroke-width','2');
-    path.setAttribute('opacity','.8');
-    path.setAttribute('d','M'+sx+','+sy+' L'+ex+','+ey);
-    path.setAttribute('marker-end','url(#arrow-sheng)');
-    sg.appendChild(path);
-  }
-
-  // ─ 相剋 lines ─
-  var kg=document.getElementById('wx-ke');
-  kg.innerHTML='';
-  for(var j=0;j<KE_ORDER.length;j++){
-    var k1=WX_MAP[KE_ORDER[j]];
-    var k2=WX_MAP[KE_ORDER[(j+1)%KE_ORDER.length]];
-    var kline=document.createElementNS(NS,'line');
-    kline.setAttribute('x1',k1.x);kline.setAttribute('y1',k1.y);
-    kline.setAttribute('x2',k2.x);kline.setAttribute('y2',k2.y);
-    kline.setAttribute('stroke','var(--cinnabar)');
-    kline.setAttribute('stroke-width','1.2');
-    kline.setAttribute('stroke-dasharray','5 4');
-    kline.setAttribute('opacity','.7');
-    kg.appendChild(kline);
-  }
-
-  // ─ Nodes ─
-  var ng=document.getElementById('wx-nodes');
-  ng.innerHTML='';
-  WX_ELEMENTS.forEach(function(e){
-    var grp=document.createElementNS(NS,'g');
-    grp.setAttribute('style','cursor:pointer');
-    grp.setAttribute('data-wxid',e.id);
-
-    var c=document.createElementNS(NS,'circle');
-    c.setAttribute('cx',e.x);c.setAttribute('cy',e.y);c.setAttribute('r',NR);
-    c.setAttribute('fill',W[e.wx]);
-    c.setAttribute('stroke',activeWxId===e.id?'var(--ink)':'#fff');
-    c.setAttribute('stroke-width',activeWxId===e.id?3:2);
-
-    var lbl=document.createElementNS(NS,'text');
-    lbl.setAttribute('x',e.x);lbl.setAttribute('y',e.y-4);
-    lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','central');
-    lbl.setAttribute('font-size','22');lbl.setAttribute('fill','#fff');
-    lbl.setAttribute('font-family','serif');lbl.setAttribute('pointer-events','none');
-    lbl.textContent=e.lbl;
-
-    var sub=document.createElementNS(NS,'text');
-    sub.setAttribute('x',e.x);sub.setAttribute('y',e.y+17);
-    sub.setAttribute('text-anchor','middle');
-    sub.setAttribute('font-size','10');sub.setAttribute('fill','rgba(255,255,255,.85)');
-    sub.setAttribute('font-family','ui-sans-serif,sans-serif');
-    sub.setAttribute('pointer-events','none');
-    sub.textContent=e.guaLbl;
-
-    grp.appendChild(c);grp.appendChild(lbl);grp.appendChild(sub);
-    grp.addEventListener('click',function(ev){
-      activeWxId=ev.currentTarget.getAttribute('data-wxid');
-      renderWuxing();
-      showWuxingDetail(activeWxId);
-    });
-    ng.appendChild(grp);
-  });
-}
-
-function showWuxingDetail(id){
-  var e=WX_MAP[id];
-  if(!e) return;
-  var col=W[e.wx];
-
-  // 白話說明
-  var shengEl=WX_BY_LBL[e.sheng], shengByEl=WX_BY_LBL[e.shengBy];
-  var keEl=WX_BY_LBL[e.ke], keByEl=WX_BY_LBL[e.keBy];
-
-  var shengTxt=e.lbl+'生'+shengEl.lbl+'（補'+shengEl.lbl+'先養'+e.lbl+'）；'+
-               shengByEl.lbl+'生'+e.lbl+'（要養'+e.lbl+'可養'+shengByEl.lbl+'）';
-  var keTxt=e.lbl+'剋'+keEl.lbl+'（'+e.lbl+'旺會壓住'+keEl.lbl+'）；'+
-            keByEl.lbl+'剋'+e.lbl+'（'+keByEl.lbl+'旺會耗損'+e.lbl+'）';
-
-  document.getElementById('detail').innerHTML=
-    '<div class="dh">'+
-      '<div class="dsym" style="color:'+col+';font-size:32px;font-weight:700">'+e.lbl+'</div>'+
-      '<div><h2>'+e.lbl+'行</h2><div class="dfn">所屬卦：'+e.guaLbl+'</div></div>'+
-      '<span class="wuxing" style="background:'+col+'">五行</span>'+
-    '</div>'+
-    '<div class="drow"><b>生（供給）</b><span>我生 <b style="color:'+W[shengEl.wx]+'">'+e.sheng+'（'+shengEl.guaLbl+'）</b>；生我者 <b style="color:'+W[shengByEl.wx]+'">'+e.shengBy+'（'+shengByEl.guaLbl+'）</b></span></div>'+
-    '<div class="drow"><b>剋（壓制）</b><span>我剋 <b style="color:'+W[keEl.wx]+'">'+e.ke+'（'+keEl.guaLbl+'）</b>；剋我者 <b style="color:'+W[keByEl.wx]+'">'+e.keBy+'（'+keByEl.guaLbl+'）</b></span></div>'+
-    '<div class="pair-note" style="margin-top:10px">'+
-      '<b style="color:var(--pine)">相生</b>：'+shengTxt+'<br>'+
-      '<b style="color:var(--cinnabar)">相剋</b>：'+keTxt+
-    '</div>';
-}
 
 // ── Render nodes ──────────────────────────────────────────────
 function getPos(b){
@@ -886,7 +698,7 @@ function showDetail(k,isV3){
   document.getElementById('detail').innerHTML=
     '<div class="dh"><div class="dsym" style="color:'+W[b.wx]+'">'+b.sym+'</div>'+
     '<div><h2>'+b.nm+'卦</h2><div class="dfn">'+b.fn+'</div></div>'+
-    '<span class="wuxing" style="background:'+W[b.wx]+'">'+WLAB[b.wx]+'</span></div>'+
+    '</div>'+
     (levelRow||'')+
     '<div class="drow"><b>狀態表現</b>'+stateSpan+'</div>'+
     '<div class="drow"><b>過強</b>'+overSpan+'</div>'+
@@ -929,8 +741,8 @@ function updateV3Summary(){
 
 // ── Persona builder ──────────────────────────────────────────
 var PERSONA_TITLE={
-  qian:'乾金·開創者',dui:'兌金·連結者',li:'離火·洞見者',xun:'巽木·協作者',
-  zhen:'震木·行動者',kan:'坎水·沉潛者',gen:'艮土·守界者',kun:'坤土·承載者'
+  qian:'乾·開創者',dui:'兌·連結者',li:'離·洞見者',xun:'巽·協作者',
+  zhen:'震·行動者',kan:'坎·沉潛者',gen:'艮·守界者',kun:'坤·承載者'
 };
 // 「衝/動」類 & 「休/止」類
 var ACT_KEYS={zhen:1,qian:1};
@@ -1037,18 +849,17 @@ function switchView(v){
   if(v!==3) BAGUA.forEach(function(b){b.level=0;});
 
   // Buttons
-  [1,2,3,4,5].forEach(function(i){
+  [1,2,3,5].forEach(function(i){
     var btn=document.getElementById('btn-v'+i);
     if(btn) btn.classList.toggle('active',i===v);
   });
 
   // Copy blocks
-  [1,2,3,4,5].forEach(function(i){
+  [1,2,3,5].forEach(function(i){
     var el=document.getElementById('copy-v'+i);
     if(el) el.classList.toggle('hidden',i!==v);
   });
 
-  var isV4=(v===4);
   var isV5=(v===5);
 
   // Axes panel (only view 1)
@@ -1058,19 +869,17 @@ function switchView(v){
   document.getElementById('v3-controls').style.display=(v===3)?'block':'none';
   if(v!==3) document.getElementById('v3-persona').style.display='none';
 
-  // Bagua wheel vs wuxing SVG vs 認識八卦
-  document.querySelector('.wheel-wrap').style.display=(isV4||isV5)?'none':'';
-  document.getElementById('bagua-legend').style.display=(isV4||isV5)?'none':'';
-  document.getElementById('wuxing-wrap').style.display=isV4?'block':'none';
-  document.getElementById('wuxing-legend').style.display=isV4?'flex':'none';
+  // Bagua wheel vs 認識八卦
+  document.querySelector('.wheel-wrap').style.display=isV5?'none':'';
+  document.getElementById('bagua-legend').style.display=isV5?'none':'';
   document.getElementById('eight-wrap').style.display=isV5?'block':'none';
 
   // Detail panel & foot: hidden in view 5 (cards are self-contained)
   document.getElementById('detail').style.display=isV5?'none':'';
   document.getElementById('foot-text').style.display=isV5?'none':'';
 
-  // Axis lines & cycle arrows: hide when v4 / v5
-  if(!isV4 && !isV5){
+  // Axis lines & cycle arrows: hide when v5
+  if(!isV5){
     updateAxisLines();
     renderCycleArrows();
     renderNodes();
@@ -1086,16 +895,11 @@ function switchView(v){
   document.getElementById('hint-line').textContent=
     v===2?'▼ 點任一卦看詳情，箭頭顯示能量流轉方向':
     v===3?'▼ 點節點循環切換狀態（正常→過強→過弱）':
-    v===4?'▼ 點五行節點看生剋關係':
     v===5?'▼ 八卦特性一覽':
     '▼ 點圖上任一卦';
 
   if(v===3){updateV3Summary();showDetail(activeKey,true);}
-  else if(v===4){
-    if(!activeWxId) activeWxId='wood';
-    renderWuxing();
-    showWuxingDetail(activeWxId);
-  } else if(v===5){
+  else if(v===5){
     renderEight();
   } else {
     showDetail(activeKey,false);
