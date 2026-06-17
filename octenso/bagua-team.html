@@ -721,10 +721,10 @@ var TEAM_TIPS={
 function fn1t(k){ return E[k].fn.split('／')[0]; }
 // 四象 · 生命系統（與 persona 同一套；團隊用合成盤）
 var FOURXIANG=[
-  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'這支隊怎麼定方向、又怎麼撐住它——訂目標、做決定、扛得起結果。',q:'要創造什麼？又如何承載它？'},
-  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'這支隊怎麼讓事情動起來——敢開始、推著往前、帶動彼此。',q:'要啟動什麼？又如何讓它擴散？'},
-  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'這支隊怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達被看見。',q:'真正看見了什麼？又如何顯現它？'},
-  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'這支隊怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通。',q:'該停下什麼？又如何重新交流？'}
+  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'這支隊怎麼定方向、又怎麼撐住它——訂目標、做決定、扛得起結果。',q:'要創造什麼？又如何承載它？',over:'建構這塊很強——過頭時容易方向太多頭、誰都想主導、難放手分工。',under:'建構偏弱時，容易沒共同方向、責任歸屬不清——先定一個大家認的目標。'},
+  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'這支隊怎麼讓事情動起來——敢開始、推著往前、帶動彼此。',q:'要啟動什麼？又如何讓它擴散？',over:'推動很強——過頭時容易一直開新案、節奏太快，有人被拖著跑、收尾沒人顧。',under:'推動偏弱時，容易議而不決、起步慢——指定有人負責「把事推出去」。'},
+  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'這支隊怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達被看見。',q:'真正看見了什麼？又如何顯現它？',over:'認知很強——過頭時容易陷入分析、開會太多、想太細而動不了。',under:'認知偏弱時，容易看不清狀況、訊息不流通——留時間一起把問題講清楚。'},
+  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'這支隊怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通。',q:'該停下什麼？又如何重新交流？',over:'調節很強——過頭時容易太守成、不敢冒險、或界線多到綁手綁腳。',under:'調節偏弱時，容易停不下來、不會收尾、衝突悶著沒處理——練習喊停與覆盤。'}
 ];
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
@@ -736,6 +736,8 @@ function fourXiangHtml(sc){
     else if(L<=40&&R<=40){ tag='偏少用'; desc='兩端目前都偏弱——這個系統較少啟動，是有空間的部分。'; }
     else if(gap>=12){ var hp=(L>R?s.lL:s.rL); tag='偏'+hp; desc='明顯偏「'+hp+'」，另一端較少。'; }
     else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
+    var hiv=Math.max(L,R);
+    var note=hiv>=70?s.over:(hiv<=40?s.under:'');
     return '<div style="padding:12px 0 13px;border-bottom:1px solid var(--line)">'
       +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px">'+s.en+'</div>'
       +'<div style="display:flex;justify-content:space-between;font-family:\'Noto Sans TC\',sans-serif;font-size:13px;font-weight:700"><span>'+s.xiang+'·'+s.nm+'</span><span style="color:var(--pine)">'+tag+'</span></div>'
@@ -746,6 +748,7 @@ function fourXiangHtml(sc){
         +'<div style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);left:'+markLeft+'%;background:'+col+'"></div>'
       +'</div>'
       +'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">'+desc+'<br><span>— '+s.q+'</span></div>'
+      +(note?'<div style="font-family:\'Noto Sans TC\',sans-serif;font-size:11.5px;color:var(--gold);line-height:1.7;margin-top:6px"><b>提醒</b> · '+note+'</div>':'')
     +'</div>';
   }).join('');
 }
@@ -780,37 +783,11 @@ function showTeam(){
     +'</div>';
   }).join('');
 
-  // 多樣性判讀
+  // 多樣性 / 共同盲點 / 能量覆蓋度 / 最佳互補配對（皆供下方唯一綜合結論使用）
   var dv=diversity(members);
-  var divText = dv.concentrated
-    ? '你們的能量偏集中在「<span class="em">'+E[dv.topMost].nm+'·'+E[dv.topMost].fn.split('／')[0]+'</span>」——默契高、容易一拍即合，但小心一起忽略同樣的盲點。'
-    : '你們的能量很<span class="em">多元</span>（共 '+dv.distinct+' 種主能量）——互相補位的空間大，遇事不容易只有一種聲音。';
-
-  // 共同盲點
   var blind=blindSpots(members);
-  var blindText = blind.length
-    ? '你們整隊都偏低「<span class="down">'+blind.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('』『')+'</span>」——這是全隊<b>共同的空白處</b>，容易在這裡一起卡住，少有人補上這份能量。'
-    : '你們的能量涵蓋面蠻廣——沒有明顯的集體盲點，大致每種能量都有人撐著。';
-
-  // 能量覆蓋度
   var cov=energyCoverage(members);
-  var covText = cov.gaps.length
-    ? '你們團隊有人扛起 <span class="em">'+cov.coveredCount+'</span> 種能量；但「<span class="down">'
-        +cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('』『')
-        +'</span>」沒人罩，遇到需要它的場面會吃力。'
-    : '你們團隊有人扛起 <span class="em">'+cov.coveredCount+'</span> 種能量——每一種能量都至少有人能撐場，遇事不太會整隊空著。';
-
-  // 最佳互補配對
   var pair=bestPair(members);
-  var pairText='';
-  if(pair){
-    if(pair.score>0){
-      pairText='最互補的搭檔：<span class="em">'+esc(pair.a.name)+'</span> × <span class="em">'+esc(pair.b.name)
-        +'</span>——一個的弱項，剛好是另一個的強項，配在一起最容易補位。';
-    } else {
-      pairText='目前還找不到特別互補的一對——你們的強弱項蠻接近，補位空間不大，需要的能量可能得有人刻意去長。';
-    }
-  }
 
   // 具體建議：只在「真的有偏弱能量」時才出現（沒缺口就交給下方綜合結論）
   var hasGaps=(blind&&blind.length)||(cov.gaps&&cov.gaps.length);
@@ -829,12 +806,19 @@ function showTeam(){
       '有 <b>'+cov.gaps.length+'</b> 種能量整隊偏弱（'+cov.gaps.map(function(k){return E[k].nm+'·'+E[k].fn.split('／')[0];}).join('、')+'）——遇到需要它的場面會吃力。',
       '<b>最該優先補</b>：找一個這方面強的人，或團隊裡指定有人補位。'
     ]);
-  } else if((!pair||pair.score<=0)||dv.concentrated){
+  } else if(dv.concentrated){
     vHead='基本盤夠用，但偏同質';
     vBody=bullets([
       '<b>基本盤夠</b>：多數能量都有人能撐，短期不會整隊空著。',
-      '<b>偏同質</b>：大家領頭的主能量偏集中'+(dv.concentrated?('（'+dv.distinct+' 種主能量）'):'')+'。',
-      '<b>想更立體</b>：缺的不是救火的人、是多樣性——找一個主能量明顯不同的夥伴，或團隊裡有人刻意長。不急，但補了會更全面。'
+      '<b>偏同質</b>：大家領頭的主能量偏集中（'+dv.distinct+' 種主能量）——容易一拍即合，但也容易一起忽略同樣的盲點。',
+      '<b>想更立體</b>：找一個主能量明顯不同的夥伴，或團隊裡有人刻意長不一樣的能量。不急，但補了會更全面。'
+    ]);
+  } else if(!pair||pair.score<=0){
+    vHead='基本盤夠用，補位空間有限';
+    vBody=bullets([
+      '<b>基本盤夠</b>：多數能量都有人能撐，短期不會整隊空著。',
+      '<b>補位空間有限</b>：大家的強弱項蠻接近，遇到難題時，比較難靠「你補我、我補你」化解。',
+      '<b>想更穩</b>：缺的那種能量，可能得有人刻意去長，而不是等別人補。'
     ]);
   } else {
     vHead='底盤完整、又多元';

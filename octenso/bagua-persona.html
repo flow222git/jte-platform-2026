@@ -865,10 +865,10 @@ function pairRowsHtml(sc){
 }
 // 四象 · 生命系統（古典錯卦配對 乾坤/震巽/坎離/艮兌，整理成四個生命功能系統）
 var FOURXIANG=[
-  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'你怎麼定方向、又怎麼撐住它——訂目標、下決定，然後扛得起結果。',q:'要創造什麼？又如何承載它？'},
-  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'你怎麼讓事情動起來——敢開始、推著往前，還能帶動別人一起。',q:'要啟動什麼？又如何讓它擴散？'},
-  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'你怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達、被看見。',q:'真正看見了什麼？又如何顯現它？'},
-  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'你怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通交流。',q:'該停下什麼？又如何重新交流？'}
+  {xiang:'天地',nm:'建構系統',en:'Purpose Engine',   l:'qian',r:'kun',lL:'創造',rL:'承載',plain:'你怎麼定方向、又怎麼撐住它——訂目標、下決定，然後扛得起結果。',q:'要創造什麼？又如何承載它？',over:'建構你使得很重——過頭時容易什麼都自己扛、抓著方向不放、難放手授權。',under:'建構偏弱時，容易沒方向、不太想扛責任——先替自己定一個小目標開始。'},
+  {xiang:'雷風',nm:'推動系統',en:'Action Engine',    l:'zhen',r:'xun',lL:'啟動',rL:'擴散',plain:'你怎麼讓事情動起來——敢開始、推著往前，還能帶動別人一起。',q:'要啟動什麼？又如何讓它擴散？',over:'推動你使得很重——過頭時容易一直開新局、停不下來，旁邊的人跟不上。',under:'推動偏弱時，容易拖延、不敢開始、怕改變——挑一件小事先動起來。'},
+  {xiang:'水火',nm:'認知系統',en:'Awareness Engine', l:'kan', r:'li', lL:'收藏',rL:'顯現',plain:'你怎麼看懂、又怎麼說清楚——向內感受洞察，向外表達、被看見。',q:'真正看見了什麼？又如何顯現它？',over:'認知你使得很重——過頭時容易想太多、太敏感、或太想被看見，反而累。',under:'認知偏弱時，容易看不清、感受鈍、表達模糊——多停下來問自己真正的感覺。'},
+  {xiang:'山澤',nm:'調節系統',en:'Regulation Engine',l:'gen', r:'dui',lL:'停止',rL:'交流',plain:'你怎麼喊停、又怎麼重新連上——設界線、收尾沉澱，也懂得溝通交流。',q:'該停下什麼？又如何重新交流？',over:'調節你使得很重——過頭時容易變固執、封閉、社交耗竭、或太愛爭。',under:'調節偏弱時，容易不會拒絕、不會收尾、把想法悶著——練習喊停與設界線。'}
 ];
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
@@ -880,6 +880,8 @@ function fourXiangHtml(sc){
     else if(L<=40&&R<=40){ tag='偏少用'; desc='兩端目前都偏弱——這個系統你較少啟動，是有空間的部分。'; }
     else if(gap>=12){ var hp=(L>R?s.lL:s.rL); tag='偏'+hp; desc='明顯偏「'+hp+'」，另一端較少。'; }
     else { tag='拿捏均衡'; desc='兩端拿捏得還算平衡。'; }
+    var hiv=Math.max(L,R);
+    var note=hiv>=70?s.over:(hiv<=40?s.under:''); // 過強→過頭提醒；過弱→補強提醒
     return '<div class="pair-bar">'
       +'<div style="font-family:\'Jost\',ui-sans-serif,sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:2px">'+s.en+'</div>'
       +'<div class="pb-ends"><span class="pb-l">'+s.xiang+'·'+s.nm+'</span><span class="pb-r" style="color:var(--pine)">'+tag+'</span></div>'
@@ -887,6 +889,7 @@ function fourXiangHtml(sc){
       +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:1px 0 5px">'+E[s.l].nm+'·'+s.lL+'　↔　'+s.rL+'·'+E[s.r].nm+'</div>'
       +'<div class="pb-track"><div class="pb-mid"></div><div class="pb-mark" style="left:'+markLeft+'%;background:'+col+'"></div></div>'
       +'<div class="pb-verdict">'+desc+'<br><span style="color:var(--muted)">— '+s.q+'</span></div>'
+      +(note?'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--gold);line-height:1.7;margin-top:6px"><b>提醒</b> · '+note+'</div>':'')
     +'</div>';
   }).join('');
 }
@@ -1717,11 +1720,6 @@ function runCompat(){
   var port=buildPortrait(merged,mSorted);
   var msig=signatureTitle(pfBuild(merged)); // 合成人物也用格局標題（自適應形狀）
 
-  var blindTxt = blind.length
-    ? '你們都偏低「'+blind.map(function(k){return E[k].nm+'／'+E[k].fn.split('／')[0];}).join('』『')+'」——這是兩人<b>共同的空白處</b>，這段關係容易在這裡一起卡住、少了這份能量。'
-    : '沒有明顯的共同盲點——你們在低分項上不太重疊，常能互相補位。';
-  var fricTxt = '差最多的是「'+fric.map(function(k){return E[k].nm+'／'+E[k].fn.split('／')[0]+'」（你 '+mine[k]+'、他 '+other[k];}).join('）、「')+'）。這些落差可能是互補的養分，也可能是步調上的摩擦——看你們怎麼用它。';
-
   // 具體建議：共同盲點→一起補；最大摩擦點→橋接落差
   var tipItems=[];
   blind.forEach(function(k){ if(COMPAT_TIPS[k]) tipItems.push({lab:'一起補上「'+E[k].nm+'·'+E[k].fn.split('／')[0]+'」',tip:COMPAT_TIPS[k].blind}); });
@@ -1747,6 +1745,12 @@ function runCompat(){
     pairBody=bullets([
       '補得上彼此的缺口、組合更完整。',
       '代價是<b>步調與做事方式要磨</b>'+(fric.length?('（落差最大在「'+enName(fric[0])+'」）'):'')+'。'
+    ]);
+  } else if(sim<55 && comp<50){
+    pairKind='各自獨立的一對';
+    pairBody=bullets([
+      '你們既不特別相近、也不特別互補——比較像兩條各走各的線。',
+      '不是不合，是<b>交集要刻意找</b>：挑一兩件想一起做的事，慢慢把關係經營出來。'
     ]);
   } else {
     pairKind='平衡的一對';
