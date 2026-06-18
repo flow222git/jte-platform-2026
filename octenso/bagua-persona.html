@@ -1678,6 +1678,7 @@ function showResult(viewScores){
      +'<button class="retake" onclick="startScenario()">選一個最耗你的場景 →</button>'
    +'</div>'
    +'<div class="block" id="facet-menu"></div>'
+   +feedbackBlock('底色')
    +'<div class="sharev2">'
      +'<h3>把這份報告分享出去</h3>'
      +'<div class="sv-sub">朋友打開連結就能看你的能量速寫，也能測自己的、跟你合盤。</div>'
@@ -2258,6 +2259,64 @@ function downloadReportPDF(){
   for(var i=0;i<ds.length;i++){ prev[i]=ds[i].open; ds[i].open=true; }
   window.print();
   setTimeout(function(){ for(var j=0;j<ds.length;j++){ ds[j].open=prev[j]; } },600);
+}
+
+// ════ 回饋迴路：報告後收「這像你嗎」＋哪段＋一句話 → 本機 log ＋ Firestore 中央彙總 ════
+var FB_KEY='AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg';
+var _fbRating=null, _fbSection='', _fbType='底色';
+function fbRate(r){
+  _fbRating=r;
+  var m=document.getElementById('fb-rate'); if(m) m.style.display='none';
+  var more=document.getElementById('fb-more'); if(more) more.style.display='block';
+}
+function fbSection(el,s){
+  _fbSection=(_fbSection===s)?'':s;
+  var ow=document.getElementById('fb-sections'); if(ow){ var bs=ow.querySelectorAll('button');
+    for(var i=0;i<bs.length;i++) bs[i].classList.toggle('sel', bs[i]===el && _fbSection===s); }
+}
+function fbSubmit(){
+  var base=getBase()||{}, sc=base.scores||{}, cost=calibResults();
+  var cmtEl=document.getElementById('fb-comment'), cmt=cmtEl?(cmtEl.value||'').slice(0,500):'';
+  var p={ rating:_fbRating||'', section:_fbSection||'', comment:cmt, resultType:_fbType,
+    top:base.top||'', title:base.title||'', scores:sc, cost:(cost?cost.items:null),
+    email:(localStorage.getItem('jte_user_email')||''), ts:new Date().toISOString() };
+  try{ var arr=JSON.parse(localStorage.getItem('bagua_feedback_v1')||'[]'); arr.push(p);
+    localStorage.setItem('bagua_feedback_v1', JSON.stringify(arr.slice(-50))); }catch(e){}
+  fbPost(p);
+  var more=document.getElementById('fb-more'); if(more) more.style.display='none';
+  var done=document.getElementById('fb-done'); if(done) done.style.display='block';
+}
+function fbPost(p){
+  try{
+    var url='https://firestore.googleapis.com/v1/projects/jointoenjoy/databases/(default)/documents/octenso_feedback?key='+FB_KEY;
+    var body={fields:{
+      rating:{stringValue:String(p.rating)}, section:{stringValue:String(p.section)}, comment:{stringValue:String(p.comment)},
+      resultType:{stringValue:String(p.resultType)}, top:{stringValue:String(p.top)}, title:{stringValue:String(p.title)},
+      email:{stringValue:String(p.email)}, ts:{stringValue:String(p.ts)},
+      scores:{stringValue:JSON.stringify(p.scores||{})}, cost:{stringValue:JSON.stringify(p.cost||[])}
+    }};
+    if(window.fetch) fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).catch(function(){});
+  }catch(e){}
+}
+// 報告用的回饋區塊
+function feedbackBlock(resultType){
+  return '<div class="block" id="fb-block"><h3>這份側寫，像你嗎？</h3>'
+    +'<div class="pair-sub">你的回饋會幫我們把它調得更準（匿名）。</div>'
+    +'<div id="fb-rate" class="sv-row" style="justify-content:flex-start;gap:8px;margin-top:4px">'
+      +'<button class="sv-btn" onclick="_fbType=\''+resultType+'\';fbRate(\'很像\')">🟢 很像</button>'
+      +'<button class="sv-btn" onclick="_fbType=\''+resultType+'\';fbRate(\'還行\')">🟡 還行</button>'
+      +'<button class="sv-btn" onclick="_fbType=\''+resultType+'\';fbRate(\'不太像\')">🔴 不太像</button>'
+    +'</div>'
+    +'<div id="fb-more" style="display:none;margin-top:13px">'
+      +'<div class="pair-sub">哪一段最戳／最不對？（可選）</div>'
+      +'<div id="fb-sections" class="sv-row" style="justify-content:flex-start;gap:7px;margin-bottom:10px">'
+        +['整體側寫','能格調校','四個系統','你最鮮明的能量','型卡'].map(function(s){return '<button class="sv-btn" onclick="fbSection(this,\''+s+'\')">'+s+'</button>';}).join('')
+      +'</div>'
+      +'<textarea id="fb-comment" placeholder="想補一句？（可空）" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:ui-sans-serif,sans-serif;font-size:13px;background:var(--surface2);color:var(--ink);min-height:64px;resize:vertical"></textarea>'
+      +'<div style="margin-top:10px"><button class="sv-btn primary" onclick="fbSubmit()">送出回饋</button></div>'
+    +'</div>'
+    +'<div id="fb-done" class="pair-sub" style="display:none;color:var(--pine)">謝謝你 🙏 收到了，這會幫我們把引擎調得更準。</div>'
+  +'</div>';
 }
 function copyShareLink(){
   var sc=shareScores(); if(!sc) return;

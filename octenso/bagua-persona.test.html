@@ -527,6 +527,13 @@ document.getElementById('f').onload=function(){
     ok(!!d.querySelector('#result .radar-wrap svg'),'結果雷達 render');
     localStorage.removeItem('bagua_ctx_v1');
 
+    // 48. 回饋迴路：區塊 render + 評分鈕（不觸發 POST）
+    ok(typeof w.feedbackBlock==='function' && w.feedbackBlock('底色').indexOf('這份側寫，像你嗎')>=0,'feedbackBlock 含問句');
+    w.answers=new Array(24).fill(3); w.currentFacet=null; w.showResult();
+    ok(!!d.getElementById('fb-block'),'結果頁含回饋區塊');
+    ok(!!d.getElementById('fb-rate') && d.getElementById('fb-rate').querySelectorAll('button').length===3,'回饋 3 顆評分鈕');
+    ok(d.querySelector('#result').textContent.indexOf('像你嗎')>=0,'回饋問句出現在結果');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
