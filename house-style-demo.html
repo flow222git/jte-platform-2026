@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEMO · 全站統一視覺（house style）感覺稿</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&family=Noto+Serif+TC:wght@300;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;
+    --muted:#6f6657;--line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34;--blue:#4d6b86}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-weight:300;
+    line-height:1.85;-webkit-font-smoothing:antialiased;padding:40px 18px 80px}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .page-head{max-width:760px;margin:0 auto 8px;text-align:center}
+  .page-head .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase}
+  .page-head h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:clamp(22px,5vw,30px);letter-spacing:.04em;margin:8px 0 10px}
+  .page-head p{font-size:13.5px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.9}
+  .flag{display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:11px;color:#fff;background:var(--cinnabar);
+    border-radius:999px;padding:3px 12px;letter-spacing:.1em;margin-bottom:18px}
+
+  .grid{max-width:1180px;margin:30px auto 0;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  /* 每個工具一張「裝置框」 */
+  .frame{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+  .frame .cap{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;
+    padding:11px 18px;border-bottom:1px solid var(--line);background:var(--surface2)}
+  .frame .cap b{color:var(--ink);font-family:"Noto Sans TC",sans-serif;font-weight:400;letter-spacing:.04em}
+  .screen{padding:26px 20px 24px;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:330px;justify-content:center}
+  .eb{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  .ttl{font-family:"Noto Serif TC","Songti TC",serif;font-weight:600;font-size:24px;letter-spacing:.06em;margin-bottom:6px}
+  .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px;line-height:1.8}
+  /* 細緻按鈕（V1） */
+  .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:12.5px;letter-spacing:.16em;padding:10px 26px;
+    border:1px solid var(--hair);border-radius:999px;color:var(--muted);display:inline-block;cursor:default;
+    transition:border-color .3s,color .3s,letter-spacing .3s}
+  .cta:hover{border-color:var(--ink);color:var(--ink);letter-spacing:.2em}
+  .enso{font-family:"Noto Serif TC",serif;font-size:40px;color:var(--ink);line-height:1;margin-bottom:6px;opacity:.85}
+
+  /* 元件 */
+  svg{display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+  .chip{font-size:12px;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 14px;background:var(--bg)}
+  .ring{position:relative;width:128px;height:128px;margin-bottom:16px}
+  .ring i{position:absolute;border:1px solid var(--pine);border-radius:50%;inset:0;opacity:.5}
+  .ring i:nth-child(2){inset:16px;opacity:.7} .ring i:nth-child(3){inset:34px;border-color:var(--gold);opacity:.85}
+  .ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;font-size:15px;color:var(--pine)}
+  .qcard{width:100%;text-align:left;margin-bottom:16px}
+  .qcard .q{font-family:"Noto Serif TC",serif;font-size:16px;margin-bottom:12px;line-height:1.6}
+  .opt{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:9px;
+    font-family:"Noto Serif TC",serif;font-size:14px;background:var(--bg)}
+  .opt .dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--hair);flex:none}
+  .opt.sel{border-color:var(--pine);background:#eef3ee} .opt.sel .dot{background:var(--pine);border-color:var(--pine)}
+  .metric{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
+  .metric .n{font-family:"Jost",sans-serif;font-weight:300;font-size:56px;color:var(--pine);line-height:1}
+  .metric .u{font-size:13px;color:var(--muted)}
+  .sheet{width:100%;background:repeating-linear-gradient(var(--surface) 0 30px, var(--line) 30px 31px);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;text-align:left;min-height:120px;margin-bottom:16px;font-family:"Noto Serif TC",serif;font-size:14px;color:var(--ink-soft);line-height:31px}
+  .prog{width:100%;height:5px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:14px}
+  .prog i{display:block;height:100%;width:45%;background:var(--pine)}
+</style></head>
+<body>
+<div class="page-head">
+  <div class="eyebrow">House Style · Unify</div>
+  <h1>如果所有工具都用同一套視覺語言</h1>
+  <p>以 octenso 的土色／enso／宋體標題／細緻按鈕為基準，把各工具套進同一套色票與元件——感覺一下整個平台「同調」會是什麼樣子。</p>
+</div>
+<div style="text-align:center"><span class="flag">DEMO 感覺稿 · 非實作 · 代表性幾個工具</span></div>
+
+<div class="grid">
+
+  <!-- 練息場 hub -->
+  <div class="frame"><div class="cap">入口 · <b>練息場 hub</b></div>
+    <div class="screen">
+      <div class="enso">◯</div>
+      <div class="eb">Join to Enjoy</div>
+      <div class="ttl">練息場</div>
+      <div class="sub">照顧你的能量與身心的一方場域</div>
+      <div class="chips"><span class="chip">八態能格</span><span class="chip">呼吸覺察</span><span class="chip">小憩</span><span class="chip">心情量表</span></div>
+      <span class="cta">進來走走 →</span>
+    </div>
+  </div>
+
+  <!-- 八態能格（基準） -->
+  <div class="frame"><div class="cap">基準 · <b>八態能格</b></div>
+    <div class="screen">
+      <div class="eb">Octenso Energy</div>
+      <div class="ttl">八態能格</div>
+      <svg viewBox="0 0 130 128" width="110" aria-hidden="true">
+        <polygon points="65,10 101.8,25.2 117,62 101.8,98.8 65,114 28.2,98.8 13,62 28.2,25.2" fill="none" stroke="#bcb09a"/>
+        <polygon points="65,15.2 90.7,36.3 109.2,62 88.9,85.9 65,103.6 42.9,84.1 28.6,62 32.6,29.6" fill="rgba(53,97,79,.12)" stroke="#35614f" stroke-width="1.5"/>
+      </svg>
+      <div class="sub" style="margin-top:10px">震 · 行動者</div>
+      <span class="cta">測測你的能量 →</span>
+    </div>
+  </div>
+
+  <!-- 呼吸 BreatheAware -->
+  <div class="frame"><div class="cap">呼吸 · <b>BreatheAware</b>（青綠→土色）</div>
+    <div class="screen">
+      <div class="eb">Breathe Aware</div>
+      <div class="ttl">呼吸覺察</div>
+      <div class="ring"><i></i><i></i><i></i><span>吸</span></div>
+      <div class="sub">跟著節奏，吸 4 · 停 4 · 吐 6</div>
+      <span class="cta">開始一次呼吸 →</span>
+    </div>
+  </div>
+
+  <!-- 心情量表 bsrs -->
+  <div class="frame"><div class="cap">量表 · <b>心情溫度計 BSRS</b>（藍→土色）</div>
+    <div class="screen" style="align-items:stretch;justify-content:flex-start">
+      <div class="eb" style="text-align:center">Mood Check · 3 / 5</div>
+      <div class="prog"><i></i></div>
+      <div class="qcard">
+        <div class="q">最近一週，你覺得睡眠困難（不易入睡、易醒）的程度？</div>
+        <div class="opt"><span class="dot"></span>完全沒有</div>
+        <div class="opt sel"><span class="dot"></span>輕度</div>
+        <div class="opt"><span class="dot"></span>中等程度</div>
+      </div>
+      <div style="text-align:center"><span class="cta">下一題 →</span></div>
+    </div>
+  </div>
+
+  <!-- HRV -->
+  <div class="frame"><div class="cap">量測 · <b>HRV</b>（藍→土色）</div>
+    <div class="screen">
+      <div class="eb">Heart Rate Variability</div>
+      <div class="ttl" style="margin-bottom:12px">此刻的你</div>
+      <div class="metric"><span class="n">68</span><span class="u">ms · RMSSD</span></div>
+      <svg viewBox="0 0 200 48" width="180" style="margin:10px 0 16px">
+        <polyline points="0,30 20,26 40,34 60,18 80,28 100,12 120,30 140,22 160,32 180,16 200,24"
+          fill="none" stroke="#35614f" stroke-width="1.5"/>
+      </svg>
+      <div class="sub">比平常穩一些——你的身心正在回到中間。</div>
+      <span class="cta">看完整趨勢 →</span>
+    </div>
+  </div>
+
+  <!-- 心理位移 writespace -->
+  <div class="frame"><div class="cap">書寫 · <b>心理位移</b>（柔綠→土色）</div>
+    <div class="screen" style="align-items:stretch;justify-content:flex-start">
+      <div class="eb" style="text-align:center">Position Shift</div>
+      <div class="ttl" style="text-align:center;margin-bottom:14px">選一件願意靠近的事</div>
+      <div class="sheet">此刻，我想寫下的是……</div>
+      <div style="text-align:center"><span class="cta">開始書寫 →</span></div>
+    </div>
+  </div>
+
+</div>
+</body></html>
