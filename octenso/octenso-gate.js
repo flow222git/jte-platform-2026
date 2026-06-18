@@ -116,6 +116,8 @@
   }
 
   function check(){
+    // 分享報告檢視（#r=／?r=）：唯讀、分享者自願公開，不需登入 → 直接放行
+    if(/[#?&]r=B1[0-9]{16}/i.test((location.hash||'')+(location.search||''))){ reveal(); return; }
     var email=(localStorage.getItem('jte_user_email')||'').trim().toLowerCase();
     if(!email){ showLogin(); return; }
     if(allowed(email)){ reveal(); return; }            // 內建固定名單 → 直接放行

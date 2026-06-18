@@ -328,6 +328,14 @@
     border-radius:999px;padding:11px 18px;cursor:pointer;border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
   .sv-btn.primary{background:var(--ink);color:var(--surface)}
   .sv-btn.line{background:#06C755;color:#fff;border-color:#06C755}
+  /* 列印 / 下載 PDF：去掉導覽與按鈕，留乾淨報告 */
+  @media print{
+    .home-link,#oc-nav,.fsbar,.sharev2,.retake,#facet-menu,.cta-now,.facet-map-btn{display:none!important}
+    details.rsec{border:none!important}
+    details.rsec>summary .rchev{display:none}
+    body{padding:10px 0!important;max-width:none}
+    .block,.radar-card,details.rsec,.typecard{break-inside:avoid;box-shadow:none!important}
+  }
 </style></head>
 <body>
 <a class="home-link" href="index.html">← 回八態能格</a>
@@ -700,6 +708,42 @@ function calibBlock(sc){
   return '<div class="block"><h3>能格 · 調校</h3>'
     +'<div class="pair-sub">看你最強／最弱的能量，現在用得過頭、不足、還是剛好——以及怎麼調。</div>'
     +rows+'</div>';
+}
+
+// ════ 分享報告檢視（#r=）：唯讀精華落地頁＋可展開完整＋CTA ════
+function goCompatShare(c){ try{ location.hash='c='+c; }catch(e){} initFromHash(); }
+function renderSharedReport(sc,name){
+  var sorted=Object.keys(E).sort(function(a,b){ return sc[b]-sc[a]; });
+  var topKey=sorted[0], top=E[topKey], accent=W[top.wx];
+  var pf=pfBuild(sc);
+  var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
+  var who=name?escH(name):'某人', code=encodeCode(sc), port=buildPortrait(sc,sorted);
+  var kws=sorted.slice(0,3).map(function(k){ return '#'+fn1(k); }).join('　');
+  var full=outlineBlock(sc,pf,null,null)
+    +systemsSection(sc)
+    +integratedBlock(pf)
+    +'<div class="block"><h3>'+((pf&&pf.signature.kind==='pattern')?'TA 的整體能量':'TA 最鮮明的能量')+'</h3>'+(pf?strengthsHtml(pf):'')+'</div>'
+    +'<div class="block"><h3>人物速寫</h3><div class="portrait">'+port.p+'</div><div class="portrait-close">'+port.close+'</div></div>';
+  var html=''
+    +'<div class="fsbar">字級<button class="a1 on" id="fsA" onclick="setFs(0)">A</button><button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button></div>'
+    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>這是 '+who+' 的能量速寫 ☯</b><br>看看 TA 慣用哪幾種能量——你也可以測測自己的。</div>'
+    +'<div class="typecard" style="--accent:'+accent+'"><div class="tc-eyebrow">'+who+' 的能量格局</div><div class="tc-sym">'+sig.sym+'</div><div class="tc-title">'+sig.title+'</div>'+(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')+'<div class="tc-essence">'+sig.essence+'</div></div>'
+    +radarCard(null)
+    +'<div class="pullq" style="font-size:16px;padding-bottom:14px">'+kws+'</div>'
+    +'<button class="start-btn" style="display:block;margin:4px auto 6px" onclick="startQuiz()">測測你自己的能量 →</button>'
+    +'<div class="share-hint" style="margin-bottom:18px">24 題 · 約 3 分鐘 · 看你慣用哪幾種能量</div>'
+    +'<details class="rsec"><summary><span>看 '+who+' 的完整解讀<span class="rsum-hint">型・雷達・四個系統・人物速寫</span></span><span class="rchev">▾</span></summary><div class="rbody">'+full+'</div></details>'
+    +'<button class="retake" onclick="goCompatShare(\''+code+'\')">想跟 '+who+' 合盤？先測你自己 →</button>'
+    +'<div class="foot">這是能量<b>傾向</b>，不是固定標籤——會流動、可以成長。這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
+  var r=document.getElementById('result');
+  r.innerHTML=html;
+  document.getElementById('cover').style.display='none';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('compat').style.display='none';
+  r.style.display='block';
+  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey,null));
+  try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
+  window.scrollTo(0,0);
 }
 
 // ── 四向度傾向（MBTI 式「另一種看法」，連續不二分）──────────
@@ -1324,12 +1368,18 @@ function showResult(viewScores){
    +'<div class="block" id="facet-menu"></div>'
    +'<div class="sharev2">'
      +'<h3>把這份報告分享出去</h3>'
-     +'<div class="sv-sub">把連結傳給朋友看你的能量，或下載圖卡（圖上有 QR 可掃）。</div>'
+     +'<div class="sv-sub">朋友打開連結就能看你的能量速寫，也能測自己的、跟你合盤。</div>'
+     +'<input id="share-name" placeholder="想署名嗎？（選填）" maxlength="12" style="display:block;width:100%;max-width:240px;margin:0 auto 12px;font-family:ui-sans-serif,sans-serif;font-size:14px;text-align:center;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface2);color:var(--ink)">'
      +'<div class="sv-row">'
        +'<button class="sv-btn primary" onclick="copyResultLink()">🔗 複製連結</button>'
-       +'<button class="sv-btn" onclick="shareResultImage()">⬇ 分享圖卡</button>'
+       +'<button class="sv-btn line" onclick="shareReportLine()">LINE 分享</button>'
      +'</div>'
-     +'<div class="share-hint" style="margin:2px 0 0"><span id="result-copy-tip" style="color:var(--pine);font-weight:600"></span></div>'
+     +'<div class="sv-row">'
+       +'<button class="sv-btn" onclick="shareReportNative()">⤴ 系統分享</button>'
+       +'<button class="sv-btn" onclick="downloadReportPDF()">⬇ 下載 PDF</button>'
+       +'<button class="sv-btn" onclick="shareResultImage()">🖼 圖卡</button>'
+     +'</div>'
+     +'<div class="share-hint" style="margin:6px 0 0">社群自動預覽是通用卡；想分享你本人的雷達，用「圖卡」。<span id="result-copy-tip" style="display:block;color:var(--pine);font-weight:600;margin-top:5px"></span></div>'
    +'</div>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，把底色用出去 —</div>'
    +'<button class="retake" style="background:var(--ink);color:var(--surface);border-color:var(--ink)" onclick="location.href=\'bagua-field.html\'">測一個局 · 看某件事會不會耗你 →</button>'
@@ -1606,6 +1656,10 @@ function extractCode(str){
   var m=str.match(/[#?&]c=([A-Za-z0-9]+)/); if(m) return m[1].toUpperCase();
   var s=str.toUpperCase().replace(/\s/g,''); return /^B1[0-9]{16}$/.test(s)?s:null;
 }
+// ── 報告分享網址（#r=：對方打開＝看我的報告）──────────────
+function reportURL(code,name){ var u=location.origin+location.pathname+'#r='+code; if(name) u+='&n='+encodeURIComponent(name); return u; }
+function extractReportCode(str){ var m=(str||'').match(/[#?&]r=([A-Za-z0-9]+)/); return (m&&/^B1[0-9]{16}$/.test(m[1].toUpperCase()))?m[1].toUpperCase():null; }
+function reportShareName(){ var el=document.getElementById('share-name'); return el?el.value.trim().slice(0,12):''; }
 
 // ── QR 編碼 / 影像解碼 ────────────────────────────────────
 function makeQRDataURL(text){
@@ -1670,7 +1724,7 @@ function buildResultCanvas(scores,topKey,title,qrImg){
   var srt=EKEYS.slice().sort(function(a,b){return (scores[b]||0)-(scores[a]||0);});
   x.fillStyle='#35614f';x.font='600 16px sans-serif';x.fillText('我慣用：'+E[srt[0]].fn+'、'+E[srt[1]].fn,Wd/2,664);
   if(qrImg){var qs=116;x.drawImage(qrImg,(Wd-qs)/2,686,qs,qs);
-    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我 · 測你的八態能量',Wd/2,824);}
+    x.fillStyle='#766f63';x.font='13px sans-serif';x.fillText('掃我看報告 · 也測你的',Wd/2,824);}
   else{x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,760);}
   return c;
 }
@@ -1695,7 +1749,7 @@ function shareResultImage(){
   var qimg=new Image();
   qimg.onload=function(){outputResultImage(base.scores,tk,title,qimg);};
   qimg.onerror=function(){outputResultImage(base.scores,tk,title,null);};
-  qimg.src=makeQRDataURL(shareURL(encodeCode(base.scores)));
+  qimg.src=makeQRDataURL(reportURL(encodeCode(base.scores), reportShareName()));
 }
 // ── 雙人合盤圖卡（canvas：雙人雷達＋同頻/互補＋QR）─────────
 function buildCompatCanvas(myScores,otherScores,sim,comp,qrImg){
@@ -1871,12 +1925,29 @@ function refreshShare(){
 // 結果頁一鍵複製合盤連結（免進合盤畫面）
 function copyResultLink(){
   var sc=shareScores(); if(!sc) return;
-  var link=shareURL(encodeCode(sc));
+  var link=reportURL(encodeCode(sc), reportShareName());
   var tip=document.getElementById('result-copy-tip');
-  function done(){ if(tip){ tip.textContent='連結已複製 ✓ 傳給朋友、他測完就能跟你合盤'; setTimeout(function(){tip.textContent='';},3500);} }
+  function done(){ if(tip){ tip.textContent='連結已複製 ✓ 傳給朋友，他打開就能看你的報告'; setTimeout(function(){tip.textContent='';},3500);} }
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(link).then(done,function(){ selectFallback(link,done); });
   } else { selectFallback(link,done); }
+}
+function shareReportLine(){
+  var sc=shareScores(); if(!sc) return;
+  var link=reportURL(encodeCode(sc), reportShareName());
+  window.open('https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(link),'_blank');
+}
+function shareReportNative(){
+  var sc=shareScores(); if(!sc) return;
+  var link=reportURL(encodeCode(sc), reportShareName());
+  if(navigator.share){ navigator.share({title:'我的八態能量速寫',text:'看看我的能量，也測測你自己的：',url:link}).catch(function(){}); }
+  else { copyResultLink(); }
+}
+function downloadReportPDF(){
+  var ds=document.querySelectorAll('#result details'), prev=[];
+  for(var i=0;i<ds.length;i++){ prev[i]=ds[i].open; ds[i].open=true; }
+  window.print();
+  setTimeout(function(){ for(var j=0;j<ds.length;j++){ ds[j].open=prev[j]; } },600);
 }
 function copyShareLink(){
   var sc=shareScores(); if(!sc) return;
@@ -2125,6 +2196,15 @@ function runCompat(){
 var pendingShareCode=null; // 沒有底色時暫存，測完可合
 function initFromHash(){
   var rawHash=location.hash||'';
+  // #r=：分享報告檢視（唯讀，不需登入）——最先處理
+  var rcode=extractReportCode(rawHash);
+  if(rcode){
+    var rsc=decodeCode(rcode);
+    var rn=''; var rm=rawHash.match(/[#?&]n=([^&]+)/); if(rm){ try{ rn=decodeURIComponent(rm[1]); }catch(e){ rn=rm[1]; } }
+    // 不清 hash：octenso-gate(defer) 晚於本 inline script 執行，要靠 #r= 還在才放行
+    if(rsc) renderSharedReport(rsc,rn);
+    return;
+  }
   var code=extractCode(rawHash);
   if(!code && /view/.test(rawHash)){ // 從記錄「看完整解盤」直達：用存檔底色渲染完整結果
     try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){ location.hash=''; }

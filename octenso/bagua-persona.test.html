@@ -473,6 +473,25 @@ document.getElementById('f').onload=function(){
     ok(w.costMode===false && d.getElementById('result').style.display==='block','全中→直接出結果不進校準');
     localStorage.removeItem('bagua_cost_v1');
 
+    // ── Feature 3 分享（#r= 報告檢視） ──────────────────────
+    var rsc0={qian:78,kun:74,zhen:86,xun:72,kan:70,li:78,gen:72,dui:75};
+    var rcode=w.encodeCode(rsc0);
+    // 44. reportURL / extractReportCode
+    ok(w.reportURL(rcode,'阿明').indexOf('#r='+rcode)>=0 && w.reportURL(rcode,'阿明').indexOf('n=')>=0,'reportURL 含 #r= 與 name');
+    ok(w.extractReportCode('https://x/p#r='+rcode+'&n=abc')===rcode,'extractReportCode 從網址解析');
+    ok(w.extractReportCode('#c='+rcode)===null,'extractReportCode 不吃 #c=');
+    ok(w.extractReportCode('#r=GARBAGE')===null,'extractReportCode 拒亂碼');
+    // 45. renderSharedReport
+    w.renderSharedReport(rsc0,'阿明');
+    ok(d.getElementById('result').style.display==='block','分享報告顯示 result');
+    var st=d.querySelector('#result').textContent;
+    ok(st.indexOf('阿明')>=0,'分享報告含署名');
+    ok(st.indexOf('測測你自己的能量')>=0,'分享報告含測自己 CTA');
+    ok(!!d.querySelector('#result .radar-wrap svg'),'分享報告雷達 render');
+    ok(st.indexOf('完整解讀')>=0,'分享報告含可展開完整');
+    w.renderSharedReport(rsc0,'');
+    ok(d.querySelector('#result').textContent.indexOf('某人')>=0,'分享報告匿名→某人');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
