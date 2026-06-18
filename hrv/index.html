@@ -213,9 +213,10 @@ const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
 const QUICK_SEC=60;         // 品質轉綠後量測秒數（單一 ~60 秒流程）
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return QUICK_SEC; }
+const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
-  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null };
+  samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null, lockSince:null };
 var _lastResultSamples=null; // stored for jteI18nApply re-render on lang switch
 
 // 切換畫面時回到頁面最上方，讓站台標題列也露出來（不會停在被捲到一半的位置）
@@ -252,10 +253,10 @@ function renderIntro(){
   // 量測步驟
   const g=document.createElement('div');g.className='guide-card';
   const stepsData=[
-    {title:jteT('intro.step1.title','手指輕蓋後鏡頭'),desc:jteT('intro.step1.desc','連旁邊的閃光燈一起蓋住，不要壓太用力。'),icon:'ti-hand-finger'},
+    {title:jteT('intro.step1.title','整顆鏡頭蓋滿'),desc:jteT('intro.step1.desc','用整個指腹蓋滿後鏡頭和旁邊的閃光燈——畫面變成紅紅一片就對了；輕輕貼、別壓太用力。'),icon:'ti-hand-finger'},
     {title:jteT('intro.step2.title','手和身體保持靜止'),desc:jteT('intro.step2.desc','正常呼吸，不要說話。'),icon:'ti-armchair-2'},
-    {title:jteT('intro.step3.title','光線要充足'),desc:jteT('intro.step3.desc','iPhone 沒辦法開閃光燈時尤其重要。'),icon:'ti-sun'},
-    {title:jteT('intro.step4.title','等品質燈轉綠'),desc:jteT('intro.step4.desc','會開始約一分鐘倒數，量完自動顯示結果。'),icon:'ti-clock-hour-4'},
+    {title:jteT('intro.step3.title','光線要充足'),desc:jteT('intro.step3.desc','在亮一點的地方量更穩。'),icon:'ti-sun'},
+    {title:jteT('intro.step4.title','抓到脈搏就開始'),desc:jteT('intro.step4.desc','偵測到穩定心跳會自動開始約一分鐘倒數，量完顯示結果。'),icon:'ti-clock-hour-4'},
   ];
   let stepsHtml='<h3><i class="ti ti-list-numbers"></i>'+_h(jteT('intro.steps.title','量測步驟'))+'</h3><div class="steps">';
   stepsData.forEach(function(s,i){
@@ -284,7 +285,7 @@ function renderIntro(){
 let waveCanvas=null, waveCtx=null;
 function renderMeasure(){
   session.mode='measure'; clearAll();
-  session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null;
+  session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
 
@@ -305,7 +306,7 @@ function renderMeasure(){
     '</div>');
 
   d.insertAdjacentHTML('beforeend','<div class="wave-card"><canvas id="wave"></canvas></div>');
-  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">'+_h(jteT('hint.initial','把手指輕輕蓋住後鏡頭，保持靜止…'))+'</p>');
+  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">'+_h(jteT('hint.initial','用整個指腹蓋滿後鏡頭（連閃光燈）——畫面變紅紅一片就是蓋滿了；輕輕貼、別壓太用力，保持靜止…'))+'</p>');
   d.insertAdjacentHTML('beforeend','<div id="camErr"></div>');
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
@@ -393,7 +394,7 @@ async function startCamera(){
     try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
     box.textContent=info;
   }
-  // iPhone：閃光燈（torch）常不支援，applyConstraints 會丟例外 → 吞掉，改用環境光。
+  // 多數手機（含 iPhone）可開閃光燈（torch）；少數裝置/瀏覽器不支援，applyConstraints 會丟例外 → 吞掉、改靠環境光。
   try{
     if(track&&track.applyConstraints){
       await track.applyConstraints({ advanced:[{ torch:true }] });
@@ -491,10 +492,15 @@ function updateLiveUi(now){
   if(isDebug()) updateDebug(recent, beats, rr, q);
 
   const hint=document.getElementById('camHint');
-  // 品質轉 green 才開始倒數
-  if(q==='green' && !session.measuring){
-    session.measuring=true; session.countdownStart=now; session.samples=[];
-    if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
+  // 鎖定放寬：green 立即開始；或偵測到真脈搏（非紅）持穩 LOCK_HOLD_MS 也開始
+  // （真人手指訊號常停在 yellow，等不到 green 會「鎖不到訊號」）。結尾 renderResult 仍有品質把關防垃圾。
+  if(!session.measuring){
+    if(q==='red') session.lockSince=null;
+    else if(session.lockSince==null) session.lockSince=now;
+    if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
+      session.measuring=true; session.countdownStart=now; session.samples=[];
+      if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
+    }
   }
   if(session.measuring){
     const total=measureSec();
@@ -514,11 +520,11 @@ function updateLiveUi(now){
     if(hint && !hint.classList.contains('warn')){
       const waited=(now-session.measureStart)/1000;
       if(q!=='red'){
-        hint.textContent=jteT('hint.yellow','快好了，穩住，等品質燈轉綠…');
-      }else if(waited<7){
-        hint.textContent=jteT('hint.acquiring.early','先放鬆，手指穩穩蓋著後鏡頭，觀察幾秒鐘…');
+        hint.textContent=jteT('hint.yellow','抓到脈搏了，穩住、保持靜止，馬上開始…');
+      }else if(waited<6){
+        hint.textContent=jteT('hint.acquiring.early','用整個指腹蓋滿後鏡頭，輕輕貼著、放鬆，觀察幾秒…');
       }else{
-        hint.textContent=jteT('hint.acquiring.late','還抓不到穩定心跳，再換個方式：手指蓋滿後鏡頭（含閃光燈）、找亮一點的地方，放鬆再等幾秒。');
+        hint.textContent=jteT('hint.acquiring.late','還抓不到：請確認 ① 整個指腹蓋滿鏡頭和閃光燈（畫面要紅紅一片）② 別壓太用力 ③ 在亮一點的地方，放鬆再等幾秒。');
       }
     }
   }
