@@ -41,6 +41,19 @@
     font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;
     opacity:0;animation:rise 1s 1.55s ease-out forwards}
   .scrollcue .arrow{display:block;font-size:16px;margin-top:8px;animation:bob 2.2s ease-in-out infinite}
+  /* hero 快速說明＋早 CTA＋結果預覽（前 5 秒轉換） */
+  .hero-cta{margin-top:28px;opacity:0;animation:rise 1s 1.3s ease-out forwards}
+  .hero-cta .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:15px;letter-spacing:.05em;
+    padding:13px 30px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);display:inline-block;
+    transition:background .2s,color .2s,transform .15s}
+  .hero-cta .cta:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+  .hero-peek{margin-top:34px;opacity:0;animation:rise 1s 1.55s ease-out forwards;display:flex;flex-direction:column;align-items:center}
+  .hero-peek .pk-cap{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:12px}
+  .hero-peek svg{width:118px;height:auto;display:block}
+  .hero-peek .pk-type{font-family:"Songti TC","Noto Serif TC",serif;font-size:15px;color:var(--ink);
+    letter-spacing:.08em;margin-top:10px}
+  .hero-peek .pk-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
 
   @keyframes ensoIn{from{opacity:0;transform:rotate(-7deg) scale(.92)}to{opacity:1;transform:none}}
   @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -111,6 +124,18 @@
     <span class="zh-t">看見你的能量　選擇你的流動</span><br>
     <span class="en-t">See your energy. Shape your flow.</span>
   </p>
+  <p class="lede">24 題・約 3 分鐘・不需準備——測出你的八種內在能量，看你慣用哪幾種、又有哪些還沒長開。</p>
+  <div class="hero-cta"><a class="cta" href="bagua-persona.html">開始測測看 →</a></div>
+  <div class="hero-peek">
+    <div class="pk-cap">你會得到這樣的能量盤</div>
+    <svg viewBox="0 0 130 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon points="65,10 101.8,25.2 117,62 101.8,98.8 65,114 28.2,98.8 13,62 28.2,25.2" fill="none" stroke="#bcb09a" stroke-width="1"/>
+      <polygon points="65,36 83.4,43.6 91,62 83.4,80.4 65,88 46.6,80.4 39,62 46.6,43.6" fill="none" stroke="#d2c7b4" stroke-width="1"/>
+      <polygon points="65,15.2 90.7,36.3 109.2,62 88.9,85.9 65,103.6 42.9,84.1 28.6,62 32.6,29.6" fill="rgba(35,36,31,0.08)" stroke="#23241f" stroke-width="1.5"/>
+    </svg>
+    <div class="pk-type">震 · 行動者</div>
+    <div class="pk-sub">＋ 優勢／盲點／成長・四個系統・能格調校</div>
+  </div>
   <div id="welcome-back" style="display:none;margin-top:24px;font-family:'Noto Sans TC',ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.04em">
     <span style="color:var(--muted)">歡迎回來 · </span>
     <a href="bagua-persona.html" style="color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px">看我的能量盤</a>
