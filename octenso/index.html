@@ -42,11 +42,7 @@
     opacity:0;animation:rise 1s 1.55s ease-out forwards}
   .scrollcue .arrow{display:block;font-size:16px;margin-top:8px;animation:bob 2.2s ease-in-out infinite}
   /* hero 快速說明＋早 CTA＋結果預覽（前 5 秒轉換） */
-  .hero-cta{margin-top:28px;opacity:0;animation:rise 1s 1.3s ease-out forwards}
-  .hero-cta .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:15px;letter-spacing:.05em;
-    padding:13px 30px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);display:inline-block;
-    transition:background .2s,color .2s,transform .15s}
-  .hero-cta .cta:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+  .hero-cta{margin-top:30px;opacity:0;animation:rise 1s 1.3s ease-out forwards}
   .hero-peek{margin-top:34px;opacity:0;animation:rise 1s 1.55s ease-out forwards;display:flex;flex-direction:column;align-items:center}
   .hero-peek .pk-cap{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);
     text-transform:uppercase;margin-bottom:12px}
@@ -89,12 +85,14 @@
     letter-spacing:.06em;line-height:1.7;margin-bottom:12px}
   .closing .note{font-size:13px;color:var(--muted);line-height:2;max-width:410px;margin:0 auto}
   .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:30px}
-  .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14.5px;letter-spacing:.05em;
-    padding:12px 24px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);
-    transition:background .2s,color .2s}
-  .cta:hover{background:var(--ink);color:var(--paper)}
+  /* 細緻版按鈕（全站共用）：輕字重＋寬字距＋細框＋微浮，貼禪／極簡調性 */
+  .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.12em;
+    padding:11px 30px;border:1px solid var(--ink);border-radius:999px;color:var(--ink);display:inline-block;
+    transition:background .25s,color .25s,transform .15s,border-color .25s}
+  .cta:hover{background:var(--ink);color:var(--paper);transform:translateY(-1px)}
+  .cta .arr{font-family:"Jost",sans-serif;margin-left:6px;opacity:.7}
   .cta.ghost{border-color:var(--hair);color:var(--muted)}
-  .cta.ghost:hover{border-color:var(--ink);background:transparent;color:var(--ink)}
+  .cta.ghost:hover{border-color:var(--ink);background:transparent;color:var(--ink);transform:none}
 
   .honest{font-size:11.5px;color:var(--muted);line-height:2;max-width:430px;margin:36px auto 0;
     padding-left:14px;border-left:1px solid var(--hair);text-align:left}
@@ -124,7 +122,7 @@
     <span class="zh-t">看見你的能量　選擇你的流動</span><br>
     <span class="en-t">See your energy. Shape your flow.</span>
   </p>
-  <p class="lede">24 題・約 3 分鐘・不需準備——測出你的八種內在能量，看你慣用哪幾種、又有哪些還沒長開。</p>
+  <p class="lede">測出你的八種內在能量——看你慣用哪幾種、又有哪些還沒長開。</p>
   <div class="hero-cta"><a class="cta" href="bagua-persona.html">開始測測看 →</a></div>
   <div class="hero-peek">
     <div class="pk-cap">你會得到這樣的能量盤</div>
