@@ -416,7 +416,7 @@ document.getElementById('f').onload=function(){
     // ── L1–L5 整合解讀 ──────────────────────────────────────
     var P=w.OctensoProfile;
     // L3 形狀×均衡
-    ok(w.shapeRead(P.build({li:82,kan:68,qian:55,xun:45,dui:40,zhen:35,kun:28,gen:20})).indexOf('雙峰型')>=0,'L3 雙峰型');
+    ok(w.shapeRead(P.build({li:80,kan:78,qian:40,xun:38,dui:36,zhen:34,kun:30,gen:28})).indexOf('雙峰型')>=0,'L3 雙峰型（相對雙峰）');
     ok(w.shapeRead(P.build({qian:80,li:78,zhen:76,dui:74,kun:72,kan:70,gen:70,xun:70})).indexOf('多峰型')>=0,'L3 全高並列→多峰型');
     // L2 系統之間
     ok(w.systemsRead(P.build({qian:80,li:80,zhen:80,dui:80,kun:80,kan:80,gen:80,xun:80})).indexOf('都很活躍')>=0,'L2 全高→都很活躍');

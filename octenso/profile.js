@@ -33,7 +33,9 @@
     AXIS_HI:60,    // 向度「雙高」：兩極皆 ≥
     AXIS_LO:40,    // 向度「雙低」：兩極皆 ≤
     LEVEL_HI:58,   // 整體水平：8 卦均值 ≥ → 高
-    LEVEL_LO:42    // 均值 ≤ → 低
+    LEVEL_LO:42,   // 均值 ≤ → 低
+    LEAD_GAP_DEV:5,// ipsative：相對主峰並列門檻（與最高 dev 差 < 此值＝並列）
+    DEV_PEAK:6     // ipsative：相對主峰/低谷門檻（|dev| ≥ 此值才算突出/少用）
   };
 
   function clampScores(sc){
@@ -90,16 +92,25 @@
 
   function build(rawScores){
     var sc=clampScores(rawScores);
-    var rk=ranked(sc), ld=leads(rk);
+    var rk=ranked(sc), lvl=level(sc), mean=lvl.mean;
+    // ipsative（個人內正規化）：相對自己平均的偏離 → 主峰/形狀靠這個，破解「全高全低看不出形狀」
+    var dev={}; EKEYS.forEach(function(k){ dev[k]=Math.round((sc[k]||0)-mean); });
+    var devRanked=EKEYS.map(function(k){ return {k:k,d:dev[k]}; })
+                       .sort(function(a,b){ return (b.d-a.d)||(EKEYS.indexOf(a.k)-EKEYS.indexOf(b.k)); });
+    // 主旋律：相對最高 dev ＋ 與它差 < LEAD_GAP_DEV 的並列
+    var ld=[devRanked[0].k];
+    for(var i=1;i<devRanked.length;i++){ if(devRanked[0].d - devRanked[i].d < TUNE.LEAD_GAP_DEV) ld.push(devRanked[i].k); else break; }
     var out={
       scores:sc,
       ranked:rk,
-      level:level(sc),
+      level:lvl,
       axes:axes(sc),
+      dev:dev,
+      devRanked:devRanked,
       leads:ld,
-      single:(ld.length===1 && rk[0].v>=TUNE.LEAD_MIN), // 是否真有單一主導（否則並列／能量不足以稱主導）
-      resources: rk.filter(function(o){ return o.v>=TUNE.RES; }).map(function(o){ return o.k; }),
-      gaps: EKEYS.filter(function(k){ return (sc[k]||0)<TUNE.GAP; }),
+      single:(ld.length===1 && devRanked[0].d>=TUNE.DEV_PEAK), // 相對單一主峰
+      resources: devRanked.filter(function(o){ return o.d>=TUNE.DEV_PEAK; }).map(function(o){ return o.k; }),   // 相對突出
+      gaps: devRanked.filter(function(o){ return o.d<=-TUNE.DEV_PEAK; }).map(function(o){ return o.k; }).reverse(), // 相對少用（最低在前）
       bands: bands(sc)
     };
     out.signature = signature(out);

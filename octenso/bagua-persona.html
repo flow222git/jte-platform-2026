@@ -1050,18 +1050,19 @@ function portraitNarrative(pf, costItems){
     costItems.forEach(function(it){ var v=costVerdict(it.k,it.dir,it.avg), g=COST_GIST[it.k]||{};
       if(v.s==='過用') overs.push({k:it.k,g:g.o}); else if(v.s==='不足') unders.push({k:it.k,g:g.u}); });
   }
-  // beat 1 主調開場
+  // beat 1 主調開場：先講絕對水平，再接「相對之中最鮮明的是…」（ipsative）
+  var lp=(band==='high')?'你各態都偏高、能量飽滿':((band==='low')?'你整體比較收著、像在蓄能':'你的能量有高有低');
   var b1;
   if(kind==='single'){
-    b1='你的能量很集中——最鮮明的是「'+fn1(leadK)+'」，'+lead.state+'。'+lead.essence;
+    b1=lp+'——而相對之中最鮮明的是「'+fn1(leadK)+'」，'+lead.state+'。'+lead.essence;
   } else if(kind==='dual'){
     var k2=pf.leads[1];
-    b1='你最鮮明的是「'+fn1(leadK)+'」與「'+fn1(k2)+'」兩股並立——'+lead.state+'，也'+E[k2].state+'；它們會在你身上輪流主導。';
+    b1=lp+'——而相對之中最鮮明的是「'+fn1(leadK)+'」與「'+fn1(k2)+'」，'+lead.state+'，也'+E[k2].state+'；這兩股會在你身上輪流主導。';
   } else if(kind==='multi'){
     var others=pf.leads.slice(1,3).map(function(k){return '「'+fn1(k)+'」';}).join('、');
-    b1='你是個'+levelWord+'、不被單一傾向定義的人。最鮮明的是「'+fn1(leadK)+'」——'+lead.state+'；但你不只這股，'+others+'也都在線上，讓你能換檔、面對不同場面都接得住。';
+    b1=lp+'、不被單一傾向定義——相對最鮮明的是「'+fn1(leadK)+'」（'+lead.state+'），'+others+'也偏突出，讓你能換檔、面對不同場面都接得住。';
   } else {
-    b1='你沒有單一壓倒性的主峰——'+(band==='high'?'八種能量都用得上、彈性大':(band==='low'?'每種都還收著、可塑性高，正適合探索':'各能量有高有低但不極端，遇事能多角度切換'))+'。';
+    b1=lp+'，沒有特別突出的一股——'+(band==='high'?'八種能量都用得上、彈性大':(band==='low'?'每種都還收著、可塑性高，正適合探索':'均衡而有彈性，遇事能多角度切換'))+'。';
   }
   // beat 2 立體張力（系統之間 + 能格過用）
   var b2=systemsRead(pf,'你');
