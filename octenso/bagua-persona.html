@@ -523,7 +523,7 @@ function showFacetBanner(){
 }
 
 function startQuiz(){
-  currentFacet=null; costMode=false;
+  currentFacet=null; costMode=false; ctxMode=false;
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
@@ -534,7 +534,7 @@ function startQuiz(){
 }
 
 function startFacet(id){
-  currentFacet=id; costMode=false;
+  currentFacet=id; costMode=false; ctxMode=false;
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
@@ -575,6 +575,7 @@ function advance(){
 }
 
 function goBack(){
+  if(ctxMode){ if(ctxQ.idx>0){ ctxQ.idx--; renderCtxQ(); window.scrollTo(0,0); } return; }
   if(costMode){ if(costQ.idx>0){ costQ.idx--; renderCostQ(); window.scrollTo(0,0); } return; }
   if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);}
 }
@@ -708,6 +709,103 @@ function calibBlock(sc){
   return '<div class="block"><h3>能格 · 調校</h3>'
     +'<div class="pair-sub">看你最強／最弱的能量，現在用得過頭、不足、還是剛好——以及怎麼調。</div>'
     +rows+'</div>';
+}
+
+// ════ 對境耗能引擎：情境需求題 → demand × 底色容量 → 耗能/順流 ════
+var ctxMode=false, ctxQ={id:'',qs:[],ans:[],idx:0};
+function startCtx(id){
+  var base=getBase(); if(!base||!base.scores){ alert('先測你的底色，才能看情境耗能喔'); return; }
+  var c=CTX[id]; if(!c) return;
+  ctxMode=true; ctxQ={id:id,qs:c.items.slice(),ans:[],idx:0};
+  ctxQ.ans=new Array(ctxQ.qs.length).fill(null);
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  var bn=document.getElementById('facet-banner');
+  document.getElementById('fb-ic').textContent='';
+  document.getElementById('fb-nm').textContent='情境耗能 · '+c.nm;
+  document.getElementById('fb-frame').textContent=c.frame;
+  bn.style.display='block';
+  renderCtxQ(); window.scrollTo(0,0);
+}
+function renderCtxQ(){
+  var q=ctxQ.qs[ctxQ.idx], n=ctxQ.qs.length;
+  document.getElementById('prog-label').textContent='情境 '+(ctxQ.idx+1)+' / '+n+' 題';
+  var pct=Math.round(ctxQ.idx/n*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('q-num').textContent='這情境需要…';
+  document.getElementById('q-text').textContent=q.t;
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  OPTS.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='opt'+(ctxQ.ans[ctxQ.idx]===o.v?' sel':'');
+    b.innerHTML='<span class="dot"></span>'+o.t;
+    b.onclick=function(){ ctxQ.ans[ctxQ.idx]=o.v; advanceCtx(); };
+    ow.appendChild(b);
+  });
+  document.getElementById('back-btn').disabled = ctxQ.idx===0;
+}
+function advanceCtx(){
+  renderCtxQ();
+  if(ctxQ.idx<ctxQ.qs.length-1){ setTimeout(function(){ ctxQ.idx++; renderCtxQ(); window.scrollTo(0,0); },180); }
+  else { setTimeout(finishCtx,200); }
+}
+function ctxDemand(){ var d={}; ctxQ.qs.forEach(function(q,i){ d[q.k]=Math.round((ctxQ.ans[i]==null?0:ctxQ.ans[i])/SMAX*100); }); return d; }
+function ctxAnalyze(demand,cap){
+  var drains=[],flows=[];
+  EKEYS.forEach(function(k){ var dd=demand[k]||0, cc=cap[k]||0;
+    if(dd>=CTX_DEMAND_HI && dd-cc>=CTX_DRAIN_GAP) drains.push({k:k,gap:dd-cc});
+    else if(dd>=CTX_DEMAND_HI && cc>=CTX_DEMAND_HI) flows.push({k:k,d:dd}); });
+  drains.sort(function(a,b){return b.gap-a.gap;});
+  flows.sort(function(a,b){return b.d-a.d;});
+  return {drains:drains.slice(0,3),flows:flows.slice(0,2)};
+}
+function finishCtx(){
+  ctxMode=false;
+  var demand=ctxDemand();
+  try{ localStorage.setItem('bagua_ctx_v1', JSON.stringify({id:ctxQ.id,demand:demand,ts:new Date().toISOString()})); }catch(e){}
+  renderCtxResult(ctxQ.id,demand);
+}
+function ctxShortName(id){ return (CTX[id]?CTX[id].nm:'').replace(/的你$/,''); }
+function renderCtxResult(id,demand){
+  var c=CTX[id], base=getBase()||{scores:{}}, cap=base.scores||{};
+  var a=ctxAnalyze(demand,cap), sn=ctxShortName(id), rows='';
+  rows+='<div class="block"><h3>這個情境最吃你哪幾股</h3>';
+  if(a.drains.length){
+    a.drains.forEach(function(x){
+      rows+='<div class="rpanel" style="margin-top:10px"><div class="rp-eb">'+fn1(x.k)+'<span class="tag" style="border-color:var(--cinnabar);color:var(--cinnabar)">耗能</span></div>'
+        +'<div class="rp-verdict"><span class="main">「'+sn+'」很需要「'+fn1(x.k)+'」，但這是你目前偏少的——容易吃力或被掏空。'+(CTX_COPE[x.k]||'')+'</span></div></div>';
+    });
+  } else {
+    rows+='<div class="trait-row"><span>這個情境沒有特別掏空你——它需要的能量，你大致都接得住，算合得來。</span></div>';
+  }
+  rows+='</div>';
+  if(a.flows.length){
+    rows+='<div class="block"><h3>你在這裡發揮得開</h3>';
+    a.flows.forEach(function(x){
+      rows+='<div class="rpanel" style="margin-top:10px"><div class="rp-eb">'+fn1(x.k)+'<span class="tag">順流</span></div>'
+        +'<div class="rp-verdict"><span class="main">「'+sn+'」也很需要「'+fn1(x.k)+'」，剛好是你的強項——這裡你發揮得開、比較省力。</span></div></div>';
+    });
+    rows+='</div>';
+  }
+  var html=''
+    +'<div class="fsbar">字級<button class="a1 on" id="fsA" onclick="setFs(0)">A</button><button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button></div>'
+    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>情境耗能 · '+c.nm+'</b><br>把「這情境需要什麼」跟「你的底色」對照——看它最吃你哪幾股、你又在哪裡省力。</div>'
+    +'<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div><div class="share-hint" style="margin-top:6px">金虛線＝這情境的需求　·　松綠＝你的底色</div></div>'
+    +rows
+    +'<button class="retake" style="background:var(--ink);color:var(--surface);border-color:var(--ink)" onclick="showResult(getBase().scores)">← 回我的報告</button>'
+    +'<button class="retake" onclick="startCtx(\''+id+'\')">重測這個情境</button>'
+    +'<div class="foot">情境會變、你也會長——這是此刻的對照，不是定論。<br>Octenso ｜ 八態能格</div>';
+  var r=document.getElementById('result'); r.innerHTML=html;
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('cover').style.display='none';
+  document.getElementById('compat').style.display='none';
+  r.style.display='block';
+  document.getElementById('radar-wrap').appendChild(buildRadar(cap, topKeyOf(cap), demand)); // 底色實線＋情境需求金虛線
+  try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
+  window.scrollTo(0,0);
 }
 
 // ════ 分享報告檢視（#r=）：唯讀精華落地頁＋可展開完整＋CTA ════
@@ -1157,6 +1255,45 @@ var COST={
 // 能格門檻
 var COST_HI=68, COST_LO=35;   // 分數 ≥HI→問過用、≤LO→問不足
 var COST_AGREE=2.5;           // 校準題平均（0–5）≥此＝有代價
+
+// ════ 對境耗能：情境需求題（每態1題）× 底色容量 → 哪股被掏空＋因應 ════
+// 每題測「這個情境多需要這股能量」(0–5)；demand 高 × 底色低 ＝ 耗能。【草稿，待潤】
+var CTX={
+ work:{ nm:'工作的你', frame:'想著你真實的【工作／做事】日常——回答這個情境「有多需要」每種能量。',
+  items:[
+   {k:'qian',t:'工作裡，常常需要我主動定方向、做決定、扛起目標。'},
+   {k:'kun', t:'工作裡，常常需要我承接別人的情緒和需求、當大家的後盾。'},
+   {k:'zhen',t:'工作裡，常常需要我快速行動、馬上推進，不能拖。'},
+   {k:'xun', t:'工作裡，常常需要我串連人脈資源、把事情擴散出去。'},
+   {k:'li',  t:'工作裡，常常需要我表達、簡報、讓成果被看見。'},
+   {k:'kan', t:'工作裡，常常需要我獨自深入思考、沉住氣消化。'},
+   {k:'gen', t:'工作裡，常常需要我設界線、踩剎車、對不適合的事說不。'},
+   {k:'dui', t:'工作裡，常常需要我大量溝通、協調、跟很多人互動。'}
+  ]},
+ relation:{ nm:'關係裡的你', frame:'想著你在【親密關係／重要的人】面前——回答這個情境「有多需要」每種能量。',
+  items:[
+   {k:'qian',t:'在重要的關係裡，常常需要我主動帶方向、做決定。'},
+   {k:'kun', t:'在重要的關係裡，常常需要我承接對方的情緒、當依靠。'},
+   {k:'zhen',t:'在重要的關係裡，常常需要我主動行動、推進這段關係。'},
+   {k:'xun', t:'在重要的關係裡，常常需要我牽線、把彼此的圈子連起來。'},
+   {k:'li',  t:'在重要的關係裡，常常需要我表達感受、讓對方看見真正的我。'},
+   {k:'kan', t:'在重要的關係裡，常常需要我獨處沉澱、消化自己的情緒。'},
+   {k:'gen', t:'在重要的關係裡，常常需要我設界線、保護自己的節奏。'},
+   {k:'dui', t:'在重要的關係裡，常常需要我常常溝通、聊天、保持連結。'}
+  ]}
+};
+// 被掏空時的因應建議（情境很需要、你卻偏低）
+var CTX_COPE={
+ qian:'別硬扛所有方向——把「定方向」找人一起分擔，或直接求助。',
+ kun:'你不必接住所有人——在這情境先守好自己的界線，量力承接。',
+ zhen:'不必逼自己馬上衝——把大事拆小步，允許慢一點開始。',
+ xun:'不必經營每一條線——挑最關鍵的幾個連結維繫就好。',
+ li:'不必勉強表現——用你舒服的方式（文字、一對一）被看見即可。',
+ kan:'這情境少給你獨處——刻意替自己留一點喘息的縫隙。',
+ gen:'這情境逼你不停——練習小小地喊停、設一兩條底線保護自己。',
+ dui:'這情境很耗社交——交流後留時間回血，不必場場全勤。'
+};
+var CTX_DEMAND_HI=60, CTX_DRAIN_GAP=20; // demand≥HI 且 demand−容量≥GAP ＝ 耗能；demand≥HI 且 容量≥HI ＝ 順流
 function fourXiangHtml(sc){
   return FOURXIANG.map(function(s){
     var L=sc[s.l]||0, R=sc[s.r]||0, gap=Math.abs(L-R), sum=L+R;
@@ -1365,6 +1502,11 @@ function showResult(viewScores){
    +memoBlockHtml(sc)
    +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'
    +ctaBlock(sc,now)
+   +'<div class="block"><h3>情境耗能</h3>'
+     +'<div class="pair-sub">選一個情境，看它最吃你哪幾股能量、你又在哪裡省力——用「情境需求 × 你的底色」算耗能。</div>'
+     +'<button class="retake" onclick="startCtx(\'work\')">測「工作」會不會耗你 →</button>'
+     +'<button class="retake" onclick="startCtx(\'relation\')">測「關係」會不會耗你 →</button>'
+   +'</div>'
    +'<div class="block" id="facet-menu"></div>'
    +'<div class="sharev2">'
      +'<h3>把這份報告分享出去</h3>'
