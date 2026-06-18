@@ -817,11 +817,10 @@ function renderSharedReport(sc,name){
   var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
   var who=name?escH(name):'某人', code=encodeCode(sc), port=buildPortrait(sc,sorted);
   var kws=sorted.slice(0,3).map(function(k){ return '#'+fn1(k); }).join('　');
-  var full=outlineBlock(sc,pf,null,null)
+  var full=portraitNarrative(pf,null)
+    +outlineBlock(sc,pf,null,null)
     +systemsSection(sc)
-    +integratedBlock(pf)
-    +'<div class="block"><h3>'+((pf&&pf.signature.kind==='pattern')?'TA 的整體能量':'TA 最鮮明的能量')+'</h3>'+(pf?strengthsHtml(pf):'')+'</div>'
-    +'<div class="block"><h3>人物速寫</h3><div class="portrait">'+port.p+'</div><div class="portrait-close">'+port.close+'</div></div>';
+    +'<div class="block"><h3>'+((pf&&pf.signature.kind==='pattern')?'TA 的整體能量':'TA 最鮮明的能量')+'</h3>'+(pf?strengthsHtml(pf):'')+'</div>';
   var html=''
     +'<div class="fsbar">字級<button class="a1 on" id="fsA" onclick="setFs(0)">A</button><button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button></div>'
     +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>這是 '+who+' 的能量速寫 ☯</b><br>看看 TA 慣用哪幾種能量——你也可以測測自己的。</div>'
@@ -969,6 +968,74 @@ function buildPortrait(sc,sorted){
   p+='相對地，你最少動用的是「'+l1.fn+'」與「'+l2.fn+'」，那是你還沒長開、最有空間的部分。';
   var close='善用你最鮮明的那兩種能量，偶爾刻意練練最少用的那兩種，整個人會更完整、更有彈性。';
   return {p:p,close:close};
+}
+
+// ── 整體側寫（holistic portrait）：3 beat，織入型/水平/形狀/系統/最強最弱/能格；無能格自動退回 ──
+var PORTRAIT_METAPHOR={
+  single:['像一把磨得很利的刀——專注時最有力','像聚焦的一道光，方向很清楚'],
+  dual:['像交替起落的兩股潮汐，輪流推著你走'],
+  multi:['像一台馬力強、檔位多的車——本錢在彈性與爆發','像各聲部都在的一支樂團'],
+  plateau:['像一片整地都肥的田，種什麼都長得起來'],
+  low:['像正在蓄水的水庫，安靜地積著力','像還在土裡醞釀的種子'],
+  jagged:['像稜角分明的一塊石——很有個性，也較容易卡在某幾處'],
+  balanced:['像調得很勻的光，不刺眼也不暗','像一池有深度又平靜的水']
+};
+function pShapeKey(pf){
+  var spread=(pf.ranked[0].v||0)-(pf.ranked[pf.ranked.length-1].v||0), n=pf.leads.length, band=pf.level.band;
+  if(pf.single) return 'single';
+  if(n===2) return 'dual';
+  if(n>=3) return 'multi';
+  if(band==='high'&&spread<=30) return 'plateau';
+  if(band==='low'&&spread<=30) return 'low';
+  if(spread>=50) return 'jagged';
+  return 'balanced';
+}
+function pPick(arr,seedK){ return arr[(seedK?seedK.charCodeAt(0):0)%arr.length]; }
+function portraitNarrative(pf, costItems){
+  if(!pf) return '';
+  var leadK=pf.leads[0]||pf.ranked[0].k, lead=E[leadK];
+  var kind=pf.signature.kind, band=pf.level.band, shapeK=pShapeKey(pf);
+  var levelWord=band==='high'?'能量飽滿':(band==='low'?'整體收著、像在蓄能':'能量適中');
+  // 能格：分過用/不足
+  var overs=[], unders=[];
+  if(costItems && costItems.length){
+    costItems.forEach(function(it){ var v=costVerdict(it.k,it.dir,it.avg), g=COST_GIST[it.k]||{};
+      if(v.s==='過用') overs.push({k:it.k,g:g.o}); else if(v.s==='不足') unders.push({k:it.k,g:g.u}); });
+  }
+  // beat 1 主調開場
+  var b1;
+  if(kind==='single'){
+    b1='你的能量很集中——最鮮明的是「'+fn1(leadK)+'」，'+lead.state+'。'+lead.essence;
+  } else if(kind==='dual'){
+    var k2=pf.leads[1];
+    b1='你最鮮明的是「'+fn1(leadK)+'」與「'+fn1(k2)+'」兩股並立——'+lead.state+'，也'+E[k2].state+'；它們會在你身上輪流主導。';
+  } else if(kind==='multi'){
+    var others=pf.leads.slice(1,3).map(function(k){return '「'+fn1(k)+'」';}).join('、');
+    b1='你是個'+levelWord+'、不被單一傾向定義的人。最鮮明的是「'+fn1(leadK)+'」——'+lead.state+'；但你不只這股，'+others+'也都在線上，讓你能換檔、面對不同場面都接得住。';
+  } else {
+    b1='你沒有單一壓倒性的主峰——'+(band==='high'?'八種能量都用得上、彈性大':(band==='low'?'每種都還收著、可塑性高，正適合探索':'各能量有高有低但不極端，遇事能多角度切換'))+'。';
+  }
+  // beat 2 立體張力（系統之間 + 能格過用）
+  var b2=systemsRead(pf,'你');
+  if(overs.length){
+    b2+=' 而從你的校準看，「'+fn1(overs[0].k)+'」目前用得有點過頭'+(overs[0].g?('——容易'+overs[0].g):'')
+      +(overs.length>1?'；「'+fn1(overs[1].k)+'」也是':'')+'。';
+  }
+  // beat 3 強弱與成長（能格不足 or 分數版）+ 比喻
+  var b3, gaps=pf.gaps.slice(0,2).map(fn1);
+  if(unders.length){
+    b3='「'+fn1(unders[0].k)+'」是你還沒長開、而且正在讓你累的部分'+(unders[0].g?('——'+unders[0].g):'')+'，值得替它留點空間。';
+  } else if(gaps.length){
+    b3='你最少動用的是'+gaps.map(function(g){return '「'+g+'」';}).join('、')+'——那是你還沒長開、最有空間的地方，偶爾刻意練練會更完整。';
+  } else {
+    b3='你各股能量都還算在用，沒有明顯空白。';
+  }
+  b3+=' 整體來說，你'+pPick(PORTRAIT_METAPHOR[shapeK]||PORTRAIT_METAPHOR.balanced, leadK)+'。';
+  return '<div class="block"><h3>整體側寫</h3>'
+    +'<div class="portrait">'+b1+'</div>'
+    +'<div class="portrait" style="margin-top:11px">'+b2+'</div>'
+    +'<div class="portrait" style="margin-top:11px">'+b3+'</div>'
+  +'</div>';
 }
 
 // ── 能量提醒 memo（依底色：弱項鼓勵＋強項叮嚀，可打勾自我檢查）──
@@ -1255,6 +1322,17 @@ var COST={
 // 能格門檻
 var COST_HI=68, COST_LO=35;   // 分數 ≥HI→問過用、≤LO→問不足
 var COST_AGREE=2.5;           // 校準題平均（0–5）≥此＝有代價
+// 整體側寫用的能格「精華片語」（短、塞進敘事；完整建議仍在能格·調校段）
+var COST_GIST={
+ qian:{o:'什麼都想自己扛、抓著方向不放',u:'少替自己定方向、常照別人安排走'},
+ kun:{o:'把別人都接住、自己擺到最後',u:'接不太住別人、關係有點疏離'},
+ zhen:{o:'衝太快、做白工，旁人跟不上',u:'卡在想、遲遲不開始'},
+ xun:{o:'攤太開、收不回來',u:'少向外串連、錯過能借的力'},
+ li:{o:'太想被看見、給自己壓力',u:'把自己收著、常被低估'},
+ kan:{o:'想太多、走不出來',u:'很少停下回血、撐到耗盡'},
+ gen:{o:'界線太硬、把人也擋在外',u:'不太替自己踩剎車、撐到累垮'},
+ dui:{o:'社交太滿、話收不住',u:'把話悶著、關係停在表面'}
+};
 
 // ════ 對境耗能：情境需求題（每態1題）× 底色容量 → 哪股被掏空＋因應 ════
 // 每題測「這個情境多需要這股能量」(0–5)；demand 高 × 底色低 ＝ 耗能。【草稿，待潤】
@@ -1484,20 +1562,15 @@ function showResult(viewScores){
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
    +radarCard(now)
+   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})())
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
    +calibBlock(sc)
-   +integratedBlock(pf)
    +'<div class="block">'
      +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
      +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你最鮮明的不只一股——下面分別說，它們會在你身上輪流主導。</div>':'')
      +(pf?strengthsHtml(pf)
          :'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div><div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div><div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>')
-   +'</div>'
-   +'<div class="block">'
-     +'<h3>人物速寫</h3>'
-     +'<div class="portrait">'+port.p+'</div>'
-     +'<div class="portrait-close">'+port.close+'</div>'
    +'</div>'
    +memoBlockHtml(sc)
    +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'

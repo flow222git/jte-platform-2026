@@ -433,11 +433,20 @@ document.getElementById('f').onload=function(){
     var pfLead=P.build({li:80,kan:40,qian:40,kun:30,zhen:30,xun:30,gen:30,dui:30});
     ok(w.leadSentence(pfLead,{li:'mixed'}).indexOf('兩可')>=0,'L4 主調兩可→加脈絡');
     ok(w.leadSentence(pfLead,null).indexOf('兩可')<0,'L4 無 conf→不加脈絡');
-    // 整合區塊 render 在結果頁
+    // 整體側寫 render（取代整合/人物速寫）
     w.answers=new Array(24).fill(2); w.currentFacet=null; w.showResult();
     var rhtml=d.getElementById('result').innerHTML;
-    ok(rhtml.indexOf('整合 · 立體的你')>=0,'整合區塊 render');
-    ok(rhtml.indexOf('系統之間')>=0,'整合區塊含系統之間');
+    ok(rhtml.indexOf('整體側寫')>=0,'整體側寫 render in result');
+    ok(rhtml.indexOf('整合 · 立體的你')<0 && rhtml.indexOf('人物速寫')<0,'舊整合/人物速寫已移除');
+    // portraitNarrative 單元：三段、比喻、能格織入與退回
+    var pfM=P.build({zhen:88,qian:78,li:78,dui:75,kun:74,xun:72,gen:72,kan:70});
+    var pn=w.portraitNarrative(pfM,null);
+    ok((pn.match(/class="portrait"/g)||[]).length>=3,'portrait 三段, got '+((pn.match(/class="portrait"/g)||[]).length));
+    ok(pn.indexOf('整體來說')>=0,'portrait 比喻收尾');
+    ok(pn.indexOf('過頭')<0,'無能格→退回版不含過用字');
+    var pn2=w.portraitNarrative(pfM,[{k:'zhen',dir:'over',avg:4.5},{k:'kan',dir:'under',avg:4}]);
+    ok(pn2.indexOf('用得有點過頭')>=0,'有能格→織入過用');
+    ok(pn2.indexOf('還沒長開、而且正在讓你累')>=0,'有能格→織入不足');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
     // 38. selectFlagged：高→over、低→under、上限4、全中→無
