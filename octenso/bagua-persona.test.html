@@ -503,26 +503,28 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('#result').textContent.indexOf('某人')>=0,'分享報告匿名→某人');
 
     // ── Feature 4 對境耗能 ──────────────────────────────────
-    // 46. ctxAnalyze：高需求×低容量→耗能；高需求×高容量→順流；全低→無
-    var dmd={qian:80,kun:30,zhen:80,xun:30,kan:80,li:30,gen:80,dui:30};
+    // 46. ctxAnalyze(demand,deny,cap)：需求×容量→耗能/順流；被剝奪×底色高→提醒；低需求→無
+    var dmd={qian:80,zhen:80,kan:80,gen:80};
     var cap2={qian:80,kun:80,zhen:30,xun:30,kan:30,li:30,gen:30,dui:30};
-    var an=w.ctxAnalyze(dmd,cap2);
-    ok(an.drains.length>=1 && an.drains.length<=3,'ctxAnalyze drains 1–3, got '+an.drains.length);
-    ok(an.drains[0].gap>=20,'drain gap≥20');
-    ok(an.drains.some(function(x){return x.k==='zhen';}),'zhen 高需求低容量→耗能');
-    ok(an.flows.some(function(x){return x.k==='qian';}),'qian 高需求高容量→順流');
-    var an2=w.ctxAnalyze({qian:20,kun:20,zhen:20,xun:20,kan:20,li:20,gen:20,dui:20},cap2);
-    ok(an2.drains.length===0 && an2.flows.length===0,'全低需求→無耗能/順流');
-    // 47. startCtx/finishCtx 流程
+    var an=w.ctxAnalyze(dmd,{},cap2);
+    ok(an.drains.some(function(x){return x.k==='zhen';}),'高需求低容量→耗能');
+    ok(an.flows.some(function(x){return x.k==='qian';}),'高需求高容量→順流');
+    var an2=w.ctxAnalyze(dmd,{kan:80},{qian:80,kun:80,zhen:30,xun:30,kan:80,li:30,gen:30,dui:30});
+    ok(an2.reminds.some(function(x){return x.k==='kan';}),'被剝奪×底色高→提醒');
+    ok(w.ctxAnalyze({qian:20,zhen:20},{},cap2).drains.length===0,'低需求→無耗能');
+    // 47. 場景流程：picker → 強度 → 提問 → 結果（含強度橋接）
     localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:{qian:80,kun:80,zhen:30,xun:30,kan:30,li:30,gen:30,dui:30},top:'qian',title:'t',ts:'t'}));
-    w.startCtx('work');
-    ok(w.ctxMode===true,'startCtx→進情境模式');
-    ok(w.ctxQ.qs.length===8,'情境題 8 題, got '+w.ctxQ.qs.length);
-    ok(d.getElementById('q-text').textContent.length>0,'情境題有題目');
-    w.ctxQ.ans=new Array(8).fill(5); w.finishCtx();
-    ok(w.ctxMode===false,'finishCtx→離開情境模式');
-    ok(d.querySelector('#result').textContent.indexOf('情境耗能')>=0,'情境結果含標題');
-    ok(!!d.querySelector('#result .radar-wrap svg'),'情境結果雷達 render');
+    w.startScenario();
+    ok(w.ctxMode===true && w.ctxQ.stage==='pick','startScenario→pick 階段');
+    ok(d.getElementById('opts').querySelectorAll('button').length>=7,'picker 至少 7 條場景, got '+d.getElementById('opts').querySelectorAll('button').length);
+    w.startCtx('lead');
+    ok(w.ctxQ.stage==='intensity' && w.ctxQ.qs.length===6,'startCtx→強度階段、帶人 6 題, got '+w.ctxQ.qs.length);
+    w.ctxQ.intensity='much'; w.ctxQ.stage='q'; w.ctxQ.ans=new Array(6).fill(5); w.finishCtx();
+    ok(w.ctxMode===false,'finishCtx→離開');
+    var ctxt=d.querySelector('#result').textContent;
+    ok(ctxt.indexOf('場景耗能')>=0,'結果含場景耗能標題');
+    ok(ctxt.indexOf('蠻耗的')>=0,'結果含強度橋接（蠻耗的）');
+    ok(!!d.querySelector('#result .radar-wrap svg'),'結果雷達 render');
     localStorage.removeItem('bagua_ctx_v1');
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }

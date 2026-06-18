@@ -575,7 +575,12 @@ function advance(){
 }
 
 function goBack(){
-  if(ctxMode){ if(ctxQ.idx>0){ ctxQ.idx--; renderCtxQ(); window.scrollTo(0,0); } return; }
+  if(ctxMode){
+    if(ctxQ.stage==='pick'){ showResult(getBase().scores); return; }
+    if(ctxQ.stage==='intensity'){ startScenario(); return; }
+    if(ctxQ.idx>0){ ctxQ.idx--; renderCtxQ(); window.scrollTo(0,0); return; }
+    renderCtxIntensity(); return;
+  }
   if(costMode){ if(costQ.idx>0){ costQ.idx--; renderCostQ(); window.scrollTo(0,0); } return; }
   if(idx>0){ idx--; renderQ(); window.scrollTo(0,0);}
 }
@@ -713,74 +718,113 @@ function calibBlock(sc){
 
 // ════ 對境耗能引擎：情境需求題 → demand × 底色容量 → 耗能/順流 ════
 var ctxMode=false, ctxQ={id:'',qs:[],ans:[],idx:0};
-function startCtx(id){
-  var base=getBase(); if(!base||!base.scores){ alert('先測你的底色，才能看情境耗能喔'); return; }
-  var c=CTX[id]; if(!c) return;
-  ctxMode=true; ctxQ={id:id,qs:c.items.slice(),ans:[],idx:0};
-  ctxQ.ans=new Array(ctxQ.qs.length).fill(null);
+// 選分類（path picker）
+function startScenario(){
+  var base=getBase(); if(!base||!base.scores){ alert('先測你的底色，才能看場景耗能喔'); return; }
+  ctxMode=true; ctxQ={stage:'pick'};
   document.getElementById('cover').style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
   document.getElementById('quiz').style.display='block';
-  var bn=document.getElementById('facet-banner');
+  document.getElementById('facet-banner').style.display='block';
   document.getElementById('fb-ic').textContent='';
-  document.getElementById('fb-nm').textContent='情境耗能 · '+c.nm;
-  document.getElementById('fb-frame').textContent=c.frame;
-  bn.style.display='block';
-  renderCtxQ(); window.scrollTo(0,0);
+  document.getElementById('fb-nm').textContent='場景耗能';
+  document.getElementById('fb-frame').textContent='選一個最近最耗你的場景——我們安靜看看，它把你哪幾股能量掏空了。';
+  document.getElementById('prog-label').textContent='選一個場景'; document.getElementById('prog-pct').textContent='';
+  document.getElementById('prog-fill').style.width='0%';
+  document.getElementById('q-num').textContent='最耗你的是…';
+  document.getElementById('q-text').textContent='挑一個最近最耗你的場景';
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  ['lead','rush','social','conflict','care','perform','solo'].forEach(function(id){ var c=CTX[id];
+    var b=document.createElement('button'); b.className='opt';
+    b.innerHTML='<span class="dot"></span>'+(c.ic?c.ic+'　':'')+c.nm;
+    b.onclick=function(){ startCtx(id); }; ow.appendChild(b); });
+  var b2=document.createElement('button'); b2.className='opt';
+  b2.innerHTML='<span class="dot"></span>✍️　其他（自己描述）';
+  b2.onclick=function(){ startCtx('self'); }; ow.appendChild(b2);
+  document.getElementById('back-btn').disabled=false;
+  window.scrollTo(0,0);
+}
+function startCtx(id){
+  var label='', items;
+  if(id==='self'){ label=((window.prompt&&window.prompt('用一句話描述最耗你的場景：',''))||'').trim().slice(0,20); items=GEN_ITEMS.slice(); }
+  else { var c=CTX[id]; if(!c) return; label=c.nm; items=c.items.slice(); }
+  ctxMode=true; ctxQ={id:id,label:label,qs:items,ans:new Array(items.length).fill(null),idx:0,stage:'intensity',intensity:null};
+  renderCtxIntensity(); window.scrollTo(0,0);
+}
+// 選強度（主觀，不改提問）
+function renderCtxIntensity(){
+  ctxQ.stage='intensity';
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('result').style.display='none';
+  document.getElementById('fb-nm').textContent='場景耗能 · '+(ctxQ.label||'這個場景');
+  document.getElementById('fb-frame').textContent='先停一下，承認它對你的重量。';
+  document.getElementById('prog-label').textContent='它對你多重？'; document.getElementById('prog-pct').textContent='';
+  document.getElementById('prog-fill').style.width='5%';
+  document.getElementById('q-num').textContent='強度';
+  document.getElementById('q-text').textContent='「'+(ctxQ.label||'這個場景')+'」現在有多耗你？';
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  CTX_INTENSITY.forEach(function(o){ var b=document.createElement('button');
+    b.className='opt'+(ctxQ.intensity===o.v?' sel':'');
+    b.innerHTML='<span class="dot"></span>'+o.t;
+    b.onclick=function(){ ctxQ.intensity=o.v; ctxQ.stage='q'; ctxQ.idx=0; renderCtxQ(); window.scrollTo(0,0); };
+    ow.appendChild(b); });
+  document.getElementById('back-btn').disabled=false;
 }
 function renderCtxQ(){
+  ctxQ.stage='q';
   var q=ctxQ.qs[ctxQ.idx], n=ctxQ.qs.length;
-  document.getElementById('prog-label').textContent='情境 '+(ctxQ.idx+1)+' / '+n+' 題';
+  document.getElementById('fb-nm').textContent='場景耗能 · '+(ctxQ.label||'這個場景');
+  document.getElementById('fb-frame').textContent='安靜核對：這對你，常不常、像不像。';
+  document.getElementById('prog-label').textContent='題目 '+(ctxQ.idx+1)+' / '+n;
   var pct=Math.round(ctxQ.idx/n*100);
-  document.getElementById('prog-pct').textContent=pct+'%';
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('q-num').textContent='這情境需要…';
+  document.getElementById('prog-pct').textContent=pct+'%'; document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('q-num').textContent='這個場景…';
   document.getElementById('q-text').textContent=q.t;
   var ow=document.getElementById('opts'); ow.innerHTML='';
-  OPTS.forEach(function(o){
-    var b=document.createElement('button');
+  OPTS.forEach(function(o){ var b=document.createElement('button');
     b.className='opt'+(ctxQ.ans[ctxQ.idx]===o.v?' sel':'');
     b.innerHTML='<span class="dot"></span>'+o.t;
-    b.onclick=function(){ ctxQ.ans[ctxQ.idx]=o.v; advanceCtx(); };
-    ow.appendChild(b);
-  });
-  document.getElementById('back-btn').disabled = ctxQ.idx===0;
+    b.onclick=function(){ ctxQ.ans[ctxQ.idx]=o.v; advanceCtx(); }; ow.appendChild(b); });
+  document.getElementById('back-btn').disabled=false;
 }
 function advanceCtx(){
   renderCtxQ();
   if(ctxQ.idx<ctxQ.qs.length-1){ setTimeout(function(){ ctxQ.idx++; renderCtxQ(); window.scrollTo(0,0); },180); }
   else { setTimeout(finishCtx,200); }
 }
-function ctxDemand(){ var d={}; ctxQ.qs.forEach(function(q,i){ d[q.k]=Math.round((ctxQ.ans[i]==null?0:ctxQ.ans[i])/SMAX*100); }); return d; }
-function ctxAnalyze(demand,cap){
-  var drains=[],flows=[];
+function ctxData(){
+  var demand={}, deny={};
+  ctxQ.qs.forEach(function(q,i){ var v=Math.round((ctxQ.ans[i]==null?0:ctxQ.ans[i])/SMAX*100);
+    if(q.deny) deny[q.k]=v; else demand[q.k]=v; });
+  return {demand:demand, deny:deny};
+}
+function ctxAnalyze(demand, deny, cap){
+  var drains=[], flows=[], reminds=[];
   EKEYS.forEach(function(k){ var dd=demand[k]||0, cc=cap[k]||0;
     if(dd>=CTX_DEMAND_HI && dd-cc>=CTX_DRAIN_GAP) drains.push({k:k,gap:dd-cc});
     else if(dd>=CTX_DEMAND_HI && cc>=CTX_DEMAND_HI) flows.push({k:k,d:dd}); });
-  drains.sort(function(a,b){return b.gap-a.gap;});
-  flows.sort(function(a,b){return b.d-a.d;});
-  return {drains:drains.slice(0,3),flows:flows.slice(0,2)};
+  EKEYS.forEach(function(k){ if(((deny&&deny[k])||0)>=CTX_DEMAND_HI && (cap[k]||0)>=CTX_DEMAND_HI) reminds.push({k:k}); });
+  drains.sort(function(a,b){return b.gap-a.gap;}); flows.sort(function(a,b){return b.d-a.d;});
+  return {drains:drains.slice(0,3), flows:flows.slice(0,2), reminds:reminds.slice(0,1)};
 }
 function finishCtx(){
   ctxMode=false;
-  var demand=ctxDemand();
-  try{ localStorage.setItem('bagua_ctx_v1', JSON.stringify({id:ctxQ.id,demand:demand,ts:new Date().toISOString()})); }catch(e){}
-  renderCtxResult(ctxQ.id,demand);
+  var d=ctxData();
+  try{ localStorage.setItem('bagua_ctx_v1', JSON.stringify({id:ctxQ.id,label:ctxQ.label,intensity:ctxQ.intensity,demand:d.demand,deny:d.deny,ts:new Date().toISOString()})); }catch(e){}
+  renderCtxResult(ctxQ.label, d, ctxQ.intensity);
 }
-function ctxShortName(id){ return (CTX[id]?CTX[id].nm:'').replace(/的你$/,''); }
-function renderCtxResult(id,demand){
-  var c=CTX[id], base=getBase()||{scores:{}}, cap=base.scores||{};
-  var a=ctxAnalyze(demand,cap), sn=ctxShortName(id), rows='';
-  rows+='<div class="block"><h3>這個情境最吃你哪幾股</h3>';
-  if(a.drains.length){
-    a.drains.forEach(function(x){
-      rows+='<div class="rpanel" style="margin-top:10px"><div class="rp-eb">'+fn1(x.k)+'<span class="tag" style="border-color:var(--cinnabar);color:var(--cinnabar)">耗能</span></div>'
-        +'<div class="rp-verdict"><span class="main">「'+sn+'」很需要「'+fn1(x.k)+'」，但這是你目前偏少的——容易吃力或被掏空。'+(CTX_COPE[x.k]||'')+'</span></div></div>';
-    });
-  } else {
-    rows+='<div class="trait-row"><span>這個情境沒有特別掏空你——它需要的能量，你大致都接得住，算合得來。</span></div>';
-  }
+function renderCtxResult(label, data, intensity){
+  var base=getBase()||{scores:{}}, cap=base.scores||{};
+  var a=ctxAnalyze(data.demand, data.deny, cap), sn=label||'這個場景', lvl=ctxIntensityLabel(intensity), rows='';
+  var bridge=(lvl?'你說它「'+lvl+'」——':'')+(a.drains.length
+    ? '細看，最被掏空的是'+a.drains.slice(0,2).map(function(x){return '「'+fn1(x.k)+'」';}).join('、')+'。'
+    : '不過細看，它需要的能量你大致都接得住，沒有特別掏空你。');
+  rows+='<div class="block"><h3>這個場景最吃你哪幾股</h3><div class="pair-sub">'+bridge+'</div>';
+  a.drains.forEach(function(x){
+    rows+='<div class="rpanel" style="margin-top:10px"><div class="rp-eb">'+fn1(x.k)+'<span class="tag" style="border-color:var(--cinnabar);color:var(--cinnabar)">耗能</span></div>'
+      +'<div class="rp-verdict"><span class="main">「'+sn+'」常需要「'+fn1(x.k)+'」，而這不是你最自然的——所以扛得比較費力。'+(CTX_COPE[x.k]||'')+'</span></div></div>';
+  });
   rows+='</div>';
   if(a.flows.length){
     rows+='<div class="block"><h3>你在這裡發揮得開</h3>';
@@ -790,20 +834,24 @@ function renderCtxResult(id,demand){
     });
     rows+='</div>';
   }
+  if(a.reminds.length){
+    rows+='<div class="block" style="border-left:3px solid var(--gold)"><div class="rp-verdict"><span class="main">這個場景也少了讓你「'+fn1(a.reminds[0].k)+'」的空間——你習慣靠它回神，記得替自己留一點。</span></div></div>';
+  }
+  var care=(intensity==='max'||intensity==='much')?'<br>它現在對你蠻重的——照顧好自己，需要的話找人說說。':'';
   var html=''
     +'<div class="fsbar">字級<button class="a1 on" id="fsA" onclick="setFs(0)">A</button><button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button></div>'
-    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>情境耗能 · '+c.nm+'</b><br>把「這情境需要什麼」跟「你的底色」對照——看它最吃你哪幾股、你又在哪裡省力。</div>'
-    +'<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div><div class="share-hint" style="margin-top:6px">金虛線＝這情境的需求　·　松綠＝你的底色</div></div>'
+    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>場景耗能 · '+sn+'</b><br>把「這場景需要什麼」跟「你的底色」對照——看它最吃你哪幾股、你又在哪裡省力。'+care+'</div>'
+    +'<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div><div class="share-hint" style="margin-top:6px">金虛線＝這場景的需求　·　松綠＝你的底色</div></div>'
     +rows
     +'<button class="retake" style="background:var(--ink);color:var(--surface);border-color:var(--ink)" onclick="showResult(getBase().scores)">← 回我的報告</button>'
-    +'<button class="retake" onclick="startCtx(\''+id+'\')">重測這個情境</button>'
-    +'<div class="foot">情境會變、你也會長——這是此刻的對照，不是定論。<br>Octenso ｜ 八態能格</div>';
+    +'<button class="retake" onclick="startScenario()">換一個場景</button>'
+    +'<div class="foot">場景會變、你也會長——這是此刻的對照，不是定論。<br>Octenso ｜ 八態能格</div>';
   var r=document.getElementById('result'); r.innerHTML=html;
   document.getElementById('quiz').style.display='none';
   document.getElementById('cover').style.display='none';
   document.getElementById('compat').style.display='none';
   r.style.display='block';
-  document.getElementById('radar-wrap').appendChild(buildRadar(cap, topKeyOf(cap), demand)); // 底色實線＋情境需求金虛線
+  document.getElementById('radar-wrap').appendChild(buildRadar(cap, topKeyOf(cap), data.demand));
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
 }
@@ -1336,30 +1384,80 @@ var COST_GIST={
 
 // ════ 對境耗能：情境需求題（每態1題）× 底色容量 → 哪股被掏空＋因應 ════
 // 每題測「這個情境多需要這股能量」(0–5)；demand 高 × 底色低 ＝ 耗能。【草稿，待潤】
+// 場景耗能 v2：curated 耗能路徑（溫和中性題；deny=場景不給你這股的空間）
 var CTX={
- work:{ nm:'工作的你', frame:'想著你真實的【工作／做事】日常——回答這個情境「有多需要」每種能量。',
+ lead:{ nm:'帶人／扛責任', ic:'🧭', frame:'想著最近一個你在帶人、扛責任的場景，安靜核對它常常需要你什麼。',
   items:[
-   {k:'qian',t:'工作裡，常常需要我主動定方向、做決定、扛起目標。'},
-   {k:'kun', t:'工作裡，常常需要我承接別人的情緒和需求、當大家的後盾。'},
-   {k:'zhen',t:'工作裡，常常需要我快速行動、馬上推進，不能拖。'},
-   {k:'xun', t:'工作裡，常常需要我串連人脈資源、把事情擴散出去。'},
-   {k:'li',  t:'工作裡，常常需要我表達、簡報、讓成果被看見。'},
-   {k:'kan', t:'工作裡，常常需要我獨自深入思考、沉住氣消化。'},
-   {k:'gen', t:'工作裡，常常需要我設界線、踩剎車、對不適合的事說不。'},
-   {k:'dui', t:'工作裡，常常需要我大量溝通、協調、跟很多人互動。'}
+   {k:'qian',t:'在這個場景，方向和決定，常常需要由你來定。'},
+   {k:'zhen',t:'事情往前推進，常常要靠你起頭、帶動。'},
+   {k:'kun', t:'別人的情緒和狀況，常常是你在承接。'},
+   {k:'dui', t:'你需要花不少力氣去協調、說明、溝通。'},
+   {k:'gen', t:'你需要把關、設界線，決定什麼接、什麼不接。'},
+   {k:'xun', t:'人、資源和進度，常常要你來張羅、連起來。'}
   ]},
- relation:{ nm:'關係裡的你', frame:'想著你在【親密關係／重要的人】面前——回答這個情境「有多需要」每種能量。',
+ rush:{ nm:'趕工／高壓', ic:'🔥', frame:'想著最近一段趕工、被時間追著跑的場景。',
   items:[
-   {k:'qian',t:'在重要的關係裡，常常需要我主動帶方向、做決定。'},
-   {k:'kun', t:'在重要的關係裡，常常需要我承接對方的情緒、當依靠。'},
-   {k:'zhen',t:'在重要的關係裡，常常需要我主動行動、推進這段關係。'},
-   {k:'xun', t:'在重要的關係裡，常常需要我牽線、把彼此的圈子連起來。'},
-   {k:'li',  t:'在重要的關係裡，常常需要我表達感受、讓對方看見真正的我。'},
-   {k:'kan', t:'在重要的關係裡，常常需要我獨處沉澱、消化自己的情緒。'},
-   {k:'gen', t:'在重要的關係裡，常常需要我設界線、保護自己的節奏。'},
-   {k:'dui', t:'在重要的關係裡，常常需要我常常溝通、聊天、保持連結。'}
+   {k:'zhen',t:'事情常常需要你不停往前推進。'},
+   {k:'qian',t:'你常需要同時判斷先做什麼、排優先順序。'},
+   {k:'kun', t:'大家都在趕，你常還要一邊接住情緒。'},
+   {k:'dui', t:'你常被訊息、會議、進度追著，需要一直回應。'},
+   {k:'gen', t:'在這裡你很少有停下來喘口氣的餘地。', deny:true},
+   {k:'kan', t:'你不太有安靜下來沉澱、好好想一下的空間。', deny:true}
+  ]},
+ social:{ nm:'大量社交／應酬', ic:'🗣', frame:'想著一個需要你大量社交、應酬的場景。',
+  items:[
+   {k:'dui', t:'你常需要主動接話、讓氣氛流動。'},
+   {k:'li',  t:'你常需要表現得得體、讓人感到自在。'},
+   {k:'kun', t:'別人的情緒和面子，你常需要顧到。'},
+   {k:'xun', t:'一群人裡，你常要記得誰是誰、把場面串起來。'},
+   {k:'kan', t:'在這裡你不太有獨處、安靜充電的空檔。', deny:true},
+   {k:'gen', t:'想早點離開時，不太容易開口說「我先走」。', deny:true}
+  ]},
+ conflict:{ nm:'跟難相處的人／衝突', ic:'⚔️', frame:'想著一段你跟難相處的人、或處在衝突裡的場景。',
+  items:[
+   {k:'kun', t:'你常需要承接對方的情緒。'},
+   {k:'gen', t:'你常需要設界線、把話說清楚、守住自己。'},
+   {k:'dui', t:'每句話你常都要斟酌怎麼說。'},
+   {k:'kan', t:'你常需要先穩住自己、看懂對方的狀態；結束後也需要時間平復。'}
+  ]},
+ care:{ nm:'照顧家人／情緒勞動', ic:'🫂', frame:'想著你在照顧家人、承接情緒的日常場景。',
+  items:[
+   {k:'kun', t:'你常在承接別人的情緒和需要。'},
+   {k:'xun', t:'家裡的瑣事、安排，常要你張羅、連起來。'},
+   {k:'gen', t:'你常需要隨時在位，不太容易說「現在我不行」。', deny:true},
+   {k:'kan', t:'你獨處、喘口氣的時間常被切得很碎。', deny:true},
+   {k:'dui', t:'自己累積的感受，常不太有地方說。', deny:true}
+  ]},
+ perform:{ nm:'要表現／被看', ic:'🎭', frame:'想著一個你要上場、被看、被評價的場景（簡報、面試…）。',
+  items:[
+   {k:'li',  t:'你常需要把自己、把成果展現出來、被看見。'},
+   {k:'zhen',t:'你常需要臨場反應、回答問題、撐住節奏。'},
+   {k:'dui', t:'你常需要把事情講得清楚、有條理。'},
+   {k:'kan', t:'前後你常需要安靜準備或收尾，但不一定有空間。', deny:true}
+  ]},
+ solo:{ nm:'一個人硬撐／孤立', ic:'🌫', frame:'想著一個你只能自己撐、找不到人的場景。',
+  items:[
+   {k:'qian',t:'事情常常需要你自己扛、自己決定。'},
+   {k:'zhen',t:'你常需要自己起頭、自己往前，沒人接力。'},
+   {k:'xun', t:'想找人幫忙、借個力時，不太容易找到對象或開口。', deny:true},
+   {k:'dui', t:'心裡的話，常常沒有人可以說。', deny:true},
+   {k:'kun', t:'你不太有被人接住、被撐著的感覺。', deny:true}
   ]}
 };
+// 自己描述（逃生口）的通用 demand 題（溫和中性，八態各一）
+var GEN_ITEMS=[
+ {k:'qian',t:'這個場景，常常需要你主動定方向、做決定。'},
+ {k:'zhen',t:'這個場景，常常需要你快速行動、推著往前。'},
+ {k:'kun', t:'這個場景，常常需要你承接別人的情緒和需要。'},
+ {k:'xun', t:'這個場景，常常需要你串連人、資源或機會。'},
+ {k:'li',  t:'這個場景，常常需要你表達、被看見。'},
+ {k:'kan', t:'這個場景，常常需要你獨自思考、沉住氣。'},
+ {k:'gen', t:'這個場景，常常需要你設界線、踩剎車、說不。'},
+ {k:'dui', t:'這個場景，常常需要你大量溝通、跟人互動。'}
+];
+// 強度（主觀，不改提問，回扣結果＋微調收尾）
+var CTX_INTENSITY=[{v:'mild',t:'還好'},{v:'some',t:'有點耗'},{v:'much',t:'蠻耗的'},{v:'max',t:'快撐不住'}];
+function ctxIntensityLabel(v){ for(var i=0;i<CTX_INTENSITY.length;i++) if(CTX_INTENSITY[i].v===v) return CTX_INTENSITY[i].t; return ''; }
 // 被掏空時的因應建議（情境很需要、你卻偏低）
 var CTX_COPE={
  qian:'別硬扛所有方向——把「定方向」找人一起分擔，或直接求助。',
@@ -1575,10 +1673,9 @@ function showResult(viewScores){
    +memoBlockHtml(sc)
    +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'
    +ctaBlock(sc,now)
-   +'<div class="block"><h3>情境耗能</h3>'
-     +'<div class="pair-sub">選一個情境，看它最吃你哪幾股能量、你又在哪裡省力——用「情境需求 × 你的底色」算耗能。</div>'
-     +'<button class="retake" onclick="startCtx(\'work\')">測「工作」會不會耗你 →</button>'
-     +'<button class="retake" onclick="startCtx(\'relation\')">測「關係」會不會耗你 →</button>'
+   +'<div class="block"><h3>場景耗能</h3>'
+     +'<div class="pair-sub">選一個最近最耗你的場景，看它把你哪幾股能量掏空了、又在哪裡省力——「場景需求 × 你的底色」。</div>'
+     +'<button class="retake" onclick="startScenario()">選一個最耗你的場景 →</button>'
    +'</div>'
    +'<div class="block" id="facet-menu"></div>'
    +'<div class="sharev2">'
