@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEMO · 細緻按鈕比較</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--ink:#23241f;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.9;padding:40px 22px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:440px;margin:0 auto}
+  h1{font-family:"Jost",sans-serif;font-weight:200;font-size:24px;letter-spacing:.04em;text-align:center;margin-bottom:6px}
+  .sub{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:34px}
+  .case{border:1px solid var(--line);border-radius:16px;background:#f8f4ec;padding:28px 20px 24px;margin-bottom:18px;text-align:center}
+  .case .lab{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+  .case .desc{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7}
+  .hint{font-size:11px;color:var(--hair);margin-top:14px}
+
+  /* V0 現況：細框・實心 hover */
+  .v0{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.12em;padding:11px 30px;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);display:inline-block;cursor:pointer;
+    transition:background .25s,color .25s,transform .15s}
+  .v0:hover{background:var(--ink);color:var(--paper);transform:translateY(-1px)}
+
+  /* V1 細框・ghost hover（不填滿，只描深） */
+  .v1{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.16em;padding:11px 32px;
+    border:1px solid var(--hair);border-radius:999px;color:var(--muted);display:inline-block;cursor:pointer;
+    transition:border-color .3s,color .3s,letter-spacing .3s}
+  .v1:hover{border-color:var(--ink);color:var(--ink);letter-spacing:.2em}
+
+  /* V2 純文字＋細底線＋箭頭（無膠囊） */
+  .v2{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;letter-spacing:.14em;color:var(--ink);
+    display:inline-block;cursor:pointer;padding:4px 2px 8px;border-bottom:1px solid var(--hair);
+    transition:border-color .3s}
+  .v2 .a{font-family:"Jost",sans-serif;margin-left:8px;color:var(--muted);transition:transform .25s,color .3s;display:inline-block}
+  .v2:hover{border-color:var(--ink)} .v2:hover .a{transform:translateX(4px);color:var(--ink)}
+
+  /* V3 極寬字距・微膠囊（空靈） */
+  .v3{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:12px;letter-spacing:.34em;padding:13px 34px 13px 40px;
+    border:1px solid var(--hair);border-radius:999px;color:var(--ink);display:inline-block;cursor:pointer;
+    transition:background .3s,border-color .3s}
+  .v3:hover{background:rgba(35,36,31,.045);border-color:var(--muted)}
+
+  /* V4 純文字＋箭頭，hover 箭頭右移（極簡，無線無框） */
+  .v4{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;letter-spacing:.16em;color:var(--ink);
+    display:inline-block;cursor:pointer;padding:6px 2px}
+  .v4 .a{font-family:"Jost",sans-serif;margin-left:10px;color:var(--muted);transition:transform .25s,color .3s;display:inline-block}
+  .v4:hover .a{transform:translateX(6px);color:var(--ink)}
+
+  /* V5 圈點呼應 enso：字前一個細圓圈 */
+  .v5{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.14em;padding:11px 30px;
+    border:1px solid var(--hair);border-radius:999px;color:var(--ink);display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+    transition:border-color .3s,background .3s}
+  .v5::before{content:"";width:7px;height:7px;border:1px solid var(--muted);border-radius:50%;transition:background .3s,border-color .3s}
+  .v5:hover{border-color:var(--ink)} .v5:hover::before{background:var(--ink);border-color:var(--ink)}
+</style></head>
+<body>
+<div class="wrap">
+  <h1>細緻按鈕 · 比較</h1>
+  <div class="sub">手機可直接點點看 hover 效果。挑一個（或說「V2 但要再小」之類）。</div>
+
+  <div class="case"><div class="lab">V0 現況</div><div class="desc">細框膠囊，hover 填滿實心墨色</div>
+    <a class="v0">開始測測看 →</a></div>
+
+  <div class="case"><div class="lab">V1 細框 · ghost hover</div><div class="desc">髮絲細框、灰字；hover 只描深＋字距微張，不填滿（最安靜）</div>
+    <a class="v1">開始測測看 →</a></div>
+
+  <div class="case"><div class="lab">V2 文字＋細底線＋箭頭</div><div class="desc">無膠囊、像一行精緻連結；hover 底線描深、箭頭右移（最禪，存在感較低）</div>
+    <a class="v2">開始測測看<span class="a">→</span></a></div>
+
+  <div class="case"><div class="lab">V3 極寬字距 · 微膠囊</div><div class="desc">很輕的字、很寬的字距、留白多；hover 淡淡底色（空靈）</div>
+    <a class="v3">開始測測看</a></div>
+
+  <div class="case"><div class="lab">V4 純文字＋箭頭</div><div class="desc">無框無線，互動感全在箭頭右移（極簡）</div>
+    <a class="v4">開始測測看<span class="a">→</span></a></div>
+
+  <div class="case"><div class="lab">V5 圈點呼應 enso</div><div class="desc">字前一個細圓圈呼應円相；hover 圓點填墨（有記憶點）</div>
+    <a class="v5">開始測測看</a></div>
+
+</div>
+</body></html>
