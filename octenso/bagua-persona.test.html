@@ -196,17 +196,18 @@ document.getElementById('f').onload=function(){
     ok(d.getElementById('facet-menu'),'facet-menu container in result');
     ok(d.querySelector('#facet-menu .facet-row'),'facet rows rendered');
 
-    // 19. renderFacetMenu: work 已測顯示型、relation 未測顯示「未測」、≥1 → 看面向地圖
+    // 19. renderFacetMenu（已收斂為「想成為的你」單區）：未測→已測、map 按鈕
     w.localStorage.removeItem('bagua_facets_v1');
     w.showResult(); // re-render menu with no facets
-    ok(d.getElementById('facet-menu').innerHTML.indexOf('未測')>=0,'unmeasured facet shows 未測');
-    ok(!d.querySelector('#facet-menu .facet-map-btn'),'no map button when 0 facets');
-    // now measure work (弱 zhen, 強 kun) and re-render
+    ok(d.getElementById('facet-menu').innerHTML.indexOf('未測')>=0,'unmeasured ideal shows 未測');
+    ok(!d.querySelector('#facet-menu .facet-map-btn'),'no map button when ideal 未測');
+    // 場域機制仍在（供 test 20/21 用）：存一筆 work；並存 ideal 讓選單顯示已測
     var workSc={qian:10,li:10,zhen:5,dui:10,kun:90,kan:10,gen:10,xun:10};
     w.saveFacet('work',workSc);
+    w.saveFacet('ideal',{zhen:75,dui:70,qian:65,li:70,xun:55,kun:50,gen:45,kan:35});
     w.showResult();
-    ok(d.getElementById('facet-menu').innerHTML.indexOf('已測')>=0,'measured facet shows 已測 + type');
-    ok(d.querySelector('#facet-menu .facet-map-btn'),'map button when ≥1 facet');
+    ok(d.getElementById('facet-menu').innerHTML.indexOf('已測')>=0,'measured ideal shows 已測 + type');
+    ok(d.querySelector('#facet-menu .facet-map-btn'),'map button when ideal 已測');
 
     // 20. showFacetResult: type card + radar with base overlay (dashed) + gap sentence
     //   底色 top=zhen(強)；work 把 zhen 壓到 5、kun 拉到 90

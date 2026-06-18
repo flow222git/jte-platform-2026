@@ -1566,15 +1566,13 @@ function renderFacetMenu(){
       +'<button class="fr-btn" onclick="startFacet(\''+f.id+'\')">'+(done?'重測':'測這個')+'</button>'
     +'</div>';
   }
-  var rows=FACETS.filter(function(f){return f.id!=='ideal';}).map(rowFor).join('');
-  var anyDone=FACETS.some(function(f){ return all[f.id]&&all[f.id].scores; });
-  var html='<h3>場域側寫</h3>'
-    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:6px">'
-    +'同一套題、換個場域再測一次，看看不同情境下的你，和你的底色差在哪。</div>'
-    +rows
-    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin:14px 0 6px">這一面<b>不是某個場域</b>，是你<b>想成為的樣子</b>——和現在的你比，照出你想去的方向：</div>'
+  // 場域（工作/關係/獨處）已由「對境耗能」取代；這裡只保留「想成為的你」
+  var idealDone=all['ideal']&&all['ideal'].scores;
+  var html='<h3>想成為的你</h3>'
+    +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:8px">'
+    +'用同一套題，這次想著你<b>想成為的樣子</b>回答——和現在的你比，照出你想去的方向。<br>（不同情境下的你，改用上面的「情境耗能」看。）</div>'
     +rowFor(FACET_BY_ID['ideal']);
-  if(anyDone){ html+='<button class="facet-map-btn" onclick="showFacetMap()">看面向地圖 →</button>'; }
+  if(idealDone){ html+='<button class="facet-map-btn" onclick="showFacetMap()">看現在 vs 想成為 →</button>'; }
   box.innerHTML=html;
 }
 
