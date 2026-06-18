@@ -54,6 +54,23 @@
     transition:border-color .3s,background .3s}
   .v5::before{content:"";width:7px;height:7px;border:1px solid var(--muted);border-radius:50%;transition:background .3s,border-color .3s}
   .v5:hover{border-color:var(--ink)} .v5:hover::before{background:var(--ink);border-color:var(--ink)}
+
+  /* ── 方框系列（呼應「格」）── */
+  .s1{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:12.5px;letter-spacing:.22em;padding:13px 36px 13px 42px;
+    border:1px solid var(--hair);border-radius:0;color:var(--muted);display:inline-block;cursor:pointer;transition:border-color .3s,color .3s}
+  .s1:hover{border-color:var(--ink);color:var(--ink)}
+  .s2{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.16em;padding:12px 32px;
+    border:1px solid var(--ink);border-radius:0;color:var(--ink);display:inline-block;cursor:pointer;transition:background .25s,color .25s}
+  .s2:hover{background:var(--ink);color:var(--paper)}
+  .s3{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.16em;padding:12px 32px;
+    border:1px solid var(--ink);border-radius:4px;color:var(--ink);display:inline-block;cursor:pointer;transition:background .25s,color .25s,transform .15s}
+  .s3:hover{background:var(--ink);color:var(--paper);transform:translateY(-1px)}
+  .s4{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:12.5px;letter-spacing:.24em;padding:14px 40px;
+    border:1px solid var(--hair);border-radius:0;color:var(--ink);display:inline-block;cursor:pointer;position:relative;transition:letter-spacing .3s}
+  .s4::before,.s4::after{content:"";position:absolute;width:8px;height:8px;border:1px solid var(--ink);opacity:0;transition:opacity .3s}
+  .s4::before{left:-1px;top:-1px;border-right:none;border-bottom:none}
+  .s4::after{right:-1px;bottom:-1px;border-left:none;border-top:none}
+  .s4:hover{letter-spacing:.28em} .s4:hover::before,.s4:hover::after{opacity:1}
 </style></head>
 <body>
 <div class="wrap">
@@ -77,6 +94,20 @@
 
   <div class="case"><div class="lab">V5 圈點呼應 enso</div><div class="desc">字前一個細圓圈呼應円相；hover 圓點填墨（有記憶點）</div>
     <a class="v5">開始測測看</a></div>
+
+  <div class="sub" style="margin:34px 0 18px">— 方框系列（呼應「格」）—</div>
+
+  <div class="case"><div class="lab">S1 方框・銳角・寬字距</div><div class="desc">髮絲方框＋灰字＋寬字距；hover 描深（最安靜的方框）</div>
+    <a class="s1">開始測測看</a></div>
+
+  <div class="case"><div class="lab">S2 方框・銳角・hover 填墨</div><div class="desc">乾淨的直角細框；hover 填滿墨色（結構感最強）</div>
+    <a class="s2">開始測測看 →</a></div>
+
+  <div class="case"><div class="lab">S3 微圓角方框</div><div class="desc">圓角 4px，介於方與圓之間（沉穩又不僵硬）</div>
+    <a class="s3">開始測測看 →</a></div>
+
+  <div class="case"><div class="lab">S4 方框＋角落短記號</div><div class="desc">hover 浮現四角中兩角的短記號＋字距微張（建築/取景框感）</div>
+    <a class="s4">開始測測看</a></div>
 
 </div>
 </body></html>
