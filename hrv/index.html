@@ -112,7 +112,7 @@
   .hist-tags span{font-size:11.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
 
   /* —— 量測 —— */
-  .cam-stage{position:relative;background:#11151c;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;aspect-ratio:1/1;max-height:42vh;display:flex;align-items:center;justify-content:center}
+  .cam-stage{position:relative;background:#11151c;border-radius:var(--radius);overflow:hidden;margin-bottom:16px;aspect-ratio:1/1;max-height:48vh;display:flex;align-items:center;justify-content:center}
   .cam-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25}
   .cam-overlay{position:relative;z-index:2;text-align:center;color:#fff;padding:18px}
   .ring{position:relative;width:120px;height:120px;margin:0 auto 12px}
@@ -129,7 +129,8 @@
   .hr-live .u{font-size:12px;opacity:.8}
   .wave-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 6px;margin-bottom:14px}
   .wave-card canvas{width:100%;height:70px;display:block}
-  .cam-hint{font-size:13px;color:var(--ink-soft);line-height:1.7;text-align:center;margin:0 0 4px;min-height:2.6em}
+  .cam-hint{font-size:14px;color:rgba(255,255,255,.97);font-weight:500;line-height:1.55;text-align:center;margin:0 auto 14px;max-width:280px;min-height:2.6em;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+  .cam-hint.warn{color:#ffd08a}
   .cam-hint.warn{color:var(--tense)}
 
   .err-card{background:var(--tense-soft);border:1px solid var(--tense);border-radius:var(--radius);padding:18px;margin-bottom:14px}
@@ -345,6 +346,7 @@ function renderMeasure(){
     '<div class="cam-stage">'+
       '<video id="cam" playsinline muted autoplay></video>'+
       '<div class="cam-overlay">'+
+        '<div class="cam-hint" id="camHint">'+_h(jteT('hint.initial','用整個指腹蓋滿後鏡頭（連旁邊的閃光燈）—— 畫面變成紅紅一片就對了；輕輕貼、別壓太用力'))+'</div>'+
         '<div class="ring">'+
           '<svg width="120" height="120" viewBox="0 0 120 120">'+
             '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>'+
@@ -358,7 +360,6 @@ function renderMeasure(){
     '</div>');
 
   d.insertAdjacentHTML('beforeend','<div class="wave-card"><canvas id="wave"></canvas></div>');
-  d.insertAdjacentHTML('beforeend','<p class="cam-hint" id="camHint">'+_h(jteT('hint.initial','用整個指腹蓋滿後鏡頭（連閃光燈）——畫面變紅紅一片就是蓋滿了；輕輕貼、別壓太用力，保持靜止…'))+'</p>');
   d.insertAdjacentHTML('beforeend','<div id="camErr"></div>');
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
