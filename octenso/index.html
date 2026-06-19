@@ -1,214 +1,167 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <script defer src="octenso-gate.js"></script>
-<script defer src="octenso-nav.js"></script>
 <title>Octenso 八態能格 · 看見你的能量，選擇你的流動</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300&family=Noto+Serif+TC:wght@400;500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  :root{--paper:#f4efe4;--ink:#23241f;--ink-soft:#3a3a32;--muted:#857c6d;--hair:#bcb09a;--line:#d2c7b4}
+  :root{--light:#ecdcb8;--soft:#b7a888;--gold:#e8c07a;--warm:#f0cf90}
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
-    font-weight:300;line-height:1.9;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-  a{color:inherit;text-decoration:none}
-
-  .home-link{position:fixed;top:16px;left:16px;z-index:20;font-family:"Jost",sans-serif;font-size:11px;
-    letter-spacing:.08em;color:var(--muted);padding:6px 13px;border:1px solid var(--hair);border-radius:999px;
-    background:rgba(244,239,228,.7);backdrop-filter:blur(5px)}
-  .home-link:hover{color:var(--ink);border-color:var(--ink)}
-
-  /* ───── HERO ───── */
-  .hero{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center;padding:64px 22px 44px;position:relative}
-  .eyebrow{font-family:"Jost",sans-serif;font-weight:400;font-size:11px;letter-spacing:.36em;color:var(--muted);
-    text-transform:uppercase;margin-bottom:30px;opacity:0;animation:rise .9s .15s ease-out forwards}
-  .lockup{display:flex;align-items:center;justify-content:center;gap:clamp(4px,1.4vw,14px);
-    margin-bottom:22px;opacity:0;animation:rise 1.1s .3s ease-out forwards}
-  .enso{display:block;width:clamp(74px,19vw,100px);height:clamp(74px,19vw,100px);object-fit:contain;flex:none}
-  .hero h1{font-family:"Jost",sans-serif;font-weight:200;font-size:clamp(40px,11.5vw,64px);letter-spacing:.04em;
-    line-height:1;margin:0}
-  .hero .zh{font-family:"Noto Sans TC",sans-serif;font-weight:200;font-size:clamp(18px,5vw,24px);
-    letter-spacing:.5em;padding-left:.5em;margin-bottom:42px;opacity:0;animation:rise 1s .7s ease-out forwards}
-  .hairmark{width:34px;height:1px;background:var(--hair);margin-bottom:28px;opacity:0;animation:rise 1s .8s ease-out forwards}
-  .tagline{font-size:clamp(15px,4vw,17px);line-height:2;opacity:0;animation:rise 1s .95s ease-out forwards}
-  .tagline .zh-t{color:var(--ink);letter-spacing:.08em;font-weight:300}
-  .tagline .en-t{font-family:"Jost",sans-serif;color:var(--muted);font-size:.8em;letter-spacing:.04em}
-  .lede{font-size:13px;color:var(--muted);line-height:2;max-width:420px;margin:24px auto 0;
-    opacity:0;animation:rise 1s 1.15s ease-out forwards}
-  .scrollcue{position:absolute;bottom:28px;left:0;right:0;text-align:center;font-family:"Jost",sans-serif;
-    font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;
-    opacity:0;animation:rise 1s 1.55s ease-out forwards}
-  .scrollcue .arrow{display:block;font-size:16px;margin-top:8px;animation:bob 2.2s ease-in-out infinite}
-  /* hero 快速說明＋早 CTA＋結果預覽（前 5 秒轉換） */
-  .hero-cta{margin-top:30px;opacity:0;animation:rise 1s 1.3s ease-out forwards}
-  .hero-peek{margin-top:34px;opacity:0;animation:rise 1s 1.55s ease-out forwards;display:flex;flex-direction:column;align-items:center}
-  .hero-peek .pk-cap{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);
-    text-transform:uppercase;margin-bottom:12px}
-  .hero-peek svg{width:118px;height:auto;display:block}
-  .hero-peek .pk-type{font-family:"Songti TC","Noto Serif TC",serif;font-size:15px;color:var(--ink);
-    letter-spacing:.08em;margin-top:10px}
-  .hero-peek .pk-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
-
-  @keyframes ensoIn{from{opacity:0;transform:rotate(-7deg) scale(.92)}to{opacity:1;transform:none}}
-  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
-
-  /* ───── WHEEL SEGMENT ───── */
-  .seg{max-width:640px;margin:0 auto;padding:30px 22px 56px;text-align:center}
-  .seg .lead{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:clamp(19px,5vw,23px);
-    letter-spacing:.07em;line-height:1.7;margin-bottom:8px}
-  .seg .sub{font-size:12.5px;color:var(--muted);letter-spacing:.05em;max-width:400px;margin:0 auto;line-height:2}
-
-  .wheel-wrap{max-width:480px;margin:14px auto 0}
-  #wheel{width:100%;height:auto;display:block;overflow:visible}
-  .ringline{fill:none;stroke:var(--hair);stroke-width:1}
-  .axis{stroke:var(--ink);stroke-width:1;opacity:.3;stroke-dasharray:3 5}
-  .draw{stroke-dashoffset:var(--len)}
-  .reveal .draw{animation:draw 1.5s ease forwards}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  .node-disc{fill:var(--paper);stroke:var(--ink);stroke-width:1.3}
-  .node-sym{font-family:"Songti TC","Noto Serif TC",serif;font-size:25px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
-  .node-nm{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:14px;fill:var(--ink);text-anchor:middle}
-  .node-fn{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:10px;fill:var(--muted);text-anchor:middle}
-  .node{opacity:0}
-  .reveal .node{animation:pop .6s ease forwards}
-  @keyframes pop{from{opacity:0}to{opacity:1}}
-  .hub{fill:var(--ink)}
-  .pairs{font-size:12.5px;color:var(--muted);letter-spacing:.16em;margin-top:24px;line-height:2.1}
-  .pairs b{color:var(--ink);font-weight:400}
-
-  /* ───── CLOSING ───── */
-  .closing{max-width:560px;margin:0 auto;padding:6px 22px 30px;text-align:center}
-  .closing .big{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,25px);
-    letter-spacing:.06em;line-height:1.7;margin-bottom:12px}
-  .closing .note{font-size:13px;color:var(--muted);line-height:2;max-width:410px;margin:0 auto}
-  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:30px}
-  /* 細緻版按鈕（全站共用 · V1 細框 ghost hover）：髮絲框＋輕字＋寬字距，hover 描深＋字距微張、不填滿 */
-  .cta{font-family:"Noto Sans TC",sans-serif;font-weight:300;font-size:13px;letter-spacing:.16em;
-    padding:11px 32px;border:1px solid var(--hair);border-radius:999px;color:var(--muted);display:inline-block;
-    transition:border-color .3s,color .3s,letter-spacing .3s}
-  .cta:hover{border-color:var(--ink);color:var(--ink);letter-spacing:.2em}
-  .cta .arr{font-family:"Jost",sans-serif;margin-left:6px;opacity:.7}
-  .cta.ghost{border-color:var(--line);color:var(--hair)}
-  .cta.ghost:hover{border-color:var(--muted);color:var(--muted);letter-spacing:.2em}
-
-  .honest{font-size:11.5px;color:var(--muted);line-height:2;max-width:430px;margin:36px auto 0;
-    padding-left:14px;border-left:1px solid var(--hair);text-align:left}
-  .foot{text-align:center;font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.14em;color:var(--muted);
-    text-transform:uppercase;margin:34px 0 48px;line-height:2.2}
-
-  .reveal-up{opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s ease}
-  .reveal-up.in{opacity:1;transform:none}
-
-  @media(prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    *{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}
-    .draw{stroke-dashoffset:0!important}
-  }
+  body{background:radial-gradient(130% 100% at 50% 30%,#2b2620 0%,#1c1812 50%,#120f0a 100%);
+    color:var(--light);font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .home-link{position:fixed;top:16px;left:16px;font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.1em;
+    color:var(--soft);text-decoration:none;opacity:.65;z-index:5}
+  .home-link:hover{opacity:1}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--soft);text-transform:uppercase;margin-bottom:10px;opacity:.7}
+  svg.scene{display:block;max-width:min(456px,95vw)}
+  .cap{font-family:"Noto Serif TC",serif;font-weight:500;font-size:18.5px;line-height:1.85;text-align:center;
+    color:var(--light);min-height:3.6em;max-width:380px;margin:18px auto 0;transition:opacity .6s;letter-spacing:.04em;font-feature-settings:"palt"}
+  .cap .em{color:var(--warm)} .cap .ok{color:var(--gold)}
+  .dots{display:flex;gap:8px;margin-top:14px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:rgba(236,220,184,.22);transition:.4s}
+  .dots i.on{background:var(--gold);width:18px;border-radius:3px;box-shadow:0 0 8px rgba(232,192,122,.6)}
+  .cta-wrap{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;transition:opacity 1s}
+  .cta{font-family:"Noto Serif TC",serif;font-size:15px;letter-spacing:.08em;text-decoration:none;border-radius:999px;padding:11px 30px;transition:.2s}
+  .cta.primary{background:var(--gold);color:#1c1812;border:1px solid var(--gold)}
+  .cta.primary:hover{background:var(--warm)}
+  .cta.ghost{background:transparent;color:var(--light);border:1px solid rgba(236,220,184,.4);font-size:13px;padding:9px 24px}
+  .cta.ghost:hover{border-color:var(--light)}
+  .wb{font-size:12.5px;color:var(--soft);margin-top:2px}
+  .wb a{color:var(--light);text-decoration:none;border-bottom:1px solid rgba(236,220,184,.35);padding-bottom:1px}
+  .replay{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.12em;color:var(--soft);background:none;border:none;cursor:pointer;margin-top:4px;opacity:.7}
+  .replay:hover{opacity:1;color:var(--light)}
 </style></head>
 <body>
 <a class="home-link" href="../index.html">← 練息場</a>
-
-<!-- HERO -->
-<header class="hero">
-  <div class="lockup">
-    <img class="enso" src="assets/enso.png" alt="enso 円相">
-    <h1>Octenso</h1>
-  </div>
-  <div class="zh">八態能格</div>
-  <p class="tagline">
-    <span class="zh-t">看見你的能量　選擇你的流動</span><br>
-    <span class="en-t">See your energy. Shape your flow.</span>
-  </p>
-  <p class="lede">測出你的八種內在能量——看你慣用哪幾種、又有哪些還沒長開。</p>
-  <div class="hero-cta"><a class="cta" href="bagua-persona.html">開始測測看 →</a></div>
-  <div class="hero-peek">
-    <div class="pk-cap">你會得到這樣的能量盤</div>
-    <svg viewBox="0 0 130 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <polygon points="65,10 101.8,25.2 117,62 101.8,98.8 65,114 28.2,98.8 13,62 28.2,25.2" fill="none" stroke="#bcb09a" stroke-width="1"/>
-      <polygon points="65,36 83.4,43.6 91,62 83.4,80.4 65,88 46.6,80.4 39,62 46.6,43.6" fill="none" stroke="#d2c7b4" stroke-width="1"/>
-      <polygon points="65,15.2 90.7,36.3 109.2,62 88.9,85.9 65,103.6 42.9,84.1 28.6,62 32.6,29.6" fill="rgba(35,36,31,0.08)" stroke="#23241f" stroke-width="1.5"/>
-    </svg>
-    <div class="pk-type">震 · 行動者</div>
-    <div class="pk-sub">＋ 優勢／盲點／成長・四個系統・能格調校</div>
-  </div>
-  <div id="welcome-back" style="display:none;margin-top:24px;font-family:'Noto Sans TC',ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.04em">
-    <span style="color:var(--muted)">歡迎回來 · </span>
-    <a href="bagua-persona.html" style="color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px">看我的能量盤</a>
-    <span style="color:var(--hair)">　·　</span>
-    <a href="bagua-records.html" style="color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair);padding-bottom:2px">我的記錄</a>
-  </div>
-  <div class="scrollcue">Scroll<span class="arrow">↓</span></div>
-</header>
-
-<!-- WHEEL -->
-<section class="seg">
-  <p class="lead reveal-up">八種能量，循環流動</p>
-  <p class="sub reveal-up">天 澤 火 雷 風 水 山 地 — 兩兩相對，構成一個整體</p>
-  <div class="wheel-wrap" id="wheelWrap">
-    <svg viewBox="-60 -66 520 532" id="wheel" aria-label="八種能量輪">
-      <circle class="ringline draw" cx="200" cy="200" r="140" style="--len:880"/>
-      <g id="axes"></g>
-      <g id="octa"></g>
-      <circle class="hub" cx="200" cy="200" r="3"/>
-      <g id="nodes"></g>
-    </svg>
-  </div>
-  <p class="pairs reveal-up">給出 ⇄ 接納　·　顯現 ⇄ 收藏<br>啟動 ⇄ 停止　·　表達 ⇄ 連結</p>
-</section>
-
-<!-- CLOSING -->
-<section class="closing">
-  <p class="big reveal-up">而這八種能量，也住在你身上</p>
-  <p class="note reveal-up">只是比例不同——有人擅長開創，有人擅長傾聽，有人需要安靜恢復。看見自己慣用哪幾種、又有哪些還沒長開，是認識自己的起點。</p>
-  <div class="cta-row reveal-up">
-    <a class="cta" href="bagua-persona.html">測測你是哪種能量 →</a>
-    <a class="cta ghost" href="bagua-map.html">先認識八種能量 →</a>
-  </div>
-  <div class="honest reveal-up">這是一面認識自己與關係的鏡子，不是算命、不是命定。能量會流動、可以成長；所有結果都是反思的起點，不是定論。</div>
-  <div class="foot">Octenso ｜ 八態能格 · 練息場 Join to Enjoy<br>內部開發中 · 未公開</div>
-</section>
+<div class="eyebrow">OCTENSO · 八態能格</div>
+<svg class="scene" id="svg" width="456" height="471" viewBox="0 0 360 372">
+  <defs>
+    <filter id="bloom" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="6"/></filter>
+    <radialGradient id="coreg"><stop offset="0%" stop-color="#f4dca0" stop-opacity=".9"/><stop offset="100%" stop-color="#f4dca0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="scrimg"><stop offset="0%" stop-color="#181410" stop-opacity=".96"/><stop offset="58%" stop-color="#181410" stop-opacity=".86"/><stop offset="100%" stop-color="#181410" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g id="rings"></g>
+  <path id="curve" fill="none" stroke="#e8c07a" stroke-width="1.4" opacity="0" filter="url(#bloom)"></path>
+  <path id="curve2" fill="none" stroke="#f0cf90" stroke-width="1" opacity="0"></path>
+  <circle id="core" cx="180" cy="180" r="26" fill="url(#coreg)" opacity="0"/>
+  <g id="rays"></g><g id="halos"></g><g id="pts"></g><g id="labels"></g>
+  <ellipse id="scrim" cx="180" cy="187" rx="116" ry="56" fill="url(#scrimg)" opacity="0"></ellipse>
+  <text id="sys" x="180" y="176" text-anchor="middle" font-family="'Noto Serif TC',serif" font-size="16" font-weight="500" fill="#f0cf90" opacity="0"></text>
+  <text id="sys2" x="180" y="197" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#b7a888" opacity="0"></text>
+</svg>
+<div class="cap" id="cap"></div>
+<div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+<div class="cta-wrap" id="ctaWrap">
+  <a class="cta primary" href="bagua-persona.html">開始認識你的八態 →</a>
+  <a class="cta ghost" href="bagua-map.html">先認識八種能量</a>
+  <div class="wb" id="wb" style="display:none">歡迎回來 · <a href="bagua-persona.html">看我的能量盤</a> · <a href="bagua-records.html">我的記錄</a></div>
+  <button class="replay" id="replay">重看一次</button>
+</div>
 
 <script>
-var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
-           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
-var RING=['qian','li','zhen','dui','kun','kan','gen','xun'];
-var E={qian:{s:'☰',n:'乾',f:'創造'},li:{s:'☲',n:'離',f:'覺察'},zhen:{s:'☳',n:'震',f:'啟動'},
-       dui:{s:'☱',n:'兌',f:'交流'},kun:{s:'☷',n:'坤',f:'承載'},kan:{s:'☵',n:'坎',f:'恢復'},
-       gen:{s:'☶',n:'艮',f:'界線'},xun:{s:'☴',n:'巽',f:'連結'}};
+var CX=180,CY=180,R0=30,MAXOUT=112;
+var E=[{sym:'☰',nm:'開創'},{sym:'☳',nm:'行動'},{sym:'☵',nm:'沉澱'},{sym:'☶',nm:'喊停'},
+       {sym:'☷',nm:'承接'},{sym:'☴',nm:'拓展'},{sym:'☲',nm:'展現'},{sym:'☱',nm:'交流'}];
+var GROUPS=[{nm:'天地 · 建構',sub:'開創 ↔ 承接',a:0,b:4},{nm:'雷風 · 推動',sub:'行動 ↔ 拓展',a:1,b:5},
+            {nm:'水火 · 認知',sub:'沉澱 ↔ 展現',a:2,b:6},{nm:'山澤 · 調節',sub:'喊停 ↔ 交流',a:3,b:7}];
 var NS='http://www.w3.org/2000/svg';
-function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
-
-var PAIRS=[['qian','kun'],['li','kan'],['zhen','gen'],['dui','xun']];
-var axes=document.getElementById('axes');
-PAIRS.forEach(function(p){var a=POLAR[p[0]],b=POLAR[p[1]];
-  axes.appendChild(el('line',{'class':'axis',x1:a.x,y1:a.y,x2:b.x,y2:b.y}));});
-
-var octa=document.getElementById('octa');
-var d='M'+RING.map(function(k){return POLAR[k].x+' '+POLAR[k].y;}).join(' L ')+' Z';
-octa.appendChild(el('path',{'class':'ringline draw',d:d,style:'--len:1100;animation-delay:.2s'}));
-
-var nodes=document.getElementById('nodes');
-RING.forEach(function(k,i){
-  var p=POLAR[k],dd=E[k],dx=p.x-200,dy=p.y-200,len=Math.hypot(dx,dy)||1,ox=dx/len,oy=dy/len;
-  var g=el('g',{'class':'node'});g.style.animationDelay=(0.7+i*0.1)+'s';
-  g.appendChild(el('circle',{'class':'node-disc',cx:p.x,cy:p.y,r:24}));
-  var sym=el('text',{'class':'node-sym',x:p.x,y:p.y+1});sym.textContent=dd.s;g.appendChild(sym);
-  var lx=p.x+ox*46,ly=p.y+oy*46;
-  var nm=el('text',{'class':'node-nm',x:lx,y:ly+(oy>=0?14:-4)});nm.textContent=dd.n;g.appendChild(nm);
-  var fn=el('text',{'class':'node-fn',x:lx,y:ly+(oy>=0?28:10)});fn.textContent=dd.f;g.appendChild(fn);
-  nodes.appendChild(g);
+function smoothClosed(pts){ var n=pts.length,d=''; for(var i=0;i<n;i++){var p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+  if(i===0)d+='M'+p1.x.toFixed(1)+','+p1.y.toFixed(1);
+  d+='C'+(p1.x+(p2.x-p0.x)/6).toFixed(1)+','+(p1.y+(p2.y-p0.y)/6).toFixed(1)+' '+(p2.x-(p3.x-p1.x)/6).toFixed(1)+','+(p2.y-(p3.y-p1.y)/6).toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1);} return d+'Z'; }
+function wobbly(R,ph){ var pts=[],N=44; for(var i=0;i<N;i++){var a=i/N*Math.PI*2;
+  var w=Math.sin(a*3+ph)*1.8+Math.sin(a*5+ph*1.6)*1.1+Math.sin(a*2+ph*.4)*1.4;
+  pts.push({x:CX+Math.cos(a)*(R+w),y:CY+Math.sin(a)*(R+w)});} return smoothClosed(pts); }
+var ringEls=[], ringBase=[44,84,122], ringPhase=[0.5,2.2,3.9];
+ringBase.forEach(function(r){ var p=document.createElementNS(NS,'path'); p.setAttribute('fill','none');
+  p.setAttribute('stroke','rgba(240,207,144,.13)');p.setAttribute('stroke-width','1');p.setAttribute('stroke-linejoin','round');
+  document.getElementById('rings').appendChild(p); ringEls.push(p); });
+var ringT0=performance.now();
+(function flowRings(ts){ ringEls.forEach(function(p,i){ var k=Math.sin((ts-ringT0)/4600*Math.PI*2 + i*1.4);
+  p.setAttribute('d', wobbly(ringBase[i]+k*5, ringPhase[i]));
+  p.setAttribute('stroke','rgba(240,207,144,'+(0.07+0.06*(k*.5+.5)).toFixed(3)+')'); });
+  requestAnimationFrame(flowRings);
+})(ringT0);
+var rays=[],halos=[],pts=[],labs=[];
+E.forEach(function(e,i){
+  var ray=document.createElementNS(NS,'line'); ray.setAttribute('x1',CX);ray.setAttribute('y1',CY);
+  ray.setAttribute('stroke','#f5e6c0');ray.setAttribute('stroke-width','0.7');ray.setAttribute('opacity','0');ray.setAttribute('stroke-linecap','round');
+  document.getElementById('rays').appendChild(ray); rays.push(ray);
+  var h=document.createElementNS(NS,'circle'); h.setAttribute('fill','#f0cf90');h.setAttribute('opacity','0');h.setAttribute('filter','url(#bloom)');
+  document.getElementById('halos').appendChild(h); halos.push(h);
+  var p=document.createElementNS(NS,'circle'); p.setAttribute('fill','#fbeec4');p.setAttribute('opacity','0');
+  document.getElementById('pts').appendChild(p); pts.push(p);
+  var l=document.createElementNS(NS,'text'); l.setAttribute('text-anchor','middle');l.setAttribute('font-family','"Noto Serif TC",serif');
+  l.setAttribute('font-size','15');l.setAttribute('fill','#e6d6ad');l.setAttribute('opacity','0');l.textContent=e.sym;
+  document.getElementById('labels').appendChild(l); labs.push(l);
 });
+var state=E.map(function(){return {len:.5,op:0,lum:.5};});
+function tip(i,len){ var a=(-90+i*45)*Math.PI/180; return {x:CX+Math.cos(a)*(R0+len*MAXOUT), y:CY+Math.sin(a)*(R0+len*MAXOUT), a:a}; }
+function render(){ state.forEach(function(s,i){ var t=tip(i,s.len);
+  rays[i].setAttribute('x2',t.x);rays[i].setAttribute('y2',t.y);rays[i].setAttribute('opacity',s.op*.42);
+  halos[i].setAttribute('cx',t.x);halos[i].setAttribute('cy',t.y);halos[i].setAttribute('r',5+s.lum*15);halos[i].setAttribute('opacity',s.op*.16*s.lum);
+  pts[i].setAttribute('cx',t.x);pts[i].setAttribute('cy',t.y);pts[i].setAttribute('r',1.8+s.lum*2.6);pts[i].setAttribute('opacity',s.op);
+  var lr=R0+s.len*MAXOUT+15; labs[i].setAttribute('x',CX+Math.cos(t.a)*lr);labs[i].setAttribute('y',CY+Math.sin(t.a)*lr+4); }); }
+function curvePath(){ return smoothClosed(state.map(function(s,i){return tip(i,s.len);})); }
+var anims=[],_pending=null,curveOn=false;
+function tw(i,prop,to,dur,delay){anims.push({i:i,prop:prop,from:null,to:to,dur:dur,delay:delay||0,t0:null});}
+function ez(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+function loop(ts){var alive=false;
+  anims.forEach(function(an){ if(an.t0===null)an.t0=ts+an.delay; if(ts<an.t0){alive=true;return;}
+    if(an.from===null)an.from=state[an.i][an.prop]; var k=Math.min(1,(ts-an.t0)/an.dur);
+    state[an.i][an.prop]=an.from+(an.to-an.from)*ez(k); if(k<1)alive=true; });
+  anims=anims.filter(function(an){return an.t0===null||(ts-an.t0)/an.dur<1;});
+  render(); if(curveOn){var d=curvePath();document.getElementById('curve').setAttribute('d',d);document.getElementById('curve2').setAttribute('d',d);}
+  if(alive||anims.length)requestAnimationFrame(loop); else if(_pending){var p=_pending;_pending=null;p();}
+}
+function play(){requestAnimationFrame(loop);}
+function cap(h){var c=document.getElementById('cap');c.style.opacity=0;setTimeout(function(){c.innerHTML=h;c.style.opacity=1;},300);}
+function dot(n){var ds=document.getElementById('dots').children;for(var i=0;i<ds.length;i++)ds[i].className=(i===n)?'on':'';}
+function fade(id,o){document.getElementById(id).setAttribute('opacity',o);}
 
-var io=new IntersectionObserver(function(es){es.forEach(function(en){
-  if(en.isIntersecting){en.target.classList.add(en.target.id==='wheelWrap'?'reveal':'in');io.unobserve(en.target);}
-});},{threshold:.3});
-io.observe(document.getElementById('wheelWrap'));
-[].forEach.call(document.querySelectorAll('.reveal-up'),function(n){io.observe(n);});
+function beat1(){ dot(0); fade('core','1'); cap('幾千年前，古人用八卦，<br>觀察天地間運行的能量。');
+  E.forEach(function(e,i){ tw(i,'op',.72,1100,i*120); tw(i,'lum',.7,1100,i*120);
+    setTimeout(function(){labs[i].textContent=E[i].sym;labs[i].setAttribute('opacity','.78');},i*120); });
+  play(); setTimeout(beat2,4200); }
+function beat2(){ dot(1); fade('core','.12'); fade('scrim','1'); cap('這些能量兩兩相對——<br>組成四組系統。'); var t=500;
+  E.forEach(function(e,i){ labs[i].setAttribute('opacity','0'); });
+  GROUPS.forEach(function(g){ setTimeout(function(){
+      fade('sys','1');fade('sys2','1');document.getElementById('sys').textContent=g.nm;document.getElementById('sys2').textContent=g.sub;
+      E.forEach(function(e,i){ if(i!==g.a&&i!==g.b){ tw(i,'lum',.5,500,0); tw(i,'op',.5,500,0); } });
+      [g.a,g.b].forEach(function(i){ tw(i,'lum',1,700,0); tw(i,'op',1,600,0); });
+      play();
+    },t); t+=1500; });
+  setTimeout(function(){ fade('sys','0');fade('sys2','0'); beat3(); }, t+200); }
+function beat3(){ dot(2); fade('scrim','0'); fade('core','.85'); var d=1; cap('而這八種能量，<br>也正在你的生活裡運作。');
+  setTimeout(function(){ labs[d].textContent=E[d].sym+E[d].nm; E.forEach(function(e,i){if(i!==d){tw(i,'op',.2,600,0);tw(i,'lum',.3,600,0);} labs[i].setAttribute('opacity', i===d?'1':'0');});
+    tw(d,'lum',.25,700,0); cap('用得太少，它<span class="em">睡著</span>了；'); play(); },2200);
+  setTimeout(function(){ tw(d,'lum',.9,700,0); cap('用得<span class="ok">剛好</span>，是你的養分；'); play(); },4200);
+  setTimeout(function(){ tw(d,'lum',1.3,700,0); cap('用得<span class="em">太過</span>，反而刺眼、反而累。'); play(); },6000);
+  setTimeout(function(){ cap('<b>能量八態，<span class="ok">過猶不及</span>。</b>'); },7900);
+  setTimeout(beat4,9800); }
+function beat4(){ dot(3); curveOn=true; fade('curve','.55');fade('curve2','.5');
+  var prof=[{l:.74,u:1.0},{l:.86,u:1.3},{l:.55,u:.4},{l:.58,u:.45},{l:.68,u:.95},{l:.72,u:.95},{l:.77,u:1.0},{l:.64,u:.9}];
+  E.forEach(function(e,i){ tw(i,'op',1,900,i*60); tw(i,'len',prof[i].l,1000,i*60); tw(i,'lum',prof[i].u,1000,i*60); setTimeout(function(){labs[i].setAttribute('opacity','0');},i*60); });
+  cap('八股各自定到你的高低與分寸——<br>連成一個圓，<b>就是此刻的你</b>。'); play();
+  setTimeout(function(){ cap('這不是占卜——<br>是古人的智慧，<span class="ok">照見當下的你</span>。'); breathe();
+    document.getElementById('ctaWrap').style.opacity='1'; },3600); }
+var breathing=false;
+function breathe(){ breathing=true; var base=state.map(function(s){return s.len;}),lb=state.map(function(s){return s.lum;}),t0=performance.now();
+  (function b(ts){ if(!breathing)return; var k=Math.sin((ts-t0)/2600*Math.PI*2)*.5+.5;
+    state.forEach(function(s,i){s.len=base[i]*(0.96+0.04*k);s.lum=lb[i]*(0.9+0.18*k);}); render();
+    var d=curvePath();document.getElementById('curve').setAttribute('d',d);document.getElementById('curve2').setAttribute('d',d); requestAnimationFrame(b); })(t0); }
+document.getElementById('replay').onclick=function(){ breathing=false;anims=[];curveOn=false;
+  document.getElementById('ctaWrap').style.opacity='0';
+  fade('curve','0');fade('curve2','0');fade('core','0');fade('scrim','0');
+  state=E.map(function(){return {len:.5,op:0,lum:.5};}); E.forEach(function(e,i){labs[i].setAttribute('opacity','0');labs[i].textContent=E[i].sym;}); render();
+  setTimeout(beat1,300); };
+try{ if(localStorage.getItem('bagua_persona_v1')) document.getElementById('wb').style.display='block'; }catch(e){}
 
-// 回訪捷徑：已測過底色 → 顯示「歡迎回來」
-try{ if(localStorage.getItem('bagua_persona_v1')){ var wb=document.getElementById('welcome-back'); if(wb) wb.style.display='block'; } }catch(e){}
+// 登入閘 reveal 後才開始（鎖過又解鎖＝登入完成；從沒鎖過＝無閘/已放行→保險啟動）
+render();
+var started=false; function go(){ if(started)return; started=true; setTimeout(beat1,250); }
+var gphase=0, giv=setInterval(function(){ var locked=document.documentElement.style.overflow==='hidden';
+  if(locked) gphase=1; if(!locked && gphase===1){ clearInterval(giv); go(); } },120);
+setTimeout(function(){ if(gphase===0){ try{clearInterval(giv);}catch(e){} go(); } },1700);
 </script>
 </body></html>
