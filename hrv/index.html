@@ -192,6 +192,13 @@
   .tagnote-in{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
   .tagnote-in::placeholder{color:var(--ink-faint)}
   .tagnote-priv{font-size:11.5px;color:var(--ink-faint);margin-top:9px}
+  /* 快測/深測 選擇 */
+  .modepick{margin:4px 0 14px}
+  .modepick-q{font-size:13px;color:var(--ink-soft);display:block;margin-bottom:8px}
+  .moderow{display:flex;gap:10px}
+  .modebtn{flex:1;font-family:inherit;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;transition:.12s}
+  .modebtn b{display:block;font-size:14px;color:var(--ink)} .modebtn span{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+  .modebtn.on{border-color:var(--accent);background:rgba(0,61,124,.05)}
   .idx-adv{font-size:13px;color:var(--ink-soft);line-height:1.7}
   .idx-score{font-family:"Noto Serif TC",serif;font-size:13px;color:var(--ink-faint);margin-left:6px}
 
@@ -236,9 +243,11 @@ if(typeof window.jteT!=='function'){ window.jteT=function(k,fb){ return fb!==und
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
-const QUICK_SEC=60;         // 品質轉綠後量測秒數（單一 ~60 秒流程）
+const QUICK_SEC=60;         // 快測：心率、放鬆/恢復（短期穩定指標）
+const DEEP_SEC=180;         // 深測：多解鎖頻域面相（壓力/活力/彈性，LF 需 2–3 分鐘才準）
+let measureLen=QUICK_SEC;   // 使用者選的量測長度（預設快測）
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
-function measureSec(){ return QUICK_SEC; }
+function measureSec(){ return measureLen; }
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
@@ -282,7 +291,7 @@ function renderIntro(){
     {title:jteT('intro.step1.title','整顆鏡頭蓋滿'),desc:jteT('intro.step1.desc','用整個指腹蓋滿後鏡頭和旁邊的閃光燈——畫面變成紅紅一片就對了；輕輕貼、別壓太用力。'),icon:'ti-hand-finger'},
     {title:jteT('intro.step2.title','手和身體保持靜止'),desc:jteT('intro.step2.desc','正常呼吸，不要說話。'),icon:'ti-armchair-2'},
     {title:jteT('intro.step3.title','光線要充足'),desc:jteT('intro.step3.desc','在亮一點的地方量更穩。'),icon:'ti-sun'},
-    {title:jteT('intro.step4.title','抓到脈搏就開始'),desc:jteT('intro.step4.desc','偵測到穩定心跳會自動開始約一分鐘倒數，量完顯示結果。'),icon:'ti-clock-hour-4'},
+    {title:jteT('intro.step4.title','抓到脈搏就開始'),desc:jteT('intro.step4.desc','偵測到穩定心跳會自動開始倒數，量完顯示結果。'),icon:'ti-clock-hour-4'},
   ];
   let stepsHtml='<h3><i class="ti ti-list-numbers"></i>'+_h(jteT('intro.steps.title','量測步驟'))+'</h3><div class="steps">';
   stepsData.forEach(function(s,i){
@@ -294,6 +303,19 @@ function renderIntro(){
   stepsHtml+='</div>';
   g.innerHTML=stepsHtml;
   d.appendChild(g);
+
+  // 量測長度：快測 / 深測
+  const modeWrap=document.createElement('div'); modeWrap.className='modepick';
+  modeWrap.innerHTML='<span class="modepick-q">'+jteT('mode.q','要量多久？')+'</span>';
+  const mrow=document.createElement('div'); mrow.className='moderow';
+  [{s:QUICK_SEC,t:jteT('mode.quick','快測 · 1 分鐘'),d:jteT('mode.quick.d','心率、放鬆/恢復')},
+   {s:DEEP_SEC, t:jteT('mode.deep','深測 · 3 分鐘'), d:jteT('mode.deep.d','多解鎖 壓力/活力/彈性')}].forEach(function(o){
+    const b=document.createElement('button'); b.type='button'; b.className='modebtn'+(measureLen===o.s?' on':'');
+    b.innerHTML='<b>'+o.t+'</b><span>'+o.d+'</span>';
+    b.onclick=function(){ measureLen=o.s; Array.prototype.forEach.call(mrow.children,function(c){ c.classList.remove('on'); }); b.classList.add('on'); };
+    mrow.appendChild(b);
+  });
+  modeWrap.appendChild(mrow); d.appendChild(modeWrap);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
@@ -715,7 +737,7 @@ function buildFacets(facets){
   wrap.appendChild(head);
   if(!facets){
     const na=document.createElement('div'); na.className='facet-na';
-    na.textContent=jteT('facets.na','這次資料不夠算這幾個面相，下次量久一點、穩一點再看。');
+    na.textContent=jteT('facets.na','「壓力 / 活力 / 彈性」這幾個面相需要長一點的測量才準——做一次「深測 · 3 分鐘」就會出現。');
     wrap.appendChild(na); return wrap;
   }
   const FACE=[
@@ -775,6 +797,8 @@ function buildSelfReport(recId, rec){
 // 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null
 function computeFreqFacets(rr, sdnn){
   var F=window.HrvFreq; if(!F||!rr||rr.length<8) return null;
+  var span=0; for(var s=0;s<rr.length;s++) span+=rr[s];     // 量測總時長(ms)
+  if(span < 150000) return null;                            // <2.5 分鐘 → LF 不可信 → 不顯示頻域面相（請用深測）
   try{
     var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
     var bp=F.bandPowers(rs.series, rs.fs);
