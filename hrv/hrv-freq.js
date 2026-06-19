@@ -79,16 +79,23 @@
     flexibility:{high:'心率變化豐富，自律調節有彈性。',mid:'調節彈性中等。',low:'變化偏小，彈性較低。'}
   };
   function mk(face, score){ var l=lvl(score); return { score:Math.round(score), level:l, label:LBL[l], advice:ADV[face][l] }; }
-  // 參考範圍＝相對校準的合理估值（非臨床常模）；hfnu/lfhf 為尺度無關較穩健
-  function indices(bp, td){
+  // 年齡校準因子：HRV（總功率、SDNN）隨年齡下降 → 調整參考範圍，讓年長者不被誤判偏低。
+  // 參考年齡 40；每歲約 0.8% 緩降；夾在 0.55~1.4。無年齡(0/異常)→1（不校準）。粗略、非臨床常模。
+  function ageFactor(age){
+    age=+age||0; if(age<10||age>100) return 1;
+    return clamp(1 - 0.008*(age-40), 0.55, 1.4);
+  }
+  // 參考範圍＝相對校準的合理估值（非臨床常模）；hfnu/lfhf 為尺度無關較穩健、不吃年齡。
+  function indices(bp, td, age){
     bp=bp||{}; td=td||{};
     var hfnu = (bp.lf+bp.hf)>0 ? bp.hf/(bp.lf+bp.hf) : 0;        // 副交感占比 0~1
-    var relax = mk('relax', hfnu*100);
-    var stress = mk('stress', scoreLin(bp.lfhf||0, 0.5, 4));
-    var vitality = mk('vitality', scoreLog(bp.total||0, 100, 8000));
-    var flexibility = mk('flexibility', scoreLog(td.sdnn||0, 10, 120));
-    return { relax:relax, stress:stress, vitality:vitality, flexibility:flexibility };
+    var relax = mk('relax', hfnu*100);                          // 比值，不校準年齡
+    var stress = mk('stress', scoreLin(bp.lfhf||0, 0.5, 4));    // 比值，不校準年齡
+    var f = ageFactor(age);                                     // 吃年齡的兩項：總功率、SDNN
+    var vitality = mk('vitality', scoreLog(bp.total||0, 100*f, 8000*f));
+    var flexibility = mk('flexibility', scoreLog(td.sdnn||0, 10*f, 120*f));
+    return { relax:relax, stress:stress, vitality:vitality, flexibility:flexibility, ageAdjusted:(f!==1) };
   }
 
-  root.HrvFreq = { resampleRr:resampleRr, fft:fft, bandPowers:bandPowers, indices:indices, _mean:mean, _clamp:clamp };
+  root.HrvFreq = { resampleRr:resampleRr, fft:fft, bandPowers:bandPowers, indices:indices, ageFactor:ageFactor, _mean:mean, _clamp:clamp };
 })(typeof window !== 'undefined' ? window : this);

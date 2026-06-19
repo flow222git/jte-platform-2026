@@ -72,6 +72,15 @@ async function run(){
     assert(hi.vitality.score > lo.vitality.score, '活力隨 total 升');
     assert(hi.flexibility.score > lo.flexibility.score, '靈活度隨 sdnn 升');
   });
+  await check('年齡校準：同值下年長者活力/彈性分數較高；放鬆/壓力與無年齡不校準', async () => {
+    var bp={lf:500,hf:500,total:1500,lfhf:1}, td={sdnn:30};
+    var young=HrvFreq.indices(bp,td,25), old=HrvFreq.indices(bp,td,65), none=HrvFreq.indices(bp,td);
+    assert(old.vitality.score>young.vitality.score,'年長者活力分數較高(同值)');
+    assert(old.flexibility.score>young.flexibility.score,'年長者彈性分數較高(同值)');
+    eq(old.relax.score,young.relax.score,'放鬆比值·不吃年齡');
+    eq(old.stress.score,young.stress.score,'壓力比值·不吃年齡');
+    assert(none.ageAdjusted===false && HrvFreq.ageFactor(0)===1,'無年齡→不校準');
+  });
 
   // === 端到端：相機 PPG → RR → 頻域 → 四指數（誠實把關邊界）===
   // 合成乾淨 PPG（沿用 analyze 測試的形狀：{t,v}，含 RR 微抖以產生 HRV）

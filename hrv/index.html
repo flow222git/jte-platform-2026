@@ -189,6 +189,13 @@
   .minfo summary::before{content:'ⓘ '}
   .minfo[open] summary{margin-bottom:5px}
   .minfo p{font-size:12px;color:var(--ink-soft);line-height:1.8;margin:0}
+  /* 生年/年齡校準列 */
+  .agerow{border-top:1px solid var(--line);margin-top:11px;padding-top:11px}
+  .age-q{display:block;font-size:11.5px;color:var(--ink-faint);line-height:1.6;margin-bottom:7px}
+  .age-in{display:flex;gap:8px}
+  .age-in input{flex:1;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 11px;min-width:0}
+  .age-in button{font-family:inherit;font-size:13px;color:#fff;background:var(--accent);border:none;border-radius:9px;padding:7px 16px;cursor:pointer}
+  .age-set{font-size:12px;color:var(--ink-soft)} .age-set a{color:var(--accent)}
   /* 事後自我回饋 */
   .selfrep{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .selfrep-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .selfrep-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
@@ -799,6 +806,7 @@ function buildFacets(facets){
     cell.insertAdjacentHTML('beforeend', metricInfo(f.k));
     wrap.appendChild(cell);
   });
+  wrap.appendChild(birthYearRow());
   return wrap;
 }
 
@@ -836,7 +844,13 @@ function buildSelfReport(recId, rec){
   return wrap;
 }
 
-// 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null
+// 出生年份（只存本機、選填）→ 年齡，用來校準吃年齡的面相（活力/彈性）
+var BIRTH_KEY='hrv_birth_year';
+function getBirthYear(){ var y=parseInt(localStorage.getItem(BIRTH_KEY),10); return (y>=1900&&y<=2100)?y:0; }
+function setBirthYear(y){ y=parseInt(y,10); if(y>=1900&&y<=2100){ try{localStorage.setItem(BIRTH_KEY,String(y));}catch(e){} return true; } return false; }
+function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).getFullYear()-y; return (a>=0&&a<=120)?a:0; }
+
+// 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null。年齡校準活力/彈性
 function computeFreqFacets(rr, sdnn){
   var F=window.HrvFreq; if(!F||!rr||rr.length<8) return null;
   var span=0; for(var s=0;s<rr.length;s++) span+=rr[s];     // 量測總時長(ms)
@@ -844,8 +858,30 @@ function computeFreqFacets(rr, sdnn){
   try{
     var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
     var bp=F.bandPowers(rs.series, rs.fs);
-    return F.indices(bp, {sdnn:sdnn});
+    return F.indices(bp, {sdnn:sdnn}, getAge());
   }catch(e){ return null; }
+}
+// 只重繪面相卡（避免重跑 renderResult 重複存檔）；用 _lastResultSamples 重算
+function refreshFacets(){
+  var A=window.HrvAnalyze; if(!A||!_lastResultSamples) return false;
+  var rr=A.cleanRr(A.rrFromBeats(A.detectBeats(_lastResultSamples))), m=A.metricsFromRr(rr);
+  var old=document.querySelector('.facets');
+  if(old){ var fresh=buildFacets(computeFreqFacets(rr, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
+  return false;
+}
+function applyBirthYear(){ var el=document.getElementById('byIn'); if(el && setBirthYear(el.value)) refreshFacets(); return false; }
+function editBirthYear(){
+  var y=window.prompt(jteT('age.prompt','出生年份（只存本機，用來校準活力/彈性）：'), String(getBirthYear()||''));
+  if(y!==null){ if(String(y).trim()===''){ try{localStorage.removeItem(BIRTH_KEY);}catch(e){} } else { setBirthYear(y); } refreshFacets(); }
+  return false;
+}
+// 生年輸入/已校準 列（只在有面相時顯示）
+function birthYearRow(){
+  var wrap=document.createElement('div'); wrap.className='agerow'; var age=getAge();
+  if(age){ wrap.innerHTML='<span class="age-set">✓ 已依 '+age+' 歲校準「活力/彈性」 · <a href="#" onclick="return editBirthYear()">改</a></span>'; }
+  else { wrap.innerHTML='<span class="age-q">'+jteT('age.q','填出生年份，讓「活力/彈性」更貼合你的年齡（選填 · 只存本機）')+'</span>'
+    +'<span class="age-in"><input type="number" id="byIn" inputmode="numeric" placeholder="如 1985" min="1900" max="2100"><button type="button" onclick="return applyBirthYear()">套用</button></span>'; }
+  return wrap;
 }
 function renderEnergyResult(d, card, list, m, rec, rr){
   const E=window.HrvEnergy;
