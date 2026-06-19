@@ -11,7 +11,7 @@
     color:var(--light);font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
     display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;-webkit-font-smoothing:antialiased;overflow:hidden}
   .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--soft);text-transform:uppercase;margin-bottom:10px;opacity:.7}
-  svg{display:block;max-width:92vw}
+  svg{display:block;max-width:min(456px,95vw)}
   .cap{font-family:"Noto Serif TC",serif;font-weight:500;font-size:18.5px;line-height:1.85;text-align:center;
     color:var(--light);min-height:3.6em;max-width:380px;margin:18px auto 0;transition:opacity .6s;letter-spacing:.04em;font-feature-settings:"palt"}
   .cap .em{color:var(--warm)} .cap .ok{color:var(--gold)}
@@ -24,18 +24,18 @@
 </style></head>
 <body>
 <div class="eyebrow">OCTENSO · 八態能格</div>
-<svg id="svg" width="360" height="372" viewBox="0 0 360 372">
+<svg id="svg" width="456" height="471" viewBox="0 0 360 372">
   <defs>
     <filter id="bloom" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="6"/></filter>
     <radialGradient id="coreg"><stop offset="0%" stop-color="#f4dca0" stop-opacity=".9"/><stop offset="100%" stop-color="#f4dca0" stop-opacity="0"/></radialGradient>
-    <radialGradient id="scrimg"><stop offset="0%" stop-color="#191510" stop-opacity=".92"/><stop offset="62%" stop-color="#191510" stop-opacity=".72"/><stop offset="100%" stop-color="#191510" stop-opacity="0"/></radialGradient>
+    <radialGradient id="scrimg"><stop offset="0%" stop-color="#181410" stop-opacity=".96"/><stop offset="58%" stop-color="#181410" stop-opacity=".86"/><stop offset="100%" stop-color="#181410" stop-opacity="0"/></radialGradient>
   </defs>
   <g id="rings"></g>
   <path id="curve" fill="none" stroke="#e8c07a" stroke-width="1.4" opacity="0" filter="url(#bloom)"></path>
   <path id="curve2" fill="none" stroke="#f0cf90" stroke-width="1" opacity="0"></path>
   <circle id="core" cx="180" cy="180" r="26" fill="url(#coreg)" opacity="0"/>
   <g id="rays"></g><g id="halos"></g><g id="pts"></g><g id="labels"></g>
-  <ellipse id="scrim" cx="180" cy="187" rx="100" ry="46" fill="url(#scrimg)" opacity="0"></ellipse>
+  <ellipse id="scrim" cx="180" cy="187" rx="116" ry="56" fill="url(#scrimg)" opacity="0"></ellipse>
   <text id="sys" x="180" y="176" text-anchor="middle" font-family="'Noto Serif TC',serif" font-size="16" font-weight="500" fill="#f0cf90" opacity="0"></text>
   <text id="sys2" x="180" y="197" text-anchor="middle" font-family="'Noto Sans TC',sans-serif" font-size="12" fill="#b7a888" opacity="0"></text>
 </svg>
