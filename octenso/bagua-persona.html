@@ -348,16 +348,31 @@
   <div class="trigrams">☰ ☱ ☲ ☴ ☳ ☵ ☶ ☷</div>
   <div class="guide">
     <div class="guide-h">施測指導語</div>
-    <p><b>情境</b>：這測的是你的「<b>底色</b>」——平常、整體的你，不特指某個情境或角色。</p>
-    <p><b>怎麼答</b>：憑直覺、照你<b>最常</b>的樣子選，沒有對錯。這份量表<b>沒有中間值</b>，就算只是「有點像／有點不像」，也請選一邊。</p>
-    <p class="guide-meta">讀完上面，再開始 · 24 題 · 約 3 分鐘 · 不需登入</p>
+    <p>這測的是你的「<b>底色</b>」——平常、整體的你。<b>下一步</b>會帶你把心態設定好，再開始。</p>
+    <p class="guide-meta">24 題 · 約 3 分鐘 · 不需登入</p>
   </div>
-  <button class="start-btn" onclick="startQuiz()">開始施測</button>
+  <button class="start-btn" onclick="showMindset()">開始施測</button>
   <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin:8px 0 6px">我的記錄</a>
   <div class="honest">
     這是你的<b>傾向</b>，不是固定標籤——能量會流動、可以成長；今天的你和半年後的你，可能不一樣。這不是算命，是一面認識自己的鏡子。
   </div>
   <a href="bagua-records.html" style="margin:18px auto 0;display:block;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);text-decoration:underline">想清空重新體驗？到「我的記錄」清空 →</a>
+</div>
+
+<!-- ───────── MINDSET（測底色前的心態設定，刻意讓人停一下）───────── -->
+<div id="mindset" style="display:none">
+  <div class="eyebrow">OCTENSO · 心態設定</div>
+  <h1>先停一下，再開始</h1>
+  <div class="guide">
+    <div class="guide-h">這次測的是你的「底色」</div>
+    <p>底色＝<b>你天生、放鬆、沒人要求你時，最自然會有的反應</b>。</p>
+    <p>⚠️ <b>不是</b>「你現在的<b>工作／角色／責任</b>，要求你變成的樣子」。</p>
+    <p>🔍 小檢查：你在工作上很會扛、很果斷——<b>離開那個位子，你還會這樣嗎？</b><br>　會 → 那是<b>底色</b>；不太會 → 那是<b>情境要求的你</b>（那一面，留到「場景耗能」再看）。</p>
+    <p><b>怎麼答</b>：想著<b>跨越不同場合、長期的你</b>，憑第一個念頭選。沒有對錯、也沒有中間值。</p>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">我準備好了，開始作答 →</button>
+  <a class="home-link" style="display:block;margin-top:14px" onclick="document.getElementById('mindset').style.display='none';document.getElementById('cover').style.display='block';window.scrollTo(0,0);return false;" href="#">← 再想想</a>
+  <div class="honest" style="border-left-color:var(--pine)">慢慢來——這一停，是為了讓底色測得準；底色準，後面的解讀才準。</div>
 </div>
 
 <!-- ───────── QUIZ ───────── -->
@@ -522,9 +537,19 @@ function showFacetBanner(){
   }
 }
 
+// 測底色前先過心態卡（場域測驗不走這裡，直接 startFacet）
+function showMindset(){
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='none';
+  var m=document.getElementById('mindset'); if(m) m.style.display='block';
+  window.scrollTo(0,0);
+}
 function startQuiz(){
   currentFacet=null; costMode=false; ctxMode=false;
   document.getElementById('cover').style.display='none';
+  var m=document.getElementById('mindset'); if(m) m.style.display='none';
   document.getElementById('result').style.display='none';
   document.getElementById('compat').style.display='none';
   document.getElementById('quiz').style.display='block';
@@ -875,7 +900,7 @@ function renderSharedReport(sc,name){
     +'<div class="typecard" style="--accent:'+accent+'"><div class="tc-eyebrow">'+who+' 的能量格局</div><div class="tc-sym">'+sig.sym+'</div><div class="tc-title">'+sig.title+'</div>'+(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')+'<div class="tc-essence">'+sig.essence+'</div></div>'
     +radarCard(null)
     +'<div class="pullq" style="font-size:16px;padding-bottom:14px">'+kws+'</div>'
-    +'<button class="start-btn" style="display:block;margin:4px auto 6px" onclick="startQuiz()">測測你自己的能量 →</button>'
+    +'<button class="start-btn" style="display:block;margin:4px auto 6px" onclick="showMindset()">測測你自己的能量 →</button>'
     +'<div class="share-hint" style="margin-bottom:18px">24 題 · 約 3 分鐘 · 看你慣用哪幾種能量</div>'
     +'<details class="rsec"><summary><span>看 '+who+' 的完整解讀<span class="rsum-hint">型・雷達・四個系統・人物速寫</span></span><span class="rchev">▾</span></summary><div class="rbody">'+full+'</div></details>'
     +'<button class="retake" onclick="goCompatShare(\''+code+'\')">想跟 '+who+' 合盤？先測你自己 →</button>'
@@ -1698,7 +1723,7 @@ function showResult(viewScores){
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12.5px;letter-spacing:.14em;color:var(--muted);margin:18px 0 9px">— 接著，把底色用出去 —</div>'
    +'<button class="retake" style="background:var(--ink);color:var(--surface);border-color:var(--ink)" onclick="location.href=\'bagua-field.html\'">測一個局 · 看某件事會不會耗你 →</button>'
    +'<button class="retake" onclick="showCompat()">和某個人合盤</button>'
-   +'<button class="retake" onclick="startQuiz()">重新測一次</button>'
+   +'<button class="retake" onclick="showMindset()">重新測一次</button>'
    +'<div style="text-align:center;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin:2px 0 14px">職業配對・團隊合盤・系統圖…都在最下方的功能列 ↓</div>'
    +'<div class="foot">這是你的能量<b>傾向</b>，不是固定標籤。能量會流動、可以成長——<br>這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
 
@@ -1838,7 +1863,7 @@ function showFacetResult(id){
   } else {
     html+='<div class="block"><h3>想看落差？</h3>'
       +'<div style="font-size:14px;line-height:1.85">你還沒測過<b>底色（整體的你）</b>——測了之後，這裡就會把這個場域疊在底色上，告訴你它拉高、壓低了哪些能量。</div>'
-      +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="startQuiz()">去測底色</button></div></div>';
+      +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="showMindset()">去測底色</button></div></div>';
   }
 
   var allDone=getFacets();
@@ -2178,7 +2203,7 @@ function showCompat(){
     html+='<div class="block">'
       +'<h3>你的盤 · 分享給對方</h3>'
       +'<div style="font-size:14px;line-height:1.85">要合盤，得先測你自己的<b>底色</b>——這樣才有你的盤可以分享。</div>'
-      +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="startQuiz()">去測驗</button></div>'
+      +'<div style="text-align:center;margin-top:14px"><button class="cbtn" onclick="showMindset()">去測驗</button></div>'
     +'</div>';
   }
 
@@ -2605,7 +2630,7 @@ function initFromHash(){
     notice.className='honest';
     notice.style.cssText='max-width:none;margin:0 0 16px;border-left-color:var(--pine)';
     notice.innerHTML='<b>有人分享了他的盤給你 ☯</b><br>先測你自己的底色，就能跟他合盤。'
-      +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="startQuiz()">去測驗</button></div>';
+      +'<div style="text-align:center;margin-top:12px"><button class="cbtn" onclick="showMindset()">去測驗</button></div>';
     var firstBlock=box.querySelector('.block');
     if(firstBlock&&firstBlock.parentNode){ firstBlock.parentNode.insertBefore(notice,firstBlock); }
     else { box.appendChild(notice); }

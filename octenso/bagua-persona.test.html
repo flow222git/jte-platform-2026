@@ -534,6 +534,15 @@ document.getElementById('f').onload=function(){
     ok(!!d.getElementById('fb-rate') && d.getElementById('fb-rate').querySelectorAll('button').length===3,'回饋 3 顆評分鈕');
     ok(d.querySelector('#result').textContent.indexOf('像你嗎')>=0,'回饋問句出現在結果');
 
+    // 49. 心態卡（測底色前的停頓）：showMindset 顯示、startQuiz 收掉並進測驗
+    ok(typeof w.showMindset==='function','showMindset 存在');
+    w.showMindset();
+    ok(d.getElementById('mindset').style.display==='block','showMindset 顯示心態卡');
+    ok(d.getElementById('mindset').textContent.indexOf('離開那個位子')>=0,'心態卡含底色vs情境小檢查');
+    w.startQuiz();
+    ok(d.getElementById('mindset').style.display==='none','startQuiz 收掉心態卡');
+    ok(d.getElementById('quiz').style.display==='block','startQuiz 進測驗');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
