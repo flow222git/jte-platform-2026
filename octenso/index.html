@@ -13,6 +13,8 @@
   .home-link{position:fixed;top:16px;left:16px;font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.1em;
     color:var(--soft);text-decoration:none;opacity:.65;z-index:5}
   .home-link:hover{opacity:1}
+  .skip{position:fixed;top:15px;right:16px;font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.1em;color:var(--soft);background:none;border:none;cursor:pointer;opacity:.65;z-index:5}
+  .skip:hover{opacity:1;color:var(--light)}
   .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--soft);text-transform:uppercase;margin-bottom:10px;opacity:.7}
   svg.scene{display:block;max-width:min(456px,95vw)}
   .cap{font-family:"Noto Serif TC",serif;font-weight:500;font-size:18.5px;line-height:1.85;text-align:center;
@@ -34,6 +36,7 @@
 </style></head>
 <body>
 <a class="home-link" href="../index.html">← 練息場</a>
+<button class="skip" id="skip" style="display:none">跳過 →</button>
 <div class="eyebrow">OCTENSO · 八態能格</div>
 <svg class="scene" id="svg" width="456" height="471" viewBox="0 0 360 372">
   <defs>
@@ -104,6 +107,9 @@ function render(){ state.forEach(function(s,i){ var t=tip(i,s.len);
   var lr=R0+s.len*MAXOUT+15; labs[i].setAttribute('x',CX+Math.cos(t.a)*lr);labs[i].setAttribute('y',CY+Math.sin(t.a)*lr+4); }); }
 function curvePath(){ return smoothClosed(state.map(function(s,i){return tip(i,s.len);})); }
 var anims=[],_pending=null,curveOn=false;
+var aborted=false, tos=[];
+function later(fn,ms){ var id=setTimeout(function(){ if(!aborted) fn(); }, ms); tos.push(id); return id; }
+var PROF=[{l:.74,u:1.0},{l:.86,u:1.3},{l:.55,u:.4},{l:.58,u:.45},{l:.68,u:.95},{l:.72,u:.95},{l:.77,u:1.0},{l:.64,u:.9}];
 function tw(i,prop,to,dur,delay){anims.push({i:i,prop:prop,from:null,to:to,dur:dur,delay:delay||0,t0:null});}
 function ez(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
 function loop(ts){var alive=false;
@@ -121,36 +127,44 @@ function fade(id,o){document.getElementById(id).setAttribute('opacity',o);}
 
 function beat1(){ dot(0); fade('core','1'); cap('幾千年前，古人用八卦，<br>觀察天地間運行的能量。');
   E.forEach(function(e,i){ tw(i,'op',.72,1100,i*120); tw(i,'lum',.7,1100,i*120);
-    setTimeout(function(){labs[i].textContent=E[i].sym;labs[i].setAttribute('opacity','.78');},i*120); });
-  play(); setTimeout(beat2,4200); }
+    later(function(){labs[i].textContent=E[i].sym;labs[i].setAttribute('opacity','.78');},i*120); });
+  play(); later(beat2,4200); }
 function beat2(){ dot(1); fade('core','.12'); fade('scrim','1'); cap('這些能量兩兩相對——<br>組成四組系統。'); var t=500;
   E.forEach(function(e,i){ labs[i].setAttribute('opacity','0'); });
-  GROUPS.forEach(function(g){ setTimeout(function(){
+  GROUPS.forEach(function(g){ later(function(){
       fade('sys','1');fade('sys2','1');document.getElementById('sys').textContent=g.nm;document.getElementById('sys2').textContent=g.sub;
       E.forEach(function(e,i){ if(i!==g.a&&i!==g.b){ tw(i,'lum',.5,500,0); tw(i,'op',.5,500,0); } });
       [g.a,g.b].forEach(function(i){ tw(i,'lum',1,700,0); tw(i,'op',1,600,0); });
       play();
     },t); t+=1500; });
-  setTimeout(function(){ fade('sys','0');fade('sys2','0'); beat3(); }, t+200); }
+  later(function(){ fade('sys','0');fade('sys2','0'); beat3(); }, t+200); }
 function beat3(){ dot(2); fade('scrim','0'); fade('core','.85'); var d=1; cap('而這八種能量，<br>也正在你的生活裡運作。');
-  setTimeout(function(){ labs[d].textContent=E[d].sym+E[d].nm; E.forEach(function(e,i){if(i!==d){tw(i,'op',.2,600,0);tw(i,'lum',.3,600,0);} labs[i].setAttribute('opacity', i===d?'1':'0');});
+  later(function(){ labs[d].textContent=E[d].sym+E[d].nm; E.forEach(function(e,i){if(i!==d){tw(i,'op',.2,600,0);tw(i,'lum',.3,600,0);} labs[i].setAttribute('opacity', i===d?'1':'0');});
     tw(d,'lum',.25,700,0); cap('用得太少，它<span class="em">睡著</span>了；'); play(); },2200);
-  setTimeout(function(){ tw(d,'lum',.9,700,0); cap('用得<span class="ok">剛好</span>，是你的養分；'); play(); },4200);
-  setTimeout(function(){ tw(d,'lum',1.3,700,0); cap('用得<span class="em">太過</span>，反而刺眼、反而累。'); play(); },6000);
-  setTimeout(function(){ cap('<b>能量八態，<span class="ok">過猶不及</span>。</b>'); },7900);
-  setTimeout(beat4,9800); }
+  later(function(){ tw(d,'lum',.9,700,0); cap('用得<span class="ok">剛好</span>，是你的養分；'); play(); },4200);
+  later(function(){ tw(d,'lum',1.3,700,0); cap('用得<span class="em">太過</span>，反而刺眼、反而累。'); play(); },6000);
+  later(function(){ cap('<b>能量八態，<span class="ok">過猶不及</span>。</b>'); },7900);
+  later(beat4,9800); }
 function beat4(){ dot(3); curveOn=true; fade('curve','.55');fade('curve2','.5');
-  var prof=[{l:.74,u:1.0},{l:.86,u:1.3},{l:.55,u:.4},{l:.58,u:.45},{l:.68,u:.95},{l:.72,u:.95},{l:.77,u:1.0},{l:.64,u:.9}];
-  E.forEach(function(e,i){ tw(i,'op',1,900,i*60); tw(i,'len',prof[i].l,1000,i*60); tw(i,'lum',prof[i].u,1000,i*60); setTimeout(function(){labs[i].setAttribute('opacity','0');},i*60); });
+  E.forEach(function(e,i){ tw(i,'op',1,900,i*60); tw(i,'len',PROF[i].l,1000,i*60); tw(i,'lum',PROF[i].u,1000,i*60); later(function(){labs[i].setAttribute('opacity','0');},i*60); });
   cap('八股各自定到你的高低與分寸——<br>連成一個圓，<b>就是此刻的你</b>。'); play();
-  setTimeout(function(){ cap('這不是占卜——<br>是古人的智慧，<span class="ok">照見當下的你</span>。'); breathe();
-    document.getElementById('ctaWrap').style.opacity='1'; },3600); }
+  later(function(){ cap('這不是占卜——<br>是古人的智慧，<span class="ok">照見當下的你</span>。'); breathe();
+    document.getElementById('ctaWrap').style.opacity='1'; document.getElementById('skip').style.display='none'; },3600); }
+// 跳過 → 直接到結尾（你的圓＋選單）
+function jumpToEnd(){ aborted=true; tos.forEach(clearTimeout); tos=[]; anims=[]; breathing=false;
+  dot(3); document.getElementById('sys').setAttribute('opacity','0'); document.getElementById('sys2').setAttribute('opacity','0');
+  fade('scrim','0'); fade('core','.85'); curveOn=true; fade('curve','.55'); fade('curve2','.5');
+  state=PROF.map(function(p){return {len:p.l,op:1,lum:p.u};}); E.forEach(function(e,i){labs[i].setAttribute('opacity','0');}); render();
+  var c=document.getElementById('cap'); c.innerHTML='這不是占卜——<br>是古人的智慧，<span class="ok">照見當下的你</span>。'; c.style.opacity=1;
+  breathe(); document.getElementById('ctaWrap').style.opacity='1'; document.getElementById('skip').style.display='none'; }
+document.getElementById('skip').onclick=jumpToEnd;
 var breathing=false;
 function breathe(){ breathing=true; var base=state.map(function(s){return s.len;}),lb=state.map(function(s){return s.lum;}),t0=performance.now();
   (function b(ts){ if(!breathing)return; var k=Math.sin((ts-t0)/2600*Math.PI*2)*.5+.5;
     state.forEach(function(s,i){s.len=base[i]*(0.96+0.04*k);s.lum=lb[i]*(0.9+0.18*k);}); render();
     var d=curvePath();document.getElementById('curve').setAttribute('d',d);document.getElementById('curve2').setAttribute('d',d); requestAnimationFrame(b); })(t0); }
-document.getElementById('replay').onclick=function(){ breathing=false;anims=[];curveOn=false;
+document.getElementById('replay').onclick=function(){ aborted=false;tos=[];breathing=false;anims=[];curveOn=false;
+  document.getElementById('skip').style.display='';
   document.getElementById('ctaWrap').style.opacity='0';
   fade('curve','0');fade('curve2','0');fade('core','0');fade('scrim','0');
   state=E.map(function(){return {len:.5,op:0,lum:.5};}); E.forEach(function(e,i){labs[i].setAttribute('opacity','0');labs[i].textContent=E[i].sym;}); render();
@@ -159,7 +173,7 @@ try{ if(localStorage.getItem('bagua_persona_v1')) document.getElementById('wb').
 
 // 登入閘 reveal 後才開始（鎖過又解鎖＝登入完成；從沒鎖過＝無閘/已放行→保險啟動）
 render();
-var started=false; function go(){ if(started)return; started=true; setTimeout(beat1,250); }
+var started=false; function go(){ if(started)return; started=true; document.getElementById('skip').style.display=''; setTimeout(beat1,250); }
 var gphase=0, giv=setInterval(function(){ var locked=document.documentElement.style.overflow==='hidden';
   if(locked) gphase=1; if(!locked && gphase===1){ clearInterval(giv); go(); } },120);
 setTimeout(function(){ if(gphase===0){ try{clearInterval(giv);}catch(e){} go(); } },1700);
