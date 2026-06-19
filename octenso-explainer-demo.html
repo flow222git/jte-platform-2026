@@ -119,17 +119,18 @@ function beat1(){ dot(0); fade('core','1'); cap('幾千年前，古人用八卦�
   play(); setTimeout(beat2,4200); }
 
 function beat2(){ dot(1); fade('core','.12'); fade('scrim','1'); cap('這些能量兩兩相對——<br>組成四組系統。'); var t=500;
+  E.forEach(function(e,i){ labs[i].setAttribute('opacity','0'); }); // 收掉邊上卦象標籤，改由中央系統名命名→絕不壓字
   GROUPS.forEach(function(g){ setTimeout(function(){
       fade('sys','1');fade('sys2','1');document.getElementById('sys').textContent=g.nm;document.getElementById('sys2').textContent=g.sub;
-      [g.a,g.b].forEach(function(i){ tw(i,'lum',.95,700,0); tw(i,'op',1,600,0);
-        labs[i].textContent=E[i].sym+E[i].nm; labs[i].setAttribute('opacity','1'); });
-      // 對待連線：兩極之間發光線（暫用 ray 的不適合，改用 curve? 簡化：兩點都亮即可表達一組）
+      // 亮起這一對的光點、其餘調暗；命名交給中央（系統名＋這一對）
+      E.forEach(function(e,i){ if(i!==g.a&&i!==g.b){ tw(i,'lum',.5,500,0); tw(i,'op',.5,500,0); } });
+      [g.a,g.b].forEach(function(i){ tw(i,'lum',1,700,0); tw(i,'op',1,600,0); });
       play();
-    },t); t+=1450; });
+    },t); t+=1500; });
   setTimeout(function(){ fade('sys','0');fade('sys2','0'); beat3(); }, t+200); }
 
 function beat3(){ dot(2); fade('scrim','0'); fade('core','.85'); var d=1; cap('而這八種能量，<br>也正在你的生活裡運作。');
-  setTimeout(function(){ E.forEach(function(e,i){if(i!==d){tw(i,'op',.2,600,0);tw(i,'lum',.3,600,0);} labs[i].setAttribute('opacity', i===d?'1':'0');});
+  setTimeout(function(){ labs[d].textContent=E[d].sym+E[d].nm; E.forEach(function(e,i){if(i!==d){tw(i,'op',.2,600,0);tw(i,'lum',.3,600,0);} labs[i].setAttribute('opacity', i===d?'1':'0');});
     tw(d,'lum',.25,700,0); cap('用得太少，它<span class="em">睡著</span>了；'); play(); },2200);
   setTimeout(function(){ tw(d,'lum',.9,700,0); cap('用得<span class="ok">剛好</span>，是你的養分；'); play(); },4200);
   setTimeout(function(){ tw(d,'lum',1.3,700,0); cap('用得<span class="em">太過</span>，反而刺眼、反而累。'); play(); },6000);
