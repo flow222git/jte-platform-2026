@@ -176,6 +176,12 @@
   .facet-nm{font-size:14.5px;color:var(--ink);font-weight:500}
   .facet-sub{font-size:11.5px;color:var(--ink-faint)}
   .facet-adv{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin-top:5px}
+  /* 紅黃綠區間橫條（落點） */
+  .mbar{margin-top:9px}
+  .mbar-track{position:relative;display:flex;height:8px;border-radius:999px;overflow:hidden}
+  .mbar-track .seg{flex:1}
+  .mbar-mark{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .mbar-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:4px}
   /* 事後自我回饋 */
   .selfrep{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .selfrep-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .selfrep-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
@@ -729,6 +735,17 @@ function buildTagPicker(recId){
   return wrap;
 }
 
+// 紅黃綠區間橫條（marker 落在 score%）；invert=true → 顏色反向（高=紅，用於壓力）
+function mBar(score, invert){
+  var p=Math.max(0,Math.min(100,Math.round(score)));
+  var c=invert?['var(--green)','var(--yellow)','var(--red)']:['var(--red)','var(--yellow)','var(--green)'];
+  return '<div class="mbar"><div class="mbar-track">'
+    +'<span class="seg" style="background:'+c[0]+'"></span><span class="seg" style="background:'+c[1]+'"></span><span class="seg" style="background:'+c[2]+'"></span>'
+    +'<span class="mbar-mark" style="left:'+p+'%"></span></div>'
+    +'<div class="mbar-scale"><span>低</span><span>中</span><span>高</span></div></div>';
+}
+function lvlScore(level){ return level==='high'?83:(level==='low'?17:50); } // 三段→落點%
+
 // 頻域四面相卡（放鬆/壓力/活力/彈性）；facets=null → 顯示資料不足
 function buildFacets(facets){
   const wrap=document.createElement('div'); wrap.className='facets';
@@ -753,9 +770,11 @@ function buildFacets(facets){
     var cell=document.createElement('div'); cell.className='facet-cell';
     var row=document.createElement('div'); row.className='facet-row';
     row.innerHTML='<span class="facet-l"><span class="facet-nm">'+f.nm+'</span><span class="facet-sub">'+f.sub+'</span></span>'
-      +'<span class="idx-lv '+lvClass+'">'+x.label+'</span>';
+      +'<span class="idx-lv '+lvClass+'">'+x.label+' · '+x.score+'</span>';
+    cell.appendChild(row);
+    cell.insertAdjacentHTML('beforeend', mBar(x.score, f.k==='stress'));
     var adv=document.createElement('div'); adv.className='facet-adv'; adv.textContent=x.advice;
-    cell.appendChild(row); cell.appendChild(adv); wrap.appendChild(cell);
+    cell.appendChild(adv); wrap.appendChild(cell);
   });
   return wrap;
 }
@@ -825,6 +844,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   const LEVEL_ADVICE={high:jteT('advice.high','今天恢復得很好，身體狀態不錯，好好把握。'),mid:jteT('advice.mid','今天狀態和你平常差不多，穩穩的。'),low:jteT('advice.low','今天能量偏低，多留點空間給自己休息和恢復。')};
   const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=LEVEL_ADVICE[en.level]||String(en.advice||'');
   card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
+  card.insertAdjacentHTML('beforeend', mBar(Number(en.score), false)); // 能量 0–100 落點
   if(en.confidence==='building'){
     const note=document.createElement('div');note.className='adv';
     note.style.cssText='font-size:12.5px;opacity:.9;margin-top:8px';
@@ -861,10 +881,12 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   // 細項膠囊（顏色用既有 idx-lv high/mid/low）
   function tone3(lv){ return lv==='high'?'high':(lv==='low'?'low':'mid'); }
   const recEl=det.querySelector('#enRec');
-  if(en.recovery){ recEl.classList.add(tone3(en.recovery.level)); recEl.textContent=String(en.recovery.label); }
+  if(en.recovery){ recEl.classList.add(tone3(en.recovery.level)); recEl.textContent=String(en.recovery.label);
+    var rrow=recEl.closest('.metric-row'); if(rrow) rrow.insertAdjacentHTML('afterend', mBar(lvlScore(en.recovery.level), false)); }
   else { recEl.classList.add('mid'); recEl.textContent='—'; }
   const calmEl=det.querySelector('#enCalm');
-  if(en.calm){ calmEl.classList.add(tone3(en.calm.level)); calmEl.textContent=String(en.calm.label); }
+  if(en.calm){ calmEl.classList.add(tone3(en.calm.level)); calmEl.textContent=String(en.calm.label);
+    var crow=calmEl.closest('.metric-row'); if(crow) crow.insertAdjacentHTML('afterend', mBar(lvlScore(en.calm.level), false)); }
   else { calmEl.classList.add('mid'); calmEl.textContent='—'; }
   det.querySelector('#mHr').textContent=String(hr)+' bpm';
   det.querySelector('#mRm').textContent=String(rmssd)+' ms';
