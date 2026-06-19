@@ -55,7 +55,7 @@ document.getElementById('f').onload=function(){
     w.showResult();
     var rc=d.getElementById('result').innerHTML;
     ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
-    ok(rc.indexOf('雙邊都旺')>=0,'建立系統(乾坤)雙高 → 雙邊都旺');
+    ok(rc.indexOf('完整的格局')>=0,'建構(乾坤)雙高 → 完整的格局(天地定位·非張力)');
 
     // 4e. 確信度：qian 三題都 5（一致＋極端→篤定）；kan 三題 0/5/2（分散→兩可）
     w.answers=new Array(24).fill(2);
@@ -422,8 +422,11 @@ document.getElementById('f').onload=function(){
     ok(w.systemsRead(P.build({qian:80,li:80,zhen:80,dui:80,kun:80,kan:80,gen:80,xun:80})).indexOf('都很活躍')>=0,'L2 全高→都很活躍');
     ok(w.systemsRead(P.build({qian:20,li:20,zhen:20,dui:20,kun:20,kan:20,gen:20,xun:20})).indexOf('都收著')>=0,'L2 全低→都收著');
     ok(w.systemsRead(P.build({kan:82,li:80,qian:50,kun:46,zhen:46,xun:44,gen:12,dui:14})).indexOf('難收')>=0,'L2 認知高×調節低→看太多難收');
-    // L5 張力點名（認知雙高 → 展現與沉澱）
-    ok(w.fourXiangHtml({kan:70,li:70,qian:30,kun:30,zhen:30,xun:30,gen:30,dui:30}).indexOf('展現與沉澱')>=0,'L5 認知雙高→展現與沉澱張力');
+    // 四對待學理分流：水火不相射＝既深又亮(非張力)；雷風相薄＝唯一鼓盪/張力
+    var awareHi=w.fourXiangHtml({kan:70,li:70,qian:30,kun:30,zhen:30,xun:30,gen:30,dui:30});
+    ok(awareHi.indexOf('既深又亮')>=0,'水火雙高→既深又亮(既濟相成)');
+    ok(awareHi.indexOf('張力')<0 && awareHi.indexOf('拉扯')<0,'水火雙高·不講張力(不相射)');
+    ok(w.fourXiangHtml({zhen:70,xun:70,qian:30,kun:30,kan:30,li:30,gen:30,dui:30}).indexOf('鼓盪')>=0,'雷風雙高→鼓盪(相薄·唯一張力)');
     // L1 剖面感知 盲點/成長
     var pfMit=P.build({qian:80,kun:70,li:40,kan:40,zhen:40,xun:40,gen:10,dui:30});
     ok(w.roleBlindGrow('qian',pfMit).blind.indexOf('小很多')>=0,'L1 互補高→盲點減輕');
