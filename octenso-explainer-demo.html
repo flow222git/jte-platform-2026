@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>八態能格 · 動畫解說 demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f1ece0;--surface:#f8f4ec;--ink:#2a2b25;--muted:#7a715f;--line:#d8cdb8;
+    --pine:#35614f;--gold:#a9823b;--cinnabar:#a8512f;--faint:#c3b9a3}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(120% 90% at 50% 18%,#f8f4ec 0%,#f1ece0 55%,#e8e0cf 100%);
+    color:var(--ink);font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}
+  svg{display:block;max-width:92vw}
+  .cap{font-family:"Noto Serif TC",serif;font-weight:600;font-size:19px;line-height:1.7;text-align:center;
+    color:var(--ink);min-height:3.4em;max-width:380px;margin:22px auto 0;transition:opacity .5s;letter-spacing:.02em}
+  .cap .em{color:var(--cinnabar)} .cap .ok{color:var(--pine)}
+  .dots{display:flex;gap:7px;margin-top:18px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.3s}
+  .dots i.on{background:var(--pine);width:20px;border-radius:4px}
+  .ctrl{margin-top:20px}
+  button{font-family:"Noto Serif TC",serif;font-size:14px;background:transparent;color:var(--ink);
+    border:1px solid var(--ink);border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;transition:.2s}
+  button:hover{background:var(--ink);color:var(--surface)}
+  .skip{font-family:"Jost",sans-serif;font-size:11px;color:var(--muted);border:none;margin-left:6px;letter-spacing:.1em}
+</style></head>
+<body>
+<div class="eyebrow">OCTENSO · 八態能格</div>
+<svg id="svg" width="360" height="360" viewBox="0 0 360 360">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="180" cy="180" r="150" fill="none" stroke="#d8cdb8" stroke-width="1" opacity=".6"/>
+  <g id="petals"></g>
+  <g id="labels"></g>
+  <circle id="core" cx="180" cy="180" r="6" fill="#35614f" opacity="0"/>
+</svg>
+<div class="cap" id="cap"></div>
+<div class="dots" id="dots"><i></i><i></i><i></i></div>
+<div class="ctrl"><button id="replay" style="display:none">重看一次</button></div>
+
+<script>
+var CX=180, CY=180, R0=44, MAXOUT=104, W=16;
+// 八態（對角＝四對待）：乾↔坤(天地)、震↔巽(雷風)、坎↔離(水火)、艮↔兌(山澤)
+var E=[
+ {sym:'☰',nm:'開創'},{sym:'☳',nm:'行動'},{sym:'☵',nm:'沉澱'},{sym:'☶',nm:'喊停'},
+ {sym:'☷',nm:'承接'},{sym:'☴',nm:'拓展'},{sym:'☲',nm:'展現'},{sym:'☱',nm:'交流'}
+];
+var COL={mid:'#35614f', over:'#a8512f', under:'#c3b9a3', neutral:'#a9823b'};
+var P=document.getElementById('petals'), L=document.getElementById('labels');
+var state=E.map(function(){return {len:0, col:COL.under, op:0};});
+// 建立元素
+var rects=[], labs=[];
+E.forEach(function(e,i){
+  var a=-90+i*45;
+  var g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform','rotate('+a+' '+CX+' '+CY+')');
+  var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x',CX-W/2); r.setAttribute('width',W); r.setAttribute('rx',W/2);
+  r.setAttribute('filter','url(#glow)');
+  g.appendChild(r); P.appendChild(g); rects.push(r);
+  var rad=a*Math.PI/180;
+  var lab=document.createElementNS('http://www.w3.org/2000/svg','text');
+  lab.setAttribute('text-anchor','middle'); lab.setAttribute('font-family','"Noto Serif TC",serif');
+  lab.setAttribute('font-size','13'); lab.setAttribute('fill','#2a2b25'); lab.setAttribute('opacity','0');
+  lab.textContent=e.sym+e.nm;
+  L.appendChild(lab); labs.push(lab);
+});
+function render(){
+  state.forEach(function(s,i){
+    var outer=R0+s.len*MAXOUT;
+    rects[i].setAttribute('y',CY-outer); rects[i].setAttribute('height',Math.max(0.1,outer-R0));
+    rects[i].setAttribute('fill',s.col); rects[i].setAttribute('opacity',s.op);
+    var a=(-90+i*45)*Math.PI/180, lr=outer+16;
+    labs[i].setAttribute('x',CX+Math.sin(a)*lr); labs[i].setAttribute('y',CY-Math.cos(a)*lr+4);
+  });
+}
+// tween
+var anims=[];
+function tween(i,prop,to,dur,delay){ anims.push({i:i,prop:prop,from:null,to:to,dur:dur,delay:delay||0,t0:null}); }
+function ease(x){ return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2; }
+function loop(ts){
+  var alive=false;
+  anims.forEach(function(an){
+    if(an.t0===null){ an.t0=ts+an.delay; }
+    if(ts<an.t0){ alive=true; return; }
+    if(an.from===null) an.from=state[an.i][an.prop];
+    var k=Math.min(1,(ts-an.t0)/an.dur);
+    var v=an.from+(an.to-an.from)*ease(k);
+    state[an.i][an.prop]= (an.prop==='col')?an.to:v;
+    if(k<1) alive=true;
+  });
+  // col 是字串：到時間就直接設
+  anims=anims.filter(function(an){ return an.t0===null || (ts-an.t0)/an.dur < 1; });
+  render();
+  if(alive||anims.length) requestAnimationFrame(loop); else if(_pending){ _pending(); _pending=null; }
+}
+var _pending=null;
+function play(){ requestAnimationFrame(loop); }
+
+function setCol(i,c){ state[i].col=c; }
+function cap(html){ var c=document.getElementById('cap'); c.style.opacity=0; setTimeout(function(){ c.innerHTML=html; c.style.opacity=1; },300); }
+function dot(n){ var ds=document.getElementById('dots').children; for(var i=0;i<ds.length;i++) ds[i].className=(i===n)?'on':''; }
+
+// —— 三段式時間線 ——
+function beat1(){
+  dot(0); document.getElementById('core').setAttribute('opacity','.9');
+  cap('天地間有八種能量——<br>其實，它們也住在你身上。');
+  E.forEach(function(e,i){ tween(i,'len',0.62,900,i*110); tween(i,'op',1,700,i*110); setTimeout(function(){ setCol(i,COL.neutral); labs[i].setAttribute('opacity','1'); },i*110); });
+  play(); setTimeout(beat2,4200);
+}
+function beat2(){
+  dot(1); var d=1; // 以「行動」示範
+  // 其餘淡出
+  E.forEach(function(e,i){ if(i!==d){ tween(i,'op',0.16,600,0); } });
+  tween(d,'len',0.28,800,300); setCol(d,COL.under);
+  cap('每一股都有「<span class="em">太少</span>、剛好、<span class="em">太多</span>」。');
+  play();
+  setTimeout(function(){ tween(d,'len',0.6,800,0); setCol(d,COL.mid); cap('用得<span class="ok">剛好</span>——它就是你的養分。'); play(); },1900);
+  setTimeout(function(){ tween(d,'len',0.98,800,0); setCol(d,COL.over); cap('用得<span class="em">太過</span>——反而累、反而傷。'); play(); },3700);
+  setTimeout(function(){ cap('這就是「<span class="ok">能格</span>」——<br><b>能量八態，過猶不及。</b>'); },5600);
+  setTimeout(beat3,7600);
+}
+function beat3(){
+  dot(2);
+  // 範例側寫：行動過用、沉澱/喊停不足、其餘適中
+  var prof=[{l:.8,c:COL.mid},{l:.96,c:COL.over},{l:.34,c:COL.under},{l:.4,c:COL.under},{l:.66,c:COL.mid},{l:.72,c:COL.mid},{l:.8,c:COL.mid},{l:.6,c:COL.mid}];
+  E.forEach(function(e,i){ tween(i,'op',1,700,i*60); tween(i,'len',prof[i].l,1000,i*60); setTimeout(function(){ setCol(i,prof[i].c); },i*60); });
+  cap('八股各自定到你的高低與分寸——<br>這就是<b>你此刻的能量形狀</b>。');
+  play();
+  setTimeout(function(){ cap('它會呼吸、會變——<br>是一面<span class="ok">鏡子</span>，不是命定。'); breathe(); document.getElementById('replay').style.display='inline-block'; },3400);
+}
+var breathing=false;
+function breathe(){
+  breathing=true; var base=state.map(function(s){return s.len;}); var t0=performance.now();
+  (function b(ts){ if(!breathing)return; var k=(Math.sin((ts-t0)/2200*Math.PI*2)*0.5+0.5);
+    state.forEach(function(s,i){ s.len=base[i]*(0.94+0.06*k); }); render(); requestAnimationFrame(b); })(t0);
+}
+document.getElementById('replay').onclick=function(){
+  breathing=false; anims=[]; this.style.display='none';
+  state=E.map(function(){return {len:0,col:COL.under,op:0};}); render();
+  E.forEach(function(e,i){ labs[i].setAttribute('opacity','0'); });
+  setTimeout(beat1,300);
+};
+render(); setTimeout(beat1,500);
+</script>
+</body></html>
