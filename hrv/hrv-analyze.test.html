@@ -88,6 +88,10 @@ async function run(){
     var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(s)));
     near(m.hr,60,6,'hr 不應被切跡灌快，實得 '+Math.round(m.hr));
   });
+  await check('重搏切跡 50bpm（切跡落在 380ms 之後）：動態不應期不被多算、hr≈50', async () => {
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpgNotch(50,24,30))));
+    near(m.hr,50,6,'hr 不應被晚切跡灌快，實得 '+Math.round(m.hr));
+  });
   await check('detectBeats：75bpm 合成訊號 → hr≈75', async () => {
     var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpg(75,20,30,0.05))));
     near(m.hr,75,5,'hr≈75');

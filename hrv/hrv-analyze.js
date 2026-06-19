@@ -65,7 +65,7 @@
   // 取代原本「全域最大值×0.4」會被一個尖峰綁架而漏掉大部分心跳）。回傳 { beats, heights }。
   function _detect(samples){
     var pr=_prep(samples); if(!pr) return { beats:[], heights:[] };
-    var ac=pr.ac, t=pr.t;
+    var ac=pr.ac, t=pr.t, fs=pr.fs;
     var pos=[]; for(var j=0;j<ac.length;j++){ if(ac[j]>0) pos.push(ac[j]); }
     pos.sort(function(x,y){ return x-y; });
     var p90 = pos.length ? pos[Math.min(pos.length-1, Math.floor(pos.length*0.9))] : 0;
@@ -76,8 +76,10 @@
       if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1]) cand.push({ t:t[p], h:ac[p] });
     }
     // 2) 不應期內「最高峰優先」非極大抑制：主收縮峰最高→勝出；較矮的重搏切跡落在窗內→被壓掉。
-    //    （原本「最先出現的峰 + 300ms 鎖定」會把主峰後 ~350ms 的切跡也當成一拍 → HR 偏快近 2 倍。）
-    var REFRACT=380; // ms 兩拍最短間隔（≤~158bpm，足夠靜息量測；切跡較矮又在窗內必被抑制）
+    //    動態不應期＝主週期(自相關)×0.6：對重搏切跡免疫——切跡必在一個週期內，不管心率高低都被壓掉。
+    //    （固定 380ms 在低心率時，切跡可能落在 380ms 之後而漏壓 → HR 仍偏快。）
+    var pp=_periodicity(ac, fs);
+    var REFRACT = pp.periodMs>0 ? Math.max(360, Math.min(1100, Math.round(pp.periodMs*0.6))) : 380;
     var order=cand.slice().sort(function(a,b){ return b.h-a.h; }); // 高→低
     var picked=[];
     for(var i=0;i<order.length;i++){
@@ -94,20 +96,20 @@
   // 先 winsorize（以中位數絕對值×4 夾住離群暫態），否則單一大暫態會壟斷能量(c0)、把週期性壓成 0
   // ——即使脈搏其實很規律（真機實證：beats 13、好脈搏卻 per=0）。
   function _periodicity(ac, fs){
-    var n=ac.length; if(n<20) return 0;
+    var n=ac.length; if(n<20) return {r:0,periodMs:0};
     var absv=new Array(n); for(var i=0;i<n;i++) absv[i]=Math.abs(ac[i]);
     var srt=absv.slice().sort(function(a,b){return a-b;});
     var medAbs=srt[Math.floor(n/2)]||0, cap=medAbs>0 ? medAbs*4 : Infinity;
     var x=new Array(n), m=0;
     for(i=0;i<n;i++){ var c=ac[i]; if(c>cap)c=cap; else if(c<-cap)c=-cap; x[i]=c; m+=c; }
     m/=n; for(i=0;i<n;i++) x[i]-=m;
-    var c0=0; for(i=0;i<n;i++) c0+=x[i]*x[i]; if(c0<=0) return 0;
-    var lagMin=Math.max(1,Math.round(fs*0.4)), lagMax=Math.round(fs*1.5), best=0;
+    var c0=0; for(i=0;i<n;i++) c0+=x[i]*x[i]; if(c0<=0) return {r:0,periodMs:0};
+    var lagMin=Math.max(1,Math.round(fs*0.4)), lagMax=Math.round(fs*1.5), best=0, bestLag=0;
     for(var lag=lagMin; lag<=lagMax && lag<n; lag++){
       var cc=0; for(var j=0;j+lag<n;j++) cc+=x[j]*x[j+lag];
-      var r=cc/c0; if(r>best) best=r;
+      var r=cc/c0; if(r>best){ best=r; bestLag=lag; }
     }
-    return best;
+    return { r:best, periodMs: (bestLag>0 && fs>0) ? bestLag/fs*1000 : 0 };
   }
   function detectBeats(samples){ return _detect(samples).beats; }
   // 長錄音用：切成 winSec 秒一段、各用「局部門檻」偵測再串接。單一全域門檻會被高振幅段
@@ -147,7 +149,7 @@
   // 再看 RR 規律性與生理合理性。相機 PPG 脈衝高度本來就浮動，故不再用峰高一致性（太嚴苛→永遠紅）。
   function signalQuality(samples){
     var pr=_prep(samples); if(!pr) return 'red';
-    var per=_periodicity(pr.ac, pr.fs);
+    var per=_periodicity(pr.ac, pr.fs).r;
     var d=_detect(samples), rr=rrFromBeats(d.beats);
     if (rr.length < 3 || per < 0.30) return 'red'; // 沒週期性＝雜訊（這是穩健的核心判斷）
     var hr = 60000/mean(rr);
