@@ -151,7 +151,8 @@
     var pr=_prep(samples); if(!pr) return 'red';
     var per=_periodicity(pr.ac, pr.fs).r;
     var d=_detect(samples), rr=rrFromBeats(d.beats);
-    if (rr.length < 3 || per < 0.30) return 'red'; // 沒週期性＝雜訊（這是穩健的核心判斷）
+    if (per < 0.30) return 'red';                  // 沒週期性＝雜訊（核心判斷）
+    if (rr.length < 3) return 'yellow';            // 有週期但拍數還少＝收訊中（不判紅，否則會一直重置鎖定→難鎖）
     var hr = 60000/mean(rr);
     if (hr < 40 || hr > 150) return 'red';         // 不合生理／雜訊湊出的過快節律
     // 以週期性為準：真脈搏週期性強。不再用 rrCv 當門檻——漏拍會讓 RR 假性不規律、誤殺好訊號。

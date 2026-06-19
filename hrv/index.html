@@ -285,6 +285,19 @@ function renderIntro(){
   lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
   d.appendChild(lead);
 
+  // 量測長度：快測 / 深測（放在最上面，避免被略過）
+  const modeWrap=document.createElement('div'); modeWrap.className='modepick';
+  modeWrap.innerHTML='<span class="modepick-q">'+jteT('mode.q','要量多久？')+'</span>';
+  const mrow=document.createElement('div'); mrow.className='moderow';
+  [{s:QUICK_SEC,t:jteT('mode.quick','快測 · 1 分鐘'),d:jteT('mode.quick.d','心率、放鬆/恢復')},
+   {s:DEEP_SEC, t:jteT('mode.deep','深測 · 3 分鐘'), d:jteT('mode.deep.d','多解鎖 壓力/活力/彈性')}].forEach(function(o){
+    const b=document.createElement('button'); b.type='button'; b.className='modebtn'+(measureLen===o.s?' on':'');
+    b.innerHTML='<b>'+o.t+'</b><span>'+o.d+'</span>';
+    b.onclick=function(){ measureLen=o.s; Array.prototype.forEach.call(mrow.children,function(c){ c.classList.remove('on'); }); b.classList.add('on'); };
+    mrow.appendChild(b);
+  });
+  modeWrap.appendChild(mrow); d.appendChild(modeWrap);
+
   // 量測步驟
   const g=document.createElement('div');g.className='guide-card';
   const stepsData=[
@@ -303,19 +316,6 @@ function renderIntro(){
   stepsHtml+='</div>';
   g.innerHTML=stepsHtml;
   d.appendChild(g);
-
-  // 量測長度：快測 / 深測
-  const modeWrap=document.createElement('div'); modeWrap.className='modepick';
-  modeWrap.innerHTML='<span class="modepick-q">'+jteT('mode.q','要量多久？')+'</span>';
-  const mrow=document.createElement('div'); mrow.className='moderow';
-  [{s:QUICK_SEC,t:jteT('mode.quick','快測 · 1 分鐘'),d:jteT('mode.quick.d','心率、放鬆/恢復')},
-   {s:DEEP_SEC, t:jteT('mode.deep','深測 · 3 分鐘'), d:jteT('mode.deep.d','多解鎖 壓力/活力/彈性')}].forEach(function(o){
-    const b=document.createElement('button'); b.type='button'; b.className='modebtn'+(measureLen===o.s?' on':'');
-    b.innerHTML='<b>'+o.t+'</b><span>'+o.d+'</span>';
-    b.onclick=function(){ measureLen=o.s; Array.prototype.forEach.call(mrow.children,function(c){ c.classList.remove('on'); }); b.classList.add('on'); };
-    mrow.appendChild(b);
-  });
-  modeWrap.appendChild(mrow); d.appendChild(modeWrap);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
