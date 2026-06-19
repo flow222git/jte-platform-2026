@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>心率變異 HRV · 練息場</title>
-<meta name="description" content="手指輕貼後鏡頭，約一分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
+<meta name="description" content="手指輕貼後鏡頭，約三分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
 <meta property="og:title" content="心率變異 HRV · 練息場">
-<meta property="og:description" content="手指貼鏡頭，一分鐘量身體狀態。">
+<meta property="og:description" content="手指貼鏡頭，三分鐘量身體狀態。">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -247,7 +247,7 @@
 <body>
 <div class="wrap">
   <header><span class="logo">心率變異 HRV</span><span class="sub">CAMERA PPG</span></header>
-  <p class="tagline">手指貼鏡頭，一分鐘量身體狀態。</p>
+  <p class="tagline">手指貼鏡頭，三分鐘量身體狀態。</p>
   <div id="app"></div>
 </div>
 <div class="bar" id="bar"></div>
@@ -263,11 +263,9 @@ if(typeof window.jteT!=='function'){ window.jteT=function(k,fb){ return fb!==und
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
-const QUICK_SEC=60;         // 快測：心率、放鬆/恢復（短期穩定指標）
-const DEEP_SEC=180;         // 深測：多解鎖頻域面相（壓力/活力/彈性，LF 需 2–3 分鐘才準）
-let measureLen=QUICK_SEC;   // 使用者選的量測長度（預設快測）
+const MEASURE_SEC=180;      // 固定 3 分鐘：HR/RMSSD 涵蓋，且頻域面相(LF 需 2–3 分)才準
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
-function measureSec(){ return measureLen; }
+function measureSec(){ return MEASURE_SEC; }
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
@@ -301,22 +299,10 @@ function renderIntro(){
   const leadP=document.createElement('p');
   leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。');
   const leadTag=document.createElement('div');leadTag.className='tag';
-  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
+  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約三分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
   lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
   d.appendChild(lead);
 
-  // 量測長度：快測 / 深測（放在最上面，避免被略過）
-  const modeWrap=document.createElement('div'); modeWrap.className='modepick';
-  modeWrap.innerHTML='<span class="modepick-q">'+jteT('mode.q','要量多久？')+'</span>';
-  const mrow=document.createElement('div'); mrow.className='moderow';
-  [{s:QUICK_SEC,t:jteT('mode.quick','快測 · 1 分鐘'),d:jteT('mode.quick.d','心率、放鬆/恢復')},
-   {s:DEEP_SEC, t:jteT('mode.deep','深測 · 3 分鐘'), d:jteT('mode.deep.d','多解鎖 壓力/活力/彈性')}].forEach(function(o){
-    const b=document.createElement('button'); b.type='button'; b.className='modebtn'+(measureLen===o.s?' on':'');
-    b.innerHTML='<b>'+o.t+'</b><span>'+o.d+'</span>';
-    b.onclick=function(){ measureLen=o.s; Array.prototype.forEach.call(mrow.children,function(c){ c.classList.remove('on'); }); b.classList.add('on'); };
-    mrow.appendChild(b);
-  });
-  modeWrap.appendChild(mrow); d.appendChild(modeWrap);
 
   // 量測步驟
   const g=document.createElement('div');g.className='guide-card';
@@ -782,7 +768,7 @@ function buildFacets(facets){
   wrap.appendChild(head);
   if(!facets){
     const na=document.createElement('div'); na.className='facet-na';
-    na.textContent=jteT('facets.na','「壓力 / 活力 / 彈性」這幾個面相需要長一點的測量才準——做一次「深測 · 3 分鐘」就會出現。');
+    na.textContent=jteT('facets.na','這次資料不夠算這幾個面相（可能沒量滿或訊號晃），下次坐穩、手指蓋好再量一次就有了。');
     wrap.appendChild(na); return wrap;
   }
   const FACE=[
