@@ -182,6 +182,13 @@
   .mbar-track .seg{flex:1}
   .mbar-mark{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .mbar-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:4px}
+  /* 指標可展開詳解 */
+  .minfo{margin-top:8px}
+  .minfo summary{font-size:11.5px;color:var(--accent);cursor:pointer;list-style:none;display:inline-block}
+  .minfo summary::-webkit-details-marker{display:none}
+  .minfo summary::before{content:'ⓘ '}
+  .minfo[open] summary{margin-bottom:5px}
+  .minfo p{font-size:12px;color:var(--ink-soft);line-height:1.8;margin:0}
   /* 事後自我回饋 */
   .selfrep{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .selfrep-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .selfrep-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
@@ -746,6 +753,20 @@ function mBar(score, invert){
 }
 function lvlScore(level){ return level==='high'?83:(level==='low'?17:50); } // 三段→落點%
 
+// 每個指標的「這是什麼」詳解（白話、覺察導向、參考非診斷）
+var METRIC_EXPL={
+  energy:'綜合你的恢復力（HRV）和靜息心率，跟你自己平常比，估今天身體大概多有「電」。高＝恢復得好、有餘裕；低＝還在累、需要多休息。重點看自己的趨勢，不是跟別人或某個標準比——多量幾次會越來越準。',
+  relax:'反映「休息與修復」的神經（副交感）有多活躍。高＝身體真的鬆下來、進入修復；低＝還在備戰、沒放鬆。可在練習或休息前後各量一次，看自己有沒有真的放鬆。',
+  stress:'交感（油門）和副交感（剎車）的比例。高＝油門偏重、身體在備戰或有點緊；低＝剎車到位、偏平穩。沒有絕對好壞，是反映你「現在」的狀態。',
+  vitality:'自律神經整體的活躍量，可想成今天身體的「電量大小」。高＝活力足；低＝可能累了或需要休息。會隨年齡自然下降，所以跟自己比最準。',
+  flexibility:'心跳節奏變化的豐富度＝身體應變、調節的彈性。高＝能屈能伸、適應力好；低＝變化較小、較緊。也會隨年齡下降，看自己的變化為主。',
+  recovery:'跟你自己平常比，今天的修復力（副交感、RMSSD）偏高還是偏低。連續量幾天最能看出來。',
+  calm:'從靜息心率看你現在偏安定還是偏亢奮——心率較低通常代表比較平靜。'
+};
+function metricInfo(key){
+  return METRIC_EXPL[key] ? '<details class="minfo"><summary>'+jteT('metric.more','這是什麼？')+'</summary><p>'+_h(METRIC_EXPL[key])+'</p></details>' : '';
+}
+
 // 頻域四面相卡（放鬆/壓力/活力/彈性）；facets=null → 顯示資料不足
 function buildFacets(facets){
   const wrap=document.createElement('div'); wrap.className='facets';
@@ -774,7 +795,9 @@ function buildFacets(facets){
     cell.appendChild(row);
     cell.insertAdjacentHTML('beforeend', mBar(x.score, f.k==='stress'));
     var adv=document.createElement('div'); adv.className='facet-adv'; adv.textContent=x.advice;
-    cell.appendChild(adv); wrap.appendChild(cell);
+    cell.appendChild(adv);
+    cell.insertAdjacentHTML('beforeend', metricInfo(f.k));
+    wrap.appendChild(cell);
   });
   return wrap;
 }
@@ -845,6 +868,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=LEVEL_ADVICE[en.level]||String(en.advice||'');
   card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
   card.insertAdjacentHTML('beforeend', mBar(Number(en.score), false)); // 能量 0–100 落點
+  card.insertAdjacentHTML('beforeend', metricInfo('energy'));
   if(en.confidence==='building'){
     const note=document.createElement('div');note.className='adv';
     note.style.cssText='font-size:12.5px;opacity:.9;margin-top:8px';
@@ -882,11 +906,11 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   function tone3(lv){ return lv==='high'?'high':(lv==='low'?'low':'mid'); }
   const recEl=det.querySelector('#enRec');
   if(en.recovery){ recEl.classList.add(tone3(en.recovery.level)); recEl.textContent=String(en.recovery.label);
-    var rrow=recEl.closest('.metric-row'); if(rrow) rrow.insertAdjacentHTML('afterend', mBar(lvlScore(en.recovery.level), false)); }
+    var rrow=recEl.closest('.metric-row'); if(rrow) rrow.insertAdjacentHTML('afterend', mBar(lvlScore(en.recovery.level), false)+metricInfo('recovery')); }
   else { recEl.classList.add('mid'); recEl.textContent='—'; }
   const calmEl=det.querySelector('#enCalm');
   if(en.calm){ calmEl.classList.add(tone3(en.calm.level)); calmEl.textContent=String(en.calm.label);
-    var crow=calmEl.closest('.metric-row'); if(crow) crow.insertAdjacentHTML('afterend', mBar(lvlScore(en.calm.level), false)); }
+    var crow=calmEl.closest('.metric-row'); if(crow) crow.insertAdjacentHTML('afterend', mBar(lvlScore(en.calm.level), false)+metricInfo('calm')); }
   else { calmEl.classList.add('mid'); calmEl.textContent='—'; }
   det.querySelector('#mHr').textContent=String(hr)+' bpm';
   det.querySelector('#mRm').textContent=String(rmssd)+' ms';
