@@ -123,6 +123,13 @@ document.getElementById('f').onload=function(){
     var oB={qian:0,li:1,zhen:0,dui:0,kun:0,kan:0,gen:0,xun:0};
     ok(Math.abs(w.cosineSim(oA,oB)-0)<1e-9,'cosine orthogonal → 0, got '+w.cosineSim(oA,oB));
 
+    // 11b. shapeCorr (ipsative Pearson)：同形狀→1；解「都偏高→cosine 虛高、人人同頻」
+    ok(Math.abs(w.shapeCorr({qian:80,kun:40,zhen:80,xun:40,kan:40,li:40,gen:40,dui:40},{qian:90,kun:50,zhen:90,xun:50,kan:50,li:50,gen:50,dui:50})-1)<1e-6,'同形狀(整體+偏移)→shapeCorr≈1');
+    var pH1={qian:85,kun:60,zhen:88,xun:70,kan:55,li:62,gen:58,dui:66};
+    var pH2={qian:58,kun:85,zhen:55,xun:62,kan:84,li:60,gen:80,dui:60};
+    ok(w.cosineSim(pH1,pH2)>0.9,'兩個都偏高→raw cosine 虛高(>.9)，got '+w.cosineSim(pH1,pH2).toFixed(2));
+    ok(w.shapeCorr(pH1,pH2)<0.5,'同兩人→shapeCorr 明顯較低、有區別，got '+w.shapeCorr(pH1,pH2).toFixed(2));
+
     // 12. complementarity: A all high, B all low → comp > sim
     var hi={}, lo={}; w.EKEYS.forEach(function(k){ hi[k]=100; lo[k]=0; });
     var cSim=w.cosineSim(hi,lo), cComp=w.complementarity(hi,lo);

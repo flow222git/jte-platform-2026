@@ -2178,6 +2178,11 @@ function decodeCodeFromImageData(imageData){
 function cosineSim(a,b){var dot=0,na=0,nb=0;EKEYS.forEach(function(k){dot+=a[k]*b[k];na+=a[k]*a[k];nb+=b[k]*b[k];});return(na===0||nb===0)?0:dot/(Math.sqrt(na)*Math.sqrt(nb));}
 // 互補度：缺口被補率（雙向）
 function complementarity(a,b){var sw=0,sc=0;EKEYS.forEach(function(k){var wa=(100-a[k])/100;sw+=wa;sc+=wa*(b[k]/100);var wb=(100-b[k])/100;sw+=wb;sc+=wb*(a[k]/100);});return sw===0?0:sc/sw;}
+// 形狀共鳴（同頻）：去基線(ipsative)後的相關＝Pearson。+1 形狀相同、0 各走各的、-1 鏡像相反。
+// 解「大家分數都偏高→raw cosine 虛高、人人同頻」：只比相對形狀，結果才有區別。
+function shapeCorr(a,b){ var ma=0,mb=0; EKEYS.forEach(function(k){ma+=a[k]||0;mb+=b[k]||0;}); ma/=EKEYS.length;mb/=EKEYS.length;
+  var num=0,da=0,db=0; EKEYS.forEach(function(k){var x=(a[k]||0)-ma,y=(b[k]||0)-mb;num+=x*y;da+=x*x;db+=y*y;});
+  return (da<=0||db<=0)?0:num/Math.sqrt(da*db); }
 
 // ── 合盤畫面 ──────────────────────────────────────────────
 function showCompat(){
@@ -2494,8 +2499,10 @@ function runCompat(){
   var onameEl=document.getElementById('other-name');
   var oname=(onameEl&&onameEl.value||'').trim().slice(0,16);
 
-  // 四個讀數
-  var sim=Math.round(cosineSim(mine,other)*100);
+  // 同頻＝形狀共鳴(去基線 Pearson，不再人人虛高)；互補＝缺口被補率
+  var corr=shapeCorr(mine,other);
+  var sim=Math.round((corr+1)/2*100); // 0–100：~50 各走各的、高＝同頻、低＝鏡像相反
+  var simBand= corr>=.55?'很同頻':(corr>=.2?'有點同頻':(corr>-.2?'各走各的':'鏡像相反'));
   var comp=Math.round(complementarity(mine,other)*100);
   // 存當下值供「下載合盤圖」按鈕用
   lastCompat={mine:mine,other:other,sim:sim,comp:comp,otherName:oname};
@@ -2536,33 +2543,44 @@ function runCompat(){
   function enName(k){ return E[k].nm+'·'+E[k].fn.split('／')[0]; }
   function bullets(arr){ return arr.map(function(t){return '<div style="display:flex;gap:8px;margin:6px 0;line-height:1.8"><span style="color:var(--muted);flex:none">•</span><span>'+t+'</span></div>';}).join(''); }
   var pairKind, pairBody;
-  if(sim>=75 && comp<50){
-    pairKind='相近的一對';
+  if(corr>=0.55){
+    pairKind='同頻共鳴的一對';
     pairBody=bullets([
-      '能量輪廓很像——默契高、溝通省力。',
-      '當心<b>盲點容易一起重疊</b>'+(blind.length?('（你們都偏低「'+blind.map(enName).join('』『')+'」，少了有人補位）'):'')+'。'
+      '能量<b>節奏很像</b>——默契高、溝通省力。',
+      '當心<b>容易一起偏同方向</b>'+(blind.length?('（都偏低「'+blind.map(enName).join('』『')+'」，少了有人補位）'):'')+'。'
+    ]);
+  } else if(corr<=-0.25){
+    pairKind='鏡像相反的一對';
+    pairBody=bullets([
+      '<b>你強的，正是他弱的；反過來也是</b>——天生互補、組合很完整。',
+      '代價是<b>你們看世界很不一樣</b>'+(fric.length?('（落差最大在「'+enName(fric[0])+'」）'):'')+'，落差需要互相翻譯。'
     ]);
   } else if(comp>=55){
-    pairKind='互補的一對';
+    pairKind='互搭的一對';
     pairBody=bullets([
-      '補得上彼此的缺口、組合更完整。',
-      '代價是<b>步調與做事方式要磨</b>'+(fric.length?('（落差最大在「'+enName(fric[0])+'」）'):'')+'。'
-    ]);
-  } else if(sim<55 && comp<50){
-    pairKind='各自獨立的一對';
-    pairBody=bullets([
-      '你們既不特別相近、也不特別互補——比較像兩條各走各的線。',
-      '不是不合，是<b>交集要刻意找</b>：挑一兩件想一起做的事，慢慢把關係經營出來。'
+      '部分相像、部分<b>補得上彼此的缺口</b>。',
+      '把各自的強項分工搭起來用最有發揮'+(fric.length?('；步調落差在「'+enName(fric[0])+'」要磨'):'')+'。'
     ]);
   } else {
-    pairKind='平衡的一對';
+    pairKind='各走各的一對';
     pairBody=bullets([
-      '既有相近、也有互補——不極端、彈性大。',
-      (blind.length?('把共同偏低的「'+blind.map(enName).join('』『')+'」一起補起來會更完整。'):'把各自的強項搭起來用，最有發揮。')
+      '既不特別同頻、也不特別互補——比較像兩條各走各的線。',
+      '不是不合，是<b>交集要刻意找</b>：挑一兩件想一起做的事，慢慢經營出來。'
     ]);
   }
 
   var oLabel = oname ? escH(oname) : '對方';
+  // 能量分工地圖：逐能量的高低組合 → 誰帶/誰靠/都強/都缺
+  var mLead=[],mLean=[],mBoth=[],mGap=[];
+  EKEYS.forEach(function(k){ var a=mine[k]||0,b=other[k]||0;
+    if(a>=58&&b<=42)mLead.push(k); else if(b>=58&&a<=42)mLean.push(k);
+    else if(a>=58&&b>=58)mBoth.push(k); else if(a<=42&&b<=42)mGap.push(k); });
+  function mapRow(lab,arr,desc){ return arr.length?('<div style="display:flex;gap:9px;margin:8px 0;line-height:1.75;font-size:14px"><span style="color:var(--gold);font-weight:600;flex:none;min-width:3.4em">'+lab+'</span><span><b>'+arr.map(enName).join('、')+'</b> — '+desc+'</span></div>'):''; }
+  var mapHtml=mapRow('你帶',mLead,'這幾股你撐著、'+oLabel+'靠你')
+    +mapRow(oLabel+'帶',mLean,'這幾股 '+oLabel+' 撐著、你靠他')
+    +mapRow('都強',mBoth,'一起共鳴——同向時記得輪流，別搶')
+    +mapRow('都缺',mGap,'兩人都少、沒人補＝你們的共同盲點');
+  if(!mapHtml) mapHtml='<div style="font-size:13.5px;color:var(--muted);line-height:1.8">你們大多落在中間地帶，沒有特別明顯的分工——看上面的同頻／互補理解就好。</div>';
   var out=''
    +'<div style="text-align:center;font-family:\'Noto Serif TC\',\'Songti TC\',serif;font-size:19px;letter-spacing:.06em;margin:4px 0 16px">你 × '+oLabel+'</div>'
    +'<div class="block">'
@@ -2574,11 +2592,12 @@ function runCompat(){
      +'</div>'
    +'</div>'
    +'<div class="readcards">'
-     +'<div class="readcard"><div class="rc-num">'+sim+'%</div><div class="rc-lab">同頻度</div><div class="rc-sub">能量輪廓有多相近</div></div>'
+     +'<div class="readcard"><div class="rc-num">'+sim+'%</div><div class="rc-lab">同頻度 · '+simBand+'</div><div class="rc-sub">相對形狀有多像（非絕對高低）</div></div>'
      +'<div class="readcard"><div class="rc-num">'+comp+'%</div><div class="rc-lab">互補度</div><div class="rc-sub">彼此補上對方的缺口</div></div>'
    +'</div>'
    +'<div class="share-hint" style="margin:-6px 0 14px">兩個是<b>各自獨立</b>的讀數——高或低都沒有好壞，只是不同的關係樣貌。</div>'
    +'<div class="block"><h3>你們這一對</h3><div style="font-size:14px;line-height:1.9"><b>'+pairKind+'</b><br>'+pairBody+'</div></div>'
+   +'<div class="block"><h3>能量分工地圖</h3><div class="pair-sub" style="margin-bottom:6px">在你們之間，每股能量誰帶、哪裡一起缺。</div>'+mapHtml+'</div>'
    +'<div class="block"><h3>給你們的相處重點</h3>'+tipsTxt
      +'<div style="font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.7">這些是起點，不是規則——挑一兩個你們做得到的試試就好。</div>'
    +'</div>'
