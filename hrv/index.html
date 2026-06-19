@@ -166,6 +166,32 @@
   .idx-bar{height:9px;background:var(--paper);border-radius:999px;overflow:hidden;margin-bottom:9px}
   .idx-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .5s}
   .idx-fill.high{background:var(--relaxed)} .idx-fill.mid{background:var(--balanced)} .idx-fill.low{background:var(--ink-faint)}
+  /* 多面相 */
+  .facets{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
+  .facets-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .facets-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+  .facet-na{font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.7}
+  .facet-cell{border-top:1px solid var(--line);padding:11px 0 9px}
+  .facet-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .facet-l{display:flex;flex-direction:column;gap:1px}
+  .facet-nm{font-size:14.5px;color:var(--ink);font-weight:500}
+  .facet-sub{font-size:11.5px;color:var(--ink-faint)}
+  .facet-adv{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin-top:5px}
+  /* 事後自我回饋 */
+  .selfrep{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
+  .selfrep-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .selfrep-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+  .selfrep-g{margin-top:11px}
+  .selfrep-q{font-size:13px;color:var(--ink-soft);display:block;margin-bottom:6px}
+  .selfrep-row{display:flex;gap:8px;flex-wrap:wrap}
+  .selfchip{font-family:inherit;font-size:13.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 15px;cursor:pointer;transition:.12s}
+  .selfchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .selfrep-out{font-size:13px;line-height:1.7;margin-top:11px;padding:9px 12px;border-radius:10px}
+  .selfrep-out.match{background:rgba(46,139,87,.10);color:var(--ink)}
+  .selfrep-out.diff{background:var(--paper);color:var(--ink-soft)}
+  /* 生活記錄 note */
+  .tagnote{margin-top:11px}
+  .tagnote-in{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .tagnote-in::placeholder{color:var(--ink-faint)}
+  .tagnote-priv{font-size:11.5px;color:var(--ink-faint);margin-top:9px}
   .idx-adv{font-size:13px;color:var(--ink-soft);line-height:1.7}
   .idx-score{font-family:"Noto Serif TC",serif;font-size:13px;color:var(--ink-faint);margin-left:6px}
 
@@ -615,10 +641,10 @@ function renderResult(samples){
   // 取「過去」HRV 記錄（不含本次）→ baseline → 身體能量分數，再渲染 hero
   Promise.resolve(jteListRecordsMerged()).then(function(list){
     if(session.mode!=='result')return;         // 已離開結果頁就不渲染
-    renderEnergyResult(d, card, list||[], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state});
+    renderEnergyResult(d, card, list||[], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state}, rr);
   }).catch(function(){
     if(session.mode!=='result')return;
-    renderEnergyResult(d, card, [], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state});
+    renderEnergyResult(d, card, [], m, {hr:hr,rmssd:rmssd,sdnn:sdnn,state:state}, rr);
   });
 }
 
@@ -670,10 +696,92 @@ function buildTagPicker(recId){
     row.appendChild(add);
   }
   rebuild();
+  // 生活記錄：選填一句
+  const noteWrap=document.createElement('div'); noteWrap.className='tagnote';
+  const ta=document.createElement('input'); ta.type='text'; ta.maxLength=140; ta.className='tagnote-in';
+  ta.placeholder=jteT('tag.note.ph','想補一句？（選填，例：剛運動完／喝了咖啡／睡不好）');
+  ta.onchange=function(){ jteUpdateRecord(recId,{ note:String(ta.value||'').slice(0,140) }); };
+  noteWrap.appendChild(ta); wrap.appendChild(noteWrap);
+  const priv=document.createElement('div'); priv.className='tagnote-priv'; priv.textContent=jteT('tag.privacy','🔒 你的紀錄只留在這台裝置上。');
+  wrap.appendChild(priv);
   return wrap;
 }
 
-function renderEnergyResult(d, card, list, m, rec){
+// 頻域四面相卡（放鬆/壓力/活力/彈性）；facets=null → 顯示資料不足
+function buildFacets(facets){
+  const wrap=document.createElement('div'); wrap.className='facets';
+  const head=document.createElement('div'); head.className='facets-head';
+  head.innerHTML='<b>'+jteT('facets.head','你的身體面相')+'</b><span>'+jteT('facets.sub','從心跳節奏看到的幾個面向 · 參考非診斷')+'</span>';
+  wrap.appendChild(head);
+  if(!facets){
+    const na=document.createElement('div'); na.className='facet-na';
+    na.textContent=jteT('facets.na','這次資料不夠算這幾個面相，下次量久一點、穩一點再看。');
+    wrap.appendChild(na); return wrap;
+  }
+  const FACE=[
+    {k:'relax',      nm:jteT('facet.relax','放鬆'),            sub:jteT('facet.relax.sub','副交感 · 休息訊號')},
+    {k:'stress',     nm:jteT('facet.stress','壓力（油門↔剎車）'), sub:jteT('facet.stress.sub','交感主導程度')},
+    {k:'vitality',   nm:jteT('facet.vitality','活力'),          sub:jteT('facet.vitality.sub','整體自律活性')},
+    {k:'flexibility',nm:jteT('facet.flex','彈性'),              sub:jteT('facet.flex.sub','心率調節豐富度')}
+  ];
+  FACE.forEach(function(f){
+    var x=facets[f.k]; if(!x) return;
+    // 壓力反向上色：壓力低＝好(綠)、壓力高＝留意(暖)；其餘 high＝好
+    var lvClass=(f.k==='stress') ? ({high:'low',mid:'mid',low:'high'}[x.level]) : x.level;
+    var cell=document.createElement('div'); cell.className='facet-cell';
+    var row=document.createElement('div'); row.className='facet-row';
+    row.innerHTML='<span class="facet-l"><span class="facet-nm">'+f.nm+'</span><span class="facet-sub">'+f.sub+'</span></span>'
+      +'<span class="idx-lv '+lvClass+'">'+x.label+'</span>';
+    var adv=document.createElement('div'); adv.className='facet-adv'; adv.textContent=x.advice;
+    cell.appendChild(row); cell.appendChild(adv); wrap.appendChild(cell);
+  });
+  return wrap;
+}
+
+// 事後自我回饋：選身體/精神感覺 → 對照身體量到的 state（中性、非糾正）
+function buildSelfReport(recId, rec){
+  const wrap=document.createElement('div'); wrap.className='selfrep';
+  const head=document.createElement('div'); head.className='selfrep-head';
+  head.innerHTML='<b>'+jteT('self.head','跟你的感覺對得上嗎？')+'</b><span>'+jteT('self.sub','選填 — 比對「身體量到的」和「你感覺到的」')+'</span>';
+  wrap.appendChild(head);
+  const felt={body:'',energy:''};
+  const out=document.createElement('div'); out.className='selfrep-out';
+  function makeGroup(label, key, opts){
+    const g=document.createElement('div'); g.className='selfrep-g';
+    g.innerHTML='<span class="selfrep-q">'+label+'</span>';
+    const r=document.createElement('div'); r.className='selfrep-row';
+    opts.forEach(function(o){
+      const b=document.createElement('button'); b.type='button'; b.className='selfchip'; b.textContent=o;
+      b.onclick=function(){ felt[key]=o;
+        Array.prototype.forEach.call(r.children,function(c){ c.classList.remove('on'); }); b.classList.add('on');
+        jteUpdateRecord(recId,{ felt:{body:felt.body,energy:felt.energy} }); renderCompare();
+      };
+      r.appendChild(b);
+    });
+    g.appendChild(r); return g;
+  }
+  function renderCompare(){
+    if(!felt.body){ out.textContent=''; out.className='selfrep-out'; return; }
+    var measured=rec.state==='relaxed'?'放鬆':(rec.state==='tense'?'緊繃':'普通');
+    if(felt.body===measured){ out.className='selfrep-out match'; out.textContent=jteT('self.match','你的感覺和身體挺同步的 🌿'); }
+    else { out.className='selfrep-out diff'; out.textContent='你覺得「'+felt.body+'」，身體量到比較像「'+measured+'」——感覺和身體有時不同步，值得留意，不用評斷。'; }
+  }
+  wrap.appendChild(makeGroup(jteT('self.body','身體感覺'),'body',['放鬆','普通','緊繃']));
+  wrap.appendChild(makeGroup(jteT('self.energy','精神感覺'),'energy',['有電','普通','累']));
+  wrap.appendChild(out);
+  return wrap;
+}
+
+// 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null
+function computeFreqFacets(rr, sdnn){
+  var F=window.HrvFreq; if(!F||!rr||rr.length<8) return null;
+  try{
+    var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
+    var bp=F.bandPowers(rs.series, rs.fs);
+    return F.indices(bp, {sdnn:sdnn});
+  }catch(e){ return null; }
+}
+function renderEnergyResult(d, card, list, m, rec, rr){
   const E=window.HrvEnergy;
   // 過去 HRV 記錄（已含本次？本次尚未寫入，故 list 即為「過去」）：過濾 source==='HRV' 且有 rmssd
   const hist=(list||[]).filter(function(r){ return r&&r.source==='HRV'&&Number(r.rmssd)>0; })
@@ -705,9 +813,13 @@ function renderEnergyResult(d, card, list, m, rec){
   const now=new Date();
   const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
   jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[] });
+    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' });
 
-  // —— 自覺狀態標記（量完即可貼，選填、可多選）——
+  // —— 身體面相（頻域四面相：放鬆/壓力/活力/彈性）——
+  d.appendChild(buildFacets(computeFreqFacets(rr, m.sdnn)));
+  // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
+  d.appendChild(buildSelfReport(recId, rec));
+  // —— 生活記錄（標籤＋選填一句，量完即可貼）——
   d.appendChild(buildTagPicker(recId));
 
   // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
@@ -1035,6 +1147,8 @@ renderIntro();
 <script defer src="hrv-analyze.js"></script>
 <!-- 身體能量分數純模組（baselineFrom/energyScore） -->
 <script defer src="hrv-energy.js"></script>
+<!-- 頻域四面相純模組（放鬆/壓力/活力/彈性 indices） -->
+<script defer src="hrv-freq.js"></script>
 
 <!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
