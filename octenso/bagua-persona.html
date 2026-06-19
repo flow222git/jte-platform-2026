@@ -20,10 +20,10 @@
   .home-link:hover{background:var(--surface)}
 
   /* ── Cover ── */
-  #cover{text-align:center;padding:8px 0}
-  #cover .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.24em;color:var(--muted);
+  #cover,#mindset{text-align:center;padding:8px 0}
+  #cover .eyebrow,#mindset .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.24em;color:var(--muted);
     text-transform:uppercase;margin-bottom:14px}
-  #cover h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px}
+  #cover h1,#mindset h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px}
   #cover .lead{font-size:14px;color:var(--ink);max-width:380px;margin:0 auto 8px;line-height:1.9}
   #cover .trigrams{font-size:26px;color:var(--pine);letter-spacing:.18em;margin:18px 0 6px;opacity:.85}
   .start-btn{display:inline-block;background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:"Songti TC","Noto Serif TC",serif;
@@ -371,7 +371,7 @@
     <p><b>怎麼答</b>：想著<b>跨越不同場合、長期的你</b>，憑第一個念頭選。沒有對錯、也沒有中間值。</p>
   </div>
   <button class="start-btn" onclick="startQuiz()">我準備好了，開始作答 →</button>
-  <a class="home-link" style="display:block;margin-top:14px" onclick="document.getElementById('mindset').style.display='none';document.getElementById('cover').style.display='block';window.scrollTo(0,0);return false;" href="#">← 再想想</a>
+  <a class="home-link" style="margin-top:14px" onclick="document.getElementById('mindset').style.display='none';document.getElementById('cover').style.display='block';window.scrollTo(0,0);return false;" href="#">← 再想想</a>
   <div class="honest" style="border-left-color:var(--pine)">慢慢來——這一停，是為了讓底色測得準；底色準，後面的解讀才準。</div>
 </div>
 
