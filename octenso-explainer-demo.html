@@ -48,21 +48,29 @@ var E=[{sym:'☰',nm:'開創'},{sym:'☳',nm:'行動'},{sym:'☵',nm:'沉澱'},{
 var GROUPS=[{nm:'天地 · 建構',sub:'開創 ↔ 承接',a:0,b:4},{nm:'雷風 · 推動',sub:'行動 ↔ 拓展',a:1,b:5},
             {nm:'水火 · 認知',sub:'沉澱 ↔ 展現',a:2,b:6},{nm:'山澤 · 調節',sub:'喊停 ↔ 交流',a:3,b:7}];
 var NS='http://www.w3.org/2000/svg';
-// 導引同心圓
-[46,86,124].forEach(function(r){ var c=document.createElementNS(NS,'circle');
+// 導引同心圓（會呼吸流動的底圖）
+var ringEls=[], ringBase=[44,84,122];
+ringBase.forEach(function(r){ var c=document.createElementNS(NS,'circle');
   c.setAttribute('cx',CX);c.setAttribute('cy',CY);c.setAttribute('r',r);c.setAttribute('fill','none');
-  c.setAttribute('stroke','rgba(236,220,184,.08)');c.setAttribute('stroke-width','1');document.getElementById('rings').appendChild(c); });
+  c.setAttribute('stroke','rgba(240,207,144,.14)');c.setAttribute('stroke-width','1');document.getElementById('rings').appendChild(c); ringEls.push(c); });
+var ringT0=performance.now();
+(function flowRings(ts){
+  ringEls.forEach(function(c,i){ var k=Math.sin((ts-ringT0)/4200*Math.PI*2 + i*1.4);
+    c.setAttribute('r', ringBase[i] + k*6);
+    c.setAttribute('stroke','rgba(240,207,144,'+(0.07+0.07*(k*.5+.5)).toFixed(3)+')'); });
+  requestAnimationFrame(flowRings);
+})(ringT0);
 var rays=[],halos=[],pts=[],labs=[];
 E.forEach(function(e,i){
   var ray=document.createElementNS(NS,'line'); ray.setAttribute('x1',CX);ray.setAttribute('y1',CY);
-  ray.setAttribute('stroke','#e8c07a');ray.setAttribute('stroke-width','1');ray.setAttribute('opacity','0');ray.setAttribute('stroke-linecap','round');
+  ray.setAttribute('stroke','#f5e6c0');ray.setAttribute('stroke-width','0.7');ray.setAttribute('opacity','0');ray.setAttribute('stroke-linecap','round');
   document.getElementById('rays').appendChild(ray); rays.push(ray);
   var h=document.createElementNS(NS,'circle'); h.setAttribute('fill','#f0cf90');h.setAttribute('opacity','0');h.setAttribute('filter','url(#bloom)');
   document.getElementById('halos').appendChild(h); halos.push(h);
   var p=document.createElementNS(NS,'circle'); p.setAttribute('fill','#fbeec4');p.setAttribute('opacity','0');
   document.getElementById('pts').appendChild(p); pts.push(p);
   var l=document.createElementNS(NS,'text'); l.setAttribute('text-anchor','middle');l.setAttribute('font-family','"Noto Serif TC",serif');
-  l.setAttribute('font-size','12.5');l.setAttribute('fill','#d8c9a4');l.setAttribute('opacity','0');l.textContent=e.sym;
+  l.setAttribute('font-size','15');l.setAttribute('fill','#e6d6ad');l.setAttribute('opacity','0');l.textContent=e.sym;
   document.getElementById('labels').appendChild(l); labs.push(l);
 });
 // state: len(0-1) op(0-1) lum(0-1.3 光量)
@@ -71,7 +79,7 @@ function tip(i,len){ var a=(-90+i*45)*Math.PI/180; return {x:CX+Math.cos(a)*(R0+
 function render(){
   state.forEach(function(s,i){
     var t=tip(i,s.len);
-    rays[i].setAttribute('x2',t.x);rays[i].setAttribute('y2',t.y);rays[i].setAttribute('opacity',s.op*.30);
+    rays[i].setAttribute('x2',t.x);rays[i].setAttribute('y2',t.y);rays[i].setAttribute('opacity',s.op*.42);
     halos[i].setAttribute('cx',t.x);halos[i].setAttribute('cy',t.y);halos[i].setAttribute('r',5+s.lum*15);halos[i].setAttribute('opacity',s.op*.16*s.lum);
     pts[i].setAttribute('cx',t.x);pts[i].setAttribute('cy',t.y);pts[i].setAttribute('r',1.8+s.lum*2.6);pts[i].setAttribute('opacity',s.op);
     var lr=R0+s.len*MAXOUT+15; labs[i].setAttribute('x',CX+Math.cos(t.a)*lr);labs[i].setAttribute('y',CY+Math.sin(t.a)*lr+4);
@@ -101,8 +109,8 @@ function dot(n){var ds=document.getElementById('dots').children;for(var i=0;i<ds
 function fade(id,o){document.getElementById(id).setAttribute('opacity',o);}
 
 function beat1(){ dot(0); fade('core','1'); cap('幾千年前，古人用八卦，<br>觀察天地間運行的能量。');
-  E.forEach(function(e,i){ tw(i,'op',.5,1100,i*120); tw(i,'lum',.45,1100,i*120);
-    setTimeout(function(){labs[i].textContent=E[i].sym;labs[i].setAttribute('opacity','.5');},i*120); });
+  E.forEach(function(e,i){ tw(i,'op',.72,1100,i*120); tw(i,'lum',.7,1100,i*120);
+    setTimeout(function(){labs[i].textContent=E[i].sym;labs[i].setAttribute('opacity','.78');},i*120); });
   play(); setTimeout(beat2,4200); }
 
 function beat2(){ dot(1); cap('這些能量兩兩相對——<br>組成四組系統。'); var t=500;
