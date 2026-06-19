@@ -70,12 +70,24 @@
     pos.sort(function(x,y){ return x-y; });
     var p90 = pos.length ? pos[Math.min(pos.length-1, Math.floor(pos.length*0.9))] : 0;
     var thr = p90*0.5;
-    var beats=[], heights=[], lastT=-1e9;
+    // 1) 收集所有超過門檻的區域極大值（候選峰，含可能的重搏切跡）
+    var cand=[];
     for(var p=1;p<ac.length-1;p++){
-      if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1] && (t[p]-lastT)>=300){
-        beats.push(t[p]); heights.push(ac[p]); lastT=t[p];
-      }
+      if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1]) cand.push({ t:t[p], h:ac[p] });
     }
+    // 2) 不應期內「最高峰優先」非極大抑制：主收縮峰最高→勝出；較矮的重搏切跡落在窗內→被壓掉。
+    //    （原本「最先出現的峰 + 300ms 鎖定」會把主峰後 ~350ms 的切跡也當成一拍 → HR 偏快近 2 倍。）
+    var REFRACT=380; // ms 兩拍最短間隔（≤~158bpm，足夠靜息量測；切跡較矮又在窗內必被抑制）
+    var order=cand.slice().sort(function(a,b){ return b.h-a.h; }); // 高→低
+    var picked=[];
+    for(var i=0;i<order.length;i++){
+      var ok=true;
+      for(var k=0;k<picked.length;k++){ if(Math.abs(order[i].t-picked[k].t)<REFRACT){ ok=false; break; } }
+      if(ok) picked.push(order[i]);
+    }
+    picked.sort(function(a,b){ return a.t-b.t; });
+    var beats=[], heights=[];
+    for(var q=0;q<picked.length;q++){ beats.push(picked[q].t); heights.push(picked[q].h); }
     return { beats:beats, heights:heights };
   }
   // 自相關週期性分數(0~1)：真脈搏在 40-150bpm 對應 lag 有強自相關；雜訊接近 0。

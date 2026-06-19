@@ -38,6 +38,18 @@ function synthArtifact(bpm, durSec, fs){
   return s;
 }
 
+// 合成 PPG（含重搏切跡 dicrotic notch）：主收縮峰 + 主峰後一個較矮次波 → 重現真機「HR 被多算偏快」
+function synthPpgNotch(bpm, durSec, fs){
+  fs=fs||30; durSec=durSec||20; var s=[], n=Math.round(durSec*fs), per=60000/bpm;
+  for(var i=0;i<n;i++){
+    var t=i*1000/fs, ph=(t%per)/per;                       // 0..1 週期相位
+    var main=Math.exp(-Math.pow((ph-0.15)/0.07,2));        // 主收縮峰
+    var notch=0.6*Math.exp(-Math.pow((ph-0.50)/0.07,2));   // 重搏切跡（較矮、約 0.35 週期後 → 主峰後 ~350ms）
+    s.push({t:t, v: main+notch});
+  }
+  return s;
+}
+
 async function run(){
   assert(typeof HrvAnalyze === 'object', 'HrvAnalyze 應載入');
 
@@ -70,6 +82,11 @@ async function run(){
     var rr=HrvAnalyze.rrFromBeats(beats);
     var m=HrvAnalyze.metricsFromRr(rr);
     near(m.hr,60,4,'hr≈60');
+  });
+  await check('重搏切跡：60bpm 含次波 → 不被多算、hr≈60（防 HR 偏快）', async () => {
+    var s=synthPpgNotch(60,20,30);
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(s)));
+    near(m.hr,60,6,'hr 不應被切跡灌快，實得 '+Math.round(m.hr));
   });
   await check('detectBeats：75bpm 合成訊號 → hr≈75', async () => {
     var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpg(75,20,30,0.05))));
