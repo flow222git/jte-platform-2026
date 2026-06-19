@@ -152,6 +152,7 @@
   .metric-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line)}
   .metric-row:last-child{border-bottom:none}
   .metric-row .mt{color:var(--ink-soft)} .metric-row .mt small{color:var(--ink-faint);font-size:11px}
+  .metric-note{font-size:11.5px;color:var(--ink-faint);line-height:1.7;padding-top:9px}
   .metric-row .mv{font-family:"Noto Serif TC",serif;color:var(--accent);font-weight:500;font-size:16px}
   details.metrics summary{cursor:pointer;color:var(--accent);font-size:13.5px;padding:6px 0;list-style:none}
   details.metrics summary::-webkit-details-marker{display:none}
@@ -925,6 +926,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
     '<div class="panel" style="margin-top:8px">'+
       '<div class="metric-row"><span class="mt">'+jteT('result.hr','心率')+' <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
       '<div class="metric-row"><span class="mt">'+jteT('result.rmssd','心率變異')+' <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
+      '<div class="metric-note">'+jteT('result.rmssd.note','RMSSD 單筆本來就會起伏（量到的數字會跳很正常）——別跟單一數字較真，多量幾次、看自己的<b>基準與趨勢</b>才準。心率則較穩定。')+'</div>'+
     '</div>';
   d.appendChild(det);
   // 細項膠囊（顏色用既有 idx-lv high/mid/low）
