@@ -96,6 +96,11 @@ async function run(){
     var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpg(75,20,30,0.05))));
     near(m.hr,75,5,'hr≈75');
   });
+  await check('次幀內插：67bpm@30fps(不整除幀格) → RMSSD 不被量化灌大', async () => {
+    var m=HrvAnalyze.metricsFromRr(HrvAnalyze.rrFromBeats(HrvAnalyze.detectBeats(synthPpg(67,30,30,0))));
+    near(m.hr,67,4,'hr≈67');
+    assert(m.rmssd<15,'RMSSD 應因次幀內插而小(真值≈0)，無內插約 ~30ms；實得 '+Math.round(m.rmssd));
+  });
   await check('rrFromBeats 偽差過濾：剔除超出 300-2000ms 的間隔', async () => {
     var beats=[0,1000,2000,2100,3100]; // 2000→2100=100ms（太短）應剔除
     var rr=HrvAnalyze.rrFromBeats(beats);

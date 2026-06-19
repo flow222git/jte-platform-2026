@@ -395,7 +395,7 @@ async function startCamera(){
   }
   let stream;
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } } });
+    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, frameRate:{ ideal:60 } } });
   }catch(e){
     if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){
       showCamError('需要相機權限','請允許使用相機才能量測。你可以在網址列或設定中開啟相機權限，再回來重試。');
@@ -427,7 +427,7 @@ async function startCamera(){
       const curId=(cur&&cur.getSettings)?cur.getSettings().deviceId:null;
       if(pick.deviceId!==curId){
         stream.getTracks().forEach(function(t){ t.stop(); });
-        stream=await navigator.mediaDevices.getUserMedia({ video:{ deviceId:{ exact:pick.deviceId } } });
+        stream=await navigator.mediaDevices.getUserMedia({ video:{ deviceId:{ exact:pick.deviceId }, frameRate:{ ideal:60 } } });
         session.camReacq=true;
       }
     }

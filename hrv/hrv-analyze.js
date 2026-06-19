@@ -70,10 +70,10 @@
     pos.sort(function(x,y){ return x-y; });
     var p90 = pos.length ? pos[Math.min(pos.length-1, Math.floor(pos.length*0.9))] : 0;
     var thr = p90*0.5;
-    // 1) 收集所有超過門檻的區域極大值（候選峰，含可能的重搏切跡）
+    // 1) 收集所有超過門檻的區域極大值（候選峰，記 index 供次幀內插）
     var cand=[];
     for(var p=1;p<ac.length-1;p++){
-      if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1]) cand.push({ t:t[p], h:ac[p] });
+      if (ac[p]>thr && ac[p]>=ac[p-1] && ac[p]>ac[p+1]) cand.push({ p:p, t:t[p], h:ac[p] });
     }
     // 2) 不應期內「最高峰優先」非極大抑制：主收縮峰最高→勝出；較矮的重搏切跡落在窗內→被壓掉。
     //    動態不應期＝主週期(自相關)×0.6：對重搏切跡免疫——切跡必在一個週期內，不管心率高低都被壓掉。
@@ -88,8 +88,16 @@
       if(ok) picked.push(order[i]);
     }
     picked.sort(function(a,b){ return a.t-b.t; });
+    // 3) 次幀內插：用相鄰樣本的拋物線頂點精修波峰時間，解 30fps 量化（RMSSD 才不被量化抖動灌大）
     var beats=[], heights=[];
-    for(var q=0;q<picked.length;q++){ beats.push(picked[q].t); heights.push(picked[q].h); }
+    for(var q=0;q<picked.length;q++){
+      var pi=picked[q].p, bt=t[pi];
+      if(pi>0 && pi<ac.length-1){
+        var A=ac[pi-1], B=ac[pi], C=ac[pi+1], den=A-2*B+C;
+        if(den!==0){ var dl=0.5*(A-C)/den; if(dl<=1 && dl>=-1){ bt=t[pi]+dl*(dl>=0?(t[pi+1]-t[pi]):(t[pi]-t[pi-1])); } }
+      }
+      beats.push(bt); heights.push(picked[q].h);
+    }
     return { beats:beats, heights:heights };
   }
   // 自相關週期性分數(0~1)：真脈搏在 40-150bpm 對應 lag 有強自相關；雜訊接近 0。
