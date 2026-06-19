@@ -304,23 +304,21 @@ function renderIntro(){
   d.appendChild(lead);
 
 
-  // 量測步驟
+  // 認識 HRV（怎麼量改在量測中分段引導，這裡放知識說明）
   const g=document.createElement('div');g.className='guide-card';
-  const stepsData=[
-    {title:jteT('intro.step1.title','整顆鏡頭蓋滿'),desc:jteT('intro.step1.desc','用整個指腹蓋滿後鏡頭和旁邊的閃光燈——畫面變成紅紅一片就對了；輕輕貼、別壓太用力。'),icon:'ti-hand-finger'},
-    {title:jteT('intro.step2.title','手和身體保持靜止'),desc:jteT('intro.step2.desc','正常呼吸，不要說話。'),icon:'ti-armchair-2'},
-    {title:jteT('intro.step3.title','光線要充足'),desc:jteT('intro.step3.desc','在亮一點的地方量更穩。'),icon:'ti-sun'},
-    {title:jteT('intro.step4.title','抓到脈搏就開始'),desc:jteT('intro.step4.desc','偵測到穩定心跳會自動開始倒數，量完顯示結果。'),icon:'ti-clock-hour-4'},
+  const hrvPts=[
+    {t:jteT('hrv.p1.t','什麼是 HRV？'),d:jteT('hrv.p1.d','心率變異＝每次心跳間隔的細微變化。變化越豐富，通常代表身體越能放鬆、恢復力越好。'),icon:'ti-heartbeat'},
+    {t:jteT('hrv.p2.t','它反映什麼？'),d:jteT('hrv.p2.d','你的自律神經狀態——交感（油門·備戰）和副交感（剎車·休息）的平衡。'),icon:'ti-activity'},
+    {t:jteT('hrv.p3.t','怎麼看才準？'),d:jteT('hrv.p3.d','跟自己平常比、看趨勢就好，不是跟別人比；多量幾次會越來越貼近你。'),icon:'ti-trending-up'},
+    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','身體能量，以及放鬆、壓力、活力、彈性等面相，幫你覺察當下的身心狀態。'),icon:'ti-eye'}
   ];
-  let stepsHtml='<h3><i class="ti ti-list-numbers"></i>'+_h(jteT('intro.steps.title','量測步驟'))+'</h3><div class="steps">';
-  stepsData.forEach(function(s,i){
-    stepsHtml+='<div class="step-block"><span class="step-n">'+(i+1)+'</span>'+
-      '<div class="step-body"><div class="step-title">'+_h(s.title)+'</div>'+
-      '<div class="step-desc">'+_h(s.desc)+'</div></div>'+
-      '<i class="ti '+s.icon+' step-ic"></i></div>';
+  let gh='<h3><i class="ti ti-bulb"></i>'+_h(jteT('hrv.title','認識 HRV'))+'</h3><div class="steps">';
+  hrvPts.forEach(function(s){
+    gh+='<div class="step-block"><div class="step-body"><div class="step-title">'+_h(s.t)+'</div>'+
+      '<div class="step-desc">'+_h(s.d)+'</div></div><i class="ti '+s.icon+' step-ic"></i></div>';
   });
-  stepsHtml+='</div>';
-  g.innerHTML=stepsHtml;
+  gh+='</div>';
+  g.innerHTML=gh;
   d.appendChild(g);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
@@ -573,12 +571,16 @@ function updateLiveUi(now){
   }else{
     if(hint && !hint.classList.contains('warn')){
       const waited=(now-session.measureStart)/1000;
-      if(q!=='red'){
-        hint.textContent=jteT('hint.yellow','抓到脈搏了，穩住、保持靜止，馬上開始…');
-      }else if(waited<6){
-        hint.textContent=jteT('hint.acquiring.early','用整個指腹蓋滿後鏡頭，輕輕貼著、放鬆，觀察幾秒…');
-      }else{
+      if(q==='red' && waited>=8){
+        // 久久抓不到 → 給可操作的檢查清單
         hint.textContent=jteT('hint.acquiring.late','還抓不到：請確認 ① 整個指腹蓋滿鏡頭和閃光燈（畫面要紅紅一片）② 別壓太用力 ③ 在亮一點的地方，放鬆再等幾秒。');
+      }else{
+        // 分段引導：跟著一步步做，走完差不多也偵測完了（體驗順暢）
+        var cut=jteT('cut.1','① 用整個指腹蓋滿後鏡頭（連旁邊的閃光燈）—— 畫面變成紅紅一片就對了');
+        if(waited>=13)      cut=jteT('cut.4','很好，正在抓你的心跳…快好了，穩住');
+        else if(waited>=9)  cut=jteT('cut.3','③ 手和身體放鬆、保持靜止，正常呼吸');
+        else if(waited>=4.5)cut=jteT('cut.2','② 輕輕貼著就好，別壓太用力');
+        hint.textContent=cut;
       }
     }
   }
