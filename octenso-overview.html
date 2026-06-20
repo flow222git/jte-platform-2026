@@ -67,6 +67,39 @@
   .callout .q{font-family:"Noto Serif TC",serif;font-size:19px;font-weight:600;color:var(--deepgold);line-height:1.7}
   .callout .a{font-size:14px;color:var(--muted);margin-top:6px}
   .note{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px;line-height:1.75}
+  /* feature examples */
+  .feature{margin:30px 0 10px}
+  .feathead{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:5px}
+  .feathead .fnm{font-family:"Noto Serif TC",serif;font-weight:600;font-size:19px}
+  .qbadge{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.04em;color:var(--deepgold);background:#f0e6cf;border:1px solid var(--hair);border-radius:99px;padding:2px 11px}
+  .purpose{font-size:14px;color:var(--muted);margin:0 0 12px;line-height:1.8}
+  .purpose b{color:var(--ink2);font-weight:500}
+  .example{background:#fbf8f0;border:1px solid var(--line);border-radius:12px;padding:15px 18px}
+  .exlabel{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:11px}
+  .ebar{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:13px}
+  .ebar .el{width:48px;flex:none;text-align:right;color:var(--ink)}
+  .ebar .track{flex:1;height:7px;background:#ebe1cd;border-radius:4px;overflow:hidden}
+  .ebar .fillb{height:100%;border-radius:4px;background:var(--pine)}
+  .ebar .fillb.g{background:var(--gold)}
+  .ebar .ev{width:26px;flex:none;font-size:11.5px;color:var(--muted);text-align:right}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:11px 0 3px}
+  .chip{font-size:12.5px;padding:3px 11px;border-radius:99px;background:#ece2cd;color:var(--ink2)}
+  .chip.hi{background:var(--pine);color:#fff}.chip.lo{background:#efe6d4;color:var(--muted);border:1px solid var(--hair)}
+  .exline{font-size:13.5px;color:var(--ink2);margin-top:11px;line-height:1.8}
+  .exline .gd{color:var(--deepgold);font-weight:500}
+  .nb{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13.5px}
+  .nb .nl{width:52px;flex:none;text-align:right;font-weight:500;color:var(--ink)}
+  .nb .seg{flex:1;display:flex;height:23px;border-radius:6px;overflow:hidden;font-family:"Noto Sans TC",sans-serif;font-size:11px}
+  .nb .seg span{flex:1;display:flex;align-items:center;justify-content:center;color:#fff;opacity:.55}
+  .nb .s1{background:#c0b59a}.nb .s2{background:#7a9a86}.nb .s3{background:#b8794a}
+  .nb .seg span.on{opacity:1;box-shadow:inset 0 0 0 2px var(--ink);font-weight:600}
+  .ro{display:flex;gap:14px;margin-bottom:6px}
+  .ro .rc{background:#f3ecdb;border:1px solid var(--line);border-radius:10px;padding:9px 14px;text-align:center;flex:1}
+  .ro .rn{font-family:"Noto Serif TC",serif;font-size:21px;font-weight:600;color:var(--deepgold);line-height:1.2}
+  .ro .rl{font-size:11.5px;color:var(--muted)}
+  .mapr{display:flex;gap:9px;font-size:13.5px;margin:6px 0}
+  .mapr .mk{flex:none;width:60px;color:var(--gold);font-weight:600;text-align:right}
+  .mapr .mv b{color:var(--ink)}
   footer{text-align:center;color:var(--muted);font-size:13px;margin-top:60px;padding-top:24px;border-top:1px solid var(--line);line-height:1.9}
   footer .ens{font-family:"Noto Serif TC",serif;font-size:26px;color:var(--gold);display:block;margin-bottom:8px}
   @media(max-width:560px){nav.toc ol{columns:1}.sysgrid{grid-template-columns:1fr}h1{font-size:31px}.drow .lab{width:48px}}
@@ -129,16 +162,87 @@
       <div class="pair"><span><span class="sym">☱</span><span class="nm">交流</span></span><span class="fn">表達、人際、互通</span></div></div>
   </div>
 
-  <p>同一套八能量語言，可以描述<b>任何東西</b>、量任兩者之間的契合與消耗。於是長出這些應用：</p>
-  <ul class="clean">
-    <li><b>底色測驗</b>——測出你八種能量的相對高低，得到專屬的「能量圓」與立體側寫。</li>
-    <li><b>能格調校</b>——同一股能量，用太少／剛好／太過？看出你在哪裡過猶不及。</li>
-    <li><b>場景耗能</b>——從「最耗你的場景」切入，看那個處境正在掏空你哪些能量。</li>
-    <li><b>雙人合盤</b>——兩個人的能量怎麼互動：同頻、互補、誰帶誰靠、哪裡一起缺。</li>
-    <li><b>想成為的你</b>——理想與現況的能量落差，指出可以長的方向。</li>
-    <li>另有團隊、職業配對等延伸，皆是同一引擎的不同套用。</li>
-  </ul>
-  <p class="note">技術上是純前端、資料只留在使用者裝置、不上傳——尤其涉及個人狀態，預設「你的資料只留在你這裡」。</p>
+  <p>同一套八能量語言，可以描述<b>任何東西</b>、量任兩者之間的契合與消耗。於是長出以下應用——每個都附上<b>題數、用意，與一個示意的結果長相</b>：</p>
+
+  <!-- 底色 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">① 底色測驗</span><span class="qbadge">24 題 · 約 3 分鐘</span></div>
+    <p class="purpose"><b>用意：</b>八種能量，<b>每種出 3 題</b>——三題可交叉檢核，還能測「確信度」（三題一致＝篤定、分散＝兩可）。24 題是「夠準、又不勸退」的甜蜜點。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意（一位「行動展現者」）</div>
+      <div class="ebar"><span class="el">開創</span><span class="track"><span class="fillb" style="width:72%"></span></span><span class="ev">72</span></div>
+      <div class="ebar"><span class="el">行動</span><span class="track"><span class="fillb g" style="width:88%"></span></span><span class="ev">88</span></div>
+      <div class="ebar"><span class="el">展現</span><span class="track"><span class="fillb g" style="width:80%"></span></span><span class="ev">80</span></div>
+      <div class="ebar"><span class="el">拓展</span><span class="track"><span class="fillb" style="width:70%"></span></span><span class="ev">70</span></div>
+      <div class="ebar"><span class="el">交流</span><span class="track"><span class="fillb" style="width:64%"></span></span><span class="ev">64</span></div>
+      <div class="ebar"><span class="el">承接</span><span class="track"><span class="fillb" style="width:56%"></span></span><span class="ev">56</span></div>
+      <div class="ebar"><span class="el">喊停</span><span class="track"><span class="fillb" style="width:50%"></span></span><span class="ev">50</span></div>
+      <div class="ebar"><span class="el">沉澱</span><span class="track"><span class="fillb" style="width:44%"></span></span><span class="ev">44</span></div>
+      <div class="chips"><span class="chip hi">主旋律 · 行動</span><span class="chip hi">展現</span><span class="chip">開創</span><span class="chip lo">相對低谷 · 沉澱</span></div>
+      <div class="exline"><span class="gd">立體側寫：</span>「你各態都偏高——而相對之中最鮮明的是<b>行動與展現</b>：你習慣先做、先亮相；較少停下來沉澱、把事收進心裡。」</div>
+    </div>
+  </div>
+
+  <!-- 能格 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">② 能格調校</span><span class="qbadge">動態 0–8 題</span></div>
+    <p class="purpose"><b>用意：</b>只問你<b>最強 2、最弱 2</b> 的能量（適中的不浪費題）；而且問的是「<b>代價／後果</b>」（用過頭會累嗎？不足會卡嗎？）——直接量「過猶不及」，而非又測一次特質。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意</div>
+      <div class="nb"><span class="nl">行動</span><span class="seg"><span class="s1">潛</span><span class="s2">中</span><span class="s3 on">亢</span></span></div>
+      <div class="exline" style="margin-top:4px">過用（亢）→「容易停不下來、焦躁。試著在『衝』之前，留一個停頓。」</div>
+      <div class="nb" style="margin-top:14px"><span class="nl">承接</span><span class="seg"><span class="s1 on">潛</span><span class="s2">中</span><span class="s3">亢</span></span></div>
+      <div class="exline" style="margin-top:4px">不足（潛）→「容易接不住、撐得勉強。可以先從一件小事，練習『接住』。」</div>
+    </div>
+  </div>
+
+  <!-- 場景耗能 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">③ 場景耗能</span><span class="qbadge">選路徑 + 強度 + 約 8 題</span></div>
+    <p class="purpose"><b>用意：</b>從「<b>最耗你的場景</b>」切入（7 選 1）＋你的主觀強度（4 級）＋中性提問——主觀×客觀對照：你說它耗，細看到底掏空哪幾股。從最有感的痛點進，動機最高。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意</div>
+      <div class="exline" style="margin-top:0"><b>場景：</b>帶人、扛責任　·　<b>你說：</b>「蠻耗的」</div>
+      <div class="chips"><span class="chip" style="background:#9c5b3b;color:#fff">被掏空 · 承接</span><span class="chip" style="background:#9c5b3b;color:#fff">喊停</span><span class="chip hi">還順 · 開創</span></div>
+      <div class="exline"><span class="gd">橋接：</span>「你說它蠻耗——細看，被掏空的是<b>承接</b>與<b>喊停</b>：你一直在接、很難喊停。開創還順，那是你撐住這個局的本錢。」</div>
+    </div>
+  </div>
+
+  <!-- 合盤 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">④ 雙人合盤</span><span class="qbadge">0 題（用雙方底色）</span></div>
+    <p class="purpose"><b>用意：</b>不重複測——兩張已測的底色直接比對。同頻比的是「<b>相對形狀</b>」像不像（不是絕對高低），所以結果會有區別，甚至出現「鏡像相反」。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意（你 × 阿明）</div>
+      <div class="ro"><div class="rc"><div class="rn">36%</div><div class="rl">同頻度 · 鏡像相反</div></div><div class="rc"><div class="rn">71%</div><div class="rl">互補度</div></div></div>
+      <div class="exline" style="margin:8px 0 6px"><b>你們這一對：</b><span class="gd">鏡像相反的一對</span>——你強的，正是他弱的；天生互補，但看世界很不一樣。</div>
+      <div class="mapr"><span class="mk">你帶</span><span class="mv"><b>開創、行動</b> — 這幾股你撐著、阿明靠你</span></div>
+      <div class="mapr"><span class="mk">阿明帶</span><span class="mv"><b>承接、沉澱</b> — 這幾股他撐著、你靠他</span></div>
+      <div class="mapr"><span class="mk">都缺</span><span class="mv"><b>喊停</b> — 兩人都少，沒人補＝共同盲點</span></div>
+    </div>
+  </div>
+
+  <!-- 想成為的你 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">⑤ 想成為的你</span><span class="qbadge">24 題（理想視角）</span></div>
+    <p class="purpose"><b>用意：</b>用<b>同一把尺</b>，改以「想成為」的視角再答一次——現況與理想的落差最大處，就是你想長的方向。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意</div>
+      <div class="ebar"><span class="el">喊停</span><span class="track"><span class="fillb" style="width:50%"></span></span><span class="ev">50</span></div>
+      <div class="ebar"><span class="el" style="color:var(--gold)">理想</span><span class="track"><span class="fillb g" style="width:78%"></span></span><span class="ev">78</span></div>
+      <div class="exline" style="margin-top:8px"><span class="gd">落差最大：喊停（50 → 78）</span>——「你想長出更多界線感、更敢喊停、更能守住自己的節奏。」</div>
+    </div>
+  </div>
+
+  <!-- 測一個局 -->
+  <div class="feature">
+    <div class="feathead"><span class="fnm">⑥ 測一個局</span><span class="qbadge">16 題 · 約 2 分鐘</span></div>
+    <p class="purpose"><b>用意：</b>評的是「<b>這個局</b>」需不需要每種能量（不是評你）；再把局的需求疊上你的底色，看適配與耗能。陌生到答不出的局，轉去「問易」用卜的。</p>
+    <div class="example"><div class="exlabel">結果範例 · 示意</div>
+      <div class="exline" style="margin-top:0"><b>局：</b>接下一個跨部門新專案</div>
+      <div class="chips"><span class="chip hi">局最需要 · 拓展</span><span class="chip hi">交流</span><span class="chip hi">承接</span><span class="chip lo">你較少 · 拓展</span></div>
+      <div class="exline"><span class="gd">適配提醒：</span>「這個局很吃<b>拓展</b>，而那正是你較少用的——可預期會耗，先找人借力，或刻意練。」</div>
+    </div>
+  </div>
+
+  <p style="margin-top:22px"><b>延伸（同一引擎的不同套用）：</b><b class="gold">職業能量配對</b>（用你的底色對 28 種職業，看契合與耗能，0 額外題目）、<b class="gold">團隊合盤</b>（多人能量疊起來，看分工與盲點）。</p>
+
+  <p class="note">技術上是純前端、資料只留在使用者裝置、不上傳——尤其涉及個人狀態，預設「你的資料只留在你這裡」。<br>以上分數與人物皆為<b>示意範例</b>，用來呈現結果的長相，非真實個案。</p>
 </section>
 
 <section id="engine">
