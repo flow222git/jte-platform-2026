@@ -1,0 +1,31 @@
+// Firestore 安全規則 — 專案 jointoenjoy (default database)
+// 部署方式：Firebase Console → Firestore Database → 規則 → 貼上 → 發布
+// （此檔僅為版本記錄／備份，非自動部署）
+//
+// 用戶端實際只做兩件事、且未用 Firebase Auth（純 API key REST）：
+//   1. 寫：octenso_feedback —— 新增回饋（只新增，不讀/改/刪）
+//   2. 讀：octenso/allowlist —— 登入閘查白名單
+// 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 回饋：任何人可「新增」一筆，但不可讀/改/刪（保護 email 與分數不外流）
+    match /octenso_feedback/{doc} {
+      allow create: if request.resource.data.size() <= 30;
+      allow read, update, delete: if false;
+    }
+
+    // 白名單：開放讀取（登入閘要查），用戶端不可寫（由擁有者在 Console 維護）
+    match /octenso/allowlist {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 其餘一律禁止
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
