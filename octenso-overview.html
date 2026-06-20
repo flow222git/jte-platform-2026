@@ -1,0 +1,284 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>八態能格 Octenso · 架構・引擎・決策歷程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--card:#faf6ec;--ink:#2a2820;--ink2:#4a463c;--muted:#857c6d;--hair:#d8cdb6;--line:#e3dac6;--gold:#a9823b;--deepgold:#7d5e26;--pine:#3c5a49;--rust:#9c5b3b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:radial-gradient(120% 80% at 50% 0%,#f8f3e7 0%,#f4efe4 55%,#ece3d0 100%);color:var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-weight:300;line-height:1.85;-webkit-font-smoothing:antialiased;padding:0 18px 90px}
+  .wrap{max-width:760px;margin:0 auto}
+  .serif{font-family:"Noto Serif TC",serif}
+  /* hero */
+  header.hero{text-align:center;padding:64px 0 30px}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11.5px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:38px;letter-spacing:.04em;margin-bottom:6px}
+  .h1sub{font-family:"Jost",sans-serif;font-weight:300;font-size:15px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-bottom:20px}
+  .lede{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--ink2);max-width:540px;margin:0 auto;line-height:1.95}
+  .lede b{color:var(--deepgold);font-weight:600}
+  .rule{width:42px;height:1px;background:var(--gold);margin:26px auto;opacity:.6}
+  /* toc */
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:8px 0 44px}
+  nav.toc .tl{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  nav.toc ol{list-style:none;counter-reset:t;columns:2;column-gap:30px}
+  nav.toc li{counter-increment:t;font-size:14px;margin:5px 0;break-inside:avoid}
+  nav.toc li::before{content:counter(t,decimal-leading-zero);font-family:"Jost",sans-serif;color:var(--gold);font-size:11px;margin-right:9px;letter-spacing:.05em}
+  nav.toc a{color:var(--ink2);text-decoration:none;border-bottom:1px solid transparent}
+  nav.toc a:hover{border-bottom-color:var(--hair);color:var(--ink)}
+  /* sections */
+  section{margin:0 0 52px;scroll-margin-top:20px}
+  h2{font-family:"Noto Serif TC",serif;font-weight:600;font-size:25px;letter-spacing:.03em;margin-bottom:6px;padding-top:14px}
+  h2 .n{font-family:"Jost",sans-serif;font-weight:400;font-size:14px;color:var(--gold);letter-spacing:.1em;margin-right:12px;vertical-align:2px}
+  h2+.kicker{color:var(--muted);font-size:14px;margin-bottom:20px;font-style:italic}
+  h3{font-family:"Noto Serif TC",serif;font-weight:600;font-size:18px;margin:26px 0 8px;color:var(--ink)}
+  p{margin:0 0 13px;font-size:15.5px;color:var(--ink2)}
+  p b,li b{color:var(--ink);font-weight:500}
+  .gold{color:var(--deepgold);font-weight:500}
+  ul.clean{list-style:none;margin:4px 0 14px}
+  ul.clean li{position:relative;padding-left:20px;margin:8px 0;font-size:15px;color:var(--ink2)}
+  ul.clean li::before{content:"";position:absolute;left:3px;top:11px;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+  /* eight energies grid */
+  .sysgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  .syscard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .syscard .st{font-family:"Noto Serif TC",serif;font-weight:600;font-size:16px;color:var(--pine)}
+  .syscard .sx{font-size:12px;color:var(--muted);letter-spacing:.1em;margin-bottom:9px}
+  .pair{display:flex;justify-content:space-between;align-items:center;font-size:14.5px;padding:3px 0}
+  .pair .sym{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--gold);margin-right:8px}
+  .pair .nm{font-weight:500;color:var(--ink)}
+  .pair .fn{font-size:12.5px;color:var(--muted)}
+  /* layered engine */
+  .layer{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:14px 18px;margin:11px 0}
+  .layer .lh{font-family:"Noto Serif TC",serif;font-weight:600;font-size:16px;margin-bottom:3px}
+  .layer .lh .tag{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.12em;color:#fff;background:var(--gold);padding:2px 8px;border-radius:99px;margin-left:10px;vertical-align:2px;text-transform:uppercase}
+  .layer p{font-size:14.5px;margin:0}
+  /* decision cards */
+  .dcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:18px 0;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .dcard .dt{font-family:"Noto Serif TC",serif;font-weight:600;font-size:19px;margin-bottom:4px}
+  .dcard .dtag{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:12px}
+  .drow{display:flex;gap:12px;margin:9px 0;font-size:14.5px;line-height:1.8}
+  .drow .lab{flex:none;width:54px;font-family:"Noto Serif TC",serif;font-weight:600;font-size:13.5px;text-align:right;padding-top:1px}
+  .drow.q .lab{color:var(--rust)} .drow.i .lab{color:var(--gold)} .drow.d .lab{color:var(--pine)} .drow.r .lab{color:var(--muted)}
+  .drow .txt{color:var(--ink2)} .drow .txt b{color:var(--ink);font-weight:600}
+  /* callout */
+  .callout{background:linear-gradient(180deg,#f6efdf,#f3ecdb);border:1px solid var(--hair);border-radius:14px;padding:22px 26px;margin:22px 0;text-align:center}
+  .callout .q{font-family:"Noto Serif TC",serif;font-size:19px;font-weight:600;color:var(--deepgold);line-height:1.7}
+  .callout .a{font-size:14px;color:var(--muted);margin-top:6px}
+  .note{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px;line-height:1.75}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:60px;padding-top:24px;border-top:1px solid var(--line);line-height:1.9}
+  footer .ens{font-family:"Noto Serif TC",serif;font-size:26px;color:var(--gold);display:block;margin-bottom:8px}
+  @media(max-width:560px){nav.toc ol{columns:1}.sysgrid{grid-template-columns:1fr}h1{font-size:31px}.drow .lab{width:48px}}
+</style></head>
+<body><div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Octenso · 八態能格</div>
+  <h1>看見你的能量，選擇你的流動</h1>
+  <div class="h1sub">See your energy · Shape your flow</div>
+  <p class="lede">把《易經》八卦，重新詮釋成<b>八種內在能量</b>的自我認識系統。<br>
+  它是一面<b>鏡子</b>——照見此刻的你；<br>不是算命，不預測命運。</p>
+  <div class="rule"></div>
+  <p class="lede" style="font-size:14.5px;color:var(--muted)">本頁整理八態能格的<b>系統架構、引擎邏輯，與一路走來的重要設計決策</b>——<br>特別是那些「為了不流於似是而非」而做的取捨。</p>
+</header>
+
+<nav class="toc">
+  <div class="tl">目錄</div>
+  <ol>
+    <li><a href="#what">這是什麼：定位與立場</a></li>
+    <li><a href="#arch">系統架構與功能</a></li>
+    <li><a href="#engine">引擎：分層解讀</a></li>
+    <li><a href="#theory">學理基礎與「憲法」</a></li>
+    <li><a href="#journey">重要決策歷程</a></li>
+    <li><a href="#bridge">正在探索：與問易搭橋</a></li>
+    <li><a href="#stance">立場與誠實</a></li>
+  </ol>
+</nav>
+
+<section id="what">
+  <h2><span class="n">01</span>這是什麼：定位與立場</h2>
+  <div class="kicker">先把話講清楚，後面所有設計都從這裡長出來。</div>
+  <p>八態能格（Octenso）把易經八卦，當成描述<b>內在能量</b>的一套語言。每個人在八種能量上有不同的高低與分寸，連起來就是一個獨特的「能量圓」——這也是名稱的由來：<span class="gold">Oct（八）＋ ensō（円相・禪圓）</span>。</p>
+  <p>它刻意站在一個位置上：</p>
+  <ul class="clean">
+    <li><b>是鏡子，不是算命。</b>照見當下、辨識下一步，而不是預測吉凶或命定。</li>
+    <li><b>是量測，不是貼標籤。</b>給的是一張立體剖面（你慣用哪些、哪些還沒長開），不是把人收進固定的盒子。</li>
+    <li><b>會流動，不是定型。</b>能量隨時、位、境而變——所以同一個人，不同場景會有不同的樣子。</li>
+  </ul>
+  <p>這個立場是「北極星」：每一個功能、每一句文案、每一次取捨，都要對得上它。後面你會看到，很多決策其實就是在守這條線。</p>
+</section>
+
+<section id="arch">
+  <h2><span class="n">02</span>系統架構與功能</h2>
+  <div class="kicker">一個引擎，長出多個應用。</div>
+  <p>核心是<b>八種能量</b>，兩兩相對，組成<b>四個生命系統</b>（取自《說卦傳》「天地定位、山澤通氣、雷風相薄、水火不相射」的先天對待）：</p>
+
+  <div class="sysgrid">
+    <div class="syscard"><div class="st">建構系統</div><div class="sx">天地定位 · 乾坤</div>
+      <div class="pair"><span><span class="sym">☰</span><span class="nm">開創</span></span><span class="fn">立定方向、開局</span></div>
+      <div class="pair"><span><span class="sym">☷</span><span class="nm">承接</span></span><span class="fn">承載、滋養、收成</span></div></div>
+    <div class="syscard"><div class="st">推動系統</div><div class="sx">雷風相薄 · 震巽</div>
+      <div class="pair"><span><span class="sym">☳</span><span class="nm">行動</span></span><span class="fn">啟動、突破</span></div>
+      <div class="pair"><span><span class="sym">☴</span><span class="nm">拓展</span></span><span class="fn">連結、觸及、滲透</span></div></div>
+    <div class="syscard"><div class="st">認知系統</div><div class="sx">水火不相射 · 坎離</div>
+      <div class="pair"><span><span class="sym">☵</span><span class="nm">沉澱</span></span><span class="fn">沉著、蓄藏、恢復</span></div>
+      <div class="pair"><span><span class="sym">☲</span><span class="nm">展現</span></span><span class="fn">看清、顯現、表達</span></div></div>
+    <div class="syscard"><div class="st">調節系統</div><div class="sx">山澤通氣 · 艮兌</div>
+      <div class="pair"><span><span class="sym">☶</span><span class="nm">喊停</span></span><span class="fn">界線、定位、節制</span></div>
+      <div class="pair"><span><span class="sym">☱</span><span class="nm">交流</span></span><span class="fn">表達、人際、互通</span></div></div>
+  </div>
+
+  <p>同一套八能量語言，可以描述<b>任何東西</b>、量任兩者之間的契合與消耗。於是長出這些應用：</p>
+  <ul class="clean">
+    <li><b>底色測驗</b>——測出你八種能量的相對高低，得到專屬的「能量圓」與立體側寫。</li>
+    <li><b>能格調校</b>——同一股能量，用太少／剛好／太過？看出你在哪裡過猶不及。</li>
+    <li><b>場景耗能</b>——從「最耗你的場景」切入，看那個處境正在掏空你哪些能量。</li>
+    <li><b>雙人合盤</b>——兩個人的能量怎麼互動：同頻、互補、誰帶誰靠、哪裡一起缺。</li>
+    <li><b>想成為的你</b>——理想與現況的能量落差，指出可以長的方向。</li>
+    <li>另有團隊、職業配對等延伸，皆是同一引擎的不同套用。</li>
+  </ul>
+  <p class="note">技術上是純前端、資料只留在使用者裝置、不上傳——尤其涉及個人狀態，預設「你的資料只留在你這裡」。</p>
+</section>
+
+<section id="engine">
+  <h2><span class="n">03</span>引擎：分層解讀</h2>
+  <div class="kicker">不只報一個「最高的卦」，而是讀出整張剖面。</div>
+  <p>引擎拿到八個分數後，不是簡單地「挑最高那一個貼標籤」，而是分好幾層讀——每一層回答一個不同的問題：</p>
+
+  <div class="layer"><div class="lh">整體水平 <span class="tag">絕對</span></div><p>八種能量的平均高低——你整體是高能量、還是偏低？這層用<b>絕對分數</b>。</p></div>
+  <div class="layer"><div class="lh">相對形狀 <span class="tag">相對／鋒利度</span></div><p>每股能量相對「你自己的平均」偏高還偏低——這才是你的<b>形狀</b>。即使整體都偏高，也能指出「相對之中最鮮明的是哪幾股」。</p></div>
+  <div class="layer"><div class="lh">四個系統 <span class="tag">學理</span></div><p>四對能量各自怎麼運作——是並重、偏一邊、雙低、還是各有分寸。依先天對待的卦德分別解讀（見下節）。</p></div>
+  <div class="layer"><div class="lh">主旋律與資源／缺口</div><p>你的主導能量（可能不只一個）、拿手的資源、以及較少用的缺口。</p></div>
+  <div class="layer"><div class="lh">能格：過用／適中／不足 <span class="tag">調音台</span></div><p>借爻位「潛・中・亢」的概念：同一股能量，<b>用太少會睡著、用太過會刺眼</b>。這層是「能量八態，過猶不及」的落點，也是一般性格分類沒有的維度。</p></div>
+
+  <p style="margin-top:18px">關鍵設計：<b>絕對管「水平」、相對管「形狀」，各司其職</b>。這個分工，是後面「鋒利化」決策的核心。</p>
+</section>
+
+<section id="theory">
+  <h2><span class="n">04</span>學理基礎與「憲法」</h2>
+  <div class="kicker">為了不讓現代詮釋滑成似是而非，我們替模型立了一部「憲法」。</div>
+  <p>把八卦做成現代語彙，最大的風險是——<b>聽起來很對、其實沒有根據</b>。為了守住這條線，我們明訂了一份<span class="gold">模型校準規範（「學理憲法」）</span>，採<b>雙層架構</b>：</p>
+  <ul class="clean">
+    <li><b>引擎／資料層：學理要完整</b>——卦德、五行取象、先天對待、爻位（潛・中・亢），在底層都要對得上。</li>
+    <li><b>表層語言：溫和的能量語彙 ＋ 學理註腳 ＋ 誠實標明</b>——對使用者講白話的「能量」，但隨時可展開背後的取象，並明白標示這是「取象詮釋，不是卦爻吉凶的占斷」。</li>
+  </ul>
+  <p>考究過程中也誠實記下了幾個要小心的點，而非含糊帶過：</p>
+  <ul class="clean">
+    <li>五行配屬大致對得上；多數能量與卦德也穩。</li>
+    <li><b>坎</b>是最大的破口——卦德本義偏「險陷」，我們表層其實取的是「水德／沉澱恢復」，這一點必須標明，不能假裝兩者相同。</li>
+    <li>「連結」一詞在兌、巽上重疊，已拆開：<b>巽＝向外觸及滲透、兌＝人際互通</b>。</li>
+  </ul>
+  <p>原則很簡單：<b>日後所有解讀文案，都要能回溯、對得上這份憲法。</b>對不上的，就是似是而非，要改。</p>
+</section>
+
+<section id="journey">
+  <h2><span class="n">05</span>重要決策歷程</h2>
+  <div class="kicker">這一節是重點：每個決定，都是一次「問題 → 洞察 → 取捨」。</div>
+
+  <div class="dcard"><div class="dtag">模型本位</div><div class="dt">一、把「五行」整個移除</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">原本八卦之外還疊了五行。但 <b>8 卦對 5 行是有損對應</b>，又容易先天／後天混用、彼此打架；而且五行那一層<b>最有「算命」味</b>，正好牴觸「鏡子非算命」。</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">系統的力量在八卦本身就夠了；五行是包袱，不是資產。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">產品與引擎<b>全面移除五行</b>，回到八卦本位。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">模型更乾淨、更誠實，也更好向外（含外語）說明。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">術語正名</div><div class="dt">二、「四象」正名為「四對」</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">原本把四組對待叫「四象」——但「四象」在經典裡另有所指（兩儀生四象），會誤撞術語。</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">本系統的四組，其實是《說卦傳》「天地定位…」的<b>先天對待（錯卦）</b>，不是四象。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">正名為<b>「四對／四對待」</b>。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">術語不再誤用，學理對位精準。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">白話化</div><div class="dt">三、八種能量「功能名」現代化</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">舊命名綁著五行字（如「乾金」），既綁包袱、也不利白話與翻譯。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">改成一眼就懂的功能名：<b>開創・承接・行動・拓展・展現・沉澱・喊停・交流</b>。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">沒有易學背景的人也能進來，且利於 EN／JP。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">學理校準</div><div class="dt">四、四軸校準——破除「兩高就是張力」</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">舊版把任何一對「兩邊都高」都寫成<b>「張力」</b>。聽起來合理，其實是似是而非。</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">依《說卦傳》先天對待，四對的「德」不同：<b>只有「雷風相薄」是相薄（張力）</b>；天地定位＝完整格局、水火不相射＝既深又亮相成、山澤通氣＝進退有節。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">四對<b>各依其德分流</b>解讀（兩高／偏左／偏右／兩低／中性），不再一律套張力。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">解讀終於符合學理；「中性」也被正名為「彈性」而非沒特色。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">鋒利化 · 個人</div><div class="dt">五、量測「鋒利化」——破解人人都像</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">多數人分數普遍偏高，於是<b>「每個人都多峰高原、每句話都像我」</b>——像罐頭，看不出形狀。</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt"><b>絕對分數管「水平」，相對自己的偏離管「形狀」。</b>把每股能量減掉「你自己的平均」，才看得出真正鮮明的峰與谷。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">主旋律／資源／缺口改用<b>相對偏離</b>判定；水平、能格、場景仍用絕對分。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">即使整體都高的人，也能被點出「相對之中，最鮮明的是行動與開創」——形狀跳出來了。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">鋒利化 · 合盤</div><div class="dt">六、合盤也鋒利化——同頻不再人人虛高</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">合盤的「同頻度」幾乎人人都很高、看了沒感覺——因為大家分數都偏高，照原本算法自然都接近滿分。（同一個病的合盤版。）</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">同頻應該比的是<b>「相對形狀」像不像</b>，不是絕對高低。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">同頻改成「去基線後的相關」（只比形狀）；並新增<b>「能量分工地圖」</b>：逐能量看誰帶、誰靠、都強、都缺。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">結果終於有區別，甚至會出現<b>「鏡像相反」</b>（你強的正是他弱的）；也看得懂兩人怎麼分工。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">維度創新</div><div class="dt">七、加上「能格」——過用／適中／不足</div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">光知道一股能量「高或低」不夠；真正貼近生活的是<b>「用得剛不剛好」</b>——借爻位的潛・中・亢。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">加入能格層：同一股能量分<b>過用（亢）／適中（中正）／不足（潛）</b>，並給「怎麼調」。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">這是一般性格分類沒有的「調音台」，也讓「過猶不及」真正落地。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">情境分離</div><div class="dt">八、從「場域」走到「場景耗能」＋ 先分清底色</div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">人在不同處境會用出不同能量——而且「角色要求你做的樣子」不等於「你放鬆時的本色」。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">測底色前先放一張「<b>先停一下</b>」卡，分清底色（天生）與情境（被要求）；情境改由「<b>從最耗你的場景切入</b>」＋主觀強度＋中性提問來承接。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">底色更純，且能看出某個處境正在掏空你哪幾股能量。</span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">紅線</div><div class="dt">九、釐清「四軸 ≠ MBTI」</div>
+    <div class="drow q"><span class="lab">問題</span><span class="txt">表面上也是四條雙極軸，很容易被收成「16 型」。</span></div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">骨子不同，三條紅線：①<b>兩極並存</b>（陰陽互根，不是二選一）②有<b>能格校準</b>（過用／不足，分類沒有）③<b>隨時位境變</b>（易＝變，不定型）。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">不收成固定型。一句話定調：<b>「MBTI 給盒子；八態給鏡子＋調音台。」</b></span></div>
+  </div>
+
+  <div class="dcard"><div class="dtag">紀律</div><div class="dt">十、立「學理憲法」＋回饋迴路</div>
+    <div class="drow i"><span class="lab">洞察</span><span class="txt">要長期不滑向似是而非，光靠自律不夠，要有制度與校準資料。</span></div>
+    <div class="drow d"><span class="lab">決定</span><span class="txt">① 立<b>學理憲法</b>當單一真相源（見第 4 節）；② 在報告末問一句「<b>這份側寫，像你嗎？</b>」匿名回收，讓真實反應回頭餵養引擎。</span></div>
+    <div class="drow r"><span class="lab">結果</span><span class="txt">「練出優質引擎」有了根據——靠共鳴與回饋打磨，而不是假裝科學預測。</span></div>
+  </div>
+</section>
+
+<section id="bridge">
+  <h2><span class="n">06</span>正在探索：與「問易」搭橋</h2>
+  <div class="kicker">同一個平台另有「問易」（易經 64 卦）。兩者怎麼各司其職、又互相成全？</div>
+  <p>我們正在想一件有意思的事。八態能格與問易，看似都用易經，其實層級不同：</p>
+  <ul class="clean">
+    <li><b>八態能格＝八卦（底層能量）</b>：量的是「你是誰、慣用哪些能量」——相對穩定的本色。</li>
+    <li><b>問易＝64 卦（內外整體）</b>：一個卦＝內卦×外卦×爻位，天生就是「內、外、時」兼具的<b>處境快照</b>——讀的是「這件事此刻怎麼了、下一步」。</li>
+  </ul>
+  <p>關鍵的釐清是：<b>不要把底色硬塞進卦裡當內卦</b>。否則一個人一輩子只會出現八個卦，涵蓋不了全 64——不合理。而且嚴格說，卦的內外卦都是「這件事」的兩面，人本來就是站在卦外面問的那一方。</p>
+  <div class="callout">
+    <div class="q">問易告訴你「這是什麼局」，<br>八態告訴你「你可以怎麼接」。</div>
+    <div class="a">——這正是「課題分離」：局你選不了，但你怎麼接是你的。</div>
+  </div>
+  <p>於是橋這樣搭：問易自由產生 64 卦中的任一個（含所在爻位、時與進退）＝<b>情境的完整描述</b>；八態能格的底色與能格，則疊上去當「<b>這個卦對你而言怎麼接</b>」的濾鏡——卦召喚的能量正是你拿手的？還是考你的弱項？你習慣用過頭的，這個卦剛好要你收？</p>
+  <p>同一個卦，不同的人，因為底色與能格不同，會解出貼著本人的建議。據我們所知，把「<b>一張量測的、非命定的能量盤</b>」去接「自由的全 64 卦」、再以課題分離為框架——這個合成是新的。<b>正因為新，更要求每一格都從卦義講得出道理，不能憑感覺。</b></p>
+  <p class="note">此節為進行中的設計探索，尚未實作；放在這裡，是想請老師一起斟酌它的學理分寸。</p>
+</section>
+
+<section id="stance">
+  <h2><span class="n">07</span>立場與誠實</h2>
+  <div class="kicker">最後，把分寸講明白。</div>
+  <ul class="clean">
+    <li><b>它能做什麼</b>：當一面細緻的鏡子，幫人反思、覺察、對話——在「自我理解」與「關係理解」上最有價值。</li>
+    <li><b>它不做什麼</b>：不預測、不算命、不下吉凶斷語，也不取代專業心理或醫療協助。</li>
+    <li><b>「準」的意思</b>：是共鳴，不是實證——所以「鏡子，不是算命」既是定位，也是誠實的保護傘。</li>
+    <li><b>核心功課</b>：持續打磨「優質引擎」——文案校稿、學理校準、回饋迴路，一輪一輪把它養細。</li>
+  </ul>
+  <div class="callout" style="margin-top:24px">
+    <div class="q">能量八態，過猶不及。</div>
+    <div class="a">語出《論語》，呼應能格的過用與不足，亦與易理同源——當作測完之後的那句洞察。</div>
+  </div>
+</section>
+
+<footer>
+  <span class="ens serif">◯</span>
+  八態能格 Octenso · 練息場 Join to Enjoy<br>
+  本頁為內部呈現整理 · 鏡子非算命 · 資料只留在你的裝置
+</footer>
+
+</div></body></html>
