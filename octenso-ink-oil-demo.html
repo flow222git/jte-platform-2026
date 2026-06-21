@@ -1,0 +1,99 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 水墨 vs 油畫</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#21201b;color:#e8dcc0;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;padding:30px 16px 60px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#9c9078;text-transform:uppercase;margin-bottom:6px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:22px;margin-bottom:2px}
+  .sub{font-size:12.5px;color:#9c9078;margin-bottom:24px}
+  .row{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .panel{width:min(330px,90vw)}
+  .panel .pt{font-family:"Noto Serif TC",serif;font-size:15px;margin-bottom:8px;text-align:center;color:#caa86a}
+  .sheet{position:relative;border-radius:6px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,.4)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .seal{position:absolute;right:14px;top:14px;width:26px;height:26px;border-radius:4px;background:rgba(176,58,46,.88);z-index:3;
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:13px;font-weight:600}
+  .cap{position:absolute;left:0;right:0;bottom:14px;text-align:center;z-index:3}
+  .cap .t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;letter-spacing:.12em}
+  .ink .cap .t{color:#3a352c;text-shadow:0 1px 7px rgba(245,239,221,.8)}
+  .oil .cap .t{color:#f6efdd;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#e8dcc0;border:1px solid rgba(232,220,192,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:24px}
+  button:hover{border-color:#e8dcc0}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記</div>
+<h1 id="title">行動沉澱者</h1>
+<div class="sub">同一個人 · 兩種媒材</div>
+<div class="row">
+  <div class="panel"><div class="pt">水墨 · 分明留白</div><div class="sheet ink"><svg id="ink" viewBox="0 0 330 410"></svg><div class="seal">印</div><div class="cap"><div class="t" id="tink"></div></div></div></div>
+  <div class="panel"><div class="pt">油畫 · 厚塗筆觸</div><div class="sheet oil"><svg id="oil" viewBox="0 0 330 410"></svg><div class="seal">印</div><div class="cap"><div class="t" id="toil"></div></div></div></div>
+</div>
+<button id="next">換一個人 →</button>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=330, H=410, CX=165, CY=205;
+var EN=[{n:'開創',c:'#c9a35a'},{n:'明現',c:'#c2532f'},{n:'行動',c:'#3f9c62'},{n:'交流',c:'#c06f7e'},
+        {n:'承接',c:'#9c7a44'},{n:'沉澱',c:'#395f86'},{n:'喊停',c:'#8a8273'},{n:'拓展',c:'#4ea69a'}];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,82,66,72,50,44,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hex(c,d){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=function(v){return d>0?v+(255-v)*d:v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');}
+function clr(svg){while(svg.firstChild)svg.removeChild(svg.firstChild);}
+
+// 水墨 · 分明留白：blur 小、彩度足、弱者留白；落色點靠外圍、計白當黑
+function drawInk(P){
+  var svg=document.getElementById('ink'); clr(svg);
+  var defs=el(svg,'defs',{});
+  var fb=el(defs,'filter',{id:'iw',x:'-40%',y:'-40%',width:'180%',height:'180%'}); el(fb,'feGaussianBlur',{stdDeviation:13});
+  EN.forEach(function(e,i){ var rg=el(defs,'radialGradient',{id:'iw'+i});
+    el(rg,'stop',{offset:'0%','stop-color':e.c,'stop-opacity':1});
+    el(rg,'stop',{offset:'42%','stop-color':e.c,'stop-opacity':0.62});
+    el(rg,'stop',{offset:'78%','stop-color':e.c,'stop-opacity':0}); });
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#f4eed9'});
+  var g=el(svg,'g',{filter:'url(#iw)'});
+  var NGo={over:.95,mid:.6,under:.16}, NGr={over:1.2,mid:.92,under:.5};
+  EN.forEach(function(e,i){ var a=ang(i), push=70+P.sc[i]/100*60;
+    var cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.18;
+    var r=(36+P.sc[i]/100*70)*NGr[P.ng[i]];
+    el(g,'circle',{cx:cx,cy:cy,r:r,fill:'url(#iw'+i+')',opacity:NGo[P.ng[i]]}); });
+  document.getElementById('tink').textContent=P.t;
+}
+// 油畫 · 厚塗：許多不透明短筆觸，色域分明、有 canvas 底；過用更艷更多、不足少而暗
+function drawOil(P){
+  var svg=document.getElementById('oil'); clr(svg);
+  var defs=el(svg,'defs',{});
+  var cv=el(defs,'filter',{id:'cv'}); el(cv,'feTurbulence',{type:'fractalNoise',baseFrequency:'0.5',numOctaves:'2',result:'n'});
+  el(cv,'feColorMatrix',{'in':'n',type:'matrix',values:'0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'});
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#bdb191'}); // 畫布底色
+  var rnd=(function(){var s=P.sc[0]*131+P.sc[3]*977+7;return function(){s=(s*9301+49297)%233280;return s/233280;};})();
+  EN.forEach(function(e,i){ var a=ang(i), push=44+P.sc[i]/100*66;
+    var cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.12, ng=P.ng[i];
+    var cnt=Math.round(P.sc[i]/100*46*(ng==='over'?1.35:ng==='under'?.45:1));
+    var spread=22+P.sc[i]/100*40;
+    for(var s=0;s<cnt;s++){
+      var rr=Math.sqrt(rnd())*spread, ra=rnd()*6.283, px=cx+Math.cos(ra)*rr, py=cy+Math.sin(ra)*rr*1.12;
+      var dir=a+1.5708+(rnd()-.5)*1.0, len=11+rnd()*16, w=4.5+rnd()*4;
+      var lj=(rnd()-.5)*0.34, col=hex(e.c, ng==='under'?(lj-0.28):(lj+(ng==='over'?0.12:0)));
+      el(svg,'line',{x1:px-Math.cos(dir)*len/2,y1:py-Math.sin(dir)*len/2,x2:px+Math.cos(dir)*len/2,y2:py+Math.sin(dir)*len/2,
+        stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:ng==='under'?.72:.96}); }
+  });
+  el(svg,'rect',{x:0,y:0,width:W,height:H,filter:'url(#cv)',opacity:.45}); // 畫布紋
+  document.getElementById('toil').textContent=P.t;
+}
+var idx=0;
+function show(i){ var P=PEOPLE[i]; document.getElementById('title').textContent=P.t; drawInk(P); drawOil(P); }
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; show(idx); };
+show(0);
+</script>
+</body></html>
