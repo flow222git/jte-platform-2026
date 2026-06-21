@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 水墨全幅</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#21201b;color:#e8dcc0;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 16px 60px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#9c9078;text-transform:uppercase;margin-bottom:10px}
+  .sheet{position:relative;width:min(440px,94vw);border-radius:6px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.45)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .cap{position:absolute;left:0;right:0;bottom:20px;text-align:center;z-index:3;pointer-events:none}
+  .cap .t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:21px;color:#3a352c;letter-spacing:.14em;
+    text-shadow:0 1px 8px rgba(245,239,221,.7)}
+  .cap .s{font-size:11.5px;color:#5a5142;letter-spacing:.22em;margin-top:3px;text-shadow:0 1px 6px rgba(245,239,221,.8)}
+  .seal{position:absolute;right:18px;top:18px;width:30px;height:30px;border-radius:5px;background:rgba(176,58,46,.85);z-index:3;
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:15px;font-weight:600}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#e8dcc0;border:1px solid rgba(232,220,192,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:20px}
+  button:hover{border-color:#e8dcc0}
+  .note{font-size:12px;color:#857c6d;margin-top:14px;max-width:420px;text-align:center;line-height:1.8}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記 · 水墨全幅</div>
+<div class="sheet">
+  <svg id="ink" viewBox="0 0 440 560"></svg>
+  <div class="seal">印</div>
+  <div class="cap"><div class="t" id="title">行動沉澱者</div><div class="s">此刻的你</div></div>
+</div>
+<button id="next">換一個人 →</button>
+<div class="note">八色推到外圍、暈染交融、畫滿整張宣紙——強的飽滿、弱的留白。<br>顏色＝八卦、墨團大小＝分數、濃淡＝能格。</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=440, H=560, CX=220, CY=270;
+var EN=[{n:'開創',c:'#c9a35a'},{n:'明現',c:'#c75a3f'},{n:'行動',c:'#4e9e6b'},{n:'交流',c:'#c77a86'},
+        {n:'承接',c:'#9c7a4a'},{n:'沉澱',c:'#3f6385'},{n:'喊停',c:'#8a8273'},{n:'拓展',c:'#5fa8a0'}];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,82,66,72,50,46,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+var NGo={over:.95,mid:.62,under:.28}, NGr={over:1.28,mid:1,under:.62};
+
+var svg=document.getElementById('ink');
+// defs：紙紋、暈墨模糊、八色漸層
+var defs=el(svg,'defs',{});
+var fb=el(defs,'filter',{id:'wash',x:'-50%',y:'-50%',width:'200%',height:'200%'}); el(fb,'feGaussianBlur',{stdDeviation:34});
+var gr=el(defs,'filter',{id:'paper'});
+el(gr,'feTurbulence',{type:'fractalNoise',baseFrequency:'0.85',numOctaves:'2',result:'n'});
+el(gr,'feColorMatrix',{'in':'n',type:'matrix',values:'0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'});
+EN.forEach(function(e,i){ var rg=el(defs,'radialGradient',{id:'wg'+i});
+  el(rg,'stop',{offset:'0%','stop-color':e.c,'stop-opacity':1});
+  el(rg,'stop',{offset:'65%','stop-color':e.c,'stop-opacity':0.35});
+  el(rg,'stop',{offset:'100%','stop-color':e.c,'stop-opacity':0}); });
+var washG=el(svg,'g',{filter:'url(#wash)'});
+
+function render(P){
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#f3ecd7'}); // 宣紙底（先鋪，render 時重畫）
+  while(washG.firstChild) washG.removeChild(washG.firstChild);
+  EN.forEach(function(e,i){ var a=ang(i), push=58+P.sc[i]/100*86;
+    var cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16; // 直幅拉長
+    var r=(120+P.sc[i]/100*120)*NGr[P.ng[i]];
+    el(washG,'circle',{cx:cx,cy:cy,r:r,fill:'url(#wg'+i+')',opacity:NGo[P.ng[i]]});
+  });
+  el(svg,'rect',{x:0,y:0,width:W,height:H,filter:'url(#paper)',opacity:.5}); // 紙紋疊上
+}
+// 重畫時清掉舊的底/紋 rect（保留 defs + washG）
+function draw(P){
+  [].slice.call(svg.querySelectorAll('rect')).forEach(function(n){n.remove();});
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#f3ecd7'});
+  svg.insertBefore(svg.querySelector('rect'), washG); // 底 rect 放 washG 之前
+  while(washG.firstChild) washG.removeChild(washG.firstChild);
+  EN.forEach(function(e,i){ var a=ang(i), push=58+P.sc[i]/100*86;
+    var cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16;
+    var r=(120+P.sc[i]/100*120)*NGr[P.ng[i]];
+    el(washG,'circle',{cx:cx,cy:cy,r:r,fill:'url(#wg'+i+')',opacity:NGo[P.ng[i]]});
+  });
+  el(svg,'rect',{x:0,y:0,width:W,height:H,filter:'url(#paper)',opacity:.5});
+}
+var idx=0;
+function show(i){ var P=PEOPLE[i]; document.getElementById('title').textContent=P.t; draw(P); }
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; show(idx); };
+show(0);
+</script>
+</body></html>
