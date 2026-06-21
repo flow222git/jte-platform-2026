@@ -1,0 +1,93 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>進場施測語 demo · 八態能格</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@400;500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--ink:#2a2820;--ink2:#4a463c;--muted:#857c6d;--line:#e3dac6;--hair:#d8cdb6;--gold:#a9823b;--deepgold:#7d5e26;--pine:#3c5a49}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(120% 85% at 50% 12%,#f8f3e7,#f4efe4 55%,#ece3d0);color:var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:34px 20px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--gold);text-transform:uppercase;margin-bottom:30px}
+  .stage{width:100%;max-width:440px;text-align:center}
+  .card{display:none;animation:fade .6s ease}
+  .card.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .motif{height:96px;display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+  .ct{font-family:"Noto Serif TC",serif;font-weight:600;font-size:22px;line-height:1.7;letter-spacing:.03em;color:var(--ink)}
+  .cs{font-size:15px;color:var(--ink2);line-height:1.95;margin-top:14px;max-width:360px;margin-left:auto;margin-right:auto}
+  .cs b{color:var(--deepgold);font-weight:600}
+  .kicker{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}
+  .dots{display:flex;gap:8px;justify-content:center;margin:34px 0 22px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--hair);transition:.3s}
+  .dots i.on{background:var(--gold);width:20px;border-radius:4px}
+  .nav{display:flex;align-items:center;justify-content:center;gap:18px}
+  .next{font-family:"Noto Serif TC",serif;font-size:15px;letter-spacing:.08em;color:var(--paper);background:var(--ink);border:none;
+    border-radius:999px;padding:11px 30px;cursor:pointer;transition:.2s}
+  .next:hover{background:#000}
+  .next.go{background:var(--gold)} .next.go:hover{background:var(--deepgold)}
+  .back{font-family:"Jost",sans-serif;font-size:12px;letter-spacing:.1em;color:var(--muted);background:none;border:none;cursor:pointer;opacity:.7}
+  .back:hover{opacity:1}.back.hide{visibility:hidden}
+  svg{display:block}
+  .breathe{transform-origin:center;animation:br 3.4s ease-in-out infinite}
+  @keyframes br{0%,100%{transform:scale(.82);opacity:.55}50%{transform:scale(1);opacity:1}}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 八態能格</div>
+<div class="stage">
+
+  <div class="card on" data-k="安定">
+    <div class="motif"><svg width="90" height="90" viewBox="0 0 90 90"><g class="breathe"><circle cx="45" cy="45" r="14" fill="none" stroke="#a9823b" stroke-width="1.4"/><circle cx="45" cy="45" r="26" fill="none" stroke="#a9823b" stroke-width="1" opacity=".5"/><circle cx="45" cy="45" r="38" fill="none" stroke="#a9823b" stroke-width="1" opacity=".25"/></g></svg></div>
+    <div class="kicker">安定</div>
+    <div class="ct">先停一下，<br>深呼吸。</div>
+    <div class="cs">這不是考試——<br>沒有好答案，也沒有人在打分數。</div>
+  </div>
+
+  <div class="card" data-k="站位">
+    <div class="motif"><svg width="100" height="90" viewBox="0 0 100 90"><circle cx="50" cy="45" r="30" fill="none" stroke="#a9823b" stroke-width="1.6" stroke-dasharray="160 26" stroke-linecap="round" transform="rotate(20 50 45)"/><circle cx="50" cy="45" r="4" fill="#a9823b"/></svg></div>
+    <div class="kicker">這是在看誰</div>
+    <div class="ct">是你最放鬆時<br>自然的樣子。</div>
+    <div class="cs">沒人要求你的時候，你會怎麼反應——<br>不是你<b>想成為</b>的樣子，也不是工作、家庭要你<b>扮</b>的角色。</div>
+  </div>
+
+  <div class="card" data-k="怎麼答">
+    <div class="motif"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="6" fill="#a9823b"/><g stroke="#a9823b" stroke-width="1.4" stroke-linecap="round" opacity=".7"><line x1="45" y1="22" x2="45" y2="12"/><line x1="45" y1="68" x2="45" y2="78"/><line x1="22" y1="45" x2="12" y2="45"/><line x1="68" y1="45" x2="78" y2="45"/><line x1="29" y1="29" x2="22" y2="22"/><line x1="61" y1="61" x2="68" y2="68"/><line x1="61" y1="29" x2="68" y2="22"/><line x1="29" y1="61" x2="22" y2="68"/></g></svg></div>
+    <div class="kicker">怎麼答</div>
+    <div class="ct">憑第一個<br>冒出來的直覺。</div>
+    <div class="cs">別想太多——<br>直覺，往往比想出來的答案<br><b>更接近真正的你</b>。</div>
+  </div>
+
+  <div class="card" data-k="為什麼">
+    <div class="motif"><svg width="96" height="96" viewBox="0 0 96 96"><g id="ring8"></g></svg></div>
+    <div class="kicker">我們要做的事</div>
+    <div class="ct">把你平常沒留意的<br>能量習慣——</div>
+    <div class="cs">從心底，<b>搬到眼前</b>。<br>讓你看見自己。</div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+  <div class="nav">
+    <button class="back hide" id="back">← 上一步</button>
+    <button class="next" id="next">下一步</button>
+  </div>
+</div>
+
+<script>
+// ring of 8 dots (card 4 motif)
+var r8=document.getElementById('ring8'),NS='http://www.w3.org/2000/svg';
+for(var i=0;i<8;i++){var a=(-90+i*45)*Math.PI/180,x=48+Math.cos(a)*34,y=48+Math.sin(a)*34;
+  var c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',3.4);
+  c.setAttribute('fill','#a9823b');c.setAttribute('opacity',0.35+0.08*i);r8.appendChild(c);}
+var cards=[].slice.call(document.querySelectorAll('.card')),n=cards.length,idx=0;
+var dots=document.getElementById('dots');cards.forEach(function(_,i){var d=document.createElement('i');if(!i)d.className='on';dots.appendChild(d);});
+var di=dots.children, next=document.getElementById('next'), back=document.getElementById('back');
+function show(i){ cards[idx].classList.remove('on'); idx=i; cards[idx].classList.add('on');
+  for(var j=0;j<n;j++)di[j].className=(j===idx?'on':'');
+  back.className='back'+(idx===0?' hide':'');
+  if(idx===n-1){ next.textContent='開始測驗 →'; next.className='next go'; } else { next.textContent='下一步'; next.className='next'; }
+}
+next.onclick=function(){ if(idx<n-1) show(idx+1); else { next.textContent='（demo：這裡接測驗）'; next.disabled=true; next.style.opacity=.6; } };
+back.onclick=function(){ if(idx>0) show(idx-1); };
+</script>
+</body></html>
