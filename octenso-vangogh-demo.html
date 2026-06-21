@@ -1,0 +1,84 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 梵谷漩渦</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#23211c;color:#e8dcc0;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#9c9078;text-transform:uppercase;margin-bottom:4px}
+  .ref{font-size:11px;color:#8a8170;margin-bottom:12px;letter-spacing:.05em}
+  .sheet{position:relative;width:min(420px,94vw);border-radius:4px;overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,.55)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .seal{position:absolute;right:16px;top:16px;width:30px;height:30px;border-radius:5px;background:rgba(190,60,46,.92);z-index:3;
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:15px;font-weight:600}
+  .cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;z-index:3;pointer-events:none}
+  .cap .t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:20px;color:#f4ecd8;letter-spacing:.16em;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#e8dcc0;border:1px solid rgba(232,220,192,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:20px}
+  button:hover{border-color:#e8dcc0}
+  .note{font-size:12px;color:#857c6d;margin-top:14px;max-width:420px;text-align:center;line-height:1.8}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記</div>
+<div class="ref">路 3 · 梵谷漩渦（流動厚塗）</div>
+<div class="sheet"><svg id="art" viewBox="0 0 420 520"></svg><div class="seal">印</div>
+  <div class="cap"><div class="t" id="title">行動沉澱者</div></div></div>
+<button id="next">換一個人 →</button>
+<div class="note">筆觸順著圓旋轉、彼此疊壓融合；色域＝八卦、密艷＝能格、團塊＝分數。有流動、有情緒。</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=420, H=520, CX=210, CY=246;
+var EN=[{n:'開創',c:'#e2b23e'},{n:'明現',c:'#d83f26'},{n:'行動',c:'#33a85a'},{n:'交流',c:'#d96f8a'},
+        {n:'承接',c:'#bb8338'},{n:'沉澱',c:'#3a78c0'},{n:'喊停',c:'#9a8e76'},{n:'拓展',c:'#2eb3a4'}];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,82,66,72,50,44,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hx(c,d){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=function(v){return d>0?v+(255-v)*d:v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');}
+function desat(c,a){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,gr=(r*.3+g*.5+b*.2),m=function(v){return v+(gr-v)*a;};
+  return '#'+[m(r),m(g),m(b)].map(function(v){return ('0'+Math.round(v).toString(16)).slice(-2);}).join('');}
+function clr(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+function draw(P){
+  var svg=document.getElementById('art'); clr(svg);
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#1a1826'}); // 夜底
+  var s=P.sc.reduce(function(a,v,i){return a+v*(i*53+17);},73); function rnd(){s=(s*9301+49297)%233280;return s/233280;}
+  var cen=EN.map(function(e,i){var a=ang(i),push=56+P.sc[i]/100*72;return {x:CX+Math.cos(a)*push,y:CY+Math.sin(a)*push*1.15,sig:56+P.sc[i]/100*48};});
+  function flow(px,py,len,w,col){
+    var rad=Math.atan2(py-CY,px-CX), dist=Math.max(22,Math.hypot(px-CX,(py-CY)));
+    var dir=rad+1.5708, dx=Math.cos(dir),dy=Math.sin(dir);
+    var x1=px-dx*len/2,y1=py-dy*len/2,x2=px+dx*len/2,y2=py+dy*len/2;
+    var sag=len*len/(8*dist)*2.0, tox=(CX-px),toy=(CY-py),tl=Math.hypot(tox,toy)||1;
+    var qx=(x1+x2)/2+tox/tl*sag, qy=(y1+y2)/2+toy/tl*sag;
+    var d='M'+x1.toFixed(1)+','+y1.toFixed(1)+' Q'+qx.toFixed(1)+','+qy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1);
+    el(svg,'path',{d:d,fill:'none',stroke:hx(col,-0.35),'stroke-width':w,'stroke-linecap':'round',opacity:.45});
+    el(svg,'path',{d:d,fill:'none',stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:.92});
+    el(svg,'path',{d:d,fill:'none',stroke:hx(col,0.5),'stroke-width':Math.max(1,w*0.3),'stroke-linecap':'round',opacity:.5});
+  }
+  var N=560;
+  for(var k=0;k<N;k++){
+    var rr=Math.sqrt(rnd())*186, ra=rnd()*6.283, px=CX+Math.cos(ra)*rr, py=CY+Math.sin(ra)*rr*1.15;
+    var best=-1,bi=0; EN.forEach(function(e,i){var dx=px-cen[i].x,dy=py-cen[i].y,inf=P.sc[i]*Math.exp(-(dx*dx+dy*dy)/(2*cen[i].sig*cen[i].sig));if(inf>best){best=inf;bi=i;}});
+    var ng=P.ng[bi], col; var lj=(rnd()-.5)*0.45;
+    if(ng==='over') col=hx(EN[bi].c,0.06+Math.max(0,lj*0.7));
+    else if(ng==='under'){ if(rnd()>0.55) continue; col=hx(desat(EN[bi].c,0.55),-0.28+lj*0.4); } // 不足：更稀、更黯
+    else col=hx(EN[bi].c,lj);
+    var len=15+rnd()*20, w=4+rnd()*5;
+    flow(px,py,len,w,col);
+  }
+  var fw=15; el(svg,'rect',{x:fw/2,y:fw/2,width:W-fw,height:H-fw,fill:'none',stroke:'#15131c','stroke-width':fw});
+  el(svg,'rect',{x:fw+2.5,y:fw+2.5,width:W-2*fw-5,height:H-2*fw-5,fill:'none',stroke:'#9c7c3e','stroke-width':1.2,opacity:.8});
+  document.getElementById('title').textContent=P.t;
+}
+var idx=0;
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; draw(PEOPLE[idx]); };
+draw(PEOPLE[0]);
+</script>
+</body></html>
