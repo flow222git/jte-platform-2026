@@ -1,0 +1,96 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 漩渦 × 本性筆觸</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#23211c;color:#e8dcc0;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#9c9078;text-transform:uppercase;margin-bottom:4px}
+  .ref{font-size:11px;color:#8a8170;margin-bottom:12px;letter-spacing:.05em}
+  .sheet{position:relative;width:min(420px,94vw);border-radius:4px;overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,.55)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .seal{position:absolute;right:16px;top:16px;width:30px;height:30px;border-radius:5px;background:rgba(190,60,46,.92);z-index:3;
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:15px;font-weight:600}
+  .cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;z-index:3;pointer-events:none}
+  .cap .t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:20px;color:#f4ecd8;letter-spacing:.16em;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#e8dcc0;border:1px solid rgba(232,220,192,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:20px}
+  button:hover{border-color:#e8dcc0}
+  .note{font-size:12px;color:#857c6d;margin-top:14px;max-width:430px;text-align:center;line-height:1.8}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記</div>
+<div class="ref">路 4 · 漩渦流動 × 八卦本性筆觸</div>
+<div class="sheet"><svg id="art" viewBox="0 0 420 520"></svg><div class="seal">印</div>
+  <div class="cap"><div class="t" id="title">行動沉澱者</div></div></div>
+<button id="next">換一個人 →</button>
+<div class="note">乾長直·震閃電·坎水紋·離火舌·兌水珠·坤平塗·艮方塊·巽長曲——各如其性，但全順著漩渦流動。密艷＝能格。</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=420, H=520, CX=210, CY=246;
+var EN=[{n:'開創',c:'#e2b23e',br:'line'},{n:'明現',c:'#d83f26',br:'flame'},{n:'行動',c:'#33a85a',br:'zig'},{n:'交流',c:'#d96f8a',br:'dot'},
+        {n:'承接',c:'#bb8338',br:'flat'},{n:'沉澱',c:'#3a78c0',br:'wave'},{n:'喊停',c:'#9a8e76',br:'block'},{n:'拓展',c:'#2eb3a4',br:'curve'}];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,82,66,72,50,44,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hx(c,d){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=function(v){return d>0?v+(255-v)*d:v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');}
+function desat(c,a){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,gr=(r*.3+g*.5+b*.2),m=function(v){return v+(gr-v)*a;};
+  return '#'+[m(r),m(g),m(b)].map(function(v){return ('0'+Math.round(v).toString(16)).slice(-2);}).join('');}
+function clr(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+function draw(P){
+  var svg=document.getElementById('art'); clr(svg);
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#1a1826'});
+  var s=P.sc.reduce(function(a,v,i){return a+v*(i*53+17);},73); function rnd(){s=(s*9301+49297)%233280;return s/233280;}
+  var cen=EN.map(function(e,i){var a=ang(i),push=56+P.sc[i]/100*72;return {x:CX+Math.cos(a)*push,y:CY+Math.sin(a)*push*1.15,sig:56+P.sc[i]/100*48};});
+  function L2(x1,y1,x2,y2,w,c,op){el(svg,'line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:c,'stroke-width':w,'stroke-linecap':'round',opacity:op==null?.94:op});}
+  // 八種本性筆觸（dir＝漩渦切線方向 → 全部順流）
+  function brush(type,px,py,dir,sz,col){
+    var dx=Math.cos(dir),dy=Math.sin(dir),nx=-dy,ny=dx, rad=Math.atan2(py-CY,px-CX), dist=Math.max(22,Math.hypot(px-CX,py-CY));
+    function curved(Lc,w,bendK){ var sag=Lc*Lc/(8*dist)*bendK,tox=(CX-px),toy=(CY-py),tl=Math.hypot(tox,toy)||1;
+      var x1=px-dx*Lc/2,y1=py-dy*Lc/2,x2=px+dx*Lc/2,y2=py+dy*Lc/2,qx=(x1+x2)/2+tox/tl*sag,qy=(y1+y2)/2+toy/tl*sag;
+      var d='M'+x1.toFixed(1)+','+y1.toFixed(1)+' Q'+qx.toFixed(1)+','+qy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1);
+      el(svg,'path',{d:d,fill:'none',stroke:hx(col,-0.32),'stroke-width':w,'stroke-linecap':'round',opacity:.45});
+      el(svg,'path',{d:d,fill:'none',stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:.93});
+      el(svg,'path',{d:d,fill:'none',stroke:hx(col,0.5),'stroke-width':Math.max(1,w*0.3),'stroke-linecap':'round',opacity:.5}); }
+    if(type==='line'){ curved(18+sz*22, 6+sz*5, 1.2); }                 // 乾：長而果決（微彎順流）
+    else if(type==='wave'){ curved(18+sz*22, 3.5+sz*3, 2.6); }          // 坎：水紋（彎得多）
+    else if(type==='curve'){ curved(20+sz*24, 3.5+sz*3, 2.0); }         // 巽：飄逸長曲
+    else if(type==='flat'){ var Lf=9+sz*9,w2=11+sz*6; L2(px-dx*Lf/2,py-dy*Lf/2+0.8,px+dx*Lf/2,py+dy*Lf/2+0.8,w2,hx(col,-0.3),.5); L2(px-dx*Lf/2,py-dy*Lf/2,px+dx*Lf/2,py+dy*Lf/2,w2,col); } // 坤：寬厚平塗
+    else if(type==='zig'){ var z=7+sz*9,a2=dir+(rnd()>.5?1:-1)*1.15,mx=px+dx*z,my=py+dy*z;
+      el(svg,'polyline',{points:(px-dx*z)+','+(py-dy*z)+' '+mx+','+my+' '+(mx+Math.cos(a2)*z)+','+(my+Math.sin(a2)*z),fill:'none',stroke:col,'stroke-width':4+sz*3,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.95}); } // 震：閃電
+    else if(type==='dot'){ var r=2.4+sz*4; el(svg,'circle',{cx:px,cy:py,r:r,fill:col,opacity:.95}); el(svg,'circle',{cx:px-r*.3,cy:py-r*.3,r:r*.42,fill:hx(col,.55),opacity:.6}); } // 兌：水珠
+    else if(type==='flame'){ var Lm=10+sz*17,wm=5+sz*4, rdx=Math.cos(rad),rdy=Math.sin(rad), bx=px-rdx*Lm*0.4,by=py-rdy*Lm*0.4, pnx=-rdy,pny=rdx; // 離：火舌（往外放射）
+      el(svg,'path',{d:'M'+(bx+pnx*wm/2).toFixed(1)+','+(by+pny*wm/2).toFixed(1)+' L'+(bx-pnx*wm/2).toFixed(1)+','+(by-pny*wm/2).toFixed(1)+' L'+(px+rdx*Lm*0.6).toFixed(1)+','+(py+rdy*Lm*0.6).toFixed(1)+' Z',fill:col,opacity:.95}); }
+    else if(type==='block'){ var bs=7+sz*6,deg=(dir*57.3).toFixed(0); // 艮：方塊（隨流微傾）
+      el(svg,'rect',{x:(-bs/2).toFixed(1),y:(-bs*0.4).toFixed(1),width:bs.toFixed(1),height:(bs*0.8).toFixed(1),rx:1,fill:col,opacity:.96,transform:'translate('+px.toFixed(1)+','+py.toFixed(1)+') rotate('+deg+')'});
+      el(svg,'rect',{x:(-bs/2).toFixed(1),y:(-bs*0.4).toFixed(1),width:(bs*0.38).toFixed(1),height:(bs*0.8).toFixed(1),fill:hx(col,.45),opacity:.5,transform:'translate('+px.toFixed(1)+','+py.toFixed(1)+') rotate('+deg+')'}); }
+  }
+  var N=460;
+  for(var k=0;k<N;k++){
+    var rr=Math.sqrt(rnd())*188, ra=rnd()*6.283, px=CX+Math.cos(ra)*rr, py=CY+Math.sin(ra)*rr*1.15;
+    var best=-1,bi=0; EN.forEach(function(e,i){var dx=px-cen[i].x,dy=py-cen[i].y,inf=P.sc[i]*Math.exp(-(dx*dx+dy*dy)/(2*cen[i].sig*cen[i].sig));if(inf>best){best=inf;bi=i;}});
+    var ng=P.ng[bi], lj=(rnd()-.5)*0.45, col;
+    if(ng==='over') col=hx(EN[bi].c,0.06+Math.max(0,lj*0.7));
+    else if(ng==='under'){ if(rnd()>0.5) continue; col=hx(desat(EN[bi].c,0.55),-0.26+lj*0.4); }
+    else col=hx(EN[bi].c,lj);
+    var rad=Math.atan2(py-CY,px-CX), dir=rad+1.5708+(rnd()-.5)*0.3, sz=(ng==='over'?1.15:ng==='under'?0.7:1)*(0.6+rnd()*0.6);
+    brush(EN[bi].br,px,py,dir,sz,col);
+  }
+  var fw=15; el(svg,'rect',{x:fw/2,y:fw/2,width:W-fw,height:H-fw,fill:'none',stroke:'#15131c','stroke-width':fw});
+  el(svg,'rect',{x:fw+2.5,y:fw+2.5,width:W-2*fw-5,height:H-2*fw-5,fill:'none',stroke:'#9c7c3e','stroke-width':1.2,opacity:.8});
+  document.getElementById('title').textContent=P.t;
+}
+var idx=0;
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; draw(PEOPLE[idx]); };
+draw(PEOPLE[0]);
+</script>
+</body></html>
