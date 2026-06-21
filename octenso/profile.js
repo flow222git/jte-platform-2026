@@ -19,7 +19,7 @@
   var PAIRS=[
     {key:'build',    xiang:'天地', sys:'建構系統', en:'Purpose Engine',    l:'qian', r:'kun', ln:'開創', rn:'承接'},
     {key:'drive',    xiang:'雷風', sys:'推動系統', en:'Action Engine',     l:'zhen', r:'xun', ln:'行動', rn:'拓展'},
-    {key:'aware',    xiang:'水火', sys:'認知系統', en:'Awareness Engine',  l:'kan',  r:'li',  ln:'沉澱', rn:'展現'},
+    {key:'aware',    xiang:'水火', sys:'認知系統', en:'Awareness Engine',  l:'kan',  r:'li',  ln:'沉澱', rn:'明現'},
     {key:'regulate', xiang:'山澤', sys:'調節系統', en:'Regulation Engine', l:'gen',  r:'dui', ln:'喊停', rn:'交流'}
   ];
 
