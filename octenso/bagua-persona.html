@@ -1842,9 +1842,9 @@ function showResult(viewScores){
      +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
-   +radarCard(now)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
    +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})())
+   +'<details class="rsec"><summary>看雷達 · 數值對照版<span class="rchev">⌄</span></summary>'+radarCard(now)+'</details>'
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
    +calibBlock(sc)
@@ -1875,6 +1875,7 @@ function showResult(viewScores){
        +'<button class="sv-btn" onclick="shareReportNative()">⤴ 系統分享</button>'
        +'<button class="sv-btn" onclick="downloadReportPDF()">⬇ 下載 PDF</button>'
        +'<button class="sv-btn" onclick="shareResultImage()">🖼 圖卡</button>'
+       +'<button class="sv-btn primary" onclick="shareEnsoImage()">◯ 能量印記</button>'
      +'</div>'
      +'<div class="share-hint" style="margin:6px 0 0">社群自動預覽是通用卡；想分享你本人的雷達，用「圖卡」。<span id="result-copy-tip" style="display:block;color:var(--pine);font-weight:600;margin-top:5px"></span></div>'
    +'</div>'
@@ -2245,6 +2246,51 @@ function shareResultImage(){
   qimg.onload=function(){outputResultImage(base.scores,tk,title,qimg);};
   qimg.onerror=function(){outputResultImage(base.scores,tk,title,null);};
   qimg.src=makeQRDataURL(reportURL(encodeCode(base.scores), reportShareName()));
+}
+// ── 能量印記（canvas：能量圓＋型＋主導，可下載/分享當印記/頭像）─────────
+function drawEnsoOn(x,scores,cx,cy,R,leadKs,gapK){
+  var EK=['qian','li','zhen','dui','kun','kan','gen','xun'], minR=R*0.42, maxR=R;
+  var P=EK.map(function(k,i){ var a=(-90+i*45)*Math.PI/180, r=minR+(Math.max(0,Math.min(100,scores[k]||0))/100)*(maxR-minR);
+    return {x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}; });
+  var n=P.length;
+  x.beginPath();
+  for(var i=0;i<n;i++){ var p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
+    if(i===0)x.moveTo(p1.x,p1.y);
+    x.bezierCurveTo(p1.x+(p2.x-p0.x)/6,p1.y+(p2.y-p0.y)/6,p2.x-(p3.x-p1.x)/6,p2.y-(p3.y-p1.y)/6,p2.x,p2.y); }
+  x.closePath();
+  x.fillStyle='rgba(169,130,59,.10)';x.fill();
+  x.strokeStyle='#2c2a22';x.lineWidth=6;x.lineJoin='round';x.stroke();
+  x.save();x.globalAlpha=.5;x.strokeStyle='#a9823b';x.lineWidth=1.6;x.stroke();x.restore();
+  EK.forEach(function(k,i){
+    if(leadKs.indexOf(k)>=0){x.beginPath();x.arc(P[i].x,P[i].y,7,0,7);x.fillStyle='#a9823b';x.fill();x.strokeStyle='#fff';x.lineWidth=2.5;x.stroke();}
+    else if(k===gapK){x.beginPath();x.arc(P[i].x,P[i].y,5,0,7);x.fillStyle='#f4efe4';x.fill();x.strokeStyle='#c9bfa6';x.lineWidth=2;x.stroke();}
+  });
+}
+function buildEnsoCanvas(scores,title,leadKs,gapK){
+  var Wd=640,Ht=760,c=document.createElement('canvas');c.width=Wd;c.height=Ht;
+  var x=c.getContext('2d');
+  x.fillStyle='#f4efe4';x.fillRect(0,0,Wd,Ht);
+  x.textAlign='center';
+  x.fillStyle='#a9823b';x.font='600 15px sans-serif';x.fillText('O C T E N S O　·　能 量 印 記',Wd/2,66);
+  drawEnsoOn(x,scores,Wd/2,328,212,leadKs,gapK);
+  x.fillStyle='#22322c';x.font='bold 32px serif';x.fillText(title||'',Wd/2,602);
+  x.fillStyle='#35614f';x.font='600 17px sans-serif';
+  x.fillText('最鮮明：'+leadKs.map(function(k){return E[k].nm+'·'+fn1(k);}).join('　'),Wd/2,640);
+  x.fillStyle='#766f63';x.font='14px sans-serif';x.fillText('Octenso ｜ 八態能格 · 練息場 Join to Enjoy',Wd/2,712);
+  return c;
+}
+function shareEnsoImage(){
+  var base;try{base=JSON.parse(localStorage.getItem('bagua_persona_v1'));}catch(e){}
+  if(!base||!base.scores){alert('先完成測驗再存印記喔');return;}
+  var pf=pfBuild(base.scores);
+  var leadKs=(pf.leads||[]).slice(0,2), gapK=(pf.gaps&&pf.gaps[0])||pf.ranked[pf.ranked.length-1].k;
+  var title=base.title||E[base.top||topKeyOf(base.scores)].title;
+  var c=buildEnsoCanvas(base.scores,title,leadKs,gapK);
+  c.toBlob(function(blob){ if(!blob){alert('產圖失敗，可改用截圖分享');return;}
+    var file=null;try{file=new File([blob],'我的能量印記.png',{type:'image/png'});}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){ navigator.share({files:[file],title:'我的能量印記',text:title}).catch(function(){}); }
+    else{ var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的能量印記.png';document.body.appendChild(a);a.click();a.remove(); }
+  },'image/png');
 }
 // ── 雙人合盤圖卡（canvas：雙人雷達＋同頻/互補＋QR）─────────
 function buildCompatCanvas(myScores,otherScores,sim,comp,qrImg){

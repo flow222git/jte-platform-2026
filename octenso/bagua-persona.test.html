@@ -465,6 +465,11 @@ document.getElementById('f').onload=function(){
     var pnz=w.portraitNarrative(P.build({zhen:85,qian:60,li:55,dui:50,kun:48,xun:46,gen:42,kan:40}),null);
     ok(pnz.indexOf('執行力')>=0||pnz.indexOf('落地')>=0,'拍1 行動用中正詞(執行力/落地)');
     ok(pnz.indexOf('衝動')<0 && pnz.indexOf('焦躁')<0,'拍1 不出現亢字(衝動/焦躁)');
+    // 能量印記 canvas 產出
+    var ec=w.buildEnsoCanvas({qian:72,li:62,zhen:82,dui:45,kun:55,kan:78,gen:38,xun:60},'行動沉澱者',['zhen','kan'],'gen');
+    ok(ec&&ec.tagName==='CANVAS'&&ec.width===640,'能量印記 canvas 產出');
+    // 能量速寫含 ensō 圓（svg path）
+    ok(w.portraitNarrative(pfM,null).indexOf('<svg')>=0,'能量速寫含能量圓 svg');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
     // 38. selectFlagged：高→over、低→under、上限4、全中→無
