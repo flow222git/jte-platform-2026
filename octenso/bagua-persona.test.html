@@ -496,9 +496,15 @@ document.getElementById('f').onload=function(){
     ok(w.costMode===false,'finishCost→離開能格階段');
     ok(d.getElementById('result').style.display==='block','finishCost→顯示結果');
     ok(d.querySelector('#result').textContent.indexOf('能格 · 調校')>=0,'結果含能格調校段');
-    // 43. 全中→不進校準，直接出結果
+    // 43. 全中性→進「中性確認題」→ 答 flex → 拍2 講彈性
     w.answers=new Array(w.QUESTIONS.length).fill(2); w.currentFacet=null; w.finishQuiz();
-    ok(w.costMode===false && d.getElementById('result').style.display==='block','全中→直接出結果不進校準');
+    ok(w.neutralMode===true && d.getElementById('quiz').style.display==='block','全中性→進中性確認題（非直接出結果）');
+    w.finishNeutral('flex');
+    ok(w.neutralMode===false && d.getElementById('result').style.display==='block','中性確認→出結果');
+    ok(d.getElementById('result').innerHTML.indexOf('平衡、有彈性')>=0,'flex→拍2 說平衡有彈性');
+    // undev → 拍2 講可塑性
+    w.answers=new Array(w.QUESTIONS.length).fill(2); w.currentFacet=null; w.finishQuiz(); w.finishNeutral('undev');
+    ok(d.getElementById('result').innerHTML.indexOf('可塑性')>=0,'undev→拍2 說可塑性');
     localStorage.removeItem('bagua_cost_v1');
 
     // ── Feature 3 分享（#r= 報告檢視） ──────────────────────

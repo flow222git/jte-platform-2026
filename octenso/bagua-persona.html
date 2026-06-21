@@ -678,7 +678,7 @@ function finishQuiz(){
   if(currentFacet===null){
     var flagged=selectFlagged(computeScores());
     if(flagged.length){ startCostPhase(flagged); }  // 有極端態 → 先做能格校準
-    else { showResult(); }                           // 全適中 → 直接出報告
+    else { startNeutralConfirm(); }                  // 全適中 → 問一題中性確認（彈性 vs 待開發）
   }
   else { var fc=currentFacet; saveFacet(fc, computeScores()); showFacetResult(fc); }
 }
@@ -784,6 +784,40 @@ function finishCost(){
   try{ localStorage.setItem('bagua_cost_v1', JSON.stringify({items:items,ts:new Date().toISOString()})); }catch(e){}
   costMode=false;
   showResult(); // 用 25 題 trait answers 重算並存底色；calibBlock 讀 bagua_cost_v1
+}
+// 全中性確認（無極端時問一題：彈性 vs 待開發）→ 存進 bagua_cost_v1.neutral，拍2 取用
+var neutralMode=false;
+function startNeutralConfirm(){
+  neutralMode=true;
+  document.getElementById('cover').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('compat').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('fb-ic').textContent='';
+  document.getElementById('fb-nm').textContent='最後一題 · 平衡確認';
+  document.getElementById('fb-frame').textContent='你八種能量都挺平均——這通常分兩種，想跟你確認一下是哪一種。';
+  document.getElementById('facet-banner').style.display='block';
+  document.getElementById('prog-label').textContent='最後一題';
+  document.getElementById('prog-pct').textContent='';
+  document.getElementById('prog-fill').style.width='92%';
+  document.getElementById('q-num').textContent='平衡 · 確認';
+  document.getElementById('q-text').textContent='你這幾股能量都挺平均——比較像哪一種？';
+  var ow=document.getElementById('opts'); ow.innerHTML='';
+  [{t:'我各方面算均衡，能看狀況彈性切換',v:'flex'},
+   {t:'我還在摸索，還沒有特別突出的一塊',v:'undev'},
+   {t:'說不上來、好像都有一點',v:'mid'}].forEach(function(o){
+    var b=document.createElement('button'); b.className='opt';
+    b.innerHTML='<span class="dot"></span>'+o.t;
+    b.onclick=function(){ finishNeutral(o.v); };
+    ow.appendChild(b);
+  });
+  document.getElementById('back-btn').disabled=true;
+  window.scrollTo(0,0);
+}
+function finishNeutral(v){
+  try{ localStorage.setItem('bagua_cost_v1', JSON.stringify({neutral:v,items:[],ts:new Date().toISOString()})); }catch(e){}
+  neutralMode=false;
+  showResult();
 }
 // 能格·調校 報告段
 function calibBlock(sc){
@@ -1146,7 +1180,7 @@ var PAIR_BOTHHIGH={
  'dui|gen':'——進退有節：守得住界線，也開得了口。'
 };
 // 解讀文字引擎（依 2026-06-21 解讀規則 spec）：三拍各守一個能格層、並存不捏因果、價值中性
-function portraitNarrative(pf, costItems){
+function portraitNarrative(pf, costItems, neutral){
   if(!pf) return '';
   function q(k){return '「'+fn1(k)+'」';}
   // 能格分類（單股自己的事）
@@ -1169,6 +1203,10 @@ function portraitNarrative(pf, costItems){
   if(overs.length){ var g=COST_GIST[overs[0]]||{};
     b2='從你的校準看，'+q(overs[0])+'目前用得有點過頭'+(g.o?('——容易'+g.o):'')+'（這是這股<b>自己</b>的事，跟別股無關）。'
       +(overs.length>1?(' '+q(overs[1])+'也是。'):'');
+  } else if(neutral==='flex'){
+    b2='你這幾股用得很<b>平均</b>——而你也確認了，這是真的<b>平衡、有彈性</b>：面對不同場面，你都換得了檔、接得住。';
+  } else if(neutral==='undev'){
+    b2='你這幾股用得很<b>平均</b>——你說還在摸索；那也好，表示你<b>最有可塑性</b>，正適合多方嘗試，慢慢長出自己最鮮明的那幾股。';
   } else if(!costItems||!costItems.length){
     b2='你這幾股用得挺<b>平均</b>——可能是平衡、有彈性，也可能是還在摸索、還沒長開。';
   } else {
@@ -1784,7 +1822,7 @@ function showResult(viewScores){
    +'</div>'
    +radarCard(now)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
-   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})())
+   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})())
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
    +calibBlock(sc)
