@@ -1,0 +1,126 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 藝術表達畫廊</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1a1712;color:#ecdcb8;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;padding:32px 16px 70px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;text-align:center}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#b7a888;text-transform:uppercase;margin-bottom:8px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:24px;letter-spacing:.05em;margin-bottom:4px}
+  .sub{font-size:13px;color:#9c9078;margin-bottom:26px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{border-radius:16px;overflow:hidden;position:relative;box-shadow:0 2px 14px rgba(0,0,0,.3)}
+  .card .lab{position:absolute;top:12px;left:14px;text-align:left;z-index:2}
+  .card .lab .n{font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px}
+  .card .lab .d{font-size:10.5px;letter-spacing:.05em;opacity:.7;margin-top:1px}
+  .card svg{display:block;width:100%;height:auto}
+  .paper{background:radial-gradient(120% 120% at 50% 35%,#f6efdd,#efe6cf 70%,#e6dabf)}
+  .paper .lab{color:#5a5142}
+  .night{background:radial-gradient(120% 120% at 50% 30%,#222a38,#161a24 70%,#0e1018)}
+  .night .lab{color:#aab4c8}
+  .dusk{background:radial-gradient(120% 110% at 50% 28%,#2b2620,#1c1812 60%,#120f0a)}
+  .dusk .lab{color:#c8b58a}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .foot{font-size:12px;color:#857c6d;margin-top:26px;line-height:1.8}
+</style></head>
+<body><div class="wrap">
+<div class="eyebrow">Octenso · 能量印記 · 藝術表達</div>
+<h1>同一個人，幾種畫法</h1>
+<div class="sub">行動沉澱者 · 行動偏「過用」、喊停偏「不足」——看每種語言怎麼說同一件事</div>
+
+<div class="grid">
+  <div class="card paper"><div class="lab"><div class="n">水墨暈染</div><div class="d">八色入墨 · 暈開交融</div></div><svg id="ink" viewBox="0 0 300 300"></svg></div>
+  <div class="card paper"><div class="lab"><div class="n">一筆 ensō</div><div class="d">載墨的圓 · 枯潤飛白</div></div><svg id="enso" viewBox="0 0 300 300"></svg></div>
+  <div class="card paper"><div class="lab"><div class="n">能量花</div><div class="d">開成你的樣子</div></div><svg id="flower" viewBox="0 0 300 300"></svg></div>
+  <div class="card dusk"><div class="lab"><div class="n">流體光暈</div><div class="d">色霧 · 旋成一片</div></div><svg id="aura" viewBox="0 0 300 300"></svg></div>
+  <div class="card night"><div class="lab"><div class="n">星圖</div><div class="d">你的私人星座</div></div><svg id="star" viewBox="0 0 300 300"></svg></div>
+</div>
+<div class="foot">形狀＝分數　·　顏色＝八卦取象　·　明暗濃淡＝能格（過用／適中／不足）<br>每張都從同一份資料長出來——只是換了藝術的腦袋。</div>
+</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg', CX=150, CY=150;
+var EN=[{n:'開創',c:'#c9a35a'},{n:'明現',c:'#c9533b'},{n:'行動',c:'#4e9e6b'},{n:'交流',c:'#c77a86'},
+        {n:'承接',c:'#9c7a4a'},{n:'沉澱',c:'#3a5a7a'},{n:'喊停',c:'#7a7468'},{n:'拓展',c:'#5fa8a0'}];
+var SC=[72,62,85,50,58,80,40,60], NG=['mid','mid','over','mid','mid','mid','under','mid'];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hex(c,d){ // brighten/darken hex by d (-1..1)
+  var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=d>0?function(v){return v+(255-v)*d;}:function(v){return v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');
+}
+var NGw={over:1.3,mid:1,under:.55}; // 能格 → 強度倍率
+
+// ① 水墨暈染：八團彩墨在紙上暈開、交融（big soft radial blobs）
+(function(){
+  var svg=document.getElementById('ink'), defs=el(svg,'defs',{});
+  var fb=el(defs,'filter',{id:'inkblur',x:'-60%',y:'-60%',width:'220%',height:'220%'}); el(fb,'feGaussianBlur',{stdDeviation:9});
+  EN.forEach(function(e,i){
+    var rg=el(defs,'radialGradient',{id:'ig'+i});
+    el(rg,'stop',{offset:'0%','stop-color':e.c,'stop-opacity':(NG[i]==='over'?.95:NG[i]==='under'?.4:.72)});
+    el(rg,'stop',{offset:'70%','stop-color':e.c,'stop-opacity':0});
+  });
+  var g=el(svg,'g',{filter:'url(#inkblur)'});
+  EN.forEach(function(e,i){ var a=ang(i), pr=34+SC[i]/100*30, br=24+SC[i]/100*30*NGw[NG[i]];
+    el(g,'circle',{cx:CX+Math.cos(a)*pr, cy:CY+Math.sin(a)*pr, r:br, fill:'url(#ig'+i+')'});
+  });
+})();
+
+// ② 一筆 ensō：一個圓，墨隨能量枯潤——強處重按墨濃、弱處輕提飛白；留缺口
+(function(){
+  var svg=document.getElementById('enso'), R=96, N=120;
+  function lerp(arr,f){var x=f*8,i=Math.floor(x)%8,t=x-Math.floor(x);return arr[i]*(1-t)+arr[(i+1)%8]*t;}
+  function ngAt(f){return NG[Math.floor(f*8+0.5)%8];}
+  for(var k=0;k<N;k++){ var f=k/N; if(f>0.04&&f<0.13) continue; // ensō 缺口
+    var a1=(-90+f*360)*Math.PI/180, a2=(-90+(k+1)/N*360)*Math.PI/180;
+    var sw=1.2+lerp(SC,f)/100*8, ng=ngAt(f), op=ng==='over'?1:ng==='under'?.32:.8;
+    var x1=CX+Math.cos(a1)*R,y1=CY+Math.sin(a1)*R,x2=CX+Math.cos(a2)*R,y2=CY+Math.sin(a2)*R;
+    var ln=el(svg,'line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:'#26221b','stroke-width':sw,'stroke-linecap':'round',opacity:op});
+    if(ng==='under') ln.setAttribute('stroke-dasharray','2 3'); // 飛白
+  }
+})();
+
+// ③ 能量花：八瓣，瓣長＝分數、瓣色＝八卦、能格＝盛放/含苞
+(function(){
+  var svg=document.getElementById('flower'), g=el(svg,'g',{});
+  EN.forEach(function(e,i){ var a=(-90+i*45), L=34+SC[i]/100*86*NGw[NG[i]]*0.78, w=16+SC[i]/100*16;
+    var op=NG[i]==='under'?.5:NG[i]==='over'?.95:.8, fillc=NG[i]==='under'?hex(e.c,.35):e.c;
+    var d='M0,0 Q'+w+','+(-L*0.45)+' 0,'+(-L)+' Q'+(-w)+','+(-L*0.45)+' 0,0 Z';
+    el(g,'path',{d:d,fill:fillc,opacity:op,transform:'translate('+CX+','+CY+') rotate('+a+')','stroke':'#fff','stroke-width':.6,'stroke-opacity':.3});
+  });
+  el(svg,'circle',{cx:CX,cy:CY,r:8,fill:'#efe6cf',stroke:'#c9a35a','stroke-width':1.5});
+})();
+
+// ④ 流體光暈：八色大團模糊、圓形遮罩 → 一片色霧
+(function(){
+  var svg=document.getElementById('aura'), defs=el(svg,'defs',{});
+  var fb=el(defs,'filter',{id:'aurablur',x:'-60%',y:'-60%',width:'220%',height:'220%'}); el(fb,'feGaussianBlur',{stdDeviation:18});
+  var cp=el(defs,'clipPath',{id:'aclip'}); el(cp,'circle',{cx:CX,cy:CY,r:120});
+  el(svg,'circle',{cx:CX,cy:CY,r:120,fill:'#15110b'});
+  var g=el(svg,'g',{filter:'url(#aurablur)','clip-path':'url(#aclip)'});
+  EN.forEach(function(e,i){ var a=ang(i), pr=20+SC[i]/100*55, br=40+SC[i]/100*40*NGw[NG[i]];
+    el(g,'circle',{cx:CX+Math.cos(a)*pr, cy:CY+Math.sin(a)*pr, r:br, fill:hex(e.c,.1), opacity:NG[i]==='over'?.8:NG[i]==='under'?.3:.55});
+  });
+  el(svg,'circle',{cx:CX,cy:CY,r:120,fill:'none',stroke:'rgba(236,220,184,.18)','stroke-width':1.2});
+})();
+
+// ⑤ 星圖：八星（亮度=能格、色=八卦），連成你的星座，深空
+(function(){
+  var svg=document.getElementById('star'), defs=el(svg,'defs',{});
+  var fb=el(defs,'filter',{id:'starblur',x:'-150%',y:'-150%',width:'400%',height:'400%'}); el(fb,'feGaussianBlur',{stdDeviation:3});
+  // 背景碎星
+  var seed=[[40,60],[260,50],[230,250],[60,240],[150,30],[280,160],[20,160],[120,270],[200,90]];
+  seed.forEach(function(p,i){ el(svg,'circle',{cx:p[0],cy:p[1],r:(i%3===0?1.3:0.8),fill:'#cdd6e6',opacity:.4}); });
+  function P(i){var a=ang(i),r=34+SC[i]/100*86;return {x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r};}
+  // 連線（星座）
+  var dd='';for(var i=0;i<8;i++){var p=P(i);dd+=(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1);}
+  el(svg,'path',{d:dd+'Z',fill:'none',stroke:'rgba(180,196,230,.28)','stroke-width':1});
+  EN.forEach(function(e,i){ var p=P(i), sr=NG[i]==='over'?5:NG[i]==='under'?1.6:3, halo=NG[i]==='over'?13:NG[i]==='under'?4:8;
+    el(svg,'circle',{cx:p.x,cy:p.y,r:halo,fill:hex(e.c,.25),opacity:NG[i]==='under'?.25:.6,filter:'url(#starblur)'});
+    el(svg,'circle',{cx:p.x,cy:p.y,r:sr,fill:hex(e.c,.4),stroke:'#fff','stroke-width':.6,'stroke-opacity':.7});
+  });
+})();
+</script>
+</body></html>
