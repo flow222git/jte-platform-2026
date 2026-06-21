@@ -1,0 +1,110 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>圖文解讀 概念 · 八態能格</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f4efe4;--card:#faf6ec;--ink:#2a2820;--ink2:#4a463c;--muted:#857c6d;--line:#e3dac6;--hair:#d8cdb6;--gold:#a9823b;--deepgold:#7d5e26;--pine:#3c5a49}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(120% 85% at 50% 10%,#f8f3e7,#f4efe4 55%,#ece3d0);color:var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;padding:30px 18px 70px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:480px;margin:0 auto;text-align:center}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:25px;letter-spacing:.04em;margin-bottom:2px}
+  .sig{font-size:13px;color:var(--pine);letter-spacing:.08em;margin-bottom:6px}
+  .hero-cap{font-size:13.5px;color:var(--muted);line-height:1.85;max-width:360px;margin:2px auto 0;text-wrap:balance}
+  svg{display:block;margin:0 auto}
+  .beats{margin-top:18px;text-align:left}
+  .beat{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:13px 0}
+  .beat .mo{flex:none}
+  .beat .bd{flex:1;min-width:0}
+  .beat .bk{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:3px}
+  .beat .bt{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
+  .beat .bx{font-size:14px;color:var(--ink2);line-height:1.85}
+  .beat .bx b{color:var(--deepgold);font-weight:500}
+  .foot{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.8}
+  .share{margin-top:18px}
+  .share button{font-family:"Noto Serif TC",serif;font-size:14px;background:transparent;color:var(--ink);border:1px solid var(--ink);border-radius:999px;padding:9px 24px;cursor:pointer;letter-spacing:.06em}
+</style></head>
+<body><div class="wrap">
+<div class="eyebrow">Octenso · 解讀</div>
+<h1>此刻的你</h1>
+<div class="sig">震·離並重 · 行動明現者</div>
+
+<svg id="hero" width="360" height="320" viewBox="0 0 360 320"></svg>
+<div class="hero-cap">把你平常沒留意的能量習慣，搬到眼前——<br>這是你<b style="color:var(--deepgold)">感受到</b>的自己，會呼吸、會流動。</div>
+
+<div class="beats" id="beats"></div>
+
+<div class="share"><button>存成我的能量印記 ↓</button></div>
+<div class="foot">這是你感受到的傾向，不是固定標籤、也不是算命——<br>一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場</div>
+</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg';
+// 八態順序（圓上）：開創 行動 沉澱 喊停 承接 拓展 明現 交流
+var LAB=['開創','行動','沉澱','喊停','承接','拓展','明現','交流'];
+var SC=[72,82,78,38,55,60,62,45];           // 樣本分數（0–100）
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function pts(sc,cx,cy,minR,maxR){return sc.map(function(s,i){var a=ang(i),r=minR+(s/100)*(maxR-minR);return{x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r};});}
+function smooth(p){var n=p.length,d='';for(var i=0;i<n;i++){var p0=p[(i-1+n)%n],p1=p[i],p2=p[(i+1)%n],p3=p[(i+2)%n];
+  if(i===0)d+='M'+p1.x.toFixed(1)+','+p1.y.toFixed(1);
+  d+='C'+(p1.x+(p2.x-p0.x)/6).toFixed(1)+','+(p1.y+(p2.y-p0.y)/6).toFixed(1)+' '+(p2.x-(p3.x-p1.x)/6).toFixed(1)+','+(p2.y-(p3.y-p1.y)/6).toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1);}
+  return d+'Z';}
+function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+// hero 圓（呼吸）＋標籤；hi=強調index, dim=淡化index
+function drawHero(){
+  var svg=document.getElementById('hero'),cx=180,cy=160,minR=50,maxR=114;
+  var fill=el('path',{fill:'rgba(169,130,59,.10)',stroke:'none'}); svg.appendChild(fill);
+  var ring=el('path',{fill:'none',stroke:'#2c2a22','stroke-width':5.5,'stroke-linejoin':'round','stroke-linecap':'round'}); svg.appendChild(ring);
+  var ring2=el('path',{fill:'none',stroke:'#a9823b','stroke-width':1.6,opacity:.5}); svg.appendChild(ring2);
+  var dots=el('g',{}); svg.appendChild(dots);
+  // 標籤
+  for(var i=0;i<8;i++){var a=ang(i),lx=cx+Math.cos(a)*(maxR+22),ly=cy+Math.sin(a)*(maxR+22);
+    var hi=(i===1||i===2), lo=(i===3);
+    var t=el('text',{x:lx,y:ly+4,'text-anchor':(Math.cos(a)>0.3?'start':(Math.cos(a)<-0.3?'end':'middle')),
+      'font-family':'"Noto Serif TC",serif','font-size':hi?15:13,'font-weight':hi?600:400,
+      fill:hi?'#7d5e26':(lo?'#b8ad97':'#4a463c')}); t.textContent=LAB[i]; svg.appendChild(t);
+    var sub=el('text',{x:lx,y:ly+18,'text-anchor':(Math.cos(a)>0.3?'start':(Math.cos(a)<-0.3?'end':'middle')),
+      'font-family':'"Jost",sans-serif','font-size':10,fill:'#b3a890'}); sub.textContent=SC[i]; svg.appendChild(sub);
+  }
+  var t0=performance.now();
+  (function frame(ts){var k=Math.sin((ts-t0)/2800*Math.PI*2)*.5+.5,br=0.965+0.035*k;
+    var sc=SC.map(function(v){return v*br;}),d=smooth(pts(sc,cx,cy,minR,maxR));
+    fill.setAttribute('d',d);ring.setAttribute('d',d);ring2.setAttribute('d',d);
+    // 點：強調 top2（金亮）、淡化最凹（喊停）
+    while(dots.firstChild)dots.removeChild(dots.firstChild);
+    var P=pts(sc,cx,cy,minR,maxR);
+    [1,2].forEach(function(i){dots.appendChild(el('circle',{cx:P[i].x,cy:P[i].y,r:6,fill:'#a9823b',stroke:'#fff','stroke-width':2}));});
+    dots.appendChild(el('circle',{cx:P[3].x,cy:P[3].y,r:4,fill:'none',stroke:'#c9bfa6','stroke-width':1.5}));
+    requestAnimationFrame(frame);
+  })(t0);
+}
+// mini 圓（靜態）：hiArr 金亮、dimArr 淡圈
+function miniSVG(hiArr,dimArr){
+  var s='<svg width="84" height="84" viewBox="0 0 84 84">';
+  var P=pts(SC,42,42,15,33), d=smooth(P);
+  s+='<path d="'+d+'" fill="rgba(169,130,59,.09)" stroke="#cdbf a3" stroke-width="1.4"/>'.replace('cdbf a3','cdbfa3');
+  s+='<path d="'+d+'" fill="none" stroke="#bdb097" stroke-width="1.6" stroke-linejoin="round"/>';
+  (hiArr||[]).forEach(function(i){s+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="4.5" fill="#a9823b" stroke="#fff" stroke-width="1.5"/>';});
+  (dimArr||[]).forEach(function(i){s+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="3.5" fill="none" stroke="#c9bfa6" stroke-width="1.5"/>';});
+  return s+'</svg>';
+}
+var BEATS=[
+ {hi:[1,2],dim:[],k:'主組合',t:'行動 × 沉澱',x:'你最鮮明的是<b>行動與沉澱</b>——你不是橫衝直撞，是「<b>想透了才猛地動，一動就快、又有根</b>」。'},
+ {hi:[1],dim:[3],k:'特有的張力',t:'停不下來',x:'行動很旺、<b>喊停只有 38</b>——事情卡著、不能動時，你最坐不住。那不是缺點，是<b>引擎在空轉</b>。'},
+ {hi:[],dim:[3],k:'還沒長開的邊',t:'喊停 · 界線',x:'最有空間的是<b>喊停</b>：在衝之前留一個停頓、敢喊卡，會讓你這股力氣<b>更耐久</b>。'}
+];
+function drawBeats(){
+  var box=document.getElementById('beats');
+  BEATS.forEach(function(b){
+    var div=document.createElement('div');div.className='beat';
+    div.innerHTML='<div class="mo">'+miniSVG(b.hi,b.dim)+'</div><div class="bd"><div class="bk">'+b.k+'</div><div class="bt">'+b.t+'</div><div class="bx">'+b.x+'</div></div>';
+    box.appendChild(div);
+  });
+}
+drawHero(); drawBeats();
+</script>
+</body></html>
