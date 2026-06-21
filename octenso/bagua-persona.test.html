@@ -544,14 +544,18 @@ document.getElementById('f').onload=function(){
     ok(!!d.getElementById('fb-rate') && d.getElementById('fb-rate').querySelectorAll('button').length===3,'回饋 3 顆評分鈕');
     ok(d.querySelector('#result').textContent.indexOf('像你嗎')>=0,'回饋問句出現在結果');
 
-    // 49. 心態卡（測底色前的停頓）：showMindset 顯示、startQuiz 收掉並進測驗
+    // 49. 進場四卡（測底色前的停頓）：showMindset 顯示第一卡、可滑、最後一卡接 startQuiz
     ok(typeof w.showMindset==='function','showMindset 存在');
     w.showMindset();
-    ok(d.getElementById('mindset').style.display==='block','showMindset 顯示心態卡');
-    ok(d.getElementById('mindset').textContent.indexOf('離開那個位子')>=0,'心態卡含底色vs情境小檢查');
-    w.startQuiz();
-    ok(d.getElementById('mindset').style.display==='none','startQuiz 收掉心態卡');
-    ok(d.getElementById('quiz').style.display==='block','startQuiz 進測驗');
+    ok(d.getElementById('mindset').style.display==='block','showMindset 顯示進場卡');
+    ok(d.querySelectorAll('#ms-stage .ms-card').length===4,'進場四張卡');
+    ok(d.querySelector('#ms-stage .ms-card.on .ms-t').textContent.indexOf('深呼吸')>=0,'第一卡＝安定（深呼吸）');
+    ok(d.getElementById('mindset').textContent.indexOf('扮')>=0 && d.getElementById('mindset').textContent.indexOf('角色')>=0,'仍含底色vs角色（站位卡）');
+    w.msNext(); w.msNext(); w.msNext();
+    ok(d.getElementById('ms-next').textContent.indexOf('開始作答')>=0,'滑到最後一卡＝開始作答鈕');
+    w.msNext(); // 最後一卡再按 → startQuiz
+    ok(d.getElementById('mindset').style.display==='none','最後一卡 msNext 收掉進場卡');
+    ok(d.getElementById('quiz').style.display==='block','msNext → 進測驗');
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 

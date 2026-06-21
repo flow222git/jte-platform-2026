@@ -26,6 +26,25 @@
   #cover h1,#mindset h1{font-size:27px;letter-spacing:.08em;margin-bottom:10px}
   #cover .lead{font-size:14px;color:var(--ink);max-width:380px;margin:0 auto 8px;line-height:1.9}
   #cover .trigrams{font-size:26px;color:var(--pine);letter-spacing:.18em;margin:18px 0 6px;opacity:.85}
+  /* ── 進場施測語四卡（把潛意識搬到意識：安定→站位→怎麼答→為什麼）── */
+  #ms-stage{max-width:430px;margin:0 auto;text-align:center}
+  .ms-card{display:none;animation:msfade .55s ease}
+  .ms-card.on{display:block}
+  @keyframes msfade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  .ms-motif{height:92px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .ms-kicker{font-family:"Jost",ui-sans-serif,sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
+  .ms-t{font-family:"Songti TC","Noto Serif TC",serif;font-weight:600;font-size:22px;line-height:1.7;letter-spacing:.03em;color:var(--ink)}
+  .ms-s{font-size:15px;color:#4a463c;line-height:1.95;margin-top:13px;max-width:360px;margin-left:auto;margin-right:auto;text-wrap:balance}
+  .ms-s b{color:#7d5e26;font-weight:600}
+  .ms-dots{display:flex;gap:8px;justify-content:center;margin:30px 0 20px}
+  .ms-dots i{width:7px;height:7px;border-radius:50%;background:#d8cdb6;transition:.3s}
+  .ms-dots i.on{background:var(--gold);width:20px;border-radius:4px}
+  .ms-nav{display:flex;align-items:center;justify-content:center;gap:16px}
+  .ms-back{font-family:"Jost",ui-sans-serif,sans-serif;font-size:12px;letter-spacing:.1em;color:var(--muted);background:none;border:none;cursor:pointer;opacity:.7}
+  .ms-back:hover{opacity:1}.ms-back.hide{visibility:hidden}
+  .ms-nav .start-btn{margin:0}
+  .ms-breathe{transform-origin:center;animation:msbr 3.4s ease-in-out infinite}
+  @keyframes msbr{0%,100%{transform:scale(.82);opacity:.55}50%{transform:scale(1);opacity:1}}
   .start-btn{display:inline-block;background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-family:"Songti TC","Noto Serif TC",serif;
     font-size:16px;letter-spacing:.1em;padding:13px 40px;border-radius:999px;cursor:pointer;margin:18px 0 10px;
     transition:transform .15s,background .15s,color .15s}
@@ -361,18 +380,44 @@
 
 <!-- ───────── MINDSET（測底色前的心態設定，刻意讓人停一下）───────── -->
 <div id="mindset" style="display:none">
-  <div class="eyebrow">OCTENSO · 心態設定</div>
-  <h1>先停一下，再開始</h1>
-  <div class="guide">
-    <div class="guide-h">這次測的是你的「底色」</div>
-    <p>底色＝<b>你天生、放鬆、沒人要求你時，最自然會有的反應</b>。</p>
-    <p>⚠️ <b>不是</b>「你現在的<b>工作／角色／責任</b>，要求你變成的樣子」。</p>
-    <p>🔍 小檢查：你在工作上很會扛、很果斷——<b>離開那個位子，你還會這樣嗎？</b><br>　會 → 那是<b>底色</b>；不太會 → 那是<b>情境要求的你</b>（那一面，留到「場景耗能」再看）。</p>
-    <p><b>怎麼答</b>：想著<b>跨越不同場合、長期的你</b>，憑第一個念頭選。沒有對錯、也沒有中間值。</p>
+  <div class="eyebrow">OCTENSO · 八態能格</div>
+  <div id="ms-stage">
+
+    <div class="ms-card on">
+      <div class="ms-motif"><svg width="90" height="90" viewBox="0 0 90 90"><g class="ms-breathe"><circle cx="45" cy="45" r="14" fill="none" stroke="#a9823b" stroke-width="1.4"/><circle cx="45" cy="45" r="26" fill="none" stroke="#a9823b" stroke-width="1" opacity=".5"/><circle cx="45" cy="45" r="38" fill="none" stroke="#a9823b" stroke-width="1" opacity=".25"/></g></svg></div>
+      <div class="ms-kicker">安定</div>
+      <div class="ms-t">先停一下，<br>深呼吸。</div>
+      <div class="ms-s">這不是考試——<br>沒有好答案，也沒有人在打分數。</div>
+    </div>
+
+    <div class="ms-card">
+      <div class="ms-motif"><svg width="100" height="90" viewBox="0 0 100 90"><circle cx="50" cy="45" r="30" fill="none" stroke="#a9823b" stroke-width="1.6" stroke-dasharray="160 26" stroke-linecap="round" transform="rotate(20 50 45)"/><circle cx="50" cy="45" r="4" fill="#a9823b"/></svg></div>
+      <div class="ms-kicker">這是在看誰</div>
+      <div class="ms-t">是你最放鬆時<br>自然的樣子。</div>
+      <div class="ms-s">沒人要求你的時候，你會怎麼反應——<br>不是你<b>想成為</b>的樣子，<br>也不是工作、家庭要你<b>扮</b>的角色。</div>
+    </div>
+
+    <div class="ms-card">
+      <div class="ms-motif"><svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="6" fill="#a9823b"/><g stroke="#a9823b" stroke-width="1.4" stroke-linecap="round" opacity=".7"><line x1="45" y1="22" x2="45" y2="12"/><line x1="45" y1="68" x2="45" y2="78"/><line x1="22" y1="45" x2="12" y2="45"/><line x1="68" y1="45" x2="78" y2="45"/><line x1="29" y1="29" x2="22" y2="22"/><line x1="61" y1="61" x2="68" y2="68"/><line x1="61" y1="29" x2="68" y2="22"/><line x1="29" y1="61" x2="22" y2="68"/></g></svg></div>
+      <div class="ms-kicker">怎麼答</div>
+      <div class="ms-t">憑第一個<br>冒出來的直覺。</div>
+      <div class="ms-s">別想太多——<br>直覺，往往比想出來的答案<br><b>更接近真正的你</b>。</div>
+    </div>
+
+    <div class="ms-card">
+      <div class="ms-motif"><svg width="96" height="96" viewBox="0 0 96 96"><g fill="#a9823b"><circle cx="48" cy="14" r="3.4" opacity=".35"/><circle cx="72" cy="24" r="3.4" opacity=".43"/><circle cx="82" cy="48" r="3.4" opacity=".51"/><circle cx="72" cy="72" r="3.4" opacity=".59"/><circle cx="48" cy="82" r="3.4" opacity=".67"/><circle cx="24" cy="72" r="3.4" opacity=".75"/><circle cx="14" cy="48" r="3.4" opacity=".83"/><circle cx="24" cy="24" r="3.4" opacity=".91"/></g></svg></div>
+      <div class="ms-kicker">我們要做的事</div>
+      <div class="ms-t">把你平常沒留意的<br>能量習慣——</div>
+      <div class="ms-s">從心底，<b>搬到眼前</b>。<br>讓你看見自己。</div>
+    </div>
+
+    <div class="ms-dots" id="ms-dots"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="ms-nav">
+      <button class="ms-back hide" id="ms-back" onclick="msBack()">← 上一步</button>
+      <button class="start-btn" id="ms-next" onclick="msNext()">下一步</button>
+    </div>
   </div>
-  <button class="start-btn" onclick="startQuiz()">我準備好了，開始作答 →</button>
-  <a class="home-link" style="margin-top:14px" onclick="document.getElementById('mindset').style.display='none';document.getElementById('cover').style.display='block';window.scrollTo(0,0);return false;" href="#">← 再想想</a>
-  <div class="honest" style="border-left-color:var(--pine)">慢慢來——這一停，是為了讓底色測得準；底色準，後面的解讀才準。</div>
+  <a class="home-link" style="margin-top:16px" onclick="document.getElementById('mindset').style.display='none';document.getElementById('cover').style.display='block';window.scrollTo(0,0);return false;" href="#">← 再想想</a>
 </div>
 
 <!-- ───────── QUIZ ───────── -->
@@ -537,6 +582,22 @@ function showFacetBanner(){
   }
 }
 
+// 進場四卡（安定→站位→怎麼答→為什麼）：可滑、最後一張接 startQuiz
+var msIdx=0;
+function msShow(i){
+  var stage=document.getElementById('ms-stage'); if(!stage) return;
+  var cards=stage.querySelectorAll('.ms-card'), dots=document.getElementById('ms-dots').children, n=cards.length;
+  cards[msIdx].classList.remove('on'); msIdx=Math.max(0,Math.min(n-1,i)); cards[msIdx].classList.add('on');
+  for(var j=0;j<n;j++) dots[j].className=(j===msIdx?'on':'');
+  document.getElementById('ms-back').className='ms-back'+(msIdx===0?' hide':'');
+  var nx=document.getElementById('ms-next');
+  nx.textContent=(msIdx===n-1)?'我準備好了，開始作答 →':'下一步';
+  window.scrollTo(0,0);
+}
+function msNext(){ var n=document.querySelectorAll('#ms-stage .ms-card').length; if(msIdx<n-1) msShow(msIdx+1); else startQuiz(); }
+function msBack(){ if(msIdx>0) msShow(msIdx-1); }
+function msReset(){ var cards=document.querySelectorAll('#ms-stage .ms-card'); for(var j=0;j<cards.length;j++) cards[j].classList.toggle('on',j===0); msIdx=0; msShow(0); }
+
 // 測底色前先過心態卡（場域測驗不走這裡，直接 startFacet）
 function showMindset(){
   document.getElementById('cover').style.display='none';
@@ -544,6 +605,7 @@ function showMindset(){
   document.getElementById('compat').style.display='none';
   document.getElementById('quiz').style.display='none';
   var m=document.getElementById('mindset'); if(m) m.style.display='block';
+  msReset();
   window.scrollTo(0,0);
 }
 function startQuiz(){
