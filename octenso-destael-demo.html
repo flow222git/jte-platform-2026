@@ -1,0 +1,80 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · de Staël 色塊</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#23211c;color:#e8dcc0;font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#9c9078;text-transform:uppercase;margin-bottom:4px}
+  .ref{font-size:11px;color:#8a8170;margin-bottom:12px;letter-spacing:.05em}
+  .sheet{position:relative;width:min(420px,94vw);border-radius:4px;overflow:hidden;box-shadow:0 10px 44px rgba(0,0,0,.5)}
+  .sheet svg{display:block;width:100%;height:auto}
+  .seal{position:absolute;right:16px;top:16px;width:30px;height:30px;border-radius:5px;background:rgba(178,52,40,.92);z-index:3;
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:15px;font-weight:600}
+  .cap{position:absolute;left:0;right:0;bottom:18px;text-align:center;z-index:3;pointer-events:none}
+  .cap .t{font-family:"Noto Serif TC",serif;font-weight:600;font-size:20px;color:#2a2620;letter-spacing:.14em;text-shadow:0 1px 7px rgba(250,247,240,.9)}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#e8dcc0;border:1px solid rgba(232,220,192,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:20px}
+  button:hover{border-color:#e8dcc0}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記</div>
+<div class="ref">路 1 · de Staël 刀法色塊（厚塗大色板）</div>
+<div class="sheet"><svg id="art" viewBox="0 0 420 520"></svg><div class="seal">印</div>
+  <div class="cap"><div class="t" id="title">行動沉澱者</div></div></div>
+<button id="next">換一個人 →</button>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=420, H=520, CX=210, CY=250;
+var EN=[{n:'開創',c:'#d9a838'},{n:'明現',c:'#cf3b24'},{n:'行動',c:'#2f9c54'},{n:'交流',c:'#d06a83'},
+        {n:'承接',c:'#b07c34'},{n:'沉澱',c:'#2f68a6'},{n:'喊停',c:'#9a8e76'},{n:'拓展',c:'#2ba596'}];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,82,66,72,50,44,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hx(c,d){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=function(v){return d>0?v+(255-v)*d:v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');}
+function desat(c,a){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,gr=(r*.3+g*.5+b*.2),m=function(v){return v+(gr-v)*a;};
+  return '#'+[m(r),m(g),m(b)].map(function(v){return ('0'+Math.round(v).toString(16)).slice(-2);}).join('');}
+function clr(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function ecol(i,ng){ var c=EN[i].c; return ng==='over'?hx(c,0.08):ng==='under'?hx(desat(c,0.55),-0.22):c; }
+
+function draw(P){
+  var svg=document.getElementById('art'); clr(svg);
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#efe7d4'}); // 帶調的底（露出＝留白氣）
+  var s=P.sc.reduce(function(a,v,i){return a+v*(i*53+17);},91); function rnd(){s=(s*9301+49297)%233280;return s/233280;}
+  // 每股的「影響中心」與範圍：分數越高、越往外、覆蓋越廣
+  var cen=EN.map(function(e,i){var a=ang(i),push=58+P.sc[i]/100*66;return {x:CX+Math.cos(a)*push,y:CY+Math.sin(a)*push*1.18,sig:54+P.sc[i]/100*46};});
+  // 厚塗色板
+  function block(cx,cy,w,h,rot,col){
+    var g=el(svg,'g',{transform:'translate('+cx.toFixed(1)+','+cy.toFixed(1)+') rotate('+rot.toFixed(1)+')'});
+    el(g,'rect',{x:(-w/2+2).toFixed(1),y:(-h/2+2.5).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),rx:2,fill:hx(col,-0.32),opacity:.55}); // 底影
+    el(g,'rect',{x:(-w/2).toFixed(1),y:(-h/2).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),rx:2,fill:col});                            // 主色板
+    el(g,'rect',{x:(-w/2).toFixed(1),y:(-h/2).toFixed(1),width:w.toFixed(1),height:'2.4',rx:1,fill:hx(col,0.42),opacity:.8});               // 上緣高光
+    el(g,'rect',{x:(-w/2).toFixed(1),y:(-h/2).toFixed(1),width:'2.4',height:h.toFixed(1),rx:1,fill:hx(col,0.42),opacity:.7});               // 左緣高光
+  }
+  // 抖動網格：每格交給「影響最強」的那股 → 形成加權色域、相鄰相疊
+  var cols=7, rows=9, cw=W/cols, ch=H/rows;
+  for(var gy=0;gy<rows;gy++) for(var gx=0;gx<cols;gx++){
+    var px=(gx+0.5)*cw+(rnd()-.5)*cw*0.5, py=(gy+0.5)*ch+(rnd()-.5)*ch*0.5;
+    var best=-1,bi=0; EN.forEach(function(e,i){ var dx=px-cen[i].x,dy=py-cen[i].y,inf=P.sc[i]*Math.exp(-(dx*dx+dy*dy)/(2*cen[i].sig*cen[i].sig)); if(inf>best){best=inf;bi=i;} });
+    if(best<7) continue; // 影響太弱 → 留底（呼吸）
+    var w=cw*(0.92+rnd()*0.5), h=ch*(0.92+rnd()*0.5), rot=(rnd()-.5)*10;
+    block(px,py,w,h,rot,ecol(bi,P.ng[bi]));
+  }
+  // 畫框
+  var fw=15; el(svg,'rect',{x:fw/2,y:fw/2,width:W-fw,height:H-fw,fill:'none',stroke:'#2a2117','stroke-width':fw});
+  el(svg,'rect',{x:fw+2.5,y:fw+2.5,width:W-2*fw-5,height:H-2*fw-5,fill:'none',stroke:'#9c7c3e','stroke-width':1.4,opacity:.85});
+  document.getElementById('title').textContent=P.t;
+}
+var idx=0;
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; draw(PEOPLE[idx]); };
+draw(PEOPLE[0]);
+</script>
+</body></html>
