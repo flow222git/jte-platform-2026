@@ -30,8 +30,11 @@
 <script>
 var NS='http://www.w3.org/2000/svg', W=420, H=520, CX=210, CY=250;
 // 鮮明的油畫色盤（比土色禪更飽和）
-var EN=[{n:'開創',c:'#d9a838'},{n:'明現',c:'#cf3b24'},{n:'行動',c:'#2f9c54'},{n:'交流',c:'#d06a83'},
-        {n:'承接',c:'#b07c34'},{n:'沉澱',c:'#2f68a6'},{n:'喊停',c:'#9a8e76'},{n:'拓展',c:'#2ba596'}];
+// 每個卦＝一種本性筆觸（取象）：乾果決直筆/離放射火舌/震閃電折線/兌輕點水珠/坤寬厚平塗/坎水紋曲線/艮方塊堆疊/巽飄逸長曲
+var EN=[{n:'開創',c:'#d9a838',br:'line',dir:'radial'},{n:'明現',c:'#cf3b24',br:'flame',dir:'radial'},
+        {n:'行動',c:'#2f9c54',br:'zig',dir:'rand'},{n:'交流',c:'#d06a83',br:'dot',dir:'rand'},
+        {n:'承接',c:'#b07c34',br:'flat',dir:'horiz'},{n:'沉澱',c:'#2f68a6',br:'wave',dir:'tangent'},
+        {n:'喊停',c:'#9a8e76',br:'block',dir:'horiz'},{n:'拓展',c:'#2ba596',br:'curve',dir:'tangent'}];
 var PEOPLE=[
  {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
  {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
@@ -55,30 +58,41 @@ function draw(P){
   // 偽隨機（依分數種子，換人就變、同人穩定）
   var s=P.sc.reduce(function(a,v,i){return a+v*(i*53+17);},91);
   function rnd(){s=(s*9301+49297)%233280;return s/233280;}
-  function stroke(px,py,dir,len,w,col){
-    var dx=Math.cos(dir),dy=Math.sin(dir);
-    // 底影（讓筆觸有厚度）
-    el(svg,'line',{x1:px-dx*len/2,y1:py-dy*len/2+0.8,x2:px+dx*len/2,y2:py+dy*len/2+0.8,stroke:hx(col,-0.35),'stroke-width':w,'stroke-linecap':'round',opacity:.5});
-    el(svg,'line',{x1:px-dx*len/2,y1:py-dy*len/2,x2:px+dx*len/2,y2:py+dy*len/2,stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:.97});
-    // 光脊（厚塗高光）
-    var ox=-dy*(w*0.16),oy=dx*(w*0.16);
-    el(svg,'line',{x1:px-dx*len*0.36+ox,y1:py-dy*len*0.36+oy,x2:px+dx*len*0.36+ox,y2:py+dy*len*0.36+oy,stroke:hx(col,0.5),'stroke-width':Math.max(1,w*0.32),'stroke-linecap':'round',opacity:.7});
+  function L2(x1,y1,x2,y2,w,c,op){el(svg,'line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:c,'stroke-width':w,'stroke-linecap':'round',opacity:op==null?.96:op});}
+  // 八種本性筆觸
+  function brush(type,px,py,dir,sz,col){
+    var dx=Math.cos(dir),dy=Math.sin(dir),nx=-dy,ny=dx;
+    if(type==='line'){ var Ln=18+sz*22,w=6+sz*5,x1=px-dx*Ln/2,y1=py-dy*Ln/2,x2=px+dx*Ln/2,y2=py+dy*Ln/2;
+      L2(x1,y1+0.8,x2,y2+0.8,w,hx(col,-0.35),.5); L2(x1,y1,x2,y2,w,col); L2(px-dx*Ln*0.32,py-dy*Ln*0.32,px+dx*Ln*0.32,py+dy*Ln*0.32,Math.max(1,w*0.3),hx(col,0.5),.65); }
+    else if(type==='flat'){ var Lf=9+sz*9,w2=11+sz*6; L2(px-dx*Lf/2,py-dy*Lf/2+0.8,px+dx*Lf/2,py+dy*Lf/2+0.8,w2,hx(col,-0.3),.5); L2(px-dx*Lf/2,py-dy*Lf/2,px+dx*Lf/2,py+dy*Lf/2,w2,col); }
+    else if(type==='zig'){ var s=7+sz*9,a2=dir+(rnd()>.5?1:-1)*1.15,mx=px+dx*s,my=py+dy*s;
+      el(svg,'polyline',{points:(px-dx*s)+','+(py-dy*s)+' '+mx+','+my+' '+(mx+Math.cos(a2)*s)+','+(my+Math.sin(a2)*s),fill:'none',stroke:col,'stroke-width':4+sz*3,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.96}); }
+    else if(type==='dot'){ var r=2.4+sz*4; el(svg,'circle',{cx:px,cy:py,r:r,fill:col,opacity:.95}); el(svg,'circle',{cx:px-r*.3,cy:py-r*.3,r:r*.42,fill:hx(col,.55),opacity:.6}); }
+    else if(type==='wave'||type==='curve'){ var Lc=18+sz*24,w3=3.5+sz*3.5,bend=(rnd()-.5)*(type==='curve'?2.4:1.5)*(8+sz*14);
+      var x1=px-dx*Lc/2,y1=py-dy*Lc/2,x2=px+dx*Lc/2,y2=py+dy*Lc/2,qx=px+nx*bend,qy=py+ny*bend,d='M'+x1.toFixed(1)+','+y1.toFixed(1)+' Q'+qx.toFixed(1)+','+qy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1);
+      el(svg,'path',{d:d,fill:'none',stroke:col,'stroke-width':w3,'stroke-linecap':'round',opacity:.95}); el(svg,'path',{d:d,fill:'none',stroke:hx(col,.45),'stroke-width':Math.max(1,w3*0.3),'stroke-linecap':'round',opacity:.5}); }
+    else if(type==='flame'){ var Lm=10+sz*17,wm=5+sz*4,bx=px-dx*Lm*0.4,by=py-dy*Lm*0.4;
+      el(svg,'path',{d:'M'+(bx+nx*wm/2).toFixed(1)+','+(by+ny*wm/2).toFixed(1)+' L'+(bx-nx*wm/2).toFixed(1)+','+(by-ny*wm/2).toFixed(1)+' L'+(px+dx*Lm*0.6).toFixed(1)+','+(py+dy*Lm*0.6).toFixed(1)+' Z',fill:col,opacity:.95}); }
+    else if(type==='block'){ var bs=7+sz*6,deg=(dir*57.3).toFixed(0);
+      el(svg,'rect',{x:(-bs/2).toFixed(1),y:(-bs*0.4).toFixed(1),width:bs.toFixed(1),height:(bs*0.8).toFixed(1),rx:1,fill:col,opacity:.96,transform:'translate('+px.toFixed(1)+','+py.toFixed(1)+') rotate('+deg+')'});
+      el(svg,'rect',{x:(-bs/2).toFixed(1),y:(-bs*0.4).toFixed(1),width:(bs*0.38).toFixed(1),height:(bs*0.8).toFixed(1),fill:hx(col,.45),opacity:.5,transform:'translate('+px.toFixed(1)+','+py.toFixed(1)+') rotate('+deg+')'}); }
   }
-  // 繪製順序：最弱先畫、最強最後（疊在最上層→立體感）。強度＝分數×能格權重
+  // 繪製順序：最弱先畫、最強最後（疊在最上層→立體感）
   var stw={over:1.35,mid:1,under:0.6};
   var order=EN.map(function(e,i){return i;}).sort(function(x,y){ return P.sc[x]*stw[P.ng[x]] - P.sc[y]*stw[P.ng[y]]; });
   order.forEach(function(i){ var e=EN[i], a=ang(i), ng=P.ng[i];
-    var push=26+P.sc[i]/100*52, cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16; // 拉近→中間也補滿
-    var cnt=Math.round(P.sc[i]/100*66*(ng==='over'?1.5:ng==='under'?.42:1));
-    var spread=42+P.sc[i]/100*56;                                   // 散得開→填滿、互疊
+    var push=26+P.sc[i]/100*52, cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16;
+    var cnt=Math.round(P.sc[i]/100*60*(ng==='over'?1.5:ng==='under'?.42:1)), spread=42+P.sc[i]/100*56;
     for(var k=0;k<cnt;k++){
       var rr=Math.sqrt(rnd())*spread, ra=rnd()*6.283, px=cx+Math.cos(ra)*rr, py=cy+Math.sin(ra)*rr*1.1;
-      var dir=rnd()*6.283, len=10+rnd()*22, w=5+rnd()*7;            // 完全隨性
-      var lj=(rnd()-.5)*0.5, col;
-      if(ng==='over') col=hx(e.c, 0.05+Math.max(0,lj*0.8));          // 過用：更鮮明（亮、艷）
-      else if(ng==='under') col=hx(desat(e.c,0.62), -0.3+lj*0.4);   // 不足：更黯淡（去彩、壓暗）
-      else col=hx(e.c, lj);                                          // 適中：明暗多層次
-      stroke(px,py,dir,len,w,col);
+      var radA=Math.atan2(py-CY,px-CX), dir;
+      if(e.dir==='radial') dir=radA+(rnd()-.5)*0.5; else if(e.dir==='tangent') dir=radA+1.5708+(rnd()-.5)*0.6;
+      else if(e.dir==='horiz') dir=(rnd()-.5)*0.4; else dir=rnd()*6.283;
+      var sz=(ng==='over'?1.18:ng==='under'?0.66:1)*(0.6+rnd()*0.6), lj=(rnd()-.5)*0.5, col;
+      if(ng==='over') col=hx(e.c, 0.05+Math.max(0,lj*0.8));          // 過用：更鮮明
+      else if(ng==='under') col=hx(desat(e.c,0.62), -0.3+lj*0.4);   // 不足：更黯淡
+      else col=hx(e.c, lj);
+      brush(e.br,px,py,dir,sz,col);
     }
   });
   el(svg,'rect',{x:0,y:0,width:W,height:H,filter:'url(#cv)',opacity:.4}); // 畫布紋
