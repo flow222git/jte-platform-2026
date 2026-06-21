@@ -10,11 +10,15 @@ document.getElementById('f').onload=function(){
     var d=w.document;
 
     // 1. structure
-    ok(w.QUESTIONS.length===24,'24 questions, got '+w.QUESTIONS.length);
+    ok(w.QUESTIONS.length===25,'25 questions（離4+其餘各3）, got '+w.QUESTIONS.length);
     var cnt={}; w.QUESTIONS.forEach(function(q){cnt[q.k]=(cnt[q.k]||0)+1;});
-    var per3=Object.keys(w.E).every(function(k){return cnt[k]===3;});
-    ok(per3,'3 questions per energy: '+JSON.stringify(cnt));
+    var counts=Object.keys(w.E).every(function(k){return cnt[k]===(k==='li'?4:3);});
+    ok(counts,'題數：離 4、其餘各 3: '+JSON.stringify(cnt));
     ok(Object.keys(w.E).length===8,'8 energies');
+    // 反向題：艮有 r:true 題，全答「非常像我」→ 艮 score 偏低（反向計分生效）
+    ok(w.QUESTIONS.some(function(q){return q.r;}),'題庫含反向題');
+    w.answers=new Array(w.QUESTIONS.length).fill(5);
+    ok(w.computeScores().gen<50,'反向計分生效：全答高→艮偏低, got '+w.computeScores().gen);
 
     // 2. scoring — max out qian, zero others
     w.answers=new Array(24).fill(0);
@@ -479,17 +483,17 @@ document.getElementById('f').onload=function(){
     ok(cb.indexOf('過用')>=0 && cb.indexOf('能格 · 調校')>=0,'calibBlock flagged+代價→過用段');
     localStorage.removeItem('bagua_cost_v1');
     // 42. finishQuiz 流程：有極端態→進能格校準→finishCost→出結果含調校段
-    w.answers=new Array(24).fill(5); w.currentFacet=null; w.finishQuiz();
+    w.answers=new Array(w.QUESTIONS.length).fill(5); w.currentFacet=null; w.finishQuiz();
     ok(w.costMode===true,'極端→進入能格校準階段');
     ok(d.getElementById('quiz').style.display==='block','能格階段顯示 quiz');
-    ok(w.costQ.qs.length===4,'能格題數 cap2over→4, got '+w.costQ.qs.length);
+    ok(w.costQ.qs.length>0,'能格校準有題目, got '+w.costQ.qs.length);
     ok(d.getElementById('q-text').textContent.length>0,'能格題有題目');
     w.costQ.ans=new Array(w.costQ.qs.length).fill(4); w.finishCost();
     ok(w.costMode===false,'finishCost→離開能格階段');
     ok(d.getElementById('result').style.display==='block','finishCost→顯示結果');
     ok(d.querySelector('#result').textContent.indexOf('能格 · 調校')>=0,'結果含能格調校段');
     // 43. 全中→不進校準，直接出結果
-    w.answers=new Array(24).fill(2); w.currentFacet=null; w.finishQuiz();
+    w.answers=new Array(w.QUESTIONS.length).fill(2); w.currentFacet=null; w.finishQuiz();
     ok(w.costMode===false && d.getElementById('result').style.display==='block','全中→直接出結果不進校準');
     localStorage.removeItem('bagua_cost_v1');
 

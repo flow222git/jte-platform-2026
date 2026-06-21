@@ -368,7 +368,7 @@
   <div class="guide">
     <div class="guide-h">施測指導語</div>
     <p>這測的是你的「<b>底色</b>」——平常、整體的你。<b>下一步</b>會帶你把心態設定好，再開始。</p>
-    <p class="guide-meta">24 題 · 約 3 分鐘 · 不需登入</p>
+    <p class="guide-meta">25 題 · 約 3 分鐘 · 不需登入</p>
   </div>
   <button class="start-btn" onclick="showMindset()">開始施測</button>
   <a href="bagua-records.html" style="display:inline-block;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin:8px 0 6px">我的記錄</a>
@@ -427,7 +427,7 @@
     <div class="fb-f" id="fb-frame"></div>
   </div>
   <div class="prog-wrap">
-    <div class="prog-top"><span id="prog-label" class="sans">第 1 / 24 題</span><span id="prog-pct" class="sans">0%</span></div>
+    <div class="prog-top"><span id="prog-label" class="sans">第 1 / 25 題</span><span id="prog-pct" class="sans">0%</span></div>
     <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
   </div>
   <div class="q-num" id="q-num">Q1</div>
@@ -498,32 +498,33 @@ var TOOLS={
  baguamap:{nm:'八態能量系統圖',url:'bagua-map.html',ic:'☯',ds:'認識這八種內在能量。'}
 };
 
-// 24 questions, 3 per energy, interleaved (round-robin over the 8)
+// 25 questions（離 4 題＝明現「見＋顯」兩面；其餘 8 卦各 3）；部分反向題（r:true，同意＝該能量不足）
 var QUESTIONS=[
  {k:'qian',t:'面對一群人沒方向時，我常是跳出來做決定、定方向的那個。'},
  {k:'dui', t:'我喜歡跟人聊天、分享，在互動裡會感到開心又有活力。'},
  {k:'li',  t:'遇到事情，我習慣先看清楚、想明白，再決定怎麼做。'},
- {k:'xun', t:'我擅長把人、資源、機會串在一起，讓事情慢慢長大。'},
+ {k:'xun', t:'認識新的人事物時，我會自然地想把它跟已經認識的連起來。'},
  {k:'zhen',t:'有了念頭我會很快行動，不太喜歡拖。'},
  {k:'kan', t:'我需要獨處、安靜的時間來沉澱和恢復。'},
- {k:'gen', t:'該停的時候我停得下來，也敢對不適合的事說「不」。'},
- {k:'kun', t:'我願意承接別人的情緒和需要，是大家可以依靠的人。'},
+ {k:'gen', r:true, t:'事情該收手了，我常還會再多撐一下、停不太下來。'},
+ {k:'kun', t:'身邊的人有情緒或困難時，我常會先去接住、照顧他們。'},
  {k:'qian',t:'比起照著別人的安排走，我更想自己開創、自己作主。'},
  {k:'dui', t:'心裡有想法或感受，我習慣說出來、和人交流。'},
- {k:'li',  t:'我常能察覺別人沒注意到的細節或盲點。'},
+ {k:'li',  t:'在一群人裡，我常是先注意到「哪裡怪怪的、哪裡卡住」的那個。'},
  {k:'xun', t:'我做事偏柔軟、順勢推進，而不是硬碰硬。'},
  {k:'zhen',t:'我喜歡嘗試新的、有點冒險的事，享受「開始」的衝勁。'},
  {k:'kan', t:'累了或低潮時，我習慣往內收、慢慢調整，而不是往外衝。'},
- {k:'gen', t:'我重視自己的界線和節奏，不會被別人輕易推著走。'},
+ {k:'gen', r:true, t:'別人很堅持的時候，我容易順著對方、把自己的節奏讓掉。'},
  {k:'kun', t:'比起搶著表現，我更常在背後支持、照顧，讓事情穩穩運轉。'},
  {k:'qian',t:'我喜歡設定大目標，然後想辦法把它實現。'},
  {k:'dui', t:'我很能炒熱氣氛，讓一群人聊得起來。'},
- {k:'li',  t:'我喜歡分析、理解事情背後的道理。'},
+ {k:'li',  t:'有想法或成果時，我會想把它清楚地表達出來、讓人看見。'},
  {k:'xun', t:'我喜歡讓好的東西擴散出去、影響更多人。'},
  {k:'zhen',t:'卡住時，我傾向用行動去突破，而不是一直想。'},
  {k:'kan', t:'我喜歡深入地想事情，享受沉靜反思的時刻。'},
  {k:'gen', t:'我做事踏實穩定，知道適可而止，不喜歡硬撐。'},
- {k:'kun', t:'我有耐心、能包容，容得下不同的人和狀況。'}
+ {k:'kun', t:'碰到跟我很不一樣、或讓我不耐煩的人，我通常還是容得下、不會馬上想推開。'},
+ {k:'li',  t:'比起默默把事做好，我更在意它有沒有被看見、被理解。'}
 ];
 var OPTS=[{t:'非常像我',v:5},{t:'大致像我',v:4},{t:'有點像我',v:3},{t:'有點不像',v:2},{t:'大致不像',v:1},{t:'完全不像',v:0}];
 var SMAX=Math.max.apply(null,OPTS.map(function(o){return o.v;})); // 量表最高分，正規化用
@@ -687,7 +688,7 @@ function computeScores(){
   var raw={},cnt={};
   Object.keys(E).forEach(function(k){raw[k]=0;cnt[k]=0;});
   QUESTIONS.forEach(function(q,i){
-    var v=answers[i]==null?0:answers[i];
+    var a=answers[i]; var v=(a==null)?0:(q.r?SMAX-a:a); // q.r＝反向題（同意＝該能量「不足」）
     raw[q.k]+=v; cnt[q.k]++;
   });
   var sc={};
@@ -696,7 +697,7 @@ function computeScores(){
 }
 // 確信度：同一態 3 題答得一致＋偏極端＝篤定；分散＝兩可；一致但偏中＝平淡。需 answers，存進存檔供回看。
 function computeConf(){
-  var byK={}; QUESTIONS.forEach(function(q,i){ (byK[q.k]=byK[q.k]||[]).push(answers[i]); });
+  var byK={}; QUESTIONS.forEach(function(q,i){ var a=answers[i]; (byK[q.k]=byK[q.k]||[]).push(a==null?null:(q.r?SMAX-a:a)); });
   var conf={};
   EKEYS.forEach(function(k){
     var a=(byK[k]||[]).filter(function(v){return v!=null;});
@@ -782,7 +783,7 @@ function finishCost(){
   Object.keys(byK).forEach(function(k){ var a=byK[k].vals, avg=a.reduce(function(s,v){return s+v;},0)/a.length; items.push({k:k,dir:byK[k].dir,avg:avg}); });
   try{ localStorage.setItem('bagua_cost_v1', JSON.stringify({items:items,ts:new Date().toISOString()})); }catch(e){}
   costMode=false;
-  showResult(); // 用 24 題 trait answers 重算並存底色；calibBlock 讀 bagua_cost_v1
+  showResult(); // 用 25 題 trait answers 重算並存底色；calibBlock 讀 bagua_cost_v1
 }
 // 能格·調校 報告段
 function calibBlock(sc){
@@ -963,7 +964,7 @@ function renderSharedReport(sc,name){
     +radarCard(null)
     +'<div class="pullq" style="font-size:16px;padding-bottom:14px">'+kws+'</div>'
     +'<button class="start-btn" style="display:block;margin:4px auto 6px" onclick="showMindset()">測測你自己的能量 →</button>'
-    +'<div class="share-hint" style="margin-bottom:18px">24 題 · 約 3 分鐘 · 看你慣用哪幾種能量</div>'
+    +'<div class="share-hint" style="margin-bottom:18px">25 題 · 約 3 分鐘 · 看你慣用哪幾種能量</div>'
     +'<details class="rsec"><summary><span>看 '+who+' 的完整解讀<span class="rsum-hint">型・雷達・四個系統・人物速寫</span></span><span class="rchev">▾</span></summary><div class="rbody">'+full+'</div></details>'
     +'<button class="retake" onclick="goCompatShare(\''+code+'\')">想跟 '+who+' 合盤？先測你自己 →</button>'
     +'<div class="foot">這是能量<b>傾向</b>，不是固定標籤——會流動、可以成長。這不是算命，是一面認識自己的鏡子。<br><br>Octenso ｜ 八態能格 · 練息場 Join to Enjoy</div>';
