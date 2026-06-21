@@ -64,21 +64,28 @@ function draw(P){
     var ox=-dy*(w*0.16),oy=dx*(w*0.16);
     el(svg,'line',{x1:px-dx*len*0.36+ox,y1:py-dy*len*0.36+oy,x2:px+dx*len*0.36+ox,y2:py+dy*len*0.36+oy,stroke:hx(col,0.5),'stroke-width':Math.max(1,w*0.32),'stroke-linecap':'round',opacity:.7});
   }
-  EN.forEach(function(e,i){ var a=ang(i), push=46+P.sc[i]/100*78, ng=P.ng[i];
-    var cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16;
-    var cnt=Math.round(P.sc[i]/100*60*(ng==='over'?1.4:ng==='under'?.45:1));
-    var spread=24+P.sc[i]/100*46;
+  // 繪製順序：最弱先畫、最強最後（疊在最上層→立體感）。強度＝分數×能格權重
+  var stw={over:1.35,mid:1,under:0.6};
+  var order=EN.map(function(e,i){return i;}).sort(function(x,y){ return P.sc[x]*stw[P.ng[x]] - P.sc[y]*stw[P.ng[y]]; });
+  order.forEach(function(i){ var e=EN[i], a=ang(i), ng=P.ng[i];
+    var push=26+P.sc[i]/100*52, cx=CX+Math.cos(a)*push, cy=CY+Math.sin(a)*push*1.16; // 拉近→中間也補滿
+    var cnt=Math.round(P.sc[i]/100*66*(ng==='over'?1.5:ng==='under'?.42:1));
+    var spread=42+P.sc[i]/100*56;                                   // 散得開→填滿、互疊
     for(var k=0;k<cnt;k++){
-      var rr=Math.sqrt(rnd())*spread, ra=rnd()*6.283, px=cx+Math.cos(ra)*rr, py=cy+Math.sin(ra)*rr*1.12;
+      var rr=Math.sqrt(rnd())*spread, ra=rnd()*6.283, px=cx+Math.cos(ra)*rr, py=cy+Math.sin(ra)*rr*1.1;
       var dir=rnd()*6.283, len=10+rnd()*22, w=5+rnd()*7;            // 完全隨性
-      var lj=(rnd()-.5)*0.5, col=e.c;
-      if(ng==='over') col=hx(e.c,0.06+Math.max(0,lj));               // 過用：更亮更艷
-      else if(ng==='under') col=hx(desat(e.c,0.55),-0.1+lj*0.5);     // 不足：去彩、暗
-      else col=hx(e.c,lj);                                            // 適中：明暗多層次
+      var lj=(rnd()-.5)*0.5, col;
+      if(ng==='over') col=hx(e.c, 0.05+Math.max(0,lj*0.8));          // 過用：更鮮明（亮、艷）
+      else if(ng==='under') col=hx(desat(e.c,0.62), -0.3+lj*0.4);   // 不足：更黯淡（去彩、壓暗）
+      else col=hx(e.c, lj);                                          // 適中：明暗多層次
       stroke(px,py,dir,len,w,col);
     }
   });
   el(svg,'rect',{x:0,y:0,width:W,height:H,filter:'url(#cv)',opacity:.4}); // 畫布紋
+  // 畫框：深木邊＋內金線
+  var fw=15;
+  el(svg,'rect',{x:fw/2,y:fw/2,width:W-fw,height:H-fw,fill:'none',stroke:'#2a2117','stroke-width':fw});
+  el(svg,'rect',{x:fw+2.5,y:fw+2.5,width:W-2*fw-5,height:H-2*fw-5,fill:'none',stroke:'#9c7c3e','stroke-width':1.4,opacity:.85});
   document.getElementById('title').textContent=P.t;
 }
 var idx=0;
