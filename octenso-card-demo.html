@@ -37,6 +37,18 @@
   .btns{display:flex;gap:12px;justify-content:center;margin:26px 0 6px;flex-wrap:wrap}
   .btn{font-family:"Noto Serif TC",serif;font-size:14px;letter-spacing:.06em;border-radius:999px;padding:10px 24px;cursor:pointer;border:1px solid var(--gold);background:var(--gold);color:#1c1812}
   .btn.ghost{background:transparent;color:var(--ink)}
+  details.sec{border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#faf6ec;overflow:hidden}
+  details.sec>summary{list-style:none;cursor:pointer;padding:13px 16px;font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary .cv{font-family:"Jost",sans-serif;font-size:13px;color:var(--muted);transition:transform .2s}
+  details.sec[open]>summary .cv{transform:rotate(180deg)}
+  .secbody{padding:2px 16px 15px;font-size:13.5px;color:var(--ink2);line-height:1.9}
+  .sysrow{padding:8px 0;border-top:1px solid var(--line)} .sysrow b{color:var(--ink)}
+  .sysrow .tag{color:var(--deepgold);font-weight:500}
+  .radarwrap{text-align:center;padding:6px 0}
+  .cta{display:block;border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin:9px 0;background:#faf6ec;text-decoration:none;color:var(--ink)}
+  .cta:hover{border-color:var(--hair)} .cta .ct{font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px}
+  .cta .cd{font-size:12.5px;color:var(--muted);margin-top:2px}
   .foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:24px;line-height:1.9;border-top:1px solid var(--line);padding-top:18px}
 </style></head>
 <body><div class="wrap">
@@ -55,6 +67,16 @@
 <h3><span class="hk">讀這幅畫 · 圖例</span></h3>
 <div class="beat" style="margin-bottom:8px">每個顏色與筆觸＝一股能量；長條＝分數、右邊＝能格。</div>
 <div id="legend"></div>
+
+<h3><span class="hk">看細節 · 想深入再展開</span></h3>
+<details class="sec"><summary>雷達 · 數值對照版<span class="cv">⌄</span></summary><div class="secbody radarwrap"><svg id="radar" width="240" height="240" viewBox="0 0 240 240"></svg></div></details>
+<details class="sec"><summary>四個系統 · 四對待<span class="cv">⌄</span></summary><div class="secbody" id="sysbody"></div></details>
+<details class="sec"><summary>能格 · 怎麼調<span class="cv">⌄</span></summary><div class="secbody" id="ngbody"></div></details>
+
+<h3><span class="hk">下一步 · 把底色用出去</span></h3>
+<a class="cta"><div class="ct">場景耗能 →</div><div class="cd">看某個處境，正在掏空你哪幾股能量</div></a>
+<a class="cta"><div class="ct">雙人合盤 →</div><div class="cd">你和某個人的能量怎麼互動、誰帶誰靠</div></a>
+<a class="cta"><div class="ct">想成為的你 →</div><div class="cd">現況與理想的落差，就是你想長的方向</div></a>
 
 <div class="btns"><button class="btn" onclick="alert('（demo：這裡會把這幅畫輸出成 PNG 下載／分享）')">存成能量印記 ↓</button>
   <button class="btn ghost" id="next">換一個人 →</button></div>
@@ -135,8 +157,26 @@ function read(P){
       +'<span class="ng ng-'+ng+'">'+(ng==='over'?'過用':ng==='under'?'不足':'適中')+'</span>';
     lg.appendChild(row);});
 }
+var SYS=[{nm:'天地·建構',a:0,b:4},{nm:'雷風·推動',a:2,b:7},{nm:'水火·認知',a:5,b:1},{nm:'山澤·調節',a:6,b:3}];
+function detail(P){
+  var svg=document.getElementById('radar'); clr(svg); var cx=120,cy=120,R=86;
+  [.5,1].forEach(function(f){var d='';for(var i=0;i<8;i++){var a=ang(i),x=cx+Math.cos(a)*R*f,y=cy+Math.sin(a)*R*f;d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);}el(svg,'path',{d:d+'Z',fill:'none',stroke:'#ddd2bf'});});
+  for(var i=0;i<8;i++){var a=ang(i);el(svg,'line',{x1:cx,y1:cy,x2:(cx+Math.cos(a)*R).toFixed(1),y2:(cy+Math.sin(a)*R).toFixed(1),stroke:'#e7decd'});}
+  var dd='';for(var i=0;i<8;i++){var a=ang(i),r=R*0.16+P.sc[i]/100*R*0.84,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;dd+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1);}
+  el(svg,'path',{d:dd+'Z',fill:'rgba(60,90,73,.14)',stroke:'#3c5a49','stroke-width':2});
+  for(var i=0;i<8;i++){var a=ang(i),lr=R+13,lx=cx+Math.cos(a)*lr,ly=cy+Math.sin(a)*lr;var t=el(svg,'text',{x:lx.toFixed(1),y:(ly+3).toFixed(1),'text-anchor':(Math.cos(a)>.3?'start':Math.cos(a)<-.3?'end':'middle'),'font-family':'"Noto Sans TC",sans-serif','font-size':'10',fill:'#857c6d'});t.textContent=EN[i].n+' '+P.sc[i];}
+  var sb=document.getElementById('sysbody'); sb.innerHTML='';
+  SYS.forEach(function(s){var L=P.sc[s.a],Rr=P.sc[s.b],tag;
+    if(L>=58&&Rr>=58)tag='兩邊都旺'; else if(L<=42&&Rr<=42)tag='兩邊都收著'; else if(Math.abs(L-Rr)<12)tag='平衡有彈性'; else tag='偏'+(L>Rr?EN[s.a].n:EN[s.b].n);
+    var row=document.createElement('div');row.className='sysrow';
+    row.innerHTML='<b>'+s.nm+'</b>　'+EN[s.a].n+' '+L+' ／ '+EN[s.b].n+' '+Rr+'　<span class="tag">'+tag+'</span>'; sb.appendChild(row);});
+  var nb=document.getElementById('ngbody'),h='';
+  P.ng.forEach(function(g,i){ if(g==='over')h+='<div class="sysrow"><b>'+EN[i].n+' · 過用</b>　用得有點過頭——試著在它之前，留一個停頓。</div>';
+    else if(g==='under')h+='<div class="sysrow"><b>'+EN[i].n+' · 不足</b>　最有空間——它能帶來'+EN[i].gap+'，刻意練一點。</div>'; });
+  nb.innerHTML=h||'<div style="padding-top:6px">你這幾股用得大致剛好，沒有明顯過頭或不足。</div>';
+}
 var idx=0;
-function show(i){ paint(PEOPLE[i]); read(PEOPLE[i]); }
+function show(i){ paint(PEOPLE[i]); read(PEOPLE[i]); detail(PEOPLE[i]); }
 document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; show(idx); };
 show(0);
 </script>
