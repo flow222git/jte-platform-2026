@@ -1,0 +1,91 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量印記 · 形狀×顏色×光 concept</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(130% 100% at 50% 28%,#2b2620 0%,#1c1812 52%,#100d08 100%);color:#ecdcb8;
+    font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:30px 16px;-webkit-font-smoothing:antialiased}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:#b7a888;text-transform:uppercase;margin-bottom:6px}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:22px;letter-spacing:.06em;margin-bottom:2px}
+  .sig{font-size:12.5px;color:#caa86a;letter-spacing:.08em;margin-bottom:8px}
+  svg{display:block}
+  .legend{display:flex;gap:18px;justify-content:center;font-size:11.5px;color:#9c9078;margin-top:14px;flex-wrap:wrap;max-width:420px}
+  .legend b{font-weight:500}
+  .ng{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:5px}
+  .cap{font-size:12.5px;color:#9c9078;max-width:380px;text-align:center;line-height:1.85;margin-top:16px}
+  .cap b{color:#e8c07a}
+  button{font-family:"Noto Serif TC",serif;font-size:13.5px;background:transparent;color:#ecdcb8;border:1px solid rgba(236,220,184,.4);
+    border-radius:999px;padding:8px 22px;cursor:pointer;letter-spacing:.06em;margin-top:18px}
+  button:hover{border-color:#ecdcb8}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · 能量印記</div>
+<h1 id="title">此刻的你</h1>
+<div class="sig" id="sig">形狀＝分數　·　顏色＝八卦　·　光＝能格</div>
+
+<svg id="svg" width="380" height="380" viewBox="0 0 360 360">
+  <defs><filter id="bl" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="7"/></filter></defs>
+  <g id="rings"></g>
+  <path id="ring" fill="none" stroke="rgba(236,220,184,.30)" stroke-width="1.4" stroke-linejoin="round"></path>
+  <g id="halos"></g><g id="pts"></g><g id="labs"></g>
+</svg>
+
+<div class="legend">
+  <span><span class="ng" style="background:#e8c07a;box-shadow:0 0 8px #e8c07a"></span><b>過用</b>·刺眼</span>
+  <span><span class="ng" style="background:#caa86a"></span><b>適中</b>·溫潤</span>
+  <span><span class="ng" style="background:#5a5344"></span><b>不足</b>·黯淡</span>
+</div>
+<div class="cap">每股能量：<b>位置</b>是你的分數、<b>顏色</b>是它是哪一卦、<b>亮度</b>是能格（過用會刺眼、不足會暗）。<br>形狀×顏色×光，三層都因人而異——<b>這張圖，就是此刻的你。</b></div>
+<button id="next">換一個人 →</button>
+
+<script>
+var NS='http://www.w3.org/2000/svg', CX=180,CY=180,R0=40,MAXOUT=104;
+// 順序：乾開創 離明現 震行動 兌交流 坤承接 坎沉澱 艮喊停 巽拓展（順時針自頂）
+var E=[
+ {nm:'開創',c:'#d9b878'},{nm:'明現',c:'#e0775a'},{nm:'行動',c:'#62b985'},{nm:'交流',c:'#d792a0'},
+ {nm:'承接',c:'#c79760'},{nm:'沉澱',c:'#5f93c8'},{nm:'喊停',c:'#a89e8a'},{nm:'拓展',c:'#5fb3a8'}
+];
+var PEOPLE=[
+ {t:'行動沉澱者',sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {t:'承接調節者',sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {t:'均衡彈性型',sc:[60,58,56,58,60,57,55,59],ng:['mid','mid','mid','mid','mid','mid','mid','mid']},
+ {t:'開創展現者',sc:[88,80,66,72,50,46,44,62],ng:['over','mid','mid','mid','under','under','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function tip(i,s){var a=ang(i),r=R0+(s/100)*MAXOUT;return{x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r,a:a};}
+function smooth(P){var n=P.length,d='';for(var i=0;i<n;i++){var p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
+  if(i===0)d+='M'+p1.x.toFixed(1)+','+p1.y.toFixed(1);
+  d+='C'+(p1.x+(p2.x-p0.x)/6).toFixed(1)+','+(p1.y+(p2.y-p0.y)/6).toFixed(1)+' '+(p2.x-(p3.x-p1.x)/6).toFixed(1)+','+(p2.y-(p3.y-p1.y)/6).toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1);}
+  return d+'Z';}
+// 導引同心圓
+[40,76,112].forEach(function(r){var c=document.createElementNS(NS,'circle');c.setAttribute('cx',CX);c.setAttribute('cy',CY);c.setAttribute('r',r);
+  c.setAttribute('fill','none');c.setAttribute('stroke','rgba(236,220,184,.06)');document.getElementById('rings').appendChild(c);});
+var halos=[],pts=[],labs=[];
+E.forEach(function(e,i){
+  var h=document.createElementNS(NS,'circle');h.setAttribute('fill',e.c);h.setAttribute('filter','url(#bl)');document.getElementById('halos').appendChild(h);halos.push(h);
+  var p=document.createElementNS(NS,'circle');p.setAttribute('fill',e.c);document.getElementById('pts').appendChild(p);pts.push(p);
+  var l=document.createElementNS(NS,'text');l.setAttribute('text-anchor','middle');l.setAttribute('font-family','"Noto Serif TC",serif');l.setAttribute('font-size','12');l.setAttribute('fill',e.c);l.textContent=e.nm;document.getElementById('labs').appendChild(l);labs.push(l);
+});
+// 能格 → 光（過用刺眼大亮、適中溫潤、不足小暗）
+var NG={over:{hr:26,ho:.55,pr:5,po:1},mid:{hr:15,ho:.32,pr:3.4,po:.92},under:{hr:7,ho:.13,pr:2,po:.5}};
+var cur=PEOPLE[0], idx=0, t0=performance.now();
+function frame(ts){
+  var k=Math.sin((ts-t0)/2800*Math.PI*2)*.5+.5, br=0.97+0.03*k, P=[];
+  E.forEach(function(e,i){
+    var s=cur.sc[i]*br, t=tip(i,s), g=NG[cur.ng[i]]; P.push(t);
+    halos[i].setAttribute('cx',t.x);halos[i].setAttribute('cy',t.y);halos[i].setAttribute('r',g.hr);halos[i].setAttribute('opacity',g.ho*(0.85+0.15*k));
+    pts[i].setAttribute('cx',t.x);pts[i].setAttribute('cy',t.y);pts[i].setAttribute('r',g.pr);pts[i].setAttribute('opacity',g.po);
+    var lr=R0+(cur.sc[i]/100)*MAXOUT+16;labs[i].setAttribute('x',CX+Math.cos(t.a)*lr);labs[i].setAttribute('y',CY+Math.sin(t.a)*lr+4);
+    labs[i].setAttribute('opacity',cur.ng[i]==='under'?.5:.92);
+  });
+  document.getElementById('ring').setAttribute('d',smooth(P));
+  requestAnimationFrame(frame);
+}
+function setPerson(i){ cur=PEOPLE[i]; document.getElementById('title').textContent='此刻的你'; document.getElementById('sig').textContent=cur.t+'　·　形狀×顏色×光'; }
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; setPerson(idx); };
+setPerson(0); requestAnimationFrame(frame);
+</script>
+</body></html>
