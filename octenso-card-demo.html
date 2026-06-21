@@ -1,0 +1,143 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>你的能量印記 · 個人頁 demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#ecdcb8;--ink2:#cbbd99;--muted:#9c9078;--gold:#e0c07a;--deepgold:#caa86a;--line:rgba(236,220,184,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(135% 100% at 50% 18%,#2b2620 0%,#1c1812 52%,#100d08 100%);color:var(--ink);
+    font-family:"Noto Sans TC",sans-serif;font-weight:300;min-height:100vh;padding:30px 18px 70px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:440px;margin:0 auto}
+  .eyebrow{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:16px}
+  .frame{position:relative;border-radius:5px;overflow:hidden;box-shadow:0 12px 44px rgba(0,0,0,.5)}
+  .frame svg{display:block;width:100%;height:auto}
+  .seal{position:absolute;right:15px;top:15px;width:30px;height:30px;border-radius:5px;background:rgba(190,60,46,.92);
+    display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;color:#f4efe4;font-size:15px;font-weight:600}
+  .type{text-align:center;margin:18px 0 4px}
+  .type .tt{font-family:"Noto Serif TC",serif;font-weight:600;font-size:25px;letter-spacing:.06em}
+  .type .te{font-size:13.5px;color:var(--ink2);line-height:1.85;max-width:340px;margin:6px auto 0}
+  .framing{background:rgba(60,90,73,.16);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;
+    padding:13px 16px;margin:20px 0;font-size:13px;color:var(--ink2);line-height:1.85}
+  .framing b{color:var(--gold);font-weight:500}
+  h3{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;margin:24px 0 4px;letter-spacing:.04em}
+  h3 .hk{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:3px;font-weight:400}
+  .beat{font-size:14.5px;color:var(--ink2);line-height:1.95;margin:6px 0 4px}
+  .beat b{color:var(--ink);font-weight:500} .beat .gd{color:var(--deepgold);font-weight:500}
+  /* legend */
+  .leg{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .leg:last-child{border-bottom:none}
+  .leg .sw{width:16px;height:16px;border-radius:4px;flex:none}
+  .leg .nm{font-weight:500;color:var(--ink);min-width:3.2em}
+  .leg .br{font-size:11.5px;color:var(--muted);min-width:3.6em}
+  .leg .bar{flex:1;height:5px;background:rgba(236,220,184,.12);border-radius:3px;overflow:hidden}
+  .leg .bar i{display:block;height:100%;border-radius:3px}
+  .leg .ng{font-size:11px;flex:none;min-width:2.6em;text-align:right}
+  .ng-over{color:#e07a5a} .ng-mid{color:var(--muted)} .ng-under{color:#7d8aa0}
+  .btns{display:flex;gap:12px;justify-content:center;margin:26px 0 6px;flex-wrap:wrap}
+  .btn{font-family:"Noto Serif TC",serif;font-size:14px;letter-spacing:.06em;border-radius:999px;padding:10px 24px;cursor:pointer;border:1px solid var(--gold);background:var(--gold);color:#1c1812}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:24px;line-height:1.9;border-top:1px solid var(--line);padding-top:18px}
+</style></head>
+<body><div class="wrap">
+<div class="eyebrow">Octenso · 你的能量印記</div>
+
+<div class="frame"><svg id="art" viewBox="0 0 420 480"></svg><div class="seal">印</div></div>
+
+<div class="type"><div class="tt" id="tt">行動沉澱者</div><div class="te" id="te"></div></div>
+
+<div class="framing"><b>怎麼讀這張圖</b>　這是把你平常沒留意的能量習慣，搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。別人眼中的你可能不一樣；那個落差不是錯，最值得想：哪些是底色、哪些是某個場景把你暫時長出來的。</div>
+
+<h3><span class="hk">能量速寫 · 優勢</span><span id="h1"></span></h3><div class="beat" id="b1"></div>
+<h3><span class="hk">用得剛不剛好</span></h3><div class="beat" id="b2"></div>
+<h3><span class="hk">還沒長開</span></h3><div class="beat" id="b3"></div>
+
+<h3><span class="hk">讀這幅畫 · 圖例</span></h3>
+<div class="beat" style="margin-bottom:8px">每個顏色與筆觸＝一股能量；長條＝分數、右邊＝能格。</div>
+<div id="legend"></div>
+
+<div class="btns"><button class="btn" onclick="alert('（demo：這裡會把這幅畫輸出成 PNG 下載／分享）')">存成能量印記 ↓</button>
+  <button class="btn ghost" id="next">換一個人 →</button></div>
+<div class="foot">這是你感受到的傾向，不是固定標籤、也不是算命——一面認識自己的鏡子。<br>Octenso ｜ 八態能格 · 練息場</div>
+</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg', W=420, H=480, CX=210, CY=232;
+var EN=[
+ {k:'qian',n:'開創',c:'#e2b23e',br:'line',brn:'長直筆',mid:'能立方向、開局、作主',lev:'把開局的勁，放在真正想長的事上',gap:'方向感與願景'},
+ {k:'li',n:'明現',c:'#d83f26',br:'flame',brn:'火舌',mid:'看得清，也能把看見的顯現出來',lev:'把看清的東西好好說出來、亮出來',gap:'洞察、表達，與被看見'},
+ {k:'zhen',n:'行動',c:'#33a85a',br:'zig',brn:'閃電',mid:'有執行力，能把想法啟動、推著落地',lev:'把推力對準真正重要的事',gap:'啟動的勁與不拖延'},
+ {k:'dui',n:'交流',c:'#d96f8a',br:'dot',brn:'水珠',mid:'表達流暢、能與人互通',lev:'把交流力用在想連結的關係上',gap:'把感受說出口、與人連結'},
+ {k:'kun',n:'承接',c:'#bb8338',br:'flat',brn:'平塗',mid:'能承載、滋養，讓事穩穩運轉',lev:'守住願意承接的範圍，別賠進自己',gap:'耐心、穩定，與接得住'},
+ {k:'kan',n:'沉澱',c:'#3a78c0',br:'wave',brn:'水紋',mid:'沉得住、想得深，獨處能恢復',lev:'刻意守住安靜的時間，那是你判斷的底',gap:'沉著、定力，與想透的空間'},
+ {k:'gen',n:'喊停',c:'#9a8e76',br:'block',brn:'方塊',mid:'守得住界線、知所進退',lev:'信任喊停的判斷，該收就收',gap:'設界線、喊卡、守住自己節奏'},
+ {k:'xun',n:'拓展',c:'#2eb3a4',br:'curve',brn:'長曲',mid:'擅長連結資源、順勢鋪開',lev:'在發散裡守一個焦點',gap:'向外觸及、把人事物連起來'}
+];
+var PEOPLE=[
+ {sc:[72,62,85,50,58,80,40,60],ng:['mid','mid','over','mid','mid','mid','under','mid']},
+ {sc:[48,55,42,66,82,60,74,52],ng:['under','mid','mid','mid','over','mid','mid','mid']},
+ {sc:[88,82,66,72,50,44,42,62],ng:['over','mid','mid','mid','under','under','mid','mid']},
+ {sc:[60,58,57,59,61,56,58,60],ng:['mid','mid','mid','mid','mid','mid','mid','mid']}
+];
+function ang(i){return (-90+i*45)*Math.PI/180;}
+function el(p,t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function hx(c,d){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=function(v){return d>0?v+(255-v)*d:v*(1+d);};
+  return '#'+[f(r),f(g),f(b)].map(function(v){return ('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);}).join('');}
+function desat(c,a){var n=parseInt(c.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,gr=(r*.3+g*.5+b*.2),m=function(v){return v+(gr-v)*a;};
+  return '#'+[m(r),m(g),m(b)].map(function(v){return ('0'+Math.round(v).toString(16)).slice(-2);}).join('');}
+function clr(s){while(s.firstChild)s.removeChild(s.firstChild);}
+
+// 路 4 漩渦×本性筆觸（同前）
+function paint(P){
+  var svg=document.getElementById('art'); clr(svg);
+  el(svg,'rect',{x:0,y:0,width:W,height:H,fill:'#1a1826'});
+  var s=P.sc.reduce(function(a,v,i){return a+v*(i*53+17);},73); function rnd(){s=(s*9301+49297)%233280;return s/233280;}
+  var cen=EN.map(function(e,i){var a=ang(i),push=52+P.sc[i]/100*68;return {x:CX+Math.cos(a)*push,y:CY+Math.sin(a)*push*1.1,sig:54+P.sc[i]/100*46};});
+  function L2(x1,y1,x2,y2,w,c,op){el(svg,'line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:c,'stroke-width':w,'stroke-linecap':'round',opacity:op==null?.94:op});}
+  function curved(px,py,dx,dy,Lc,w,bk,col){var dist=Math.max(22,Math.hypot(px-CX,py-CY)),sag=Lc*Lc/(8*dist)*bk,tox=CX-px,toy=CY-py,tl=Math.hypot(tox,toy)||1;
+    var x1=px-dx*Lc/2,y1=py-dy*Lc/2,x2=px+dx*Lc/2,y2=py+dy*Lc/2,qx=(x1+x2)/2+tox/tl*sag,qy=(y1+y2)/2+toy/tl*sag,d='M'+x1.toFixed(1)+','+y1.toFixed(1)+' Q'+qx.toFixed(1)+','+qy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1);
+    el(svg,'path',{d:d,fill:'none',stroke:hx(col,-0.32),'stroke-width':w,'stroke-linecap':'round',opacity:.45}); el(svg,'path',{d:d,fill:'none',stroke:col,'stroke-width':w,'stroke-linecap':'round',opacity:.93}); el(svg,'path',{d:d,fill:'none',stroke:hx(col,0.5),'stroke-width':Math.max(1,w*0.3),'stroke-linecap':'round',opacity:.5});}
+  function brush(type,px,py,dir,sz,col){var dx=Math.cos(dir),dy=Math.sin(dir),rad=Math.atan2(py-CY,px-CX);
+    if(type==='line')curved(px,py,dx,dy,18+sz*22,6+sz*5,1.2,col);
+    else if(type==='wave')curved(px,py,dx,dy,18+sz*22,3.5+sz*3,2.6,col);
+    else if(type==='curve')curved(px,py,dx,dy,20+sz*24,3.5+sz*3,2.0,col);
+    else if(type==='flat'){var Lf=9+sz*9,w2=11+sz*6;L2(px-dx*Lf/2,py-dy*Lf/2+0.8,px+dx*Lf/2,py+dy*Lf/2+0.8,w2,hx(col,-0.3),.5);L2(px-dx*Lf/2,py-dy*Lf/2,px+dx*Lf/2,py+dy*Lf/2,w2,col);}
+    else if(type==='zig'){var z=7+sz*9,a2=dir+(rnd()>.5?1:-1)*1.15,mx=px+dx*z,my=py+dy*z;el(svg,'polyline',{points:(px-dx*z)+','+(py-dy*z)+' '+mx+','+my+' '+(mx+Math.cos(a2)*z)+','+(my+Math.sin(a2)*z),fill:'none',stroke:col,'stroke-width':4+sz*3,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.95});}
+    else if(type==='dot'){var r=2.4+sz*4;el(svg,'circle',{cx:px,cy:py,r:r,fill:col,opacity:.95});el(svg,'circle',{cx:px-r*.3,cy:py-r*.3,r:r*.42,fill:hx(col,.55),opacity:.6});}
+    else if(type==='flame'){var Lm=10+sz*17,wm=5+sz*4,rdx=Math.cos(rad),rdy=Math.sin(rad),bx=px-rdx*Lm*0.4,by=py-rdy*Lm*0.4,pnx=-rdy,pny=rdx;el(svg,'path',{d:'M'+(bx+pnx*wm/2).toFixed(1)+','+(by+pny*wm/2).toFixed(1)+' L'+(bx-pnx*wm/2).toFixed(1)+','+(by-pny*wm/2).toFixed(1)+' L'+(px+rdx*Lm*0.6).toFixed(1)+','+(py+rdy*Lm*0.6).toFixed(1)+' Z',fill:col,opacity:.95});}
+    else if(type==='block'){var bs=7+sz*6,deg=(dir*57.3).toFixed(0);el(svg,'rect',{x:(-bs/2).toFixed(1),y:(-bs*0.4).toFixed(1),width:bs.toFixed(1),height:(bs*0.8).toFixed(1),rx:1,fill:col,opacity:.96,transform:'translate('+px.toFixed(1)+','+py.toFixed(1)+') rotate('+deg+')'});}
+  }
+  for(var k=0;k<430;k++){var rr=Math.sqrt(rnd())*186,ra=rnd()*6.283,px=CX+Math.cos(ra)*rr,py=CY+Math.sin(ra)*rr*1.1;
+    var best=-1,bi=0;EN.forEach(function(e,i){var dx=px-cen[i].x,dy=py-cen[i].y,inf=P.sc[i]*Math.exp(-(dx*dx+dy*dy)/(2*cen[i].sig*cen[i].sig));if(inf>best){best=inf;bi=i;}});
+    var ng=P.ng[bi],lj=(rnd()-.5)*0.45,col;
+    if(ng==='over')col=hx(EN[bi].c,0.06+Math.max(0,lj*0.7));else if(ng==='under'){if(rnd()>0.5)continue;col=hx(desat(EN[bi].c,0.55),-0.26+lj*0.4);}else col=hx(EN[bi].c,lj);
+    var rad=Math.atan2(py-CY,px-CX),dir=rad+1.5708+(rnd()-.5)*0.3,sz=(ng==='over'?1.15:ng==='under'?0.7:1)*(0.6+rnd()*0.6);
+    brush(EN[bi].br,px,py,dir,sz,col);}
+  var fw=14;el(svg,'rect',{x:fw/2,y:fw/2,width:W-fw,height:H-fw,fill:'none',stroke:'#15131c','stroke-width':fw});
+  el(svg,'rect',{x:fw+2.5,y:fw+2.5,width:W-2*fw-5,height:H-2*fw-5,fill:'none',stroke:'#9c7c3e','stroke-width':1.2,opacity:.8});
+}
+// 解讀（簡版照憲法：ipsative leads / 能格 / 缺口）
+function read(P){
+  var mean=P.sc.reduce(function(a,v){return a+v;},0)/8;
+  var dev=EN.map(function(e,i){return {i:i,d:P.sc[i]-mean};}).sort(function(a,b){return b.d-a.d;});
+  var l0=dev[0].i,l1=dev[1].i,gp=dev[7].i, over=-1; P.ng.forEach(function(g,i){if(g==='over')over=i;});
+  var tt=EN[l0].n+EN[l1].n+'者';
+  document.getElementById('tt').textContent=tt;
+  document.getElementById('te').textContent='最鮮明：'+EN[l0].n+'·'+EN[l1].n+'　·　此刻的你';
+  document.getElementById('b1').innerHTML='你最鮮明的是<b>'+EN[l0].n+'</b>與<b>'+EN[l1].n+'</b>——你'+EN[l0].mid+'；同時也'+EN[l1].mid+'。<span class="gd">發揮：</span>'+EN[l0].lev+'；'+EN[l1].lev+'。';
+  document.getElementById('b2').innerHTML= over>=0 ? ('<b>'+EN[over].n+'</b>目前用得有點過頭——是這股<b>自己</b>的事（跟別股無關）；其餘大致剛好。') : '你這幾股用得大致剛好，沒有明顯過頭的一股。';
+  document.getElementById('b3').innerHTML='你最少動用的是<b>'+EN[gp].n+'</b>——它能帶來'+EN[gp].gap+'。這是你最有空間的地方，刻意練一點會更完整。';
+  // legend
+  var lg=document.getElementById('legend'); lg.innerHTML='';
+  EN.forEach(function(e,i){var ng=P.ng[i],row=document.createElement('div');row.className='leg';
+    row.innerHTML='<span class="sw" style="background:'+e.c+'"></span><span class="nm">'+e.n+'</span><span class="br">'+e.brn+'</span>'
+      +'<span class="bar"><i style="width:'+P.sc[i]+'%;background:'+e.c+'"></i></span>'
+      +'<span class="ng ng-'+ng+'">'+(ng==='over'?'過用':ng==='under'?'不足':'適中')+'</span>';
+    lg.appendChild(row);});
+}
+var idx=0;
+function show(i){ paint(PEOPLE[i]); read(PEOPLE[i]); }
+document.getElementById('next').onclick=function(){ idx=(idx+1)%PEOPLE.length; show(idx); };
+show(0);
+</script>
+</body></html>
