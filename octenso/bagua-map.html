@@ -290,7 +290,7 @@
     </details>
     <details>
       <summary>二、四組極性對（平衡）</summary>
-      <div class="sd-body">給出⇄接納（乾⇄坤）、明現⇄沉澱（離⇄坎）、行動⇄喊停（震⇄艮）、表達⇄連結（兌⇄巽）。<br>健康不是把一種能量推到底，而是能在兩極間來回；某能量「過強」，往往是缺了它對面那一極。</div>
+      <div class="sd-body">開創⇄承接（乾⇄坤）、行動⇄拓展（震⇄巽）、沉澱⇄明現（坎⇄離）、喊停⇄交流（艮⇄兌）。<br>健康不是把一種能量推到底，而是能在兩極間自在來回——兩極可以同時都高、也可以都收著，高低都只是樣態、沒有好壞。</div>
     </details>
     <details>
       <summary>三、循環與節律（後天卦序）</summary>
@@ -361,12 +361,12 @@ var BAGUA=[
  {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'行動／突破',
   phase:'行動·春萌',
   state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',
-  pair:'艮（喊停）',struct:'初陽 ☳ — 動能剛萌生，主行動',
+  pair:'巽（拓展）',struct:'初陽 ☳ — 動能剛萌生，主行動',
   remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。',level:0},
  {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',
   phase:'交流·秋收',
   state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',
-  pair:'巽（連結）',struct:'上陰 ☱ — 開口向外，主喜悅表達',
+  pair:'艮（喊停）',struct:'上陰 ☱ — 開口向外，主喜悅表達',
   remind:'表達與連結帶來喜悅；但說出口之外，也要懂得留白與傾聽。',level:0},
  {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承接／滋養',
   phase:'承接·化育',
@@ -381,12 +381,12 @@ var BAGUA=[
  {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'喊停／界線',
   phase:'止·轉折',
   state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法喊停、無法拒絕',
-  pair:'震（行動）',struct:'上陽 ☶ — 動到頂被止住，主喊停',
+  pair:'兌（交流）',struct:'上陽 ☶ — 動到頂被止住，主喊停',
   remind:'知道何時停、何時說不，是難得的清醒；但別讓喊停變成卡死不動。',level:0},
  {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'拓展／連結',
   phase:'連結·成長',
   state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',
-  pair:'兌（交流）',struct:'初陰 ☴ — 柔入滲透，主連結拓展',
+  pair:'震（行動）',struct:'初陰 ☴ — 柔入滲透，主連結拓展',
   remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。',level:0}
 ];
 var BAGUA_MAP={};
@@ -707,7 +707,7 @@ function showDetail(k,isV3){
     (phaseRow||'')+
     '<div class="drow"><b>陰陽結構</b><span>'+b.struct+'</span></div>'+
     '<div class="drow-remind"><b>卦的提醒</b><span class="remind-text">'+b.remind+'</span></div>'+
-    '<div class="pair-note">極性對：<b>'+b.nm+'</b> ⇄ <b>'+b.pair+'</b>。當「'+b.nm+'」過強，多半是缺了它對面的「'+b.pair.replace(/（.*/,'')+'」——回到那一極就平衡了。</div>';
+    '<div class="pair-note">極性對：<b>'+b.nm+'</b> ⇄ <b>'+b.pair+'</b>。兩極是一條光譜——可以偏一邊、也可以兩邊都在；想更平衡，往對面那一極多練一點就好。</div>';
 }
 
 // ── View-3 helpers ───────────────────────────────────────────
