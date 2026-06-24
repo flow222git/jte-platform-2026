@@ -21,11 +21,13 @@ img{max-width:100%;height:auto}
 @media (max-width:820px){
   html,body{overflow-x:hidden}
   .wrapper,.header,.idxMvCon,.idxMv,.navWp,.h1Wapper,.idxContainer,.idxContent,.containerT,.containerC,.containerB,.content,.content2,.content2Wrap,.footer,.footerWp,.headerWp{width:auto!important;max-width:100%!important;box-sizing:border-box}
+  /* header */
   .header{position:relative;padding:10px 12px;height:auto;text-align:left}
-  .logo img{max-width:165px;height:auto}
+  .logo img{max-width:160px;height:auto}
   .topFunc{position:static!important;float:none!important;margin-top:8px;font-size:12px;line-height:2}
   .rwd-burger{display:block;position:absolute;top:13px;right:12px;width:44px;height:38px;font-size:23px;line-height:1;background:#0a4da2;color:#fff;border:none;border-radius:6px;z-index:60;cursor:pointer}
-  .idxMvCon{height:auto!important;background:#0a4da2!important}
+  /* nav → 漢堡 */
+  .idxMvCon{height:auto!important;margin-top:0!important;background:#0a4da2!important;position:static!important}
   .idxMv{height:auto!important;position:static!important}
   .navWp{float:none!important}
   #nav{display:none!important;width:100%!important;float:none!important;height:auto!important}
@@ -33,28 +35,40 @@ img{max-width:100%;height:auto}
   #nav>ul{width:100%!important}
   #nav>ul>li{float:none!important;width:100%!important;height:auto!important;border-bottom:1px solid rgba(255,255,255,.18)}
   #nav>ul>li>a{display:block!important;width:auto!important;height:auto!important;line-height:1.4!important;background:none!important;background-image:none!important;color:#fff!important;text-indent:0!important;font-size:16px!important;padding:13px 16px!important;overflow:visible!important;text-align:left!important}
-  .subNav{position:static!important;display:block!important;width:100%!important;background:rgba(0,0,0,.16)!important}
+  .subNav{position:static!important;display:block!important;width:100%!important;background:rgba(0,0,0,.16)!important;height:auto!important}
   .subNav ul{width:100%!important}
   .subNav li{float:none!important;width:auto!important}
   .subNav li a{display:block!important;padding:10px 30px!important;color:#e7eef7!important;font-size:13.5px!important;background:none!important}
   .search{float:none!important;width:auto!important;padding:10px 12px!important;background:rgba(0,0,0,.12)}
   .searchIpt{width:68%!important;box-sizing:border-box}
+  /* H1 banner：拿掉桌機背景圖與固定高度 */
   .h1Wapper{height:auto!important}
-  .idxH1{font-size:18px!important;line-height:1.6!important;height:auto!important;padding:14px 16px!important;text-indent:0!important;background-position:left center!important}
-  .idxMainT,.idxMainTL,.idxMainTR,.idxNews,.idxSafe{float:none!important;width:auto!important;margin-left:0!important;margin-right:0!important}
-  .idxMainTL,.idxMainTR{margin-bottom:18px!important}
-  .idxPropic{text-align:center}
-  .idxPropic img{height:auto!important;width:30%!important;display:inline-block;margin:1.2%}
-  .idxProNav,.idxProNav>ul,.idxProNav li,.idxProSubNav,.idxProSubNav ul{float:none!important;width:auto!important;height:auto!important}
-  .idxNewsI{float:none!important;width:auto!important;margin:0 0 12px!important}
-  .idxSafe img{width:56px!important;height:auto!important;margin:4px!important}
+  h1.idxH1,.idxH1{height:auto!important;background:#0a4da2!important;background-image:none!important;color:#fff!important;font-size:19px!important;line-height:1.6!important;padding:16px!important;text-indent:0!important}
+  /* 首頁主區：清負margin、固定高度、桌機背景圖、清浮動 */
+  .idxContainer{margin-top:0!important;background-image:none!important;padding:0 12px!important}
+  .idxMainT{height:auto!important;padding-top:14px!important;overflow:hidden!important}
+  .idxMainT,.idxMainTL,.idxMainTR,.idxNews,.idxSafe,.idxContact{float:none!important;width:auto!important;margin-left:0!important;margin-right:0!important;background-image:none!important}
+  .idxMainTL{padding:0!important;margin-bottom:18px!important}
+  .idxMainTR{padding:0!important}
+  .idxContact{height:auto!important;padding:0!important;line-height:1.7!important}
+  .idxPropic{height:auto!important;width:auto!important;background-image:none!important;padding:0!important;margin:0 0 12px!important;text-align:center}
+  .idxPropic img{display:inline-block!important;height:auto!important;width:30%!important;margin:1.2%}
+  .idxProNav,.idxProNav>ul,.idxProNav li,.idxProSubNav,.idxProSubNav ul{float:none!important;width:auto!important;height:auto!important;position:static!important;display:block!important}
+  .idxNews{padding:14px 0!important}
+  .idxNewsI{float:none!important;width:auto!important;padding:0!important;margin:0 0 14px!important;border-bottom:1px solid #eee;padding-bottom:10px!important}
+  .idxSafe img{width:54px!important;height:auto!important;margin:4px!important}
+  .footerWp{height:auto!important;margin-top:0!important;background:#222!important;background-image:none!important}
+  .footer{height:auto!important;color:#aaa!important;padding:12px!important}
+  /* 產品頁雙欄→堆疊 */
   .content2L,.content2R{float:none!important;width:auto!important;margin:0!important}
   .content2L{margin-bottom:16px!important}
   .sidebar,.sidebarI,.sidebarSub,.sidebarSubC{width:auto!important}
   .sidebarSubC a{display:block!important;padding:8px 14px!important}
-  .content2RDd,.tableLt1{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
-  .content2RDd>table,.tableLt1>table{min-width:520px}
-  .bigPic img{width:120px!important}
+  /* 表格→可橫滑 */
+  .content2RDd{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  .content2RDd .bigPic img{width:110px!important}
+  .tableLt1{overflow-x:auto!important;-webkit-overflow-scrolling:touch;width:100%!important}
+  .tableLt1>table{min-width:660px!important}
 }
 </style>
 <meta name="robots" content="noindex,nofollow">
