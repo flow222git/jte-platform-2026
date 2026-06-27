@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>八態能格 · 能量定位｜從「能量管理」到「生命功能管理」</title>
+<style>
+  :root{
+    --paper:#efe8da; --paper2:#e7ddc9; --card:#faf6ee; --ink:#33302a; --sub:#857b6c;
+    --hair:#d9cdb6; --gold:#b08442; --gold-d:#8c6730; --pine:#5a6b54;
+    --green:#5a7d4f; --green-bg:#eef3e8; --green-bd:#bcd0ad;
+    --amber:#b9802f; --amber-bg:#fbf2e2; --amber-bd2:#e6cda0;
+    --red:#b1543c; --red-bg:#f8ebe5; --red-bd:#e3b9a8;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.85;
+    -webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC","STSong",serif}
+  .wrap{max-width:860px;margin:0 auto;padding:0 22px 90px}
+
+  /* hero */
+  header.hero{padding:64px 22px 40px;text-align:center;
+    background:radial-gradient(120% 80% at 50% -10%, #f6efe0 0%, var(--paper) 60%);
+    border-bottom:1px solid var(--hair)}
+  .enso{width:46px;height:46px;border:2.4px solid var(--ink);border-radius:50%;
+    border-right-color:transparent;transform:rotate(26deg);margin:0 auto 18px}
+  header.hero h1{font-size:30px;font-weight:600;margin:0 0 8px;letter-spacing:1px}
+  header.hero .sub{font-size:17px;color:var(--gold-d);margin:0 0 16px;letter-spacing:1px}
+  header.hero .meta{font-size:13px;color:var(--sub)}
+  .tagline{display:inline-block;margin-top:18px;border:1px solid var(--hair);
+    border-radius:22px;padding:7px 16px;font-size:13px;color:var(--sub);background:#fff8ec}
+
+  /* toc */
+  nav.toc{max-width:860px;margin:26px auto 0;padding:16px 22px;background:var(--card);
+    border:1px solid var(--hair);border-radius:14px}
+  nav.toc b{font-size:12px;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:8px}
+  nav.toc a{display:inline-block;color:var(--ink);text-decoration:none;font-size:13.5px;
+    border:1px solid var(--hair);border-radius:18px;padding:5px 12px;margin:4px 6px 4px 0;transition:.15s}
+  nav.toc a:hover{border-color:var(--gold);background:#fff8ec}
+
+  section{margin-top:46px}
+  h2{font-size:22px;font-weight:600;margin:0 0 6px;padding-top:8px}
+  h2 .n{color:var(--gold);font-size:15px;margin-right:10px;vertical-align:2px}
+  h3{font-size:16px;font-weight:600;margin:26px 0 6px;color:var(--ink)}
+  .lead{color:var(--sub);font-size:14.5px;margin:0 0 14px}
+  hr.div{border:none;border-top:1px solid var(--hair);margin:14px 0 0}
+  p{margin:10px 0}
+  a.cite{color:var(--gold-d)}
+
+  /* tables */
+  .tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;
+    background:var(--card);border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+  .tbl th,.tbl td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--hair);vertical-align:top}
+  .tbl th{background:#f1e9d8;font-weight:600;font-size:13px;letter-spacing:.5px}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td.k{white-space:nowrap;font-weight:600}
+
+  /* verdict badges */
+  .b{display:inline-block;border-radius:14px;padding:2px 10px;font-size:12.5px;font-weight:600;white-space:nowrap;border:1px solid}
+  .b.g{color:var(--green);background:var(--green-bg);border-color:var(--green-bd)}
+  .b.a{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd2)}
+  .b.r{color:var(--red);background:var(--red-bg);border-color:var(--red-bd)}
+
+  /* callout boxes */
+  .box{border:1px solid var(--hair);border-radius:12px;padding:16px 18px;margin:16px 0;background:var(--card)}
+  .box .h{font-weight:600;margin-bottom:6px}
+  .box.gold{background:#fbf3e6;border-color:#e9dcc2}
+  .box.gold .h{color:var(--gold-d)}
+  .box.red{background:var(--red-bg);border-color:var(--red-bd)}
+  .box.red .h{color:var(--red)}
+  .box.green{background:var(--green-bg);border-color:var(--green-bd)}
+  .box.green .h{color:var(--green)}
+
+  .yn{display:flex;gap:10px;margin:8px 0;align-items:flex-start;font-size:14.5px}
+  .yn .ic{flex:none;font-weight:700;width:18px}
+  .yn.ok .ic{color:var(--green)} .yn.no .ic{color:var(--red)}
+
+  ul.clean{margin:8px 0;padding-left:0;list-style:none}
+  ul.clean li{position:relative;padding-left:22px;margin:7px 0;font-size:14.5px}
+  ul.clean li:before{content:"";position:absolute;left:4px;top:11px;width:6px;height:6px;
+    border-radius:50%;background:var(--gold)}
+  ol.steps{padding-left:20px} ol.steps li{margin:6px 0}
+
+  .quote{border-left:3px solid var(--gold);padding:4px 0 4px 16px;margin:14px 0;
+    color:var(--ink);font-size:16px}.quote.serif{font-size:18px}
+
+  .src{font-size:13px;color:var(--sub);margin:6px 0;word-break:break-word}
+  .src b{color:var(--ink);font-weight:600}
+
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--hair);
+    text-align:center;color:var(--sub);font-size:12.5px}
+  @media (max-width:560px){
+    header.hero h1{font-size:24px} .tbl{font-size:13.5px} .tbl th,.tbl td{padding:9px 10px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="enso"></div>
+  <h1 class="serif">八態能格 · 能量定位</h1>
+  <div class="sub serif">從「能量管理」到「生命功能管理」</div>
+  <div class="meta">定位／理論底盤　·　2026-06-27　·　能量管理小幫手的上游依據</div>
+  <div class="tagline">鏡子非算命　·　See your energy, shape your flow</div>
+</header>
+
+<div class="wrap">
+
+<nav class="toc">
+  <b>目錄</b>
+  <a href="#s0">這份在做什麼</a>
+  <a href="#s1">研究壓力測試</a>
+  <a href="#s2">核心轉向</a>
+  <a href="#s3">磨利後的模型</a>
+  <a href="#s4">對小幫手的意涵</a>
+  <a href="#s5">刻意不主張</a>
+  <a href="#s6">來源</a>
+</nav>
+
+<section id="s0">
+  <h2 class="serif"><span class="n">0</span>這份在做什麼</h2>
+  <hr class="div">
+  <p>在「能量管理小幫手」長出來之前，先把<b>它站在什麼學理底盤上、誠實邊界在哪</b>定清楚。這份收了：一輪世界各家能量管理說法的研究、由此提出的定位升級，以及把模型磨利到<b>守得住「鏡子非算命」</b>的版本——並明確標出哪些是實證、哪些是流行框架、哪些是傳統哲學／隱喻，<b>避免把隱喻當實證</b>。</p>
+  <div class="box gold"><div class="h">北極星</div>八態能格是「把潛意識搬到意識來看」的<b>鏡子</b>與<b>調音台</b>，不是算命、也不是經驗驗證過的能量分類學。</div>
+</section>
+
+<section id="s1">
+  <h2 class="serif"><span class="n">1</span>研究壓力測試：四條命題判定</h2>
+  <p class="lead">判定分三級：<span class="b g">站得住</span> ／ <span class="b a">部分（有條件）</span> ／ <span class="b r">強版本有疑</span>。</p>
+  <table class="tbl">
+    <tr><th>命題</th><th>判定</th><th>站得住的版本</th><th>必須誠實標註</th></tr>
+    <tr>
+      <td class="k">1　能量＝單一電池／水位</td>
+      <td><span class="b a">部分</span></td>
+      <td>只在「主觀感受層」成立：能量是「感覺活著、有能量可供自己用」的整體 felt-state。</td>
+      <td>這只證明「人會這樣直覺」，<b>不</b>證明能量本質是單維。</td>
+    </tr>
+    <tr>
+      <td class="k">2　能量是多態、要多維</td>
+      <td><span class="b g">站得住</span></td>
+      <td>因子分析顯示能量<b>至少 2 維</b>，單因子（單電池）模型擬合失敗。</td>
+      <td>實證只到「≥2 維」；「<b>八</b>」這個維度數<b>零實證背書</b>。</td>
+    </tr>
+    <tr>
+      <td class="k">3　沒能量＝三種不同狀態</td>
+      <td><span class="b a">部分→站得住</span></td>
+      <td>「<b>空了</b>（耗竭）」「<b>太滿</b>（滿載）」「<b>卡住</b>（偏流）」是三種不同經驗，機制與解法都不同（見 §3.5）。</td>
+      <td><b>強版本被駁回</b>：不可宣稱「可實驗分離、效果相反、不同病程」；三態是描述／分流框架，非已證機制。</td>
+    </tr>
+    <tr>
+      <td class="k">4　八態能格的學理</td>
+      <td><span class="b a">部分</span></td>
+      <td>當<b>鏡子／校準尺</b>有學理同盟（多維活力量表＋SDT＋負荷光譜）。</td>
+      <td>當<b>實證分類學</b>不行：八＋卦象→能量態＝傳統哲學／隱喻，無實證 mapping。</td>
+    </tr>
+  </table>
+
+  <h3>關鍵量化證據</h3>
+  <ul class="clean">
+    <li><b>活力與耗竭的相關只有 φ = −0.57</b>（不是 −1.0）→「低能量」不是「高能量」的單純倒數，是<b>部分獨立</b>的兩件事，要分開測。這是命題 1／2／3 最硬的一塊。</li>
+    <li>二因子模型 CFI=1.00 vs 單因子 CFI=0.74（青少年 N=1,111）；另有量表把活力拆成「身體活力 × 心理活力」。</li>
+    <li>超載（需求 > 處理量、注意光圈縮小）與 疲勞／耗竭（持續耗用後、削弱由上而下控制）在文獻中<b>被框為不同構念</b>；超載 → 疲勞 → 過勞 是<b>不同時間尺度的序列鏈</b>；過勞連到「多系統累積失調（allostatic load）」而非單純油箱見底。</li>
+  </ul>
+
+  <div class="box red"><div class="h">誠實風險（貫穿全題）</div>
+    <ul class="clean" style="margin-top:2px">
+      <li><b>「自我耗損（ego depletion）」複現危機</b>：23 實驗室、N=2,141 預註冊複現，效應 d=0.04 幾乎為零。凡引用「耗竭」為機制者一律降級為「學界有爭議」。</li>
+      <li>命題 3 的<b>強版本</b>（可實驗分離、效果相反、不同病程）在對抗查證中<b>被明確駁回</b>。安全版本只到「被框為不同構念＋時序不同」。</li>
+      <li>所有支持「能量多維／可分離」的證據都來自 <b>活力／工作壓力／認知負荷</b> 語境，<b>沒有一篇</b>驗證「八卦八維」。</li>
+      <li>4 種輸入能量（生理／認知／情緒／意義）≈ Loehr &amp; Schwartz 四維能量，屬<b>流行商業框架、實證較弱</b>，不可當鐵證。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="s2">
+  <h2 class="serif"><span class="n">2</span>核心轉向：Energy Management → Life Function Management</h2>
+  <hr class="div">
+  <table class="tbl">
+    <tr><th>從</th><th>到</th></tr>
+    <tr><td>能量管理（把電池充滿）</td><td><b>生命功能管理（Life Function Management）</b></td></tr>
+    <tr><td>「你還剩多少能量？」</td><td><b>「你的心力／注意力現在分配到哪、卡在哪？」（Energy Routing）</b></td></tr>
+    <tr><td>八種能量</td><td><b>八種生命功能</b>（功能＝組織用的鏡片，不需因子分析背書）</td></tr>
+    <tr><td>單層</td><td><b>兩層</b>：能量＝輸入料／功能＝怎麼配置</td></tr>
+  </table>
+  <div class="box green"><div class="h">為什麼這個轉向是對的</div>
+    它直接化解研究最痛的一刀（「八」無實證）。把「八種能量」降格成<b>八種生命功能</b>後，八卦成為一個<b>選定的結構化鏡片</b>（像「ATP／注意力／情緒」這種功能分類，本就不需要 CFA 背書），同時保住八態與「鏡子非算命」。
+  </div>
+  <p class="lead">八種功能（沿用現有命名）：開創（啟動）・承接（承載）・行動・拓展（擴散）・明現（顯現）・沉澱（收藏）・喊停（停止）・交流。</p>
+</section>
+
+<section id="s3">
+  <h2 class="serif"><span class="n">3</span>磨利後的模型（落地版）</h2>
+
+  <h3>3.1　兩層</h3>
+  <ul class="clean">
+    <li><b>輸入層（料）</b>：生理／認知／情緒／意義 四種能量。誠實標註＝這層其實是流行框架，實證不強，當「常見分類」用即可。</li>
+    <li><b>配置層（怎麼用料）</b>：八種生命功能。這是八態能格真正的主場。</li>
+    <li><b>兩層之間的線目前是開的（刻意 bracket）</b>：「每股功能吃哪幾種料」尚未定義；若要填，最值得先接的是 <b>生理↔HRV</b>——四種料裡只有生理可量測（見 §4 的 HRV 錨點）。</li>
+  </ul>
+
+  <h3>3.2　兩種診斷，要分清楚（別塌成同一個「失衡」）</h3>
+  <table class="tbl">
+    <tr><th>診斷</th><th>問的是</th><th>軸</th><th>對應現有資產</th></tr>
+    <tr><td class="k">能格<br>（過用／適中／不足）</td><td><b>單一股功能的「程度」</b>——用過頭、剛好、還是長不出來。</td><td>程度（可穩定·可此刻）</td><td>能格引擎；底色＝穩定面</td></tr>
+    <tr><td class="k">Routing</td><td><b>此情境下、有限心力的「分配」</b>——能量塞在某幾股、沒流到該流的地方。</td><td>跨股分配（必為當下·場景）</td><td>場景耗能；場景＝當下面</td></tr>
+  </table>
+  <div class="box"><div class="h">防塌縮</div>只看能格容易誤以為「過用＝流向、不足＝沒流到」，那 Routing 就只是能格的彙總、不算獨立診斷。它真正的獨立性來自 <b>「狀態 × 跨股分配」</b> 而非「程度」——正好對上你既有的 <b>底色（穩定）vs 場景耗能（當下）</b>。一個人「沒動力」可能是某股<b>存量耗竭</b>（能格），也可能是能量都<b>塞在別股</b>（Routing）；處方不同。</div>
+
+  <h3>3.3　Routing 的誠實接地（紅線）</h3>
+  <div class="box">
+    <div class="yn ok"><span class="ic">✓</span><span>正確：Routing 接地在「<b>注意力／心力／時間的分配</b>」——這是真的有限、真的會互相排擠。「你把心力都路由到『思考』，沒分給『行動』」可成立、可觀察。</span></div>
+    <div class="yn no"><span class="ic">✕</span><span>錯誤：把 Routing 講成「一坨<b>守恆的能量</b>在功能間流動／轉換」。心理能量<b>沒有守恆律、沒有可換算單位</b>（活力↔耗竭只有 φ=−0.57 而非互補守恆），這會踩回被駁回的物理隱喻。</span></div>
+    <p style="margin:10px 0 0;font-size:14px;color:var(--sub)">一字之差＝誠實與否：可借物理的「多形態、可蓄積」當啟發；不可借「守恆、精確轉換、單一計量」。</p>
+  </div>
+
+  <h3>3.4　為什麼是「八」（而不是四）</h3>
+  <p>不靠實證，靠<b>結構自洽</b>：八卦的<b>四對待</b>給出結構邏輯（見學理憲法）。但四對待給的是 <b>4 組對</b>，不會自動長出 8 個獨立功能——「<b>8 而非 4</b>」是另一個刻意主張：每組對的兩極<b>並存、可同時高／同時低</b>（兩極並存、非二分），所以是 8 股各自校準、而非 4 條雙極軸（你「四軸≠MBTI」已立的紅線）。誠實表述＝「一套<b>選定的結構化鏡片</b>」，不是「發現的自然種類」。</p>
+
+  <h3>3.5　三態：「沒能量」其實有三種（升級命題 3）</h3>
+  <p>原本分成「耗竭 vs 滿載」兩種——但<b>「滿載」與「卡住」是不同的兩件事</b>（一個在輸入端、一個在配置端），解法相反。分三態才對得上整套系統：</p>
+  <table class="tbl">
+    <tr><th>狀態</th><th>機制</th><th>解法方向</th><th>交棒去處（課程）</th></tr>
+    <tr><td class="k">空了 · 耗竭</td><td>存量見底（多為生理／恢復不足）</td><td>恢復、休息、回充</td><td>CH4 能量永續／練息／HRV</td></tr>
+    <tr><td class="k">太滿 · 滿載</td><td>輸入 &gt; 處理量（太多事同時湧進來）</td><td><b>減量／設界線</b>（降輸入）</td><td>CH1 內耗、CH3 界線／助教</td></tr>
+    <tr><td class="k">卡住 · 偏流</td><td>能量有，但塞在某幾股、沒流到該流的地方</td><td><b>重新分配</b>（喊停某股·啟動某股）</td><td>八態 routing／助教</td></tr>
+  </table>
+  <div class="box gold"><div class="h">關鍵</div><b>「太滿」是輸入端問題（要減）、「卡住」是配置端問題（要重導）</b>，混為一談會讓第一刀失準。三態剛好對上課程——主文案「累不是因為能量弱，是<b>太多事同時湧進來</b>」講的正是<b>滿載</b>那一態。而<b>「卡住」只有功能級的鏡子（八態）講得出來</b>（你一直在「明現／思考」沒流到「行動」），是八態無可取代的主場。</div>
+</section>
+
+<section id="s4">
+  <h2 class="serif"><span class="n">4</span>對「能量管理小幫手」的意涵</h2>
+  <p class="lead">理論是<b>底盤</b>、不是小幫手本身。它把小幫手的工作定義講清楚了：</p>
+  <div class="quote serif">一個累的人打開它 → 看見「你是<b>空了</b>、<b>太滿</b>、還是<b>卡住</b>？發生在哪一股？」→ 再交棒給對的工具。</div>
+  <ul class="clean">
+    <li><b>電量當門口</b>＝誠實的（felt-state 在感受層真實存在）、好懂、低門檻。</li>
+    <li><b>第一刀分流改為三態</b>（空／滿／卡）：不是二選一，而是三分流——三態各有不同交棒去處（恢復／減量界線／重新分配）。這是最有科學同盟、最差異化的一刀。</li>
+    <li><b>八功能當鏡子／語彙</b>＝描述「空／滿／卡發生在哪一股」，明標隱喻、不裝實證。</li>
+    <li><b>不是新功能</b>：能格＋場景耗能拼起來就是 Routing 的雛形，本案是「取個準確的名字並收斂成入口」。</li>
+  </ul>
+  <p style="font-size:14px;color:var(--sub)">小幫手在課程中的角色：<b>最快的前門</b>，把人快速三分流到既有深度工具（CH4／練息接耗竭、CH1·CH3／助教接滿載、八態 routing 接卡住、真人接最深），自己不做深度對話。</p>
+
+  <h3>4.1　由三態延伸的三個啟發</h3>
+  <ul class="clean">
+    <li><b>不足＝勢能／可能，不是缺口。</b> 電池只有「動能」一種。一股功能的不足，是<b>還沒被啟用的勢能／可能</b>，不是壞掉的缺口——接「想成為的你」。八態能講一句電池講不出的話：「你這股還沒長開的，是<b>潛力</b>不是毛病。」</li>
+    <li><b>生理層（HRV）＝八態唯一的「實證錨」。</b> 四種料只有生理可量測。落腳＝<b>HRV 管「是不是真的生理耗竭」（空了），八態管「滿載／卡住、在哪一股」</b>。一腳踩在可量測、其餘明標是鏡子，把 HRV×八態整合講順。</li>
+    <li><b>驗證標準＝「更鋒利的鏡子」，不是「證明八是真的」。</b> 永遠證不出「剛好八」，別花力氣在那。成功指標＝<b>共鳴度／鋒利度／有用度</b>，驗證機制就用你已在做的<b>回饋迴路（像你嗎）＋鋒利化（ipsative）</b>。</li>
+  </ul>
+</section>
+
+<section id="s5">
+  <h2 class="serif"><span class="n">5</span>刻意「不主張」的事（保護傘）</h2>
+  <hr class="div">
+  <ol class="steps">
+    <li>不主張八是經驗驗證過的能量維度數。</li>
+    <li>不主張「空／滿／卡」三態是「可實驗分離、效果相反」的獨立神經機制——它們是描述／分流框架，只說是不同的經驗。</li>
+    <li>不主張能量像物理能量那樣守恆、可精確換算。</li>
+    <li>不把「耗竭／自我耗損」當已坐實機制（複現危機）。</li>
+    <li>不把卦象→能量態的對應當實證 mapping。</li>
+    <li>不滑向預測／算命；維持「鏡子＋調音台」定位。</li>
+  </ol>
+</section>
+
+<section id="s6">
+  <h2 class="serif"><span class="n">6</span>來源</h2>
+  <p class="lead">研究存活 claim 的主要依據（完整 17 存活／8 駁回紀錄見研究輸出）。</p>
+  <div class="src"><b>Ryan &amp; Frederick (1997)</b> subjective vitality — link.springer.com/article/10.1023/A:1007136110218</div>
+  <div class="src"><b>SVDS 雙因子驗證</b>（活力 vs 耗竭, φ=−0.57）— pmc.ncbi.nlm.nih.gov/articles/PMC12566669/</div>
+  <div class="src"><b>Integrative Vitality Scale</b>（身體×心理活力）— pmc.ncbi.nlm.nih.gov/articles/PMC11609079/</div>
+  <div class="src"><b>超載 vs 疲勞 構念區分</b>（Frontiers Org Psych 2026）— frontiersin.org/.../forgp.2026.1812361/full</div>
+  <div class="src"><b>spotlight 類比</b>（認知負荷 vs 自我耗損）— sciencedirect.com/science/article/abs/pii/S095947521630202X</div>
+  <div class="src"><b>過勞 × allostatic load</b>（Regensburg Burnout Project 2022）— sciencedirect.com/science/article/abs/pii/S0306453022001949</div>
+  <div class="src"><b>demand-control / job strain</b>（Wittyfit, 9,257 人）— ncbi.nlm.nih.gov/pmc/articles/PMC8872257/</div>
+  <div class="src"><b>JD-R / COR turnover</b>（台灣幼教師 N=200）— pmc.ncbi.nlm.nih.gov/articles/PMC12702973/</div>
+  <div class="src"><b>自我耗損 複現危機</b>（Hagger et al. 2016, 23 labs）— journals.sagepub.com/doi/10.1177/1745691616652873</div>
+  <div class="src"><b>Loehr &amp; Schwartz 四維能量</b>（HBR）— hbr.org/2001/01/the-making-of-a-corporate-athlete</div>
+</section>
+
+<footer>
+  八態能格 · Octenso　|　能量定位 spec　|　2026-06-27　|　noindex · 內部審閱頁<br>
+  鏡子非算命　·　真正影響人生結果的，不只是能量本身，而是生命功能如何運作。
+</footer>
+
+</div>
+</body>
+</html>
