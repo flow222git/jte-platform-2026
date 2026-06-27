@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>能量管理小幫手 · 感覺稿</title>
+<style>
+  :root{
+    --bg:#eaf1fb; --card:#fff; --ink:#2b3545; --sub:#7d8799; --line:#e4eaf3;
+    --blue:#3f7fd0; --blue-d:#2f6cb8; --blue-bg:#eaf2fc;
+    --yellow:#f6c544; --green:#74b84e; --purple:#8b7ad6;
+    --empty:#5b8fd6; --empty-bg:#eaf1fb;
+    --full:#ef9d3c;  --full-bg:#fdf2e3;
+    --stuck:#9277d4; --stuck-bg:#f1edfb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);min-height:100vh;color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.7;
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center}
+  .top{max-width:430px;width:100%;padding:22px 20px 6px;text-align:center}
+  .top h1{font-size:17px;font-weight:700;margin:0;color:var(--blue-d)}
+  .top p{font-size:12px;color:var(--sub);margin:4px 0 0}
+
+  .phone{max-width:430px;width:100%;padding:8px 16px 60px}
+  .card{background:var(--card);border-radius:22px;padding:26px 22px;
+    box-shadow:0 10px 30px -16px rgba(40,70,120,.35);min-height:430px;
+    display:flex;flex-direction:column}
+
+  .step{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1px;margin-bottom:4px}
+  h2{font-size:21px;font-weight:700;margin:0 0 6px}
+  .muted{color:var(--sub);font-size:14px;margin:0 0 18px}
+  .grow{flex:1}
+
+  /* dots */
+  .dots{display:flex;gap:6px;justify-content:center;margin:14px 0 0}
+  .dots i{width:7px;height:7px;border-radius:50%;background:#cdd8ea}
+  .dots i.on{background:var(--blue);width:20px;border-radius:4px}
+
+  /* generic option button */
+  .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    background:#fff;border:1.5px solid var(--line);border-radius:16px;
+    padding:15px 16px;margin:8px 0;cursor:pointer;transition:.15s;font-size:15px;color:var(--ink)}
+  .opt:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-1px)}
+  .opt .em{font-size:22px;flex:none}
+  .opt .tx b{display:block;font-weight:600}
+  .opt .tx small{color:var(--sub);font-size:12.5px}
+
+  /* scenario grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+  .sc{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:16px 12px;
+    cursor:pointer;text-align:center;transition:.15s}
+  .sc:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-2px)}
+  .sc .em{font-size:26px;display:block;margin-bottom:6px}
+  .sc b{font-weight:600;font-size:14px}
+
+  /* intensity pills */
+  .pills{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+
+  /* primary button */
+  .btn{display:block;width:100%;text-align:center;border:none;border-radius:15px;
+    padding:15px;font-size:15.5px;font-weight:700;cursor:pointer;transition:.15s;margin-top:10px}
+  .btn.p{background:var(--blue);color:#fff}.btn.p:hover{background:var(--blue-d)}
+  .btn.g{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+  .btn.g:hover{border-color:var(--blue);color:var(--blue-d)}
+  .btn small{display:block;font-weight:400;font-size:12px;opacity:.85;margin-top:2px}
+
+  .link{background:none;border:none;color:var(--sub);font-size:13px;cursor:pointer;
+    text-decoration:underline;margin:14px auto 0;display:block}
+
+  /* result */
+  .battery{height:16px;border-radius:9px;background:#eef2f8;overflow:hidden;margin:6px 0 4px}
+  .battery i{display:block;height:100%;border-radius:9px;transition:width .5s}
+  .blabel{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:18px}
+
+  .verdict{border-radius:18px;padding:20px;text-align:center;margin-bottom:6px}
+  .verdict .big{font-size:34px;margin-bottom:4px}
+  .verdict h3{font-size:22px;font-weight:700;margin:0 0 2px}
+  .verdict .tag{font-size:13px;font-weight:600;opacity:.85}
+  .v-empty{background:var(--empty-bg)} .v-empty h3,.v-empty .tag{color:var(--empty)}
+  .v-full{background:var(--full-bg)} .v-full h3,.v-full .tag{color:#d2811f}
+  .v-stuck{background:var(--stuck-bg)} .v-stuck h3,.v-stuck .tag{color:var(--stuck)}
+
+  .mirror{font-size:15px;background:#f7f9fc;border-radius:14px;padding:14px 16px;margin:14px 0}
+  .mirror .ctx{color:var(--sub);font-size:13px;display:block;margin-bottom:4px}
+  .second{font-size:12.5px;color:var(--sub);text-align:center;margin:-2px 0 12px}
+
+  .fb{border-top:1px solid var(--line);margin-top:16px;padding-top:14px;text-align:center}
+  .fb p{font-size:13px;color:var(--sub);margin:0 0 8px}
+  .fbtns{display:flex;gap:8px;justify-content:center}
+  .fbtns button{border:1.5px solid var(--line);background:#fff;border-radius:20px;
+    padding:7px 14px;font-size:13px;cursor:pointer;transition:.15s}
+  .fbtns button:hover,.fbtns button.sel{border-color:var(--blue);background:var(--blue-bg)}
+  .realbtm{text-align:center;font-size:12px;color:var(--sub);margin-top:14px}
+  .realbtm a{color:var(--blue);cursor:pointer}
+  .hide{display:none}
+</style>
+</head>
+<body>
+  <div class="top">
+    <h1>能量管理小幫手</h1>
+    <p>感覺稿 · 課程風 · 真的可以點</p>
+  </div>
+
+  <div class="phone">
+    <div class="card">
+
+      <!-- 0 心態卡 -->
+      <div class="screen" id="s0">
+        <div class="step">先停一下</div>
+        <h2>點我看你的電量</h2>
+        <p class="muted">不只是有沒有電——看你是<b style="color:var(--blue-d)">空了、太滿，還是卡住</b>。<br>憑「此刻」的感覺答，約 1 分鐘。</p>
+        <div class="grow" style="display:flex;align-items:center;justify-content:center">
+          <div style="font-size:72px">🔋</div>
+        </div>
+        <button class="btn p" onclick="go('s1')">開始 →</button>
+      </div>
+
+      <!-- 1 選場景 -->
+      <div class="screen hide" id="s1">
+        <div class="step">1 / 4</div>
+        <h2>最近最耗你的，是哪一種？</h2>
+        <p class="muted">挑一個現在最有感的。</p>
+        <div class="grid">
+          <div class="sc" onclick="pick('scenario','帶人·扛責任','s2')"><span class="em">🧑‍🤝‍🧑</span><b>帶人·扛責任</b></div>
+          <div class="sc" onclick="pick('scenario','趕死線','s2')"><span class="em">⏰</span><b>趕死線</b></div>
+          <div class="sc" onclick="pick('scenario','社交應酬','s2')"><span class="em">🥂</span><b>社交應酬</b></div>
+          <div class="sc" onclick="pick('scenario','難相處的人','s2')"><span class="em">😮‍💨</span><b>難相處的人</b></div>
+          <div class="sc" onclick="pick('scenario','照顧家人','s2')"><span class="em">🏠</span><b>照顧家人</b></div>
+          <div class="sc" onclick="pick('scenario','被檢視','s2')"><span class="em">👀</span><b>被檢視</b></div>
+          <div class="sc" onclick="pick('scenario','硬撐不能倒','s2')"><span class="em">🪨</span><b>硬撐不能倒</b></div>
+          <div class="sc" onclick="pick('scenario','自己的事','s2')"><span class="em">✍️</span><b>自己描述…</b></div>
+        </div>
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+      </div>
+
+      <!-- 2 強度 -->
+      <div class="screen hide" id="s2">
+        <div class="step">2 / 4</div>
+        <h2>這個情境，現在有多耗你？</h2>
+        <p class="muted">憑直覺。</p>
+        <div class="pills">
+          <button class="opt" onclick="pick('intensity',0,'s3')"><span class="em">🙂</span><span class="tx"><b>還好</b></span></button>
+          <button class="opt" onclick="pick('intensity',1,'s3')"><span class="em">😐</span><span class="tx"><b>有點耗</b></span></button>
+          <button class="opt" onclick="pick('intensity',2,'s3')"><span class="em">😮‍💨</span><span class="tx"><b>蠻耗的</b></span></button>
+          <button class="opt" onclick="pick('intensity',3,'s3')"><span class="em">🥵</span><span class="tx"><b>快撐不住</b></span></button>
+        </div>
+        <div class="grow"></div>
+        <div class="dots"><i></i><i class="on"></i><i></i><i></i></div>
+      </div>
+
+      <!-- 3 Q1 -->
+      <div class="screen hide" id="s3">
+        <div class="step">3 / 4</div>
+        <h2>現在這個累，比較像哪一種？</h2>
+        <p class="muted">身體的感覺。</p>
+        <button class="opt" onclick="pick('q1','empty','s4')"><span class="em">🫩</span><span class="tx"><b>整個人沒力，只想停下來</b></span></button>
+        <button class="opt" onclick="pick('q1','full','s4')"><span class="em">🌀</span><span class="tx"><b>停不下來，腦子一直轉</b></span></button>
+        <button class="opt" onclick="pick('q1','stuck','s4')"><span class="em">🧱</span><span class="tx"><b>有力氣，但就是動不了、卡住</b></span></button>
+        <div class="grow"></div>
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+      </div>
+
+      <!-- 4 Q2 -->
+      <div class="screen hide" id="s4">
+        <div class="step">4 / 4</div>
+        <h2>最讓你耗的是？</h2>
+        <p class="muted">心裡的歸因。</p>
+        <button class="opt" onclick="pick('q2','full','result')"><span class="em">📥</span><span class="tx"><b>事情太多、一起湧進來</b><small>處理不完</small></span></button>
+        <button class="opt" onclick="pick('q2','stuck','result')"><span class="em">🔁</span><span class="tx"><b>卡在某件事 / 某個念頭</b><small>繞不出來</small></span></button>
+        <button class="opt" onclick="pick('q2','empty','result')"><span class="em">🌫️</span><span class="tx"><b>沒什麼特別的事</b><small>就是提不起勁</small></span></button>
+        <div class="grow"></div>
+        <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
+      </div>
+
+      <!-- result -->
+      <div class="screen hide" id="result">
+        <div class="step">你的電量</div>
+        <div class="battery"><i id="batfill"></i></div>
+        <div class="blabel"><span id="batlo">空</span><span id="batnow"></span><span>滿</span></div>
+
+        <div class="verdict" id="verdict">
+          <div class="big" id="v-emoji"></div>
+          <h3 id="v-title"></h3>
+          <div class="tag" id="v-tag"></div>
+        </div>
+        <div class="second" id="v-second"></div>
+
+        <div class="mirror"><span class="ctx" id="v-ctx"></span><span id="v-line"></span></div>
+
+        <div id="v-cta"></div>
+
+        <div class="fb">
+          <p>這個判定，像你嗎？</p>
+          <div class="fbtns">
+            <button onclick="fb(this)">🟢 很準</button>
+            <button onclick="fb(this)">🟡 還好</button>
+            <button onclick="fb(this)">🔴 不太準</button>
+          </div>
+        </div>
+        <div class="realbtm">需要更深的支持，可以 <a>預約真人 →</a></div>
+        <button class="link" onclick="restart()">重新測一次</button>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  var st={scenario:null,intensity:null,q1:null,q2:null};
+  var cur='s0';
+  function go(id){ document.getElementById(cur).classList.add('hide');
+    document.getElementById(id).classList.remove('hide'); cur=id;
+    if(id==='result') render(); window.scrollTo(0,0); }
+  function pick(k,v,next){ st[k]=v; go(next); }
+
+  var DATA={
+    empty:{emoji:'🪫',title:'你比較像「空了」',tag:'耗竭 · 要的是回充',
+      line:'這種累，硬撐不會回血——要的是真的停下來、回充。',
+      cta:[{t:'做 3 分鐘小憩·練息',s:'先讓身體沉下來',p:1},{t:'CH4 能量永續 · 建立回充節奏',s:'',p:0}]},
+    full:{emoji:'🤯',title:'你比較像「太滿」',tag:'滿載 · 要的是減量與界線',
+      line:'不是你弱，是太多事同時湧進來。要的是把事情減下來、畫出界線。',
+      cta:[{t:'找「蘇格拉底」把事情問清楚',s:'排出真正重要的',p:1},{t:'CH1 內耗覺察 · CH3 人際界線',s:'',p:0}]},
+    stuck:{emoji:'🧩',title:'你比較像「卡住」',tag:'偏流 · 要的是把卡點拆開',
+      line:'你有力氣，但卡在某件事 / 某個念頭繞不出來。要的是把卡的點拆開、重新流動。',
+      cta:[{t:'找「理性金字塔」拆開那個念頭',s:'把災難化拆回現實',p:1},{t:'「陪你寫一段」把它寫出來',s:'',p:0}]}
+  };
+  var STATE_ZH={empty:'空',full:'滿',stuck:'卡'};
+
+  function render(){
+    // battery from intensity (0 還好 .. 3 快撐不住)
+    var lv=[0.85,0.60,0.38,0.18][st.intensity!=null?st.intensity:1];
+    var col=lv>0.6?'#74b84e':(lv>0.33?'#f0b13c':'#e8765a');
+    var f=document.getElementById('batfill'); f.style.width=(lv*100)+'%'; f.style.background=col;
+    document.getElementById('batnow').textContent=['還好','有點耗','蠻耗的','快撐不住'][st.intensity!=null?st.intensity:1];
+
+    // state: Q2 primary, Q1 secondary if differ
+    var primary=st.q2, secondary=(st.q1!==st.q2)?st.q1:null;
+    var d=DATA[primary];
+    var v=document.getElementById('verdict');
+    v.className='verdict v-'+primary;
+    document.getElementById('v-emoji').textContent=d.emoji;
+    document.getElementById('v-title').textContent=d.title;
+    document.getElementById('v-tag').textContent=d.tag;
+    document.getElementById('v-second').textContent= secondary? ('（你可能也有點「'+STATE_ZH[secondary]+'」，下面也給你那邊的路）'):'';
+    document.getElementById('v-ctx').textContent='最耗你的是：'+(st.scenario||'—');
+    document.getElementById('v-line').textContent=d.line;
+
+    var cta=d.cta.slice();
+    if(secondary){ var d2=DATA[secondary]; cta.push({t:d2.cta[0].t,s:'＋ 你也有點「'+STATE_ZH[secondary]+'」',p:0}); }
+    document.getElementById('v-cta').innerHTML=cta.map(function(c){
+      return '<button class="btn '+(c.p?'p':'g')+'">'+c.t+(c.s?'<small>'+c.s+'</small>':'')+'</button>';
+    }).join('');
+  }
+  function fb(el){ el.parentNode.querySelectorAll('button').forEach(function(b){b.classList.remove('sel')}); el.classList.add('sel'); }
+  function restart(){ st={scenario:null,intensity:null,q1:null,q2:null};
+    document.querySelectorAll('.fbtns button').forEach(function(b){b.classList.remove('sel')}); go('s0'); }
+</script>
+</body>
+</html>
