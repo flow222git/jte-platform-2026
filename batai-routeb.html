@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Route B · 八態能格 × 問易 → 客製建議</title>
+<style>
+  :root{
+    --bg:#f3efe7; --card:#fff; --ink:#2f3338; --sub:#7c8088; --line:#e5e0d4;
+    --gold:#b08442; --pine:#5a8f86;
+    --you:#b08442; --youb:#fbf1ea;      /* 八態·你 */
+    --ju:#3f6190;  --jub:#eaf0f8;        /* 問易·局 */
+    --bridge:#5a8f86; --bridgeb:#e7f1ee; /* 橋 */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:30px 18px 80px}
+  header{text-align:center;margin-bottom:8px}
+  header h1{font-size:24px;font-weight:700;margin:0 0 6px}
+  header p{color:var(--sub);font-size:14px;margin:0}
+  .axes{display:flex;gap:10px;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
+  .axes span{font-size:12.5px;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 13px}
+  .axes b{color:var(--ink)}
+  .northstar{text-align:center;font-size:15px;color:var(--ink);background:#fff8ec;border:1px solid #ecdcc0;
+    border-radius:12px;padding:12px 18px;margin:14px auto 22px;max-width:720px}
+  .northstar b{color:var(--gold)}
+
+  /* bridge diagram */
+  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .col{background:#fff;border:1px solid var(--line);border-top:4px solid var(--tc,#ccc);border-radius:14px;padding:15px 17px}
+  .col.you{--tc:var(--you)} .col.ju{--tc:var(--ju)}
+  .col .h{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+  .col .h b{font-size:16px} .col .h .m{font-size:11.5px;color:var(--sub)}
+  .col.you .h b{color:var(--gold)} .col.ju .h b{color:var(--ju)}
+  .col ul{margin:0;padding-left:0;list-style:none}
+  .col li{position:relative;padding-left:15px;margin:5px 0;font-size:13.5px}
+  .col li:before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--tc)}
+  .vdown{text-align:center;color:var(--sub);font-size:13px;margin:8px 0}
+  .vdown b{color:var(--bridge)}
+
+  .bridge{background:var(--bridgeb);border:1px solid #bcd8d1;border-radius:14px;padding:15px 18px;text-align:center}
+  .bridge b{color:var(--bridge);font-size:15px}
+  .bridge .f{font-size:14px;background:#fff;border:1px dashed #9cc3ba;border-radius:10px;padding:9px 14px;margin-top:8px;display:inline-block}
+  .out{background:#fff;border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:14px;padding:15px 18px;margin-top:8px}
+  .out b{color:var(--gold)}
+
+  h2{font-size:18px;margin:30px 0 8px;font-weight:700}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 0 12px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13.5px}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f1ece1;font-weight:700;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  td.k{font-weight:700;white-space:nowrap}
+  .call{color:var(--ju)} .rein{color:#b06a4f}
+  .lv-kang{color:#b06a4f;font-weight:700} .lv-zhong{color:var(--pine);font-weight:700} .lv-qian{color:#3f6190;font-weight:700}
+
+  .box{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:14px 18px;margin:12px 0;font-size:13.5px}
+  .box b{color:var(--gold)}
+  .box.eg{border-left-color:var(--pine)} .box.eg b{color:var(--pine)}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .grid3 .p{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:13px}
+  .grid3 .p h4{margin:0 0 4px;font-size:14px;color:var(--gold)}
+  @media(max-width:640px){ .inputs,.grid3{grid-template-columns:1fr} th,td{padding:9px 9px;font-size:12.5px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="serif">Route B · 八態能格 × 問易 → 客製建議</h1>
+    <p>體用搭橋：問易給「局」，八態給「你怎麼接」</p>
+  </header>
+  <div class="axes">
+    <span><b>體用：</b>八態＝你（體·相對穩定）　問易＝局（用·此刻·會變）</span>
+  </div>
+  <div class="northstar serif"><b>問易告訴你這是什麼局，八態告訴你你可以怎麼接。</b></div>
+
+  <!-- bridge diagram -->
+  <div class="inputs">
+    <div class="col ju">
+      <div class="h"><b>問易 · 局</b><span class="m">用 · 此刻 · 外生軸</span></div>
+      <ul>
+        <li>自由生出全 64 卦（內卦×外卦＋爻位/時）</li>
+        <li>每個卦有「<b>能量需求</b>」：<span class="call">召喚</span>哪幾股 / <span class="rein">節制</span>哪幾股</li>
+        <li>＝「這是什麼局、下一步往哪」</li>
+      </ul>
+    </div>
+    <div class="col you">
+      <div class="h"><b>八態 · 你</b><span class="m">體 · 相對穩定 · 你的軸</span></div>
+      <ul>
+        <li>你的底色 × 能格</li>
+        <li>每股一把尺：<span class="lv-kang">亢/過用</span> · <span class="lv-zhong">中/適中</span> · <span class="lv-qian">潛/不足</span></li>
+        <li>＝「你是什麼能量、哪股強哪股弱」</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="vdown">＼　兩個輸入<b>疊加</b>（不是合併）　／</div>
+
+  <div class="bridge">
+    <b>橋 · 逐股對照</b>
+    <div class="f">卦<span class="call">召喚/</span><span class="rein">節制</span>的股　×　你那股的能格（亢/中/潛）</div>
+  </div>
+
+  <div class="vdown">▼</div>
+
+  <div class="out">
+    <b>客製建議</b>：同一個卦，對不同的人給不同的話——<b>讓它「客製」的不是卦辭，是你的能格</b>。
+    「這個局正召喚 X 股，而你 X 股現在<span class="lv-qian">潛</span> → 這是你的功課，小步補/借力；它要你節制 Y 股，而你 Y 股正<span class="lv-kang">亢</span> → 你最會過頭的，正好要收。」
+  </div>
+
+  <!-- two layers: structure vs demand -->
+  <h2>卦怎麼變成「八態需求」？兩層</h2>
+  <p class="lead">「召喚/節制」不是憑空配——它有結構骨架，也有解讀內容。分清這兩層，才不會以為卦只是兩股。</p>
+  <table>
+    <tr><th>層</th><th>怎麼來</th><th>例 · 屯卦</th><th>性質</th></tr>
+    <tr>
+      <td class="k">① 結構層</td>
+      <td>卦 ＝ <b>內卦 ＋ 外卦 ＝ 兩股</b>（內＝內在/起點、外＝外境/趨向）</td>
+      <td>內<b>震</b>(想動) ＋ 外<b>坎</b>(遇險)</td>
+      <td>自動 · 免費 · 骨架</td>
+    </tr>
+    <tr>
+      <td class="k">② 需求層</td>
+      <td>整卦的卦德/卦辭 <span class="call">召喚</span>哪幾股、<span class="rein">節制</span>哪幾股（比兩股豐富）</td>
+      <td><span class="call">召喚</span> 艮·坤/巽·坎；<span class="rein">節制</span> 震·離</td>
+      <td>解讀 · 真正有用</td>
+    </tr>
+  </table>
+  <div class="box">
+    <b>鐵律</b>：②的召喚/節制<b>必須從卦辭/彖/象推得出來，不能憑空配</b>——屯「召喚坤/巽」對得上「<b>利建侯</b>」、「節制震」對得上「<b>磐桓，利居貞</b>（勿躁進）」。
+    每個卦＝一張<b>跨八股的需求 profile</b>（召喚/節制/中性），同一股在不同卦可召喚也可節制。這就是 backlog「<b>編 64 卦能量需求表</b>」要做的：64 格，每格可追溯經典。
+  </div>
+
+  <!-- the customization matrix -->
+  <h2>客製怎麼來：需求 × 能格 矩陣</h2>
+  <p class="lead">這張是 Route B 的心臟——同一個卦的召喚/節制，碰上你不同的能格，就長出不同的建議。</p>
+  <table>
+    <tr><th>這個卦對某一股</th><th>你那股的能格</th><th>給你的話（同卦·不同人）</th></tr>
+    <tr><td class="k call">召喚（局需要這股）</td><td class="lv-kang">亢 · 過用</td><td>局正需要它，但你容易過頭 → <b>用，但留剎車</b></td></tr>
+    <tr><td class="k call">召喚</td><td class="lv-zhong">中 · 適中</td><td>順手 → <b>發揮就好</b></td></tr>
+    <tr><td class="k call">召喚</td><td class="lv-qian">潛 · 不足</td><td>局考驗你最弱這塊 → <b>小步補、或借外力（人/工具）</b></td></tr>
+    <tr><td class="k rein">節制（局要你收這股）</td><td class="lv-kang">亢 · 過用</td><td>你最會過頭的，正是這局要你收 → <b>主動踩煞車</b></td></tr>
+    <tr><td class="k rein">節制</td><td class="lv-zhong">中 / <span class="lv-qian">潛</span></td><td>剛好，你本來就不衝這塊 → <b>安心</b></td></tr>
+  </table>
+
+  <!-- worked example -->
+  <div class="box eg">
+    <b>已驗過的手感：屯卦</b>（你之前推過，且初九爻辭幾乎原文驗證）<br>
+    屯卦的能量需求＝<span class="call">召喚</span> 艮(守正)·坤/巽(建侯找援)·坎(沉著)；<span class="rein">節制</span> 震(勿躁進)·離(草昧勿顯)。<br>
+    × 你的能格 → 例：你若<span class="lv-kang">震亢</span>（行動過用），這局正要你節制震（勿躁進），而你正好容易躁進 → <b>主動慢</b>；你若<span class="lv-qian">坤潛</span>（承接不足），局要你「建侯找援」(坤)，而你不擅求援 → <b>這是你的功課，小步練/借力</b>。<br>
+    對應爻辭「磐桓，利居貞，利建侯」——同一個局，能格讓建議落到你身上。
+  </div>
+
+  <!-- principles -->
+  <h2>三條守則（讓它站得住）</h2>
+  <div class="grid3">
+    <div class="p"><h4>① 否決</h4>別把底色當「內卦」——<b>你是站卦外問的人，不是一個卦</b>。否則一生只出 8 卦，蓋不了全 64。</div>
+    <div class="p"><h4>② 同源</h4>八態與問易<b>共用一套八卦定義</b>（學理憲法），否則會漂移（如「明現 vs 顯現/覺察」要裁一個）。</div>
+    <div class="p"><h4>③ 誠實</h4><b>鏡子非算命</b>：八態量你會變的狀態、問易讀此刻的時機，<b>誰都不預測命運</b>。</div>
+  </div>
+
+  <div class="box">
+    <b>跟 Route A 的關係</b>：同一份<b>能格</b>是共用底料——<b>Route A 對內</b>（你的內在動態：三態/八轉換），<b>Route B 對外</b>（你怎麼接這個局）。一份能格，A 看你自己怎麼流，B 看你怎麼接外境。
+  </div>
+</div>
+</body>
+</html>
