@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>八態能格 · 三層對照（能格 / 三態 / 八轉換）</title>
+<style>
+  :root{
+    --bg:#f3efe7; --card:#fff; --ink:#2f3338; --sub:#7c8088; --line:#e5e0d4;
+    --gold:#b08442;
+    --base:#8a8071; --baseb:#f1ece1;
+    --empty:#5b8fd6; --emptyb:#eaf1fb;
+    --full:#ef9d3c;  --fullb:#fdf2e3;
+    --stuck:#9277d4; --stuckb:#f1edfb;
+    --flow:#5a8f86; --flowb:#e7f1ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:30px 18px 80px}
+  header{text-align:center;margin-bottom:8px}
+  header h1{font-size:24px;font-weight:700;margin:0 0 6px}
+  header p{color:var(--sub);font-size:14px;margin:0}
+
+  .axes{display:flex;gap:10px;justify-content:center;margin:14px 0 22px;flex-wrap:wrap}
+  .axes span{font-size:12.5px;color:var(--sub);background:#fff;border:1px solid var(--line);
+    border-radius:20px;padding:5px 13px}
+  .axes b{color:var(--ink)}
+
+  /* layer stack */
+  .layer{background:#fff;border:1px solid var(--line);border-left:5px solid var(--lc,#ccc);
+    border-radius:14px;padding:15px 18px;margin-bottom:6px;position:relative}
+  .layer .lhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .layer .lhead b{font-size:16px}
+  .layer .lhead .meta{font-size:12px;color:var(--sub)}
+  .layer .lhead .ver{font-size:11px;font-weight:700;color:#fff;background:var(--lc,#999);
+    border-radius:20px;padding:2px 9px;margin-left:auto}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:13px;border-radius:18px;padding:5px 11px;border:1px solid var(--line);background:#fafafa}
+  .arrow{text-align:center;color:var(--sub);font-size:12px;margin:2px 0;line-height:1.3}
+  .arrow b{color:var(--gold)}
+
+  /* state chips colored */
+  .c-empty{color:var(--empty);background:var(--emptyb);border-color:#cfe0f3}
+  .c-full{color:#cf8420;background:var(--fullb);border-color:#f0d6a8}
+  .c-stuck{color:var(--stuck);background:var(--stuckb);border-color:#d8cef0}
+  .c-flow{color:var(--flow);background:var(--flowb);border-color:#bcd8d1}
+  .c-base{color:#6f6757;background:var(--baseb);border-color:#e2d9c6}
+
+  .L-base{--lc:var(--base)} .L-tri{--lc:var(--stuck)} .L-flow{--lc:var(--flow)}
+
+  h2{font-size:18px;margin:30px 0 8px;font-weight:700}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 0 12px}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;font-size:13.5px}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f1ece1;font-weight:700;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  td.k{font-weight:700;white-space:nowrap}
+  .b-empty{color:var(--empty)} .b-full{color:#cf8420} .b-stuck{color:var(--stuck)}
+
+  .box{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:12px;padding:14px 18px;margin:14px 0;font-size:13.5px}
+  .box b{color:var(--gold)}
+  .road{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .road .step{flex:1;min-width:240px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .road .step h4{margin:0 0 4px;font-size:14px}
+  .road .step.v1{border-top:4px solid var(--stuck)}
+  .road .step.v2{border-top:4px solid var(--flow)}
+  .road .step small{color:var(--sub);font-size:12.5px}
+  @media(max-width:640px){ th,td{padding:9px 9px;font-size:12.5px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="serif">八態能格 · 三層對照</h1>
+    <p>能格（靜·底層） → 三態（動·粗·v1） → 八轉換（動·細·v2）</p>
+  </header>
+  <div class="axes">
+    <span><b>兩條軸：</b></span>
+    <span>靜 ↔ 動：能格是<b>靜態底料</b>，三態/八轉換是<b>動態讀法</b></span>
+    <span>粗 ↔ 細：三態是<b>3 種粗篩</b>，八轉換是<b>8 條細看</b></span>
+  </div>
+
+  <!-- ===== 八轉換 (top) ===== -->
+  <div class="layer L-flow">
+    <div class="lhead"><b>八轉換</b><span class="meta">動 · 細 · 「卡在哪一條轉換」</span><span class="ver">v2 深引擎</span></div>
+    <div class="chips">
+      <span class="chip c-flow">艮→震</span><span class="chip c-flow">震→巽</span><span class="chip c-flow">巽→離</span>
+      <span class="chip c-flow">離→坤</span><span class="chip c-flow">坤→兌</span><span class="chip c-flow">兌→乾</span>
+      <span class="chip c-flow">乾→坎</span><span class="chip c-flow">坎→艮</span>
+    </div>
+    <div class="lhead" style="margin:10px 0 0"><span class="meta">四種結果：順轉 / 滯留 / 回退 / 陷落（你的 v0.5 診斷表＋介入層在這層）</span></div>
+  </div>
+
+  <div class="arrow">▲　把三態的「卡」<b>放大</b>成「哪一條」　（粗 → 細）</div>
+
+  <!-- ===== 三態 (middle) ===== -->
+  <div class="layer L-tri">
+    <div class="lhead"><b>三態</b><span class="meta">動 · 粗 · 前門快篩（3–4 題）</span><span class="ver" style="--lc:var(--stuck)">v1 前門</span></div>
+    <div class="chips">
+      <span class="chip c-empty">空 · 耗竭</span>
+      <span class="chip c-full">滿 · 滿載</span>
+      <span class="chip c-stuck">卡 · 偏流</span>
+    </div>
+  </div>
+
+  <div class="arrow">▲　兩種動態讀法，都<b>讀自</b>同一份能格資料　（動 ← 靜）</div>
+
+  <!-- ===== 能格 (base) ===== -->
+  <div class="layer L-base">
+    <div class="lhead"><b>能格</b><span class="meta">靜 · 底層資料 ·「你已經量的東西」</span><span class="ver" style="--lc:var(--base)">現有引擎</span></div>
+    <div class="chips">
+      <span class="chip c-base">開創(乾)</span><span class="chip c-base">交流(兌)</span><span class="chip c-base">明現(離)</span>
+      <span class="chip c-base">行動(震)</span><span class="chip c-base">拓展(巽)</span><span class="chip c-base">沉澱(坎)</span>
+      <span class="chip c-base">喊停(艮)</span><span class="chip c-base">承接(坤)</span>
+    </div>
+    <div class="lhead" style="margin:10px 0 0"><span class="meta">每股一把尺：過用(亢) · 適中(中) · 不足(潛)</span></div>
+  </div>
+
+  <!-- ===== 對照表 ===== -->
+  <h2>一張表：三態 ↔ 八轉換 ↔ 能格訊號</h2>
+  <p class="lead">同一份能格資料，三態是粗讀、八轉換是細讀；卡這一態才需要細到「哪一條」。</p>
+  <table>
+    <tr><th>三態（粗·v1）</th><th>細看 · 八轉換情境</th><th>能格訊號（已可讀）</th><th>處方方向</th></tr>
+    <tr>
+      <td class="k b-stuck">卡 · 偏流</td>
+      <td>哪一條轉換最卡（8 選 1，如 震→巽「動得起長不出」）</td>
+      <td>該站<b>亢</b> ＋ 下一站<b>潛</b></td>
+      <td>針對那一條轉換補救（v0.5 表）</td>
+    </tr>
+    <tr>
+      <td class="k b-full">滿 · 滿載</td>
+      <td>八條都高／滯留（一直重複、過不了關）</td>
+      <td>多股<b>亢</b>、當前站亢</td>
+      <td>減量·界線·先別急著推進</td>
+    </tr>
+    <tr>
+      <td class="k b-empty">空 · 耗竭</td>
+      <td>陷落／已耗竭（啟動後焦慮失眠耗竭）</td>
+      <td>多股<b>潛</b> ＋ 坎亢</td>
+      <td>先補坎·艮（回收·修復·結束）</td>
+    </tr>
+  </table>
+
+  <div class="box">
+    <b>省工接縫</b>：四種結果（順/滯/退/陷）有一半能從你<b>已經量的能格（亢/中/潛）</b>直接讀出來——
+    <b>滯留</b>≈站亢、<b>回退</b>≈前站潛、<b>陷落</b>≈多潛＋坎亢。
+    所以八轉換引擎<b>接上現有能格、不必從零再測一份</b>；能格是靜態尺，轉換是動態讀，<b>同一份資料兩種讀法</b>。
+  </div>
+
+  <!-- ===== roadmap ===== -->
+  <h2>產品落點：v1 先、v2 疊上</h2>
+  <div class="road">
+    <div class="step v1">
+      <h4>v1 · 三態前門（先上線）</h4>
+      <small>場景→強度→三態（空/滿/卡）→交棒。淺、快、好上線、收市場回饋。不依賴完整八態引擎。</small>
+    </div>
+    <div class="step v2">
+      <h4>v2 · 八轉換深引擎（疊上去）</h4>
+      <small>當使用者落在「卡」、想看細：八條轉換哪一條最卡＋三層介入（1分/10分/1週）。你的 v0.5＋介入表＝現成藍圖。</small>
+    </div>
+  </div>
+  <div class="box" style="border-left-color:var(--flow)">
+    一句話：<b>能格＝你已經量的靜態底料；三態＝快速的動態粗篩（v1）；八轉換＝同一份資料的細讀（v2）。</b>
+    粗篩先出門收市場，細讀當深度疊上，<b>共用一份能格、不重測</b>。
+  </div>
+</div>
+</body>
+</html>

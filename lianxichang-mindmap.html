@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>練息場 · 重整心智圖</title>
+<style>
+  :root{
+    --bg:#f3efe7; --card:#fff; --ink:#2f3338; --sub:#7c8088; --line:#e5e0d4;
+    --hub:#3f5a55; --hub2:#557a72;
+    --c1:#d98a63; --c1b:#fbeee5;  /* 脊椎 coral */
+    --c2:#c79a3e; --c2b:#f8f0d9;  /* 老師 gold */
+    --c3:#5a8f86; --c3b:#e7f1ee;  /* 看見理解調節 teal */
+    --c4:#6fa45f; --c4b:#ecf3e6;  /* 社群 green */
+    --c5:#5b82b8; --c5b:#e9f0f9;  /* 通路 blue */
+    --c6:#8b78c4; --c6b:#efebf8;  /* 變現 purple */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:30px 20px 80px}
+
+  header{text-align:center;margin-bottom:18px}
+  header h1{font-size:26px;font-weight:700;margin:0 0 6px}
+  header p{color:var(--sub);font-size:14px;margin:0}
+
+  .principle{background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:14px 18px;margin:0 auto 22px;max-width:760px;font-size:14px}
+  .principle b{color:var(--hub)}
+  .principle .x{color:#b06a4f}
+
+  .tabs{display:flex;gap:8px;justify-content:center;margin-bottom:22px}
+  .tabs button{border:1.5px solid var(--line);background:#fff;border-radius:22px;
+    padding:9px 20px;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;transition:.15s}
+  .tabs button.on{background:var(--hub);border-color:var(--hub);color:#fff}
+
+  .hub{max-width:640px;margin:0 auto 8px;background:linear-gradient(135deg,var(--hub),var(--hub2));
+    color:#fff;border-radius:20px;padding:22px 24px;text-align:center;
+    box-shadow:0 14px 36px -18px rgba(50,70,60,.6)}
+  .hub h2{font-size:21px;margin:0 0 6px;font-weight:700}
+  .hub p{margin:0;font-size:13.5px;opacity:.92}
+  .stem{width:2px;height:22px;background:var(--line);margin:0 auto}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .b{background:#fff;border:1px solid var(--line);border-top:4px solid var(--bc,#ccc);
+    border-radius:14px;padding:15px 16px}
+  .b.wide{grid-column:1 / -1}
+  .b h3{font-size:15.5px;margin:0 0 3px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .b .role{font-size:12px;color:var(--sub);margin:0 0 10px}
+  .b ul{margin:0;padding-left:0;list-style:none}
+  .b li{position:relative;padding-left:16px;margin:5px 0;font-size:13.5px}
+  .b li:before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--bc,#ccc)}
+  .chain{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:4px}
+  .chain .seg{background:var(--c3b);border-radius:10px;padding:10px 12px}
+  .chain .seg b{display:block;color:var(--c3);font-size:13px;margin-bottom:4px}
+  .chain .seg span{font-size:12.5px;color:var(--ink)}
+  .note{font-size:12px;color:var(--sub);margin-top:8px;font-style:italic}
+
+  .c1{--bc:var(--c1)} .c2{--bc:var(--c2)} .c3{--bc:var(--c3)}
+  .c4{--bc:var(--c4)} .c5{--bc:var(--c5)} .c6{--bc:var(--c6)}
+
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin-top:26px}
+  .hide{display:none}
+  @media(max-width:740px){ .grid,.chain{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="serif">練息場 · 重整心智圖</h1>
+    <p>從「按 modality 分類的目錄」→「被愛的社群之家」</p>
+  </header>
+
+  <div class="principle">
+    <b>重整原則</b>：你現在的圖把東西按「種類」分成五桶（tech／sensory／psych／platform／ops）＝<span class="x">目錄</span>，所以散。
+    新圖把<b>靈魂放中央</b>、只留<b>少數脊椎</b>，並把所有 modality（聲音／茶／騎馬／書法／HRV／八態…）<b>收進「看見→理解→調節」一條鏈</b>，它們不再各自當門面，而是「練習的方式」。
+  </div>
+
+  <div class="tabs">
+    <button id="t-now" class="on" onclick="show('now')">現在該長成的樣子</button>
+    <button id="t-mat" onclick="show('mat')">成熟的樣子</button>
+  </div>
+
+  <!-- ===================== NOW ===================== -->
+  <div id="now">
+    <div class="hub">
+      <h2 class="serif">練息場 · 照顧自己的家</h2>
+      <p>「不必很用力、也不必很玄」　·　真實老師 × 誠實深度 × 日常習慣　·　鏡子非算命</p>
+    </div>
+    <div class="stem"></div>
+    <div class="grid">
+      <div class="b c1">
+        <h3>🫀 脊椎·每天回來</h3>
+        <div class="role">習慣＝家的心跳（高頻、低門檻）</div>
+        <ul>
+          <li>「今天你的電量？」八態／三態 check</li>
+          <li>3 分鐘小憩·練息</li>
+          <li>→ 每天回來的入口，從這裡導去老師/練習</li>
+        </ul>
+      </div>
+      <div class="b c2">
+        <h3>🧑‍🏫 老師·創作者群聚</h3>
+        <div class="role">成長引擎（網絡效應）</div>
+        <ul>
+          <li>非專任 → 策展群聚（客座 → 常駐）</li>
+          <li>老師當可追蹤的臉、互相授粉</li>
+          <li>看得見老師成長</li>
+        </ul>
+      </div>
+      <div class="b c4">
+        <h3>🤝 社群·看得見彼此</h3>
+        <div class="role">歸屬感（守黑）</div>
+        <ul>
+          <li>策展原則（什麼內容進得來）</li>
+          <li>固定欄目／連載格式</li>
+          <li>會員·歸屬</li>
+        </ul>
+      </div>
+      <div class="b c3 wide">
+        <h3>🔭 深度·看見 → 理解 → 調節</h3>
+        <div class="role">把所有 modality 收進這條鏈，不再各自當門面</div>
+        <div class="chain">
+          <div class="seg"><b>看見</b><span>HRV · 腦波 · 數位衡鑑（BSRS／優勢／幸福／溝通）</span></div>
+          <div class="seg"><b>理解</b><span>八態能格 · 問易 · 正向心理學 · 能量管理課程</span></div>
+          <div class="seg"><b>調節</b><span>呼吸小憩 · 聲音療癒（頌缽/鼓/口簧琴）· 茶 · 戶外（騎馬/攀樹）· 書法 · 心理劇 · 真人心理師·療癒師</span></div>
+        </div>
+        <div class="note">＊高端的線下體驗（聲音/茶/戶外/書法）＝品牌光環與升級層，不放門面叫賣。</div>
+      </div>
+      <div class="b c5">
+        <h3>📣 分發·通路</h3>
+        <div class="role">把人導進「家」</div>
+        <ul>
+          <li>官網 · IG · YT · Podcast</li>
+          <li>角色＝導進「家」與「老師」，不是散發內容</li>
+        </ul>
+      </div>
+      <div class="b c6">
+        <h3>💰 變現·先 B2C</h3>
+        <div class="role">守黑：為個人的愛而生</div>
+        <ul>
+          <li>會員／訂閱（快樂訂閱）· 課程 · 體驗日(premium)</li>
+          <li>老師導生·分潤</li>
+          <li>B2B ＝ 之後的一層（先按住）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MATURE ===================== -->
+  <div id="mat" class="hide">
+    <div class="hub">
+      <h2 class="serif">練息場 · 「想到照顧自己，就想到這裡」</h2>
+      <p>被愛的、誠實的身心品牌　·　真實老師 × 誠實深度 × 日常習慣</p>
+    </div>
+    <div class="stem"></div>
+    <div class="grid">
+      <div class="b c1">
+        <h3>🫀 脊椎（成熟）</h3>
+        <div class="role">有黏著的日常習慣</div>
+        <ul>
+          <li>小練息＝會回來的日常習慣（高留存）</li>
+          <li>「我」單元／趨勢——你看著自己成長</li>
+          <li>HRV 當生理錨（耗竭那一態可量測）</li>
+        </ul>
+      </div>
+      <div class="b c2">
+        <h3>🧑‍🏫 老師（成熟）</h3>
+        <div class="role">搶著加入的策展品牌</div>
+        <ul>
+          <li>清楚的老師路徑與分潤</li>
+          <li>老師共創 · 活動 · 彼此成長被看見</li>
+          <li>「掛上練息場」＝品質信號</li>
+        </ul>
+      </div>
+      <div class="b c4">
+        <h3>🤝 社群（成熟）</h3>
+        <div class="role">身分認同</div>
+        <ul>
+          <li>大量活躍、彼此可見的成長</li>
+          <li>「這是我照顧自己的地方」＝身分</li>
+        </ul>
+      </div>
+      <div class="b c3 wide">
+        <h3>🔭 一條龍（成熟）</h3>
+        <div class="role">看見→理解→調節 成形、分層清楚</div>
+        <div class="chain">
+          <div class="seg"><b>線上·規模</b><span>數位小練息／衡鑑／課程／八態——可複製、不綁人</span></div>
+          <div class="seg"><b>線下·高端</b><span>聲音／茶／戶外／書法 體驗日——premium、品牌光環</span></div>
+          <div class="seg"><b>誠實·護城河</b><span>鏡子非算命、可量測成效——被市場認得的差異</span></div>
+        </div>
+      </div>
+      <div class="b c5">
+        <h3>🌏 品牌（成熟）</h3>
+        <div class="role">被認得的誠實身心品牌</div>
+        <ul>
+          <li>「誠實的身心科學」＝市場記得的定位</li>
+          <li>國際／在地擴張的可能</li>
+        </ul>
+      </div>
+      <div class="b c6">
+        <h3>💰 變現（成熟·多層）</h3>
+        <div class="role">B2C 穩定，B2B 騎上來</div>
+        <ul>
+          <li>會員＋課程＋體驗＋老師分潤穩定運轉</li>
+          <li><b>B2B 騎上被愛的品牌</b>（Calm／Headspace 路徑：公司買席位、員工真的愛用）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">練息場 · 重整心智圖　|　草稿，供討論　|　靈魂在中央 · 脊椎收斂 · modality 收進一條鏈</div>
+</div>
+
+<script>
+  function show(v){
+    document.getElementById('now').classList.toggle('hide', v!=='now');
+    document.getElementById('mat').classList.toggle('hide', v!=='mat');
+    document.getElementById('t-now').classList.toggle('on', v==='now');
+    document.getElementById('t-mat').classList.toggle('on', v==='mat');
+    window.scrollTo(0,0);
+  }
+</script>
+</body>
+</html>
