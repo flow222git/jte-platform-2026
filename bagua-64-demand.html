@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>64 卦能量需求表 v0.1 · 八態能格 Route B</title>
+<style>
+  :root{ --bg:#f3efe7; --card:#fff; --ink:#2f3338; --sub:#7c8088; --line:#e5e0d4; --gold:#b08442; --pine:#5a8f86; --ju:#3f6190; --rein:#b06a4f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 18px 90px}
+  header{text-align:center;margin-bottom:6px}
+  header h1{font-size:24px;font-weight:700;margin:0 0 6px}
+  header p{color:var(--sub);font-size:14px;margin:0}
+  .disc{background:#fbf1ea;border:1px solid #e9d3c2;border-left:4px solid var(--rein);border-radius:12px;
+    padding:13px 18px;margin:16px 0 22px;font-size:13px;color:#6b5142}
+  .disc b{color:var(--rein)}
+  h2{font-size:18px;margin:30px 0 10px;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:7px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 0 12px}
+  ol.m{padding-left:20px;font-size:14px} ol.m li{margin:5px 0}
+  .vocab{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:13.5px;margin:8px 0}
+  .vocab b{color:var(--gold)}
+
+  .search{position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5}
+  .search input{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;background:#fff}
+  .count{font-size:12px;color:var(--sub);margin-top:5px}
+
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f1ece1;font-weight:700;font-size:12px;position:sticky;top:62px;z-index:1}
+  tr:last-child td{border-bottom:none}
+  td.n{color:var(--sub);white-space:nowrap}
+  td.nm{font-weight:700;white-space:nowrap}
+  td.nm .g{display:block;font-size:11px;color:var(--sub);font-weight:400}
+  td.tone{color:var(--gold);font-weight:600;white-space:nowrap}
+  td.call{color:var(--ju)} td.rein{color:var(--rein)}
+  td.src{color:var(--sub);font-size:11.5px}
+  tr.pure{background:#fbf7ee}
+  tr.pure td.nm:after{content:"純";font-size:9px;color:#fff;background:var(--gold);border-radius:6px;padding:0 4px;margin-left:4px;vertical-align:2px}
+
+  .find{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0;font-size:13.5px}
+  .find h4{margin:0 0 4px;color:var(--gold);font-size:14px}
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin-top:36px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="serif">64 卦能量需求表 · v0.1</h1>
+    <p>八態能格 Route B 引擎內容　·　卦的「召喚 / 節制 / 時勢基調」</p>
+  </header>
+
+  <div class="disc">
+    <b>定位聲明</b>：本表是「研究型工作假說 v0.1」，<b>未經易學專家終審</b>。每格的召喚/節制力求回推到卦辭/彖/大象（Level 1 經典），但仍可能有詮釋空間。用途＝八態能格 Route B 的參照引擎——「<b>這個局召喚/節制哪些能量</b>」，配上你的能格(亢/中/潛)才落到你身上。<b>鏡子非算命，不預測命運。</b>
+  </div>
+
+  <h2>方法（每卦怎麼推出召喚/節制）</h2>
+  <ol class="m">
+    <li><b>結構層</b>：內卦＋外卦＝在場的兩股（內＝起點、外＝趨向）。</li>
+    <li><b>需求層</b>：從卦旨／卦辭／彖／大象「君子以…」推「這個局要你<b>動用</b>哪幾股（召喚）、<b>收住</b>哪幾股（節制）」。</li>
+    <li>每格附短引為證；拿不準標「待考」（忠於未知）。</li>
+  </ol>
+  <div class="vocab"><b>時勢基調</b>（往哪個方向使力，可複合、可括註）：進（有為前行）· 待（待時）· 止（止守界）· 養（蓄/復/養）· 交（連結和同）· 治（整飭/變革）。</div>
+
+  <h2>全 64 卦（可搜尋：卦名／召喚／節制／基調）</h2>
+  <div class="search">
+    <input id="q" type="text" placeholder="輸入關鍵字篩選，例如「震」「節制」「進」「防亢」「坎」…">
+    <div class="count" id="count"></div>
+  </div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>#</th><th>卦（內·外）</th><th>卦旨</th><th>時勢基調</th><th>召喚（動用）</th><th>節制（收住）</th><th>依據</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <h2>五條結構性發現（這次練習的副產品）</h2>
+  <div class="find"><h4>A. 八純卦＝能格教科書</h4>乾坤坎離震艮巽兌（表中標「純」），需求都收斂成「<b>本股守中、節制本股之過</b>」——直接對上能格（過用/適中/不足）。可寫進學理憲法。</div>
+  <div class="find"><h4>B. 召喚與節制常是「同一股的進與退」</h4>盛/剛之卦（乾·大有·泰·夬·大壯·豐·升）幾乎都「召喚某股、同時節制它的過亢」。→ <b>能格(亢/中/潛)就是讓召喚不過頭的尺</b>，這是 Route B 客製的核心機制。</div>
+  <div class="find"><h4>C. 綜卦/對卦呈鏡像</h4>泰否、損益、蹇解、咸恆、遯大壯、晉明夷、困井、漸歸妹、渙節、既濟未濟……召喚/節制/基調多成鏡像，方法自洽。</div>
+  <div class="find"><h4>D. 浮現第三維度「規模（宜大/宜小）」</h4>睽「小事吉」、小過「宜下不宜上」、需「利涉大川」vs 訟「不利涉大川」——完整需求其實是「動哪股 × 往哪走 × 多大規模」三維。目前以括註承接，未獨立成欄。</div>
+  <div class="find"><h4>E. 有「戒卦」召喚稀薄</h4>歸妹/否/剝，重點在節制＋守，不硬湊召喚（守五誡）。表格允許「召喚稀薄」的條目。</div>
+
+  <h2>誠實邊界與下一步</h2>
+  <ol class="m">
+    <li><b>二校</b>：請易學顧問逐卦審「召喚/節制是否回推得到經典」，待考者附兩說。</li>
+    <li><b>規模維度</b>：決定「宜大/宜小」要不要獨立成第四欄。</li>
+    <li><b>資料化</b>：把 64 卦 profile 轉成 Route B 引擎可讀的結構（召喚集合／節制集合／時勢基調／規模）→ 接能格 → 客製建議。</li>
+    <li><b>回扣 Route A</b>：純卦≈能格、召喚/節制≈亢/潛——A/B 共用同一套八卦定義（學理憲法）。</li>
+  </ol>
+
+  <div class="foot">八態能格 · Octenso　|　64 卦能量需求表 v0.1　|　研究假說，未經終審　|　鏡子非算命</div>
+</div>
+
+<script>
+var PURE=['乾','坤','坎','離','震','艮','巽','兌'];
+var DATA=[
+{n:1,name:'乾',gua:'乾·乾',zhi:'健·創生，自強不息',tone:'進(防亢)',call:'開創/決斷(乾)、行動(震)',rein:'過亢·獨剛(本股過用)',src:'上九「亢龍有悔」、用九「群龍無首吉」、象「自強不息」'},
+{n:2,name:'坤',gua:'坤·坤',zhi:'順·承載，厚德載物',tone:'待·順',call:'承接/涵養(坤)、隨順',rein:'爭先·妄動(乾·震)',src:'卦辭「先迷後得主，安貞吉」、初六「履霜堅冰至」、象「厚德載物」'},
+{n:3,name:'屯',gua:'震·坎',zhi:'草創，動乎險中',tone:'待(守正建侯)',call:'守正(艮·居貞)、建侯找援(坤·巽)、沉著(坎)',rein:'躁進(震)、顯露(離)',src:'卦辭「勿用有攸往，利建侯」、初九「磐桓，利居貞」、象「經綸」'},
+{n:4,name:'蒙',gua:'坎·艮',zhi:'蒙昧待啟，養正',tone:'養(育德)',call:'啟明(離)、受教承接(坤)、守正培育(艮)',rein:'急躁強求·反覆(震)',src:'卦辭「再三瀆則不告」、彖「蒙以養正」、象「果行育德」'},
+{n:5,name:'需',gua:'乾·坎',zhi:'險在前，須待時',tone:'待',call:'守正待時(艮·貞)、沉著(坎)、養精(坤)',rein:'躁進冒險(震)、恃剛(乾亢)',src:'彖「需，須也，險在前也，剛健而不陷」、象「飲食宴樂」'},
+{n:6,name:'訟',gua:'坎·乾',zhi:'爭訟，宜中止',tone:'止(中而止)',call:'警惕而止(艮·窒惕)、求中正(離)、謀始(坎)',rein:'好爭逞剛(乾亢)、纏訟(終凶)',src:'卦辭「中吉終凶」、彖「訟不可成，尚中正」、象「作事謀始」'},
+{n:7,name:'師',gua:'坎·坤',zhi:'用眾以正，行險而順',tone:'進(以正)',call:'守正(艮·貞)、容眾(坤)、剛中主導(乾·丈人)、沉著(坎)',rein:'躁動妄戰(震)、失紀無正',src:'卦辭「師貞，丈人吉」、彖「剛中而應，行險而順」、象「容民畜眾」'},
+{n:8,name:'比',gua:'坤·坎',zhi:'親輔相親，下順從',tone:'交(及時)',call:'親比連結(兌/巽)、承順(坤)、誠正持久(艮)、及時相應(震)',rein:'遲疑觀望(後夫凶)、孤立',src:'卦辭「不寧方來，後夫凶」、彖「下順從」、象「親諸侯」'},
+{n:9,name:'小畜',gua:'乾·巽',zhi:'以柔小畜，密雲未雨',tone:'待·蓄',call:'柔順調養(巽)、修文德(離)、蓄志待發(乾·施未行)',rein:'急求大成(冒進)、力小強行',src:'卦辭「密雲不雨」、彖「健而巽…施未行」、象「懿文德」'},
+{n:10,name:'履',gua:'兌·乾',zhi:'履危而和，柔履剛',tone:'進(謹和)',call:'和悅謹慎(兌)、明辨分際(離/艮)、守正持中(乾)',rein:'莽撞冒犯(觸虎尾)、過剛無禮',src:'卦辭「履虎尾，不咥人」、彖「說而應乎乾…剛中正」、象「辨上下」'},
+{n:11,name:'泰',gua:'乾·坤',zhi:'天地交而萬物通',tone:'交(防傾)',call:'內剛成事(乾)、外順承納(坤)、上下交流(兌)、裁成輔相(離/巽)',rein:'安泰驕怠、忘險自滿',src:'彖「天地交…內健而外順」、九三「无平不陂」、象「財成輔相」'},
+{n:12,name:'否',gua:'坤·乾',zhi:'天地不交，閉塞',tone:'止·守(韜晦)',call:'守正自持(艮·儉德辟難)、內斂韜晦(坎)、辨時(離)',rein:'妄動求進(震)、張揚求榮',src:'卦辭「不利君子貞」、彖「天地不交…君子道消」、象「儉德辟難」'},
+{n:13,name:'同人',gua:'離·乾',zhi:'與人和同，大同於野',tone:'交(無私)',call:'明辨而和同(離)、剛健中正(乾)、廣大無私之交(兌/巽)',rein:'偏私小群(同人于宗，吝)、爭競',src:'卦辭「同人于野」、彖「文明以健…通天下之志」、六二「同人于宗，吝」'},
+{n:14,name:'大有',gua:'乾·離',zhi:'盛大富有，順天時行',tone:'進(防驕)',call:'剛健成事(乾)、文明揚善(離)、應天時行',rein:'驕盈自滿、縱惡不遏',src:'彖「剛健而文明，應乎天而時行」、象「遏惡揚善，順天休命」'},
+{n:15,name:'謙',gua:'艮·坤',zhi:'卑以自牧，謙尊而光',tone:'止·謙',call:'謙退守界(艮)、承順厚德(坤)、均平裒益',rein:'盈滿自高、張揚',src:'彖「天道虧盈而益謙…人道惡盈而好謙」、象「裒多益寡，稱物平施」'},
+{n:16,name:'豫',gua:'坤·震',zhi:'順以動，和樂奮起',tone:'進(順動防溺)',call:'順勢而動(震)、承順(坤)、和樂崇德(兌/震)',rein:'逸樂沉溺(冥豫)、妄動不順',src:'彖「順以動…豫之時義大矣哉」、上六「冥豫」、象「作樂崇德」'},
+{n:17,name:'隨',gua:'震·兌',zhi:'動而說，隨時',tone:'隨時(依時進退)',call:'順時而動(震)、和悅相隨(兌)、隨時守正、該息則息(坎)',rein:'盲從失正(隨而貞凶)、固執不隨時',src:'彖「動而說，隨…隨時之義大矣哉」、九四「隨有獲，貞凶」、象「嚮晦入宴息」'},
+{n:18,name:'蠱',gua:'巽·艮',zhi:'壞極而治，整飭積弊',tone:'治',call:'整治之振作(震/乾·往有事)、前後周慮(離)、巽入而止成(巽·艮)',rein:'躁治莽進、因循不治',src:'卦辭「先甲三日，後甲三日」、彖「巽而止…往有事」、象「振民育德」'},
+{n:19,name:'臨',gua:'兌·坤',zhi:'以上臨下，剛長',tone:'進(防消)',call:'和悅而順臨(兌·坤)、剛中守正(乾)、教養容保(坤)',rein:'盛極忘消·驕怠、嚴苛失和',src:'彖「剛浸而長，說而順…消不久也」、象「教思無窮，容保民無疆」'},
+{n:20,name:'觀',gua:'坤·巽',zhi:'中正觀示，以德化',tone:'止·觀(以德化)',call:'明察觀照(離)、誠敬內守(艮)、順巽教化(巽)',rein:'妄動干擾、輕率不敬',src:'卦辭「盥而不薦，有孚顒若」、彖「中正以觀天下…神道設教」'},
+{n:21,name:'噬嗑',gua:'震·離',zhi:'咬合去梗，用刑',tone:'治(果斷)',call:'果決去梗(震)、明察明斷(離)、剛斷(乾)',rein:'過嚴酷暴、優柔不決',src:'卦辭「利用獄」、彖「動而明，雷電合而章」、象「明罰敕法」'},
+{n:22,name:'賁',gua:'離·艮',zhi:'文飾，文明以止',tone:'止(文而有度)',call:'文明修飾(離)、節止有度(艮)、明察時變(離)',rein:'過飾虛華(尚質白賁)、以文亂斷',src:'彖「文明以止…化成天下」、上九「白賁無咎」、象「無敢折獄」'},
+{n:23,name:'剝',gua:'坤·艮',zhi:'剝落衰時，柔變剛',tone:'止·順(待復)',call:'順時而止(坤·艮)、厚下守靜(坤)、知消息盈虛(離)',rein:'妄動強進(不利有攸往)、逆勢挽剝',src:'卦辭「不利有攸往」、彖「順而止之…尚消息盈虛」、象「厚下安宅」'},
+{n:24,name:'復',gua:'震·坤',zhi:'一陽來復，生機初萌',tone:'養(微動待發)',call:'順時微動而起(震)、承順涵養(坤)、養微待發(坎/艮)',rein:'躁進透支(閉關)、急於大成',src:'卦辭「七日來復，利有攸往」、彖「動而以順行…天地之心」、象「至日閉關」'},
+{n:25,name:'无妄',gua:'震·乾',zhi:'不妄為，動合天命',tone:'待(守正)',call:'守正誠實(乾)、順天時而動(震)',rein:'妄動非分(匪正有眚)、有為造作',src:'卦辭「匪正有眚，不利有攸往」、彖「動而健…天之命」'},
+{n:26,name:'大畜',gua:'乾·艮',zhi:'大蓄德能，止健',tone:'養→進(蓄而後發)',call:'蓄德蓄能(艮)、剛健篤實(乾)、博學畜養(離)',rein:'急用未蓄(冒進耗畜)',src:'彖「能止健…日新其德」、象「多識前言往行，以畜其德」'},
+{n:27,name:'頤',gua:'震·艮',zhi:'養正，自求口實',tone:'養(守正)',call:'養正自立(艮·慎)、明辨所養(離)',rein:'縱養失正(拂頤貞凶)、躁動傷養',src:'彖「養正則吉」、象「慎言語，節飲食」、六三「拂頤貞凶」'},
+{n:28,name:'大過',gua:'巽·兌',zhi:'陽過棟橈，行非常',tone:'進(擔當·防過)',call:'剛毅擔當(乾·獨立不懼)、巽悅而行(巽·兌)',rein:'過剛致折(棟橈本末弱)、輕舉',src:'卦辭「棟橈，利有攸往」、彖「剛過而中，巽而說行」、象「獨立不懼」'},
+{n:29,name:'坎',gua:'坎·坎',zhi:'重險，行險不失信',tone:'進·守恆(處險)',call:'沉著守信(坎·剛中)、恆常修習(艮)、量險而行',rein:'躁進求速出(陷溺)、僥倖失信',src:'卦辭「有孚，維心亨」、彖「行險而不失其信…險之時用」、象「常德行」'},
+{n:30,name:'離',gua:'離·離',zhi:'重明，麗乎正',tone:'進·守中(明照)',call:'明照明辨(離)、附麗於正(利貞)',rein:'過明亢烈(畜牝牛以柔濟)、無所麗正',src:'彖「重明以麗乎正…柔麗乎中正」、卦辭「畜牝牛吉」、象「繼明照于四方」'},
+{n:31,name:'咸',gua:'艮·兌',zhi:'感應相與，男下女',tone:'交(誠感)',call:'感應交流(兌)、虛己受人(艮)、誠正(貞)',rein:'妄感躁動(憧憧往來)、強求',src:'彖「二氣感應…止而說…感人心而天下和平」、象「虛受人」'},
+{n:32,name:'恆',gua:'巽·震',zhi:'恆久，立不易方',tone:'守·恆',call:'持恆守常、巽順而動有常(巽·震)、守正',rein:'浮躁善變(不恆其德)、固執不知變',src:'彖「久也…巽而動…久於其道而天下化成」、象「立不易方」'},
+{n:33,name:'遯',gua:'艮·乾',zhi:'退避，與時行',tone:'止·退',call:'知時退守(艮)、剛健自守(乾)、不惡而嚴',rein:'戀棧不退(係遯)、激切招禍',src:'彖「與時行…遯之時義大矣哉」、象「遠小人，不惡而嚴」'},
+{n:34,name:'大壯',gua:'乾·震',zhi:'陽剛盛壯，剛以動',tone:'進·自律',call:'剛健奮進(乾·震)、守正、壯而能止(非禮弗履)',rein:'恃壯妄為(羝羊觸藩)、過剛失禮',src:'彖「剛以動，故壯…大者正也」、象「非禮弗履」'},
+{n:35,name:'晉',gua:'坤·離',zhi:'明出地上，柔進上行',tone:'進·順明',call:'光明上進(離)、柔順而進(坤)',rein:'躁進冒求、自炫過顯',src:'彖「明出地上，順而麗乎大明」、象「自昭明德」'},
+{n:36,name:'明夷',gua:'離·坤',zhi:'明入地中，傷而晦明',tone:'晦·守',call:'晦藏自守(用晦而明)、內明外順(離藏內·坤順外)、艱貞',rein:'露才招禍(過顯則傷)、剛抗強爭',src:'彖「內文明而外柔順…晦其明也…正其志」、象「用晦而明」'},
+{n:37,name:'家人',gua:'離·巽',zhi:'正家，各正其分',tone:'交·正分',call:'明正內外分位(離)、巽順相成(巽)、言有物行有恆',rein:'越分失位、過嚴或過縱',src:'彖「男女正…正家而天下定」、象「言有物而行有恆」'},
+{n:38,name:'睽',gua:'兌·離',zhi:'乖異，異中求同',tone:'交·和異(宜小)',call:'明辨異同(離)、和悅相通(兌)、同而異求同',rein:'因異生疑(先張之弧)、強求齊同',src:'彖「說而麗乎明…睽之時用大矣哉」、象「同而異」'},
+{n:39,name:'蹇',gua:'艮·坎',zhi:'險阻在前，見險而止',tone:'止·修',call:'見險而止(艮)、守正(貞)、反身修德、求援',rein:'冒進犯難、躁動',src:'彖「見險而能止，知矣哉…蹇之時用大矣哉」、象「反身修德」'},
+{n:40,name:'解',gua:'坎·震',zhi:'動而免險，難解',tone:'進·寬解(宜速)',call:'及時行動出險(震·夙吉)、寬緩赦宥、得中復常',rein:'拖延不解、解後驕逸(負且乘致寇)',src:'彖「動而免乎險…有攸往夙吉」、象「赦過宥罪」'},
+{n:41,name:'損',gua:'兌·艮',zhi:'損下益上，與時損益',tone:'止·自抑',call:'減損自抑(艮·懲忿窒欲)、誠信、隨時損益、守正',rein:'過損傷本、奢偽',src:'彖「損剛益柔有時，損益盈虛，與時偕行」、象「懲忿窒欲」'},
+{n:42,name:'益',gua:'震·巽',zhi:'損上益下，日進無疆',tone:'進·益(遷善)',call:'奮進增益(震)、巽順以行(巽)、遷善改過、利眾',rein:'貪益無度(莫益或擊之)、躁益',src:'彖「益動而巽，日進無疆…與時偕行」、象「見善則遷，有過則改」'},
+{n:43,name:'夬',gua:'乾·兌',zhi:'剛決柔，決而和',tone:'進·決',call:'決斷(乾)、公開告眾(兌·離)、戒備(艮·有厲)',rein:'尚武輕戰(過亢之乾)、口舌之爭',src:'卦辭「揚于王庭…不利即戎，利有攸往」、彖「健而說，決而和」'},
+{n:44,name:'姤',gua:'巽·乾',zhi:'一陰始生，遇而防微',tone:'止·防微',call:'警覺防微(止之於初)、剛健守正(乾)、明辨柔長',rein:'縱柔養奸(勿用取女)、妄遇苟合',src:'卦辭「女壯，勿用取女」、彖「不可與長…姤之時義大矣哉」'},
+{n:45,name:'萃',gua:'坤·兌',zhi:'聚集，順以說',tone:'交·聚(戒備)',call:'順而和聚(坤·兌)、剛中主導凝聚、誠敬守正',rein:'聚而無備(除戎器戒不虞)、亂聚私黨',src:'彖「萃，聚也。順以說，剛中而應」、象「除戎器，戒不虞」'},
+{n:46,name:'升',gua:'巽·坤',zhi:'柔以時升，積小高大',tone:'進·漸升',call:'巽順漸升(巽)、積累成大、剛中而應、依時上進',rein:'躁升越級、升極忘止(冥升)',src:'彖「柔以時升，巽而順…志行也」、象「順德，積小以高大」'},
+{n:47,name:'困',gua:'坎·兌',zhi:'剛揜處困，守正致志',tone:'守·處困',call:'處困守正(坎·剛中)、安困自得(兌)、致命遂志',rein:'尚口爭辯(尚口乃窮)、躁求出困',src:'彖「困而不失其所亨…尚口乃窮也」、象「致命遂志」'},
+{n:48,name:'井',gua:'巽·坎',zhi:'養而不窮，守常',tone:'養·守常',call:'惠養不竭(井養·勞民勸相)、守本不易、巽入上汲(巽·坎)',rein:'功虧一簣(羸其瓶凶)、徒擾不養',src:'彖「井養而不窮…未有功也」、象「勞民勸相」'},
+{n:49,name:'革',gua:'離·兌',zhi:'變革去故，時至乃孚',tone:'治·變',call:'決斷改變(乾)、明辨時機(離)、取信於眾(兌)',rein:'未孚先動(過早之震)、固守不變(艮)',src:'卦辭「巳日乃孚」、彖「文明以說…順天應人」、象「治曆明時」'},
+{n:50,name:'鼎',gua:'巽·離',zhi:'革故鼎新，養賢',tone:'治·鼎新(正位)',call:'革故鼎新(離)、養賢(坤)、巽明聰察、正位凝命',rein:'失位顛覆(鼎折足覆公餗)、虛驕不實',src:'彖「亨飪也…養聖賢…巽而耳目聰明」、象「正位凝命」'},
+{n:51,name:'震',gua:'震·震',zhi:'震動驚懼，恐懼修省',tone:'進·戒懼(守重)',call:'奮動振起(震)、戒懼修省、處變持重(不喪匕鬯)',rein:'驚惶失措、輕躁無則',src:'彖「震來虩虩，恐致福也…後有則也」、象「恐懼修省」'},
+{n:52,name:'艮',gua:'艮·艮',zhi:'止其所，時止時行',tone:'止·適時',call:'適時而止(時止則止)、守分安位(思不出其位)、定靜內守',rein:'當行不行·滯止僵化、妄動逾位',src:'彖「時止則止，時行則行，動靜不失其時」、象「思不出其位」'},
+{n:53,name:'漸',gua:'艮·巽',zhi:'漸進循序，進以正',tone:'進·漸序',call:'循序漸進(巽·止而巽)、守正而進(艮)、積德善俗',rein:'躁進越序(躐等)、躁動不止',src:'彖「漸之進也…止而巽，動不窮也」、象「居賢德善俗」'},
+{n:54,name:'歸妹',gua:'兌·震',zhi:'女歸非正，征凶',tone:'待·慎(不宜進)',call:'慎終知敝、守分自處、以德補位',rein:'恃悅妄動(說以動·征凶)、柔乘剛失正',src:'彖「說以動…征凶，位不當也」、象「永終知敝」'},
+{n:55,name:'豐',gua:'離·震',zhi:'明以動致盛，宜日中',tone:'進·盛(防昃)',call:'明而動致盛(離·震)、明斷折獄、照天下',rein:'盛極忘衰(日中則昃)、昏蔽自滿(豐其蔀)',src:'彖「明以動…日中則昃，月盈則食…與時消息」、象「折獄致刑」'},
+{n:56,name:'旅',gua:'艮·離',zhi:'客旅寄居，柔順止明',tone:'守·客(宜小)',call:'柔順謹守(艮)、明而慎(離·明慎用刑)、安分不滯',rein:'自高處危(鳥焚其巢)、貪戀久滯',src:'彖「柔得中…止而麗乎明…旅之時義大矣哉」、象「明慎用刑而不留獄」'},
+{n:57,name:'巽',gua:'巽·巽',zhi:'柔順以入，申命',tone:'順·入(防過卑)',call:'柔順滲透(巽)、申命行事貫徹、剛巽中正而志行',rein:'過巽失主·卑屈無斷(喪其資斧)',src:'彖「重巽以申命…柔皆順乎剛」、象「申命行事」'},
+{n:58,name:'兌',gua:'兌·兌',zhi:'和悅，說以利貞',tone:'交·悅(防諂)',call:'和悅交流(兌)、剛中守正之悅、朋友講習互益',rein:'諂悅佞說(來兌凶·引兌)、徒悅失正',src:'彖「剛中而柔外，說以利貞」、象「朋友講習」'},
+{n:59,name:'渙',gua:'坎·巽',zhi:'離散而能聚心',tone:'治·散聚',call:'散結濟難(巽·坎)、誠敬聚心(享于帝立廟)、剛來濟難',rein:'散而無歸·渙極離心',src:'彖「剛來而不窮…王乃在中也」、象「享于帝立廟」'},
+{n:60,name:'節',gua:'兌·坎',zhi:'節以制度，當位以節',tone:'止·節(守中)',call:'節制有度(制數度)、守中守正、悅以行險(兌·坎)',rein:'過節苦節(其道窮)、無節縱濫',src:'彖「當位以節，中正以通…苦節不可貞」、象「制數度，議德行」'},
+{n:61,name:'中孚',gua:'兌·巽',zhi:'誠信發中，化邦',tone:'交·誠信',call:'誠信發中(兌·巽)、感化(信及豚魚)、守中正、虛己',rein:'私信輕信失中、虛聲無實(翰音登于天)',src:'彖「柔在內而剛得中…孚乃化邦…中正以利貞」、象「議獄緩死」'},
+{n:62,name:'小過',gua:'艮·震',zhi:'小者過而宜小宜下',tone:'小·謙抑(宜下)',call:'矯枉之小過歸正(過恭過儉)、謙抑下行、與時守正',rein:'大事妄為·過剛上逆(不可大事)',src:'彖「小者過…柔得中…剛失位而不中…上逆而下順」、象「行過乎恭，喪過乎哀，用過乎儉」'},
+{n:63,name:'既濟',gua:'離·坎',zhi:'事已成，初吉終亂',tone:'守·防患(慎終)',call:'守成持正、思患豫防、慎終守中',rein:'安成怠惰(終止則亂)、自滿不防(終日戒)',src:'彖「剛柔正而位當…初吉終亂」、象「思患而豫防之」'},
+{n:64,name:'未濟',gua:'坎·離',zhi:'事未成，有可濟之道',tone:'慎·辨(續終)',call:'慎辨審位(慎辨物居方)、剛柔相濟而應、持續到底',rein:'冒進不續(濡其尾·不續終)、躁急',src:'彖「柔得中…未出中也…不續終也…剛柔應也」、象「慎辨物居方」'}
+];
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+var rowsEl=document.getElementById('rows'), countEl=document.getElementById('count'), qEl=document.getElementById('q');
+function render(filter){
+  filter=(filter||'').trim();
+  var shown=0, html='';
+  DATA.forEach(function(d){
+    var blob=d.name+' '+d.gua+' '+d.zhi+' '+d.tone+' '+d.call+' '+d.rein+' '+d.src;
+    if(filter && blob.indexOf(filter)===-1) return;
+    shown++;
+    var pure=PURE.indexOf(d.name)>-1 && d.gua.split('·')[0]===d.gua.split('·')[1];
+    html+='<tr class="'+(pure?'pure':'')+'">'
+      +'<td class="n">'+d.n+'</td>'
+      +'<td class="nm">'+esc(d.name)+'<span class="g">'+esc(d.gua)+'</span></td>'
+      +'<td>'+esc(d.zhi)+'</td>'
+      +'<td class="tone">'+esc(d.tone)+'</td>'
+      +'<td class="call">'+esc(d.call)+'</td>'
+      +'<td class="rein">'+esc(d.rein)+'</td>'
+      +'<td class="src">'+esc(d.src)+'</td></tr>';
+  });
+  rowsEl.innerHTML=html;
+  countEl.textContent='顯示 '+shown+' / 64 卦'+(filter?'（篩選：'+esc(filter)+'）':'');
+}
+qEl.addEventListener('input',function(){render(qEl.value);});
+render('');
+</script>
+</body>
+</html>
