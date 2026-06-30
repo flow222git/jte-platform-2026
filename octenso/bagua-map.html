@@ -336,14 +336,15 @@ var NS='http://www.w3.org/2000/svg';
 var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
            kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
 
-// Cycle sequence: 後天八卦 order, phase/season labels, clockwise from top
+// Cycle sequence: 後天八卦 order, phase/season labels, clockwise from 震(left/9 o'clock)
 // 震→巽→離→坤→兌→乾→坎→艮
 var CYCLE_ORDER=['zhen','xun','li','kun','dui','qian','kan','gen'];
-// Pre-compute cycle positions (8 positions clockwise, start top = -90deg)
+// Pre-compute cycle positions (8 positions clockwise). Start 震 at left = 9 o'clock / 東,
+// 以符合傳統後天八卦方位（離 top・坎 bottom・震 left・兌 right）。offset = +π
 var CX=200,CY=200,CR=124;
 var CYCLE_POS={};
 CYCLE_ORDER.forEach(function(k,i){
-  var angle=(Math.PI*2/8)*i - Math.PI/2;
+  var angle=(Math.PI*2/8)*i + Math.PI;
   CYCLE_POS[k]={x:Math.round(CX+CR*Math.cos(angle)),y:Math.round(CY+CR*Math.sin(angle))};
 });
 
