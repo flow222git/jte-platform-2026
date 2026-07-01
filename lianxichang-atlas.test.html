@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<title>atlas.test · 執行中</title>
+<style>body{font-family:ui-monospace,monospace;background:#1c1812;color:#ecdcb8;padding:20px;line-height:1.7}
+.ok{color:#7fb069}.no{color:#e07a5f}h1{font-size:16px}</style></head>
+<body>
+<h1 id="h">執行中…</h1>
+<div id="log"></div>
+<iframe id="fr" src="lianxichang-atlas.html" style="width:1180px;height:600px;border:1px solid #444;margin-top:14px"></iframe>
+<script>
+var pass=0, fail=0, log=document.getElementById('log');
+function ck(name, cond){
+  var d=document.createElement('div');
+  if(cond){pass++; d.className='ok'; d.textContent='✓ '+name;}
+  else{fail++; d.className='no'; d.textContent='✗ '+name;}
+  log.appendChild(d);
+}
+function finish(){
+  var r='RESULT pass='+pass+' fail='+fail;
+  document.title='atlas.test · '+r;
+  document.getElementById('h').textContent=r+(fail?' — 有失敗':' — 全過');
+  document.getElementById('h').className=fail?'no':'ok';
+}
+var fr=document.getElementById('fr');
+fr.addEventListener('load', function(){
+  try{
+    var w=fr.contentWindow, doc=fr.contentDocument;
+    var A=w.__ATLAS__;
+    ck('__ATLAS__ 匯出存在', !!A);
+    ck('島數 = 4', A && A.islands===4);
+    ck('節點數 ≥ 40', A && A.nodeCount>=40);
+    ck('斷點數 = 6', A && A.issues===6);
+
+    var btns=doc.querySelectorAll('#layers .lbtn');
+    ck('三個決策層按鈕', btns.length===3);
+    ck('圖例存在', !!doc.querySelector('.legend'));
+    ck('三個 pane（now/gaps/triage）', doc.querySelectorAll('.panel .pane').length===3);
+
+    var issueNodes=doc.querySelectorAll('.node[data-issue]');
+    ck('有標記斷點的節點（≥6）', issueNodes.length>=6);
+    var recNodes=doc.querySelectorAll('.node .rec');
+    ck('有 L3 建議標籤（≥15）', recNodes.length>=15);
+    var archived=doc.querySelectorAll('.rec.archive');
+    ck('封存建議 ≥ 8（視覺探索稿）', archived.length>=8);
+
+    // 預設層 = now
+    ck('預設 data-layer=now', doc.body.getAttribute('data-layer')==='now');
+
+    // 切到 gaps：斷點節點的 warnmsg 應可見
+    btns[1].click();
+    ck('點 L2 → data-layer=gaps', doc.body.getAttribute('data-layer')==='gaps');
+    var wm=issueNodes[0].querySelector('.warnmsg');
+    ck('L2 下斷點節點顯示 warnmsg', wm && w.getComputedStyle(wm).display!=='none');
+
+    // 切到 triage：rec 標籤應可見
+    btns[2].click();
+    ck('點 L3 → data-layer=triage', doc.body.getAttribute('data-layer')==='triage');
+    ck('L3 下建議標籤顯示', w.getComputedStyle(recNodes[0]).display!=='none');
+
+    // 每個連結節點都有 href（且島內測驗頁指向 octenso/）
+    var links=doc.querySelectorAll('a.node');
+    var allHref=true; links.forEach(function(a){ if(!a.getAttribute('href'))allHref=false; });
+    ck('每個連結節點都有 href（'+links.length+' 個）', allHref);
+    ck('persona 指向 octenso/', !!doc.querySelector('a.node[href="octenso/bagua-persona.html"]'));
+
+    // 不可有外部絕對網址的 <script src>
+    var badScript=false;
+    doc.querySelectorAll('script[src]').forEach(function(s){ if(/^https?:/.test(s.getAttribute('src')))badScript=true; });
+    ck('無外部絕對網址 <script src>', !badScript);
+  }catch(e){
+    ck('測試執行未拋例外：'+e.message, false);
+  }
+  finish();
+});
+setTimeout(function(){ if(pass+fail===0){ ck('iframe 載入逾時', false); finish(); } }, 5000);
+</script>
+</body></html>

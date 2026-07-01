@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>練息場 · Atlas 全工具動線統籌圖</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--muted:#6f6657;--line:#d2c7b4;--hair:#bcb09a;
+    --pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34;--blue:#4d6b86}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-weight:300;
+    line-height:1.7;padding:30px 16px 90px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:23px;letter-spacing:.04em;text-align:center;margin-bottom:3px}
+  .date{text-align:center;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}
+  .lead{text-align:center;font-size:12.5px;color:var(--muted);max-width:640px;margin:0 auto 20px;line-height:1.9}
+
+  /* —— 決策層切換 —— */
+  .layers{position:sticky;top:0;z-index:20;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+    padding:12px 0 14px;margin-bottom:6px;background:linear-gradient(var(--bg) 72%,rgba(244,239,228,0))}
+  .lbtn{font-family:"Noto Sans TC",sans-serif;font-size:13px;letter-spacing:.03em;cursor:pointer;
+    background:var(--surface);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 17px;transition:.18s}
+  .lbtn .k{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.1em;color:var(--hair);margin-right:6px}
+  .lbtn:hover{border-color:var(--pine)}
+  .lbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .lbtn.on .k{color:var(--gold)}
+
+  /* —— 關係/斷點面板 —— */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin-bottom:22px}
+  .panel h2{font-family:"Noto Serif TC",serif;font-weight:600;font-size:15px;margin-bottom:9px;letter-spacing:.03em}
+  .panel .pane{display:none}
+  body[data-layer=now] .pane.now,body[data-layer=gaps] .pane.gaps,body[data-layer=triage] .pane.triage{display:block}
+  .flowline{font-size:12.5px;color:var(--ink);padding:4px 0;line-height:1.9}
+  .flowline .a{color:var(--pine);border-bottom:1px solid var(--hair)}
+  .flowline .arw{color:var(--gold);margin:0 5px;font-family:"Jost",sans-serif}
+  .issue{display:flex;gap:9px;padding:6px 0;font-size:12.5px;line-height:1.85;border-top:1px dotted var(--line)}
+  .issue:first-of-type{border-top:none}
+  .issue .no{color:var(--cinnabar);font-weight:500;font-family:"Jost",sans-serif;flex:0 0 20px}
+  .issue b{color:var(--cinnabar)}
+  .issue .fix{color:var(--pine)}
+  .stat{display:inline-flex;align-items:baseline;gap:6px;margin:4px 12px 4px 0;font-size:12.5px}
+  .stat .num{font-family:"Jost",sans-serif;font-size:20px;font-weight:500;color:var(--ink)}
+  .stat .lb{color:var(--muted)}
+
+  /* —— 島嶼 —— */
+  .islands{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .island.big{grid-column:1/-1}
+  @media(max-width:820px){.islands{grid-template-columns:1fr}.island.big{grid-column:auto}}
+  .island{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px 18px}
+  .island.pine{border-color:var(--pine);border-width:1.5px}
+  .island.blue{border-color:var(--blue)}
+  .island.gold{border-color:var(--gold)}
+  .ihead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+  .ihead .nm{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;letter-spacing:.03em}
+  .ihead .tag{font-family:"Jost",sans-serif;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .ihead .tag.warn{color:var(--cinnabar);border-color:var(--cinnabar)}
+  .layer-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.layer-cols{grid-template-columns:1fr}}
+  .grp{margin-bottom:12px}
+  .grp .gl{font-size:11px;color:var(--muted);letter-spacing:.05em;margin:0 0 6px;padding-left:8px;border-left:2px solid var(--gold)}
+
+  /* —— 節點卡 —— */
+  .node{display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:7px 11px;margin-bottom:6px;text-decoration:none;color:inherit;cursor:pointer;transition:border-color .16s,transform .1s}
+  a.node:hover{border-color:var(--pine);transform:translateX(2px)}
+  .node .row1{display:flex;align-items:baseline;gap:7px}
+  .node .n{font-size:13px;color:var(--ink)}
+  .node.star .n{font-weight:500}
+  .node .f{font-family:"Jost",sans-serif;font-size:10px;color:var(--hair);margin-left:auto;white-space:nowrap}
+  .node .sub{font-size:11px;color:var(--muted);line-height:1.6;margin-top:2px;display:none}
+  .node.open .sub{display:block}
+  .node .flow{font-size:11px;color:var(--pine);margin-top:2px}
+  .node .flow .arw{color:var(--gold);font-family:"Jost",sans-serif;margin:0 4px}
+
+  /* 狀態徽章 */
+  .b{font-family:"Jost",sans-serif;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;border:1px solid var(--hair);color:var(--muted);white-space:nowrap}
+  .b.pub{color:var(--pine);border-color:var(--pine)}
+  .b.draft{color:var(--gold);border-color:var(--gold)}
+  .b.orphan{color:var(--cinnabar);border-color:var(--cinnabar)}
+  .b.dup{color:var(--cinnabar);border-color:var(--cinnabar)}
+  .b.sketch{color:var(--muted);border-color:var(--line)}
+  .b.spec{color:var(--blue);border-color:var(--blue)}
+  .b.ext{color:var(--muted);border-style:dashed}
+  .b.client{color:var(--muted);border-color:var(--hair)}
+  .b.infra{color:var(--muted);border-color:var(--line)}
+
+  /* 斷點層：問題節點高亮 */
+  .node .warnmsg{display:none;font-size:11px;color:var(--cinnabar);margin-top:3px;line-height:1.6}
+  body[data-layer=gaps] .node[data-issue]{border-color:var(--cinnabar);background:#faf1ec}
+  body[data-layer=gaps] .node[data-issue] .warnmsg{display:block}
+
+  /* 砍留層：建議標籤 */
+  .rec{display:none;font-family:"Jost",sans-serif;font-size:9px;letter-spacing:.05em;padding:1px 7px;border-radius:999px;margin-left:6px;white-space:nowrap}
+  body[data-layer=triage] .rec{display:inline-block}
+  .rec.keep{color:var(--pine);border:1px solid var(--pine)}
+  .rec.archive{color:var(--muted);border:1px solid var(--hair);background:var(--surface2)}
+  .rec.merge{color:var(--gold);border:1px solid var(--gold)}
+  .rec.docs{color:var(--blue);border:1px solid var(--blue)}
+  .rec.promote{color:var(--cinnabar);border:1px solid var(--cinnabar)}
+  body[data-layer=triage] .node.dim{opacity:.5}
+
+  .legend{grid-column:1/-1;margin-top:8px;font-size:11.5px;color:var(--muted);background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;padding:13px 16px;line-height:2}
+  .legend b{color:var(--ink)}
+  .legend .b{margin:0 3px}
+  .foot{text-align:center;font-size:11px;color:var(--hair);margin-top:24px;font-family:"Jost",sans-serif;letter-spacing:.08em}
+  .foot a{color:var(--muted)}
+</style></head>
+<body data-layer="now">
+<div class="wrap">
+  <h1>練息場 · Atlas</h1>
+  <div class="date">全工具動線統籌圖 · snapshot 2026-07-01</div>
+  <p class="lead">給自己統籌用的作戰圖：所有工具（含八態）攤在四座島上，切換三個決策層——看<b>現況動線</b>、找<b>斷點與洞</b>、決定<b>砍／留／合併</b>。灰字建議都是提案，你拍板。</p>
+
+  <div class="layers" id="layers">
+    <button class="lbtn on" data-l="now"><span class="k">L1</span>現況動線</button>
+    <button class="lbtn" data-l="gaps"><span class="k">L2</span>斷點與洞</button>
+    <button class="lbtn" data-l="triage"><span class="k">L3</span>砍／留／合併</button>
+  </div>
+
+  <div class="panel" id="panel"></div>
+  <div class="islands" id="islands"></div>
+  <div class="foot">練息場 SoftTech · Atlas 為手寫觀點圖，非自動掃描 · 另見 <a href="sitemap.html">sitemap（6/18 快照）</a></div>
+</div>
+
+<script>
+/* ---------- 資料：手寫觀點，非自動掃描 ---------- */
+// status: pub 已上線 / draft 草稿demo / orphan 孤立 / dup 重複 / sketch 探索稿 / spec 研究spec / ext 外部 / client 客戶案 / infra 基礎設施
+// rec:    keep 留 / archive 封存 / merge 合併 / docs 移docs / promote 正式化
+var ISLANDS = [
+ {key:'hub', cls:'blue', nm:'練息場 Hub', tag:['公開 · 對使用者'], groups:[
+   {gl:'呼吸 · 回到當下', nodes:[
+     {n:'呼吸覺察（主品牌）', f:'BreatheAware/', href:'BreatheAware/', st:'pub', flow:'xiaoqi'},
+     {n:'呼吸覺察（舊·小寫）', f:'breathaware/', href:'breathaware/', st:'dup', flow:'xiaoqi',
+       issue:'與 BreatheAware/ 疑似重複版本', rec:'merge', recNote:'合併進 BreatheAware，舊版導轉或封存'},
+     {n:'小憩 · 練息', sub:'15 種呼吸法 × 5 情境', f:'xiaoqi/', href:'xiaoqi/', st:'pub'},
+     {n:'心率變異 HRV', f:'hrv/', href:'hrv/', st:'pub'}]},
+   {gl:'內在 · 讀懂自己', nodes:[
+     {n:'問易 · 卜卦', f:'ven-i/', href:'ven-i/', st:'pub'},
+     {n:'京房 · 局勢卡', f:'jingfang-card-demo.html', href:'jingfang-card-demo.html', st:'draft', rec:'keep'},
+     {n:'心理位移書寫 ↗', f:'writespace(外)', href:'https://flow222git.github.io/writespace/', st:'ext'}]},
+   {gl:'認識自己', nodes:[
+     {n:'溝通類型測驗 ↗', f:'twct(外)', href:'https://flow222git.github.io/twct/', st:'ext'},
+     {n:'心情溫度計 BSRS-5', f:'bsrs/', href:'bsrs/', st:'pub'}]},
+   {gl:'個人 · 後台 · 匯入', nodes:[
+     {n:'日曆 / 我的記錄 · 設定', f:'index#cal', href:'index.html', st:'pub'},
+     {n:'整合後台', f:'admin.html', href:'admin.html', st:'pub'},
+     {n:'HRV 匯入', f:'hrv_import.html', href:'hrv_import.html', st:'pub'},
+     {n:'活動記錄匯入', f:'activity_import.html', href:'activity_import.html', st:'pub'}]}
+ ]},
+
+ {key:'octenso', cls:'pine big', nm:'八態能格 Octenso', tag:['半獨立 · noindex · 登入閘','⚠ 未從首頁連入'], groups:[
+   {gl:'島 octenso/（登入閘 · 土色禪 · nav 全互連）', nodes:[
+     {n:'門面 hub', f:'octenso/index', href:'octenso/index.html', st:'pub',
+       issue:'首頁 index.html 沒有連進來 → 只能靠網址進入', warnKey:1},
+     {n:'★ 八態能量人格（旗艦）', sub:'底色 · 能格調校 · 場景耗能 v2 · 分享#r= · 雙人合盤', f:'bagua-persona', href:'octenso/bagua-persona.html', st:'pub', star:true, flow:'field / career / team / records'},
+     {n:'測一個局', f:'bagua-field', href:'octenso/bagua-field.html', st:'pub'},
+     {n:'職業配對', f:'bagua-career', href:'octenso/bagua-career.html', st:'pub'},
+     {n:'團隊合盤', f:'bagua-team', href:'octenso/bagua-team.html', st:'pub'},
+     {n:'我的記錄 · 熱點', f:'bagua-records', href:'octenso/bagua-records.html', st:'pub'},
+     {n:'系統圖', f:'bagua-map', href:'octenso/bagua-map.html', st:'pub'},
+     {n:'說明 · FAQ', f:'bagua-guide', href:'octenso/bagua-guide.html', st:'pub'},
+     {n:'專案歷程', f:'octenso-journey', href:'octenso/octenso-journey.html', st:'pub'},
+     {n:'翻譯 · 給岩無需求書', f:'i18n · brief', href:'octenso/bagua-i18n.html', st:'pub'},
+     {n:'回饋 · 白名單（內部）', f:'feedback · admin', href:'octenso/octenso-admin.html', st:'pub'}]},
+   {gl:'工作 / 導覽層', nodes:[
+     {n:'八態工作索引（第二個 hub）', f:'lianxichang-hub.html', href:'lianxichang-hub.html', st:'pub',
+       issue:'與 octenso/index 是兩個 hub，指同一批東西', warnKey:4, rec:'merge', recNote:'跟 octenso/index 明確分工，或併為一個入口'},
+     {n:'架構 · 引擎 · 決策歷程', f:'octenso-overview.html', href:'octenso-overview.html', st:'spec', rec:'keep'}]},
+   {gl:'理論 / spec（研究文件）', nodes:[
+     {n:'學理憲法（model spec）', f:'octenso-model-spec.html', href:'octenso-model-spec.html', st:'spec', rec:'docs'},
+     {n:'能量定位 spec', f:'octenso-energy-positioning.html', href:'octenso-energy-positioning.html', st:'spec', rec:'docs'},
+     {n:'重整心智圖', f:'lianxichang-mindmap.html', href:'lianxichang-mindmap.html', st:'spec', rec:'docs'},
+     {n:'To-C / To-B 策略', f:'lianxichang-tobc.html', href:'lianxichang-tobc.html', st:'spec', rec:'docs'},
+     {n:'三層對照（能格/三態/八轉換）', f:'batai-layers.html', href:'batai-layers.html', st:'spec', rec:'docs'},
+     {n:'Route B：八態 × 問易搭橋', f:'batai-routeb.html', href:'batai-routeb.html', st:'spec', rec:'docs'},
+     {n:'64 卦能量需求表（Route B 引擎）', f:'bagua-64-demand.html', href:'bagua-64-demand.html', st:'draft',
+       issue:'Route B 引擎內容，尚未接進任何 hub', warnKey:5, rec:'promote'}]},
+   {gl:'demo · 真功能（正式化候選）', nodes:[
+     {n:'進場引導卡', f:'octenso-intro-cards-demo', href:'octenso-intro-cards-demo.html', st:'draft', rec:'promote'},
+     {n:'圖文解讀', f:'octenso-reading-demo', href:'octenso-reading-demo.html', st:'draft', rec:'keep'},
+     {n:'能量印記 · 個人頁', f:'octenso-claude-read-demo', href:'octenso-claude-read-demo.html', st:'draft', rec:'keep'},
+     {n:'教學動畫解說', f:'octenso-explainer-demo', href:'octenso-explainer-demo.html', st:'draft', rec:'keep'},
+     {n:'我眼中的你（雙視角）', f:'octenso-route4-demo', href:'octenso-route4-demo.html', st:'draft', rec:'merge', recNote:'與 card 個人頁合併視覺選項'}]},
+   {gl:'demo · 視覺印記探索稿（建議打包封存）', nodes:[
+     {n:'漩渦流動版', f:'octenso-card-demo', href:'octenso-card-demo.html', st:'sketch', rec:'merge'},
+     {n:'藝術畫廊（5 種）', f:'octenso-art-demo', href:'octenso-art-demo.html', st:'sketch', rec:'keep', recNote:'保留當多視覺展示門面'},
+     {n:'水墨', f:'octenso-ink-demo', href:'octenso-ink-demo.html', st:'sketch', rec:'archive'},
+     {n:'油畫', f:'octenso-oil-demo', href:'octenso-oil-demo.html', st:'sketch', rec:'archive'},
+     {n:'水墨 vs 油畫', f:'octenso-ink-oil-demo', href:'octenso-ink-oil-demo.html', st:'sketch', rec:'archive'},
+     {n:'Rothko 柔色域', f:'octenso-rothko-demo', href:'octenso-rothko-demo.html', st:'sketch', rec:'archive'},
+     {n:'梵谷漩渦', f:'octenso-vangogh-demo', href:'octenso-vangogh-demo.html', st:'sketch', rec:'archive'},
+     {n:'de Staël 刀法', f:'octenso-destael-demo', href:'octenso-destael-demo.html', st:'sketch', rec:'archive'},
+     {n:'能量圓', f:'octenso-enso-demo', href:'octenso-enso-demo.html', st:'sketch', rec:'archive'},
+     {n:'形 × 色 × 光', f:'octenso-color-enso-demo', href:'octenso-color-enso-demo.html', st:'sketch', rec:'archive'}]}
+ ]},
+
+ {key:'energy', cls:'gold', nm:'能量管理小幫手', tag:['課程明亮風 · 三態分流'], groups:[
+   {gl:'快篩前門', nodes:[
+     {n:'三態分流器', sub:'場景 → 強度 → 空/滿/卡 → 交棒', f:'energy-helper-demo.html', href:'energy-helper-demo.html', st:'draft', flow:'課程現成工具',
+       issue:'未接 nav；與 octenso 八態無橋（該交棒／回流卻斷開）', warnKey:2, rec:'promote', recNote:'正式化，並與 octenso persona 搭橋（交棒去、回流回）'}]}
+ ]},
+
+ {key:'edge', cls:'', nm:'邊界 · 外部 · 基礎設施', tag:[], groups:[
+   {gl:'外部 repos ↗', nodes:[
+     {n:'writespace · 心理位移', f:'外部 repo', href:'https://flow222git.github.io/writespace/', st:'ext'},
+     {n:'twct · 溝通類型', f:'外部 repo', href:'https://flow222git.github.io/twct/', st:'ext'},
+     {n:'jte-assets · 素材', f:'外部 repo', href:'https://github.com/flow222git/jte-assets', st:'ext'}]},
+   {gl:'客戶案（非產品線）', nodes:[
+     {n:'HEAVY POWER 官網 RWD', f:'heavypower-rwd/', href:'heavypower-rwd/', st:'client', rec:'keep', recNote:'客戶展示案，動線上獨立、不進產品主線'}]},
+   {gl:'共用基礎設施（非頁面）', nodes:[
+     {n:'jte-userbar · 回練息場列 + SSO', f:'jte-userbar.js', st:'infra'},
+     {n:'jte-i18n · 多語 zh/en/ja', f:'jte-i18n.js', st:'infra'},
+     {n:'jte-crypto + jte-privacy · 端到端加密', f:'jte-*.js', st:'infra'},
+     {n:'house-style.css · 共用視覺系統', f:'house-style.css', st:'infra',
+       issue:'又一套視覺；與首頁藍/octenso土色禪/課程風並存未收斂', warnKey:3},
+     {n:'octenso-gate / octenso-nav（島專用）', f:'octenso/*.js', st:'infra'}]}
+ ]}
+];
+
+/* 現況動線（L1） */
+var FLOWS = [
+ ['首頁 index', '8 張工具卡（BreatheAware · xiaoqi · hrv · ven-i · bsrs · writespace↗ · twct↗ · admin）'],
+ ['BreatheAware / breathaware', 'xiaoqi（呼吸群落收束）'],
+ ['octenso/index', 'persona → field / career / team / records（島內 nav 全互連）'],
+ ['lianxichang-hub', '八態 5 個工作頁'],
+ ['energy-helper', '課程現成工具（交棒；但回流與 octenso 皆未接）']
+];
+
+/* 斷點與洞（L2） */
+var ISSUES = [
+ ['octenso 八態島<b>未從首頁連入</b>','旗艦產品只能靠網址進；首頁 index → octenso/index 這條入口要補'],
+ ['<b>breathaware</b> vs <b>BreatheAware</b> 重複','兩個呼吸覺察版本並存 → 擇一為主、另一導轉或封存'],
+ ['<b>多套視覺各行其是</b>','首頁藍 / octenso 土色禪 / house-style / energy-helper 課程風 → 需一次收斂決策'],
+ ['<b>兩個八態 hub</b>','octenso/index（測驗導向）vs lianxichang-hub（工作索引）指同一批東西 → 分工或合併'],
+ ['<b>sitemap 過期</b>（停在 6/18）','energy-helper / 64卦 / batai / lianxichang-* 都沒收進去 → 本 Atlas 即為替代'],
+ ['<b>9 個視覺探索稿</b>散落根目錄','ink/oil/rothko/vangogh/destael/… 未歸檔 → 打包封存']
+];
+var BRIDGES = [
+ ['index', 'octenso/index', '補首頁入口（把八態島接上）'],
+ ['energy-helper', 'octenso persona', '交棒去、回流回（雙向橋）'],
+ ['64卦 / batai', 'octenso 工作層導覽', '把 Route B 引擎收進 hub'],
+ ['octenso/index', 'lianxichang-hub', '雙 hub 明確分工或合一']
+];
+
+/* ---------- 渲染 ---------- */
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+var ST={pub:'已上線',draft:'草稿·demo',orphan:'孤立',dup:'重複',sketch:'探索稿',spec:'研究spec',ext:'外部',client:'客戶案',infra:'基礎設施'};
+var RC={keep:'留',archive:'封存',merge:'合併',docs:'移 docs/',promote:'正式化'};
+
+function nodeCard(nd){
+  var isLink = !!nd.href;
+  var card = el(isLink?'a':'div', 'node'+(nd.star?' star':'')+(nd.rec==='archive'||nd.rec==='merge'?' dim':''));
+  if(isLink){card.href=nd.href; if(/^https?:/.test(nd.href))card.target='_blank';}
+  if(nd.issue) card.setAttribute('data-issue','1');
+  var row1 = el('div','row1');
+  row1.appendChild(el('span','b '+nd.st, ST[nd.st]||nd.st));
+  row1.appendChild(el('span','n', esc(nd.n)));
+  if(nd.rec) row1.appendChild(el('span','rec '+({keep:'keep',archive:'archive',merge:'merge',docs:'docs',promote:'promote'}[nd.rec]), RC[nd.rec]));
+  if(nd.f) row1.appendChild(el('span','f', esc(nd.f)));
+  card.appendChild(row1);
+  if(nd.sub) card.appendChild(el('div','sub', esc(nd.sub)));
+  if(nd.flow) card.appendChild(el('div','flow', '<span class="arw">→</span>'+esc(nd.flow)));
+  if(nd.issue) card.appendChild(el('div','warnmsg', '⚠ '+nd.issue+(nd.recNote?'<br>建議：'+esc(nd.recNote):'')));
+  else if(nd.recNote){var w=el('div','warnmsg');w.style.color='var(--pine)';w.innerHTML='建議：'+esc(nd.recNote);card.appendChild(w);}
+  // 點擊展開 sub（連結節點用 dblclick 免擋跳轉；非連結用 click）
+  card.addEventListener(isLink?'contextmenu':'click', function(ev){ if(isLink)ev.preventDefault(); card.classList.toggle('open'); });
+  return card;
+}
+
+var NODE_COUNT=0;
+function render(){
+  var host=document.getElementById('islands'); host.innerHTML='';
+  ISLANDS.forEach(function(isl){
+    var box=el('div','island '+isl.cls);
+    var head=el('div','ihead'); head.appendChild(el('span','nm',esc(isl.nm)));
+    isl.tag.forEach(function(t){head.appendChild(el('span','tag'+(/⚠/.test(t)?' warn':''),esc(t)));});
+    box.appendChild(head);
+    var wrap = isl.cls.indexOf('big')>=0 ? el('div','layer-cols') : el('div');
+    isl.groups.forEach(function(g){
+      var gd=el('div','grp'); gd.appendChild(el('div','gl',esc(g.gl)));
+      g.nodes.forEach(function(nd){ gd.appendChild(nodeCard(nd)); NODE_COUNT++; });
+      wrap.appendChild(gd);
+    });
+    box.appendChild(wrap);
+    host.appendChild(box);
+  });
+  // 圖例
+  var lg=el('div','legend');
+  lg.innerHTML='<b>狀態</b>：'
+    +'<span class="b pub">已上線</span><span class="b draft">草稿·demo</span><span class="b spec">研究spec</span>'
+    +'<span class="b dup">重複</span><span class="b sketch">探索稿</span><span class="b ext">外部</span><span class="b infra">基礎設施</span><br>'
+    +'<b>L3 建議</b>：<span class="rec keep" style="display:inline-block">留</span>'
+    +'<span class="rec promote" style="display:inline-block">正式化</span>'
+    +'<span class="rec merge" style="display:inline-block">合併</span>'
+    +'<span class="rec docs" style="display:inline-block">移 docs/</span>'
+    +'<span class="rec archive" style="display:inline-block">封存</span>'
+    +' — 灰字都是提案，你拍板。<br>'
+    +'<b>操作</b>：點卡片跳到該工具；連結卡按住右鍵（或非連結卡點一下）展開備註。切換上方 L1/L2/L3 看不同決策層。';
+  host.appendChild(lg);
+}
+
+function renderPanel(){
+  var p=document.getElementById('panel'); p.innerHTML='';
+  // L1
+  var now=el('div','pane now'); now.appendChild(el('h2',null,'現況主要動線'));
+  FLOWS.forEach(function(fl){ now.appendChild(el('div','flowline','<span class="a">'+esc(fl[0])+'</span><span class="arw">→</span>'+esc(fl[1]))); });
+  p.appendChild(now);
+  // L2
+  var gaps=el('div','pane gaps'); gaps.appendChild(el('h2',null,'斷點與洞 · '+ISSUES.length+' 個'));
+  ISSUES.forEach(function(is,i){ var d=el('div','issue');
+    d.appendChild(el('span','no',(i+1)+''));
+    d.appendChild(el('span',null,is[0]+' <span class="fix">— '+is[1]+'</span>')); gaps.appendChild(d); });
+  var bh=el('h2',null,'建議橋接（虛線＝該連沒連）'); bh.style.marginTop='14px'; gaps.appendChild(bh);
+  BRIDGES.forEach(function(b){ gaps.appendChild(el('div','flowline','<span class="a">'+esc(b[0])+'</span><span class="arw">⇢</span><span class="a">'+esc(b[1])+'</span> &nbsp;·&nbsp; '+esc(b[2]))); });
+  p.appendChild(gaps);
+  // L3
+  var tri=el('div','pane triage'); tri.appendChild(el('h2',null,'砍／留／合併 · 統計'));
+  var counts={keep:0,archive:0,merge:0,docs:0,promote:0};
+  ISLANDS.forEach(function(i){i.groups.forEach(function(g){g.nodes.forEach(function(n){if(n.rec)counts[n.rec]++;});});});
+  var row=el('div');
+  [['promote','正式化'],['merge','合併'],['docs','移 docs/'],['archive','封存'],['keep','留']].forEach(function(c){
+    row.appendChild(el('span','stat','<span class="num">'+counts[c[0]]+'</span><span class="lb">'+c[1]+'</span>')); });
+  tri.appendChild(row);
+  tri.appendChild(el('div',null,'<div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.9">節點上會出現建議標籤；<b style="color:var(--ink)">封存/合併</b>的會淡化。實際搬檔前逐一確認。</div>'));
+  p.appendChild(tri);
+}
+
+function setLayer(l){
+  document.body.setAttribute('data-layer',l);
+  var bs=document.getElementById('layers').children;
+  for(var i=0;i<bs.length;i++) bs[i].classList.toggle('on', bs[i].getAttribute('data-l')===l);
+}
+document.getElementById('layers').addEventListener('click',function(e){
+  var b=e.target.closest('.lbtn'); if(b) setLayer(b.getAttribute('data-l'));
+});
+
+render(); renderPanel();
+var L0=(location.search.match(/layer=(now|gaps|triage)/)||[])[1]||'now';
+setLayer(L0);
+window.__ATLAS__={nodeCount:NODE_COUNT, islands:ISLANDS.length, issues:ISSUES.length};
+</script>
+</body></html>
