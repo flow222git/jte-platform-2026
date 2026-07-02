@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>呼吸覺察 × 小憩 · 團隊白皮書</title>
+<meta name="description" content="練息場 Join to Enjoy — 呼吸覺察與小憩兩支柱的完整介紹、產品化藍圖與策略。內部交付文件。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3efe7; --card:#fff; --ink:#2f3338; --sub:#7c8088; --faint:#a8aab0; --line:#e5e0d4;
+    --paper2:#faf7f0;
+    --hub:#3f5a55; --hub2:#557a72;
+    --awc:#5a8f86; --awcb:#e7f1ee;   /* 呼吸覺察 teal */
+    --xqc:#d98a63; --xqcb:#fbeee5;   /* 小憩 coral */
+    --gold:#c79a3e; --goldb:#f8f0d9;
+    --blue:#5b82b8; --blueb:#e9f0f9;
+    --purple:#8b78c4; --purpleb:#efebf8;
+    --green:#6fa45f; --greenb:#ecf3e6;
+    --shadow:0 14px 36px -20px rgba(50,70,60,.5);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+  .serif{font-family:"Noto Serif TC","Songti TC",serif}
+  .en{font-family:"Cormorant Garamond",serif;letter-spacing:2px}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 20px 90px}
+  a{color:var(--hub)}
+
+  /* ===== Header ===== */
+  header{text-align:center;margin-bottom:20px}
+  .kicker{font-size:12px;color:var(--sub);letter-spacing:4px;margin:0 0 10px}
+  header h1{font-size:30px;font-weight:700;margin:0 0 8px;letter-spacing:2px}
+  header .sub{color:var(--sub);font-size:14.5px;margin:0}
+  .metaline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12px;color:var(--sub);background:#fff;border:1px solid var(--line);
+    border-radius:20px;padding:5px 13px}
+
+  /* ===== Tabs ===== */
+  .tabs{position:sticky;top:0;z-index:20;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+    padding:14px 0 16px;margin:18px 0 6px;background:linear-gradient(var(--bg) 72%,transparent)}
+  .tabs button{border:1.5px solid var(--line);background:#fff;border-radius:22px;
+    padding:9px 18px;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;transition:.15s;
+    font-family:inherit;display:flex;align-items:center;gap:7px}
+  .tabs button:hover{border-color:var(--hub2);color:var(--hub)}
+  .tabs button.on{background:var(--hub);border-color:var(--hub);color:#fff}
+  .tabs .tnum{font-family:"Cormorant Garamond",serif;font-size:15px;opacity:.7}
+
+  /* ===== Page ===== */
+  .page{display:none;animation:fade .4s ease}
+  .page.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .whatis{max-width:820px;margin:0 auto 26px;background:var(--paper2);border:1px solid var(--line);
+    border-left:3px solid var(--hub);border-radius:12px;padding:13px 18px;font-size:14px;color:var(--ink)}
+  .whatis b{color:var(--hub)}
+
+  h2.sec{font-size:21px;font-weight:700;margin:34px 0 4px;letter-spacing:1px}
+  h2.sec:first-of-type{margin-top:8px}
+  .sec-sub{color:var(--sub);font-size:13px;margin:0 0 16px}
+
+  /* Hub banner (overview) */
+  .hub{max-width:720px;margin:0 auto 20px;background:linear-gradient(135deg,var(--hub),var(--hub2));
+    color:#fff;border-radius:20px;padding:26px 26px;text-align:center;box-shadow:var(--shadow)}
+  .hub h2{font-size:23px;margin:0 0 8px;font-weight:700}
+  .hub p{margin:0;font-size:14px;opacity:.94}
+
+  /* Two pillar cards */
+  .pillars{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}
+  .pillar{background:#fff;border:1px solid var(--line);border-top:5px solid var(--pc);border-radius:16px;
+    padding:20px 20px}
+  .pillar.aw{--pc:var(--awc)} .pillar.xq{--pc:var(--xqc)}
+  .pillar .tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--pc);
+    border-radius:20px;padding:3px 12px;margin-bottom:10px}
+  .pillar h3{font-size:19px;margin:0 0 4px;font-weight:700}
+  .pillar .lead{color:var(--sub);font-size:13px;margin:0 0 12px}
+  .pillar p{margin:0;font-size:14px}
+  .vs{display:flex;align-items:center;justify-content:center}
+
+  /* Generic cards grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:8px 0}
+  .grid.g3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .card.wide{grid-column:1/-1}
+  .card h3{font-size:16px;margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .card h3 .dot{width:9px;height:9px;border-radius:50%;background:var(--hub);flex:none}
+  .card p{margin:0 0 8px;font-size:14px}
+  .card p:last-child{margin-bottom:0}
+  .card ul{margin:6px 0 0;padding-left:0;list-style:none}
+  .card li{position:relative;padding-left:16px;margin:6px 0;font-size:13.8px}
+  .card li:before{content:"";position:absolute;left:2px;top:10px;width:5px;height:5px;border-radius:50%;background:var(--hub2)}
+  .accent-teal{border-top:4px solid var(--awc)}
+  .accent-coral{border-top:4px solid var(--xqc)}
+  .accent-gold{border-top:4px solid var(--gold)}
+  .accent-blue{border-top:4px solid var(--blue)}
+  .accent-purple{border-top:4px solid var(--purple)}
+
+  /* Mechanism chain */
+  .chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:10px;margin:14px 0}
+  .chain .node{background:var(--awcb);border-radius:12px;padding:12px 10px;text-align:center;font-size:13.5px;font-weight:600;color:var(--hub)}
+  .chain .arw{color:var(--faint);font-size:18px;text-align:center}
+
+  /* see-understand-regulate chain */
+  .sur{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:10px 0}
+  .sur .seg{border-radius:12px;padding:13px 14px}
+  .sur .seg b{display:block;font-size:14px;margin-bottom:5px}
+  .sur .seg span{font-size:12.8px;color:var(--ink)}
+  .sur .s1{background:var(--blueb)} .sur .s1 b{color:var(--blue)}
+  .sur .s2{background:var(--goldb)} .sur .s2 b{color:#a97f22}
+  .sur .s3{background:var(--awcb)} .sur .s3 b{color:var(--awc)}
+
+  /* Scenario chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+  .chip{background:var(--awcb);color:var(--hub);border-radius:18px;padding:6px 13px;font-size:13px}
+
+  /* Category table (xiaoqi) */
+  .cats{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+  .catrow{display:grid;grid-template-columns:150px 1fr;gap:14px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:12px 15px;align-items:center}
+  .catrow .cn{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  .catrow .cn small{display:block;font-weight:400;color:var(--sub);font-size:11.5px;margin-top:2px}
+  .catrow .methods{display:flex;flex-wrap:wrap;gap:7px}
+  .m{background:var(--xqcb);color:#a85f3c;border-radius:16px;padding:4px 11px;font-size:12.8px}
+
+  /* stat tiles */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 12px;text-align:center}
+  .stat .n{font-family:"Cormorant Garamond",serif;font-size:34px;font-weight:500;color:var(--hub);line-height:1}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:7px}
+
+  /* roadmap */
+  .road{display:flex;flex-direction:column;gap:12px;margin:10px 0}
+  .phase{background:#fff;border:1px solid var(--line);border-left:4px solid var(--rc,#ccc);border-radius:12px;padding:14px 18px}
+  .phase.p1{--rc:var(--green)} .phase.p2{--rc:var(--gold)} .phase.p3{--rc:var(--blue)} .phase.p4{--rc:var(--purple)}
+  .phase .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .phase .ph b{font-size:16px}
+  .phase .ph .when{font-size:12px;color:var(--sub);background:var(--paper2);border:1px solid var(--line);border-radius:14px;padding:2px 10px}
+  .phase ul{margin:4px 0 0;padding-left:0;list-style:none}
+  .phase li{position:relative;padding-left:16px;margin:5px 0;font-size:13.8px}
+  .phase li:before{content:"";position:absolute;left:2px;top:10px;width:5px;height:5px;border-radius:50%;background:var(--rc)}
+
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+  .metric{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:13.5px}
+  .metric b{color:var(--hub)}
+
+  /* positioning compare */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:10px 0}
+  .compare .col{padding:16px 18px}
+  .compare .us{background:var(--awcb)}
+  .compare .them{background:#fff;border-left:1px solid var(--line)}
+  .compare h4{margin:0 0 8px;font-size:15px}
+  .compare .us h4{color:var(--awc)} .compare .them h4{color:var(--sub)}
+  .compare ul{margin:0;padding-left:0;list-style:none}
+  .compare li{position:relative;padding-left:16px;margin:6px 0;font-size:13.5px}
+  .compare li:before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%}
+  .compare .us li:before{background:var(--awc)} .compare .them li:before{background:var(--faint)}
+
+  /* idea box */
+  .ideas{background:linear-gradient(135deg,var(--purpleb),#fff);border:1px dashed var(--purple);
+    border-radius:16px;padding:18px 20px;margin:12px 0}
+  .ideas .ihead{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .ideas .ihead b{font-size:16px;color:#6a539f}
+  .ideas .badge{font-size:11px;color:#fff;background:var(--purple);border-radius:14px;padding:3px 10px}
+  .ideas .igrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .ideas .idea{background:#fff;border:1px solid #e3ddf2;border-radius:10px;padding:11px 14px;font-size:13.5px}
+  .ideas .idea b{display:block;color:#6a539f;margin-bottom:3px}
+
+  .next{background:var(--hub);color:#fff;border-radius:16px;padding:20px 22px;margin:16px 0 0;box-shadow:var(--shadow)}
+  .next h3{margin:0 0 10px;font-size:17px}
+  .next ol{margin:0;padding-left:20px}
+  .next li{margin:7px 0;font-size:14px}
+  .next li b{color:#ffe9c9}
+
+  .note{font-size:12.5px;color:var(--sub);font-style:italic;margin-top:10px}
+  .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:40px;line-height:1.9}
+
+  @media(max-width:760px){
+    .pillars,.grid,.grid.g3,.sur,.metrics,.compare,.ideas .igrid{grid-template-columns:1fr}
+    .chain{grid-template-columns:1fr;gap:6px}
+    .chain .arw{transform:rotate(90deg)}
+    .stats{grid-template-columns:1fr 1fr}
+    .catrow{grid-template-columns:1fr}
+    .vs{transform:rotate(90deg);margin:2px 0}
+    header h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">練息場 · JOIN TO ENJOY　|　內部交付文件 · 供討論</p>
+    <h1 class="serif">呼吸覺察 × 小憩</h1>
+    <p class="sub">兩支柱的完整介紹、產品化藍圖，與落地優先的策略</p>
+    <div class="metaline">
+      <span class="pill">2026-07-02</span>
+      <span class="pill">白皮書 v0.1</span>
+      <span class="pill">鏡子非算命 · 誠實可量測</span>
+    </div>
+  </header>
+
+  <!-- ===== Tabs ===== -->
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="on"><span class="tnum">01</span>總覽</button>
+    <button data-tab="awareness"><span class="tnum">02</span>呼吸覺察</button>
+    <button data-tab="xiaoqi"><span class="tnum">03</span>小憩</button>
+    <button data-tab="product"><span class="tnum">04</span>產品化藍圖</button>
+    <button data-tab="strategy"><span class="tnum">05</span>策略與可能性</button>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- Tab 1 · 總覽 -->
+  <!-- ============================================================ -->
+  <section class="page on" id="overview">
+    <div class="whatis"><b>這頁在講什麼：</b>用一頁講清楚「我們是誰、為何是呼吸、兩支柱怎麼分工」，以及這份文件要帶團隊往哪走。</div>
+
+    <div class="hub">
+      <h2 class="serif">練息場 · 照顧自己的家</h2>
+      <p>真實老師 × 誠實深度 × 日常習慣　·　我們做的是<b>鏡子</b>，不是算命。<br>
+      呼吸，是每個人隨身、免費、最低門檻的自我調節入口——也是我們「每天回來」的心跳。</p>
+    </div>
+
+    <h2 class="sec">為何從「呼吸」開始</h2>
+    <p class="sec-sub">在所有身心工具裡，呼吸的門檻最低、可及性最高、又有清楚的生理根據。</p>
+    <div class="grid g3">
+      <div class="card accent-teal"><h3><span class="dot"></span>零門檻</h3><p>不需器材、不需場地、不需先懂理論。任何人、任何時刻都能開始——這讓它天生適合當「日常高頻」的入口。</p></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>有生理根據</h3><p>呼吸是我們唯一能「自主操控」的自律神經開關。延長吐氣、放慢節奏，能實際影響心率與情緒——可被感受、也可被量測。</p></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>誠實不玄</h3><p>它不預測命運、不販賣神秘。它只是把你帶回當下的身體。這正呼應練息場「鏡子非算命」的核心。</p></div>
+    </div>
+
+    <h2 class="sec">兩根平行支柱</h2>
+    <p class="sec-sub">同樣是呼吸，我們把它拆成兩種截然不同的使用方式——「隨時覺察」與「定時練習」。</p>
+    <div class="pillars">
+      <div class="pillar aw">
+        <span class="tag">支柱一</span>
+        <h3 class="serif">呼吸覺察</h3>
+        <p class="lead">隨時 · 一種能力</p>
+        <p>日常隨時、微觀察自己的呼吸與狀態。<b>不必開 App</b>、不佔時間，是一輩子帶著走的能力。產品的角色是「提醒你想起它」。</p>
+      </div>
+      <div class="vs"><span class="en" style="color:var(--faint);font-size:15px">vs</span></div>
+      <div class="pillar xq">
+        <span class="tag">支柱二</span>
+        <h3 class="serif">小憩</h3>
+        <p class="lead">定時 · 一段練習</p>
+        <p>定時坐下來的一段<b>引導呼吸練習</b>——有引導、有長度、有節拍。已有實作成品「小憩。練息」App。產品的角色是「陪你好好練這一段」。</p>
+      </div>
+    </div>
+    <p class="note">＊兩者互補：覺察讓你「發現此刻需要」，小憩讓你「認真給自己一段」。一個是日常肌肉，一個是定時充電。</p>
+
+    <h2 class="sec">這份文件要帶團隊往哪走</h2>
+    <div class="grid g3">
+      <div class="card"><h3><span class="dot"></span>看懂</h3><p>兩支柱是什麼、為何有效、現況如何。（Tab 02 / 03）</p></div>
+      <div class="card"><h3><span class="dot"></span>做出來</h3><p>從現況到目標的產品化路線圖與整合。（Tab 04）</p></div>
+      <div class="card"><h3><span class="dot"></span>走下去</h3><p>定位、商業模式、下一步與創意可能性。（Tab 05）</p></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Tab 2 · 呼吸覺察 -->
+  <!-- ============================================================ -->
+  <section class="page" id="awareness">
+    <div class="whatis"><b>這頁在講什麼：</b>呼吸覺察是「一種能力」，不是一個功能。它為何有效、長什麼樣子，以及我們如何把「一種能力」設計成產品。</div>
+
+    <h2 class="sec">是什麼</h2>
+    <p>呼吸覺察，是在<b>日常任何時刻</b>，把注意力短暫地放回自己的呼吸與身體狀態：現在我的呼吸是急是緩？肩膀是不是聳著？我此刻是「上緊」還是「掉電」？</p>
+    <p>它不是一段要完成的練習，而是一種<b>會越練越靈敏的覺察能力</b>。它不需要 App、不佔時間——三秒鐘也算。它的價值，在於讓你「在被情緒帶走之前，先看見自己」。</p>
+
+    <h2 class="sec">為何有效</h2>
+    <p class="sec-sub">呼吸是身心之間的雙向開關。看見它，就多了一個調節的把手。</p>
+    <div class="chain">
+      <div class="node">覺察呼吸<br><small style="font-weight:400;color:var(--sub)">把注意力放回當下</small></div>
+      <div class="arw">→</div>
+      <div class="node">影響自律神經<br><small style="font-weight:400;color:var(--sub)">吐氣↔副交感</small></div>
+      <div class="arw">→</div>
+      <div class="node">情緒與思緒鬆開<br><small style="font-weight:400;color:var(--sub)">從反應回到選擇</small></div>
+    </div>
+    <div class="grid">
+      <div class="card accent-teal"><h3><span class="dot"></span>看見即介入</h3><p>光是「注意到自己正在淺快呼吸」，往往就會自動變慢。覺察本身就是第一步調節，不需要任何技巧。</p></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>從自動到自主</h3><p>情緒上來時我們容易「自動反應」。覺察在刺激與反應之間，撐開一個微小的空隙——那個空隙就是自由。</p></div>
+    </div>
+
+    <h2 class="sec">隨時覺察的樣貌</h2>
+    <p class="sec-sub">它發生在生活的縫隙裡，不在坐墊上。</p>
+    <div class="chips">
+      <span class="chip">塞車、等紅燈時</span>
+      <span class="chip">會議 / 上台前</span>
+      <span class="chip">打開訊息、感到胸口一緊</span>
+      <span class="chip">排隊、等電梯</span>
+      <span class="chip">睡前躺下的第一分鐘</span>
+      <span class="chip">情緒被戳到的當下</span>
+      <span class="chip">切換任務之間</span>
+    </div>
+    <p class="note">＊共同點：這些都是「不會特地開 App」的時刻。所以呼吸覺察的產品設計，重點不是把人拉進 App，而是讓人在離開 App 時把能力帶走。</p>
+
+    <h2 class="sec">如何把「一種能力」變成產品</h2>
+    <p class="sec-sub">挑戰：能力無法被下載。我們能做的，是設計「想起它」的觸發、與「越練越強」的回饋。</p>
+    <div class="grid">
+      <div class="card accent-teal"><h3><span class="dot"></span>提示（想起它）</h3><ul>
+        <li>八態電量 check 後，順勢遞出「此刻做一次覺察呼吸」的一句話</li>
+        <li>選擇性的溫柔提醒（例如午後掉電時段），不打擾為原則</li>
+        <li>鎖屏 / Widget / 通知一句話，把覺察帶出 App</li>
+      </ul></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>微互動（10 秒內）</h3><ul>
+        <li>「三口氣」的極短版：不進練習頁也能做</li>
+        <li>一句自問：「現在呼吸急還是緩？」＋一次記錄</li>
+        <li>覺察不等於練習——刻意保留「秒完成」的入口</li>
+      </ul></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>習慣（越練越強）</h3><ul>
+        <li>把「今天覺察了幾次」變成可累積、可回顧的軌跡</li>
+        <li>感受標籤：覺察前 vs 覺察後，看見自己的變化</li>
+        <li>連續天數 / 溫柔的回訪，強化日常肌肉</li>
+      </ul></div>
+      <div class="card accent-teal"><h3><span class="dot"></span>教育（懂得用）</h3><ul>
+        <li>用一句話、一張圖說清楚「為何有效」，去玄化</li>
+        <li>把覺察嵌進真實場景（開會前、睡前）的微內容</li>
+        <li>老師 / 內容把覺察示範出來，讓人模仿</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Tab 3 · 小憩 -->
+  <!-- ============================================================ -->
+  <section class="page" id="xiaoqi">
+    <div class="whatis"><b>這頁在講什麼：</b>小憩＝定時坐下來的一段引導呼吸練習。我們<b>已經有一個做出來的成品 App</b>——先盤點現況，再談體驗哲學與往哪深化。</div>
+
+    <h2 class="sec">是什麼</h2>
+    <p>小憩，是<b>定時給自己的一段引導呼吸練習</b>。與「隨時覺察」不同，它是刻意坐下來、有引導語、有呼吸節拍、有長度的一段時間——從 3 分鐘的三口呼吸，到深度的重生呼吸。</p>
+    <p>它的精神是「<span class="en">ONE PAUSE · ONE PEACE</span>」——一個暫停，一個平靜。</p>
+
+    <h2 class="sec">現況盤點：小憩。練息 App</h2>
+    <p class="sec-sub">這不是概念，是已上線可用的成品（純前端 PWA，可加到手機主畫面）。</p>
+    <div class="stats">
+      <div class="stat"><div class="n">15</div><div class="l">種呼吸法</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">大情境分類</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">語言（中英日）</div></div>
+      <div class="stat"><div class="n">PWA</div><div class="l">可加到主畫面</div></div>
+    </div>
+
+    <h3 style="margin:22px 0 8px;font-size:16px">15 種呼吸法 · 依 5 大情境分類</h3>
+    <div class="cats">
+      <div class="catrow"><div class="cn">🟢 快速重啟<small>壓力大、卡住、需要轉換</small></div>
+        <div class="methods"><span class="m">正念三口呼吸</span><span class="m">生理嘆氣 · 90 秒降焦慮</span><span class="m">箱式呼吸 4-4-4-4</span></div></div>
+      <div class="catrow"><div class="cn">🟡 日常修習<small>平衡、穩定、長期練習</small></div>
+        <div class="methods"><span class="m">諧振呼吸</span><span class="m">數息法</span><span class="m">鼻孔交替 Nadi Shodhana</span></div></div>
+      <div class="catrow"><div class="cn">🔴 能量提振<small>疲憊、需要醒腦</small></div>
+        <div class="methods"><span class="m">風箱呼吸</span><span class="m">獅子吼</span><span class="m">冰人呼吸法</span></div></div>
+      <div class="catrow"><div class="cn">🟣 深度調節<small>情緒釋放、深層轉化</small></div>
+        <div class="methods"><span class="m">重生呼吸</span><span class="m">慈心呼吸</span></div></div>
+      <div class="catrow"><div class="cn">💤 助眠放鬆<small>睡前、放鬆</small></div>
+        <div class="methods"><span class="m">4-7-8 呼吸</span><span class="m">身體掃描</span><span class="m">延長吐氣 4-8</span></div></div>
+    </div>
+
+    <div class="grid" style="margin-top:18px">
+      <div class="card accent-coral"><h3><span class="dot" style="background:var(--xqc)"></span>每段練習的三層</h3><ul>
+        <li><b>呼吸節拍</b>：全屏色塊隨吸／吐變化（吸→冷、吐→暖），引導身體跟上</li>
+        <li><b>引導語</b>：練習要訣，帶著注意力走</li>
+        <li><b>金句</b>：柔性的一句話，收束心緒</li>
+      </ul></div>
+      <div class="card accent-coral"><h3><span class="dot" style="background:var(--xqc)"></span>個人檔案（已實作）</h3><ul>
+        <li>累積次數、總分鐘</li>
+        <li>模式排行、練習月曆</li>
+        <li>感受標籤雲（練習後的自我回饋）</li>
+        <li>localStorage 儲存、可匯出／匯入</li>
+      </ul></div>
+    </div>
+
+    <h2 class="sec">體驗設計哲學</h2>
+    <p class="sec-sub">小憩的美學就是它的功能——安靜、留白、不催促。</p>
+    <div class="grid g3">
+      <div class="card accent-coral"><h3><span class="dot" style="background:var(--xqc)"></span>畫面即呼吸</h3><p>用色塊與光暈的漲落當引導，而非冷冰冰的計時器。看著畫面就會自然跟著呼吸。</p></div>
+      <div class="card accent-coral"><h3><span class="dot" style="background:var(--xqc)"></span>少即是多</h3><p>一次只做一件事，不塞資訊、不比較、不遊戲化過頭。安靜是刻意的設計。</p></div>
+      <div class="card accent-coral"><h3><span class="dot" style="background:var(--xqc)"></span>選對，不選多</h3><p>用「情境」而非「技巧名」分類，讓人依當下狀態選，而不是先懂理論。</p></div>
+    </div>
+
+    <h2 class="sec">從現況再往哪走</h2>
+    <p class="sec-sub">現況扎實，深化方向見 Tab 04 產品化藍圖。這裡先點出三個機會缺口。</p>
+    <div class="grid g3">
+      <div class="card"><h3><span class="dot"></span>推薦</h3><p>目前靠人自選。若接上「八態電量」或當下感受，就能<b>幫你選對那一個</b>。</p></div>
+      <div class="card"><h3><span class="dot"></span>回訪</h3><p>純本機、無提醒。缺一個「會回來」的溫柔鉤子與跨裝置延續。</p></div>
+      <div class="card"><h3><span class="dot"></span>成效可見</h3><p>有感受標籤，但還沒把「練習↔狀態變化」連成一條可回顧的成長線。</p></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Tab 4 · 產品化藍圖 -->
+  <!-- ============================================================ -->
+  <section class="page" id="product">
+    <div class="whatis"><b>這頁在講什麼：</b>從「已有一個好用的小憩 App」到「練息場每天回來的入口」。功能路線圖依<b>優先序</b>排列，落地優先。</div>
+
+    <h2 class="sec">現況 → 目標</h2>
+    <div class="compare">
+      <div class="col them">
+        <h4>現況</h4>
+        <ul>
+          <li>一個做得漂亮、可用的小憩練習 App</li>
+          <li>純本機、單機、無帳號</li>
+          <li>靠使用者自己選呼吸法</li>
+          <li>覺察能力尚未被產品化</li>
+        </ul>
+      </div>
+      <div class="col us">
+        <h4>目標</h4>
+        <ul>
+          <li>練息場「每天回來」的日常入口</li>
+          <li>覺察（隨時）＋小憩（定時）兩支柱並存</li>
+          <li>依狀態<b>幫你選對</b>那一段</li>
+          <li>看得見自己的成長，願意回來</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="sec">功能路線圖（依優先序）</h2>
+    <p class="sec-sub">先把「入口 × 選對 × 回來」跑順，再談整合與規模。</p>
+    <div class="road">
+      <div class="phase p1">
+        <div class="ph"><b>P0 · 把地基打牢</b><span class="when">先做</span></div>
+        <ul>
+          <li>呼吸覺察「秒完成」入口：三口氣微互動 + 一鍵記錄</li>
+          <li>練習後 → 感受回饋（前後對照），串成可回顧軌跡</li>
+          <li>資料延續：帳號 / 雲端同步（現為 localStorage，換裝置即遺失）</li>
+        </ul>
+      </div>
+      <div class="phase p2">
+        <div class="ph"><b>P1 · 幫你選對</b><span class="when">接著</span></div>
+        <ul>
+          <li>「今天你的電量？」八態 / 三態 check → 推薦此刻該做哪一段</li>
+          <li>情境化首頁：依時段 / 狀態動態排序呼吸法</li>
+          <li>溫柔回訪：可選的提醒、連續天數、回來的鉤子</li>
+        </ul>
+      </div>
+      <div class="phase p3">
+        <div class="ph"><b>P2 · 接上身心錨</b><span class="when">再來</span></div>
+        <ul>
+          <li>HRV 生理錨：把「調節有沒有發生」變得可量測（耗竭那一態可被看見）</li>
+          <li>覺察 × 小憩 × 八態串成一條「看見→理解→調節」的個人線</li>
+          <li>「我」單元：趨勢與成長，你看著自己變化</li>
+        </ul>
+      </div>
+      <div class="phase p4">
+        <div class="ph"><b>P3 · 規模與生態</b><span class="when">之後</span></div>
+        <ul>
+          <li>老師 / 內容：引導語音、客製練習、連載欄目</li>
+          <li>內容可被策展、可被追蹤，接上練息場社群</li>
+          <li>為 B2B（企業席位）預留的資料與管理層</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="sec">與練息場其他層的整合</h2>
+    <p class="sec-sub">呼吸不是孤島，它是「看見→理解→調節」鏈裡的調節端。</p>
+    <div class="sur">
+      <div class="seg s1"><b>看見</b><span>HRV · 八態電量 check · 數位衡鑑</span></div>
+      <div class="seg s2"><b>理解</b><span>八態能格 · 問易 · 能量管理</span></div>
+      <div class="seg s3"><b>調節</b><span>呼吸覺察 · 小憩 · 聲音／茶／戶外</span></div>
+    </div>
+    <p class="note">＊呼吸是「調節」裡最日常、最可規模化的一環——它是把人每天帶回練息場的心跳。</p>
+
+    <h2 class="sec">成效指標</h2>
+    <div class="metrics">
+      <div class="metric"><b>黏著</b>　次日 / 7 日回訪、週活躍天數、連續天數</div>
+      <div class="metric"><b>完成</b>　練習完成率、覺察微互動次數 / 日</div>
+      <div class="metric"><b>成效</b>　練習前後感受變化、（接 HRV 後）生理指標變化</div>
+      <div class="metric"><b>深化</b>　從覺察 → 小憩 → 八態 / 課程的轉化率</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Tab 5 · 策略與可能性 -->
+  <!-- ============================================================ -->
+  <section class="page" id="strategy">
+    <div class="whatis"><b>這頁在講什麼：</b>我們憑什麼不一樣、怎麼賺錢、下一步做什麼。聚焦、落地優先；最後留一小區明確標示的創意發想。</div>
+
+    <h2 class="sec">定位與差異化</h2>
+    <p class="sec-sub">同樣做呼吸 / 正念，我們的差異在「誠實」與「可量測」。</p>
+    <div class="compare">
+      <div class="col us">
+        <h4>練息場 · 我們</h4>
+        <ul>
+          <li>誠實的身心科學：鏡子，不是算命</li>
+          <li>可被感受、也可被量測（HRV 生理錨）</li>
+          <li>真實老師與社群，不是冷冰冰的工具</li>
+          <li>覺察＋小憩＋八態，一條「看見→理解→調節」的路</li>
+        </ul>
+      </div>
+      <div class="col them">
+        <h4>常見替代品</h4>
+        <ul>
+          <li>純冥想 App：內容多，但難連到「我現在如何」</li>
+          <li>算命 / 玄學：給答案，但無法量測、易依賴</li>
+          <li>穿戴裝置：只給數字，缺調節與陪伴</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="sec">商業模式</h2>
+    <p class="sec-sub">先把 B2C 的愛做深，B2B 再騎上被愛的品牌。</p>
+    <div class="grid">
+      <div class="card accent-blue"><h3><span class="dot" style="background:var(--blue)"></span>先 · B2C（守黑：為個人的愛而生）</h3><ul>
+        <li>免費入口：覺察微互動＋基本小憩，養日常習慣</li>
+        <li>訂閱：完整呼吸法、個人趨勢、進階引導與內容</li>
+        <li>課程 / 體驗：能量管理、線下體驗日（premium）</li>
+        <li>老師導生 · 分潤</li>
+      </ul></div>
+      <div class="card accent-purple"><h3><span class="dot" style="background:var(--purple)"></span>後 · B2B（先按住）</h3><ul>
+        <li>Calm / Headspace 路徑：公司買席位、員工真的愛用</li>
+        <li>企業員工身心方案：以「可量測成效」當賣點</li>
+        <li>先把 B2C 的品牌與留存做起來，再往上騎</li>
+      </ul></div>
+    </div>
+
+    <h2 class="sec">落地路徑 · 下一步</h2>
+    <div class="next">
+      <h3>建議接下來這樣走</h3>
+      <ol>
+        <li><b>對齊本文件</b>：團隊看完，確認兩支柱定義與優先序沒有異議。</li>
+        <li><b>做 P0</b>：覺察秒完成入口 ＋ 練習後感受回饋 ＋ 資料延續（帳號 / 同步）。</li>
+        <li><b>接上八態 check</b>：讓「今天你的電量？」能推薦此刻該做哪一段（P1 的核心）。</li>
+        <li><b>定義指標並開始量</b>：回訪、完成率、前後感受變化——先有數字，才談成效。</li>
+        <li><b>HRV 小規模驗證</b>：驗證「調節可被量測」這個差異化是否成立（P2）。</li>
+      </ol>
+    </div>
+
+    <h2 class="sec">創意發想</h2>
+    <div class="ideas">
+      <div class="ihead"><b>發想區</b><span class="badge">未定案 · 供激發想像</span></div>
+      <p style="margin:0;font-size:13.5px;color:var(--sub)">以下是刻意放開的可能性，不是承諾要做，也不影響上面的優先序。挑得動、對得上主線的，再往上收。</p>
+      <div class="igrid">
+        <div class="idea"><b>呼吸簽名</b>把長期練習資料變成一張「屬於你的呼吸圖像」，可分享、可回顧成長。</div>
+        <div class="idea"><b>雙人 / 團體同步呼吸</b>兩人或一群人同一節拍呼吸，用於伴侶、團隊、課堂的連結時刻。</div>
+        <div class="idea"><b>聲音層</b>接上練息場的頌缽 / 鼓 / 口簧琴，讓小憩有可選的聲音療癒層。</div>
+        <div class="idea"><b>情境快捷</b>鎖屏 / 捷徑 / 語音：「我很緊張」一句話直接進對的那一段。</div>
+        <div class="idea"><b>八態 × 呼吸處方</b>每一態對應一組建議呼吸法，把「理解」直接接到「調節」。</div>
+        <div class="idea"><b>老師策展的呼吸旅程</b>多天連載式的引導系列，把單次練習變成一段陪伴。</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    練息場 · Join to Enjoy　|　呼吸覺察 × 小憩 白皮書 v0.1　|　草稿，供團隊討論<br>
+    靈魂在中央 · 覺察與小憩是每天回來的心跳 · 鏡子非算命
+  </div>
+
+</div>
+
+<script>
+  var tabs = document.querySelectorAll('#tabs button');
+  var pages = document.querySelectorAll('.page');
+  function show(id, push){
+    var found = false;
+    pages.forEach(function(p){ var on = p.id===id; p.classList.toggle('on', on); if(on) found=true; });
+    if(!found){ id='overview'; document.getElementById('overview').classList.add('on'); }
+    tabs.forEach(function(b){ b.classList.toggle('on', b.dataset.tab===id); });
+    if(push && ('#'+id)!==location.hash){ history.replaceState(null,'','#'+id); }
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab, true); }); });
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1)||'overview', false); });
+  // init from hash
+  show(location.hash.slice(1)||'overview', false);
+</script>
+</body>
+</html>
