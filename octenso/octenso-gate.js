@@ -6,7 +6,7 @@
   if (window.self !== window.top) return;
 
   // ── 白名單（小寫比對）。要放行誰就加進來 ──
-  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com'];
+  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com','flfm0137@gmail.com'];
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function allowed(email){ return !!email && ALLOW.indexOf(String(email).trim().toLowerCase()) >= 0; }
