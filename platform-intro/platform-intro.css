@@ -165,8 +165,11 @@ strong { font-weight: 700; color: var(--ink); }
   font-family: var(--serif); font-size: clamp(1.3rem, 2.4vw, 2rem);
   line-height: 1.55; color: var(--ink); font-weight: 500;
   border-left: 3px solid var(--cinnabar); padding: .2rem 0 .2rem 1.4rem;
-  margin: 2rem 0; max-width: 26ch;
+  margin: 2rem 0; max-width: 30ch;
+  text-wrap: balance;
 }
+/* 讓引言只在標點（子句）之間斷行，不把詞句拆開 */
+.pullquote .ql { white-space: nowrap; }
 .pullquote cite { display:block; font-style: normal; font-family: var(--sans);
   font-size: .8rem; letter-spacing: .1em; color: var(--ink-faint); margin-top: .8rem; }
 
