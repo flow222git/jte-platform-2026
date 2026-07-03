@@ -95,20 +95,15 @@ function onCred(resp){
 }
 
 function showManager(){
-  var baseRows=BASE.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span><span class="tag">內建固定</span></div>';}).join('');
-  var extraRows=extras.length
-    ? extras.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span><button class="rm" onclick="removeEmail(\''+esc(e)+'\')">移除</button></div>';}).join('')
-    : '<div class="row"><span class="em" style="color:var(--muted)">（還沒有額外放行的人）</span></div>';
+  var rows=extras.length
+    ? extras.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span></div>';}).join('')
+    : '<div class="row"><span class="em" style="color:var(--muted)">（名單是空的）</span></div>';
   app().innerHTML=
-    '<div class="head"><div class="k">Allowlist</div><h1>白名單管理</h1><div class="who">管理者 · '+esc(myEmail)+'</div></div>'
+    '<div class="head"><div class="k">Allowlist</div><h1>白名單（唯讀）</h1><div class="who">管理者 · '+esc(myEmail)+'</div></div>'
     +'<div class="wrap">'
-      +'<div class="sec"><div class="sec-t">內建固定<span class="sub">寫在程式碼裡、永遠可進、無法在此移除</span></div>'+baseRows+'</div>'
-      +'<div class="sec"><div class="sec-t">額外白名單<span class="sub">即時增減、立刻生效</span></div>'+extraRows
-        +'<div class="addbar"><input id="newEmail" placeholder="someone@example.com" autocomplete="off" spellcheck="false" onkeydown="if(event.key===\'Enter\')addEmail()"><button class="btn" onclick="addEmail()">加入</button></div>'
-        +'<div class="err" id="msg-err"></div><div class="ok" id="msg-ok"></div>'
-      +'</div>'
-      +'<div class="note">有人沒權限又想用，會在登入畫面看到「✉ 申請使用權」，寄信到 <b>flow@jointoenjoy.com</b> 給你審核——你在這裡把他加進「額外白名單」即可。<br>※ 誠實提醒：這是靜態站的客戶端閘門，屬軟性存取控制，非後端級安全。</div>'
-      +'<div class="foot">Octenso ｜ 八態能格 · 白名單管理</div>'
+      +'<div class="sec"><div class="sec-t">目前可進入的帳號<span class="sub">共 '+extras.length+' 個 · 由程式碼管理</span></div>'+rows+'</div>'
+      +'<div class="note">白名單已改為<b>程式碼管理</b>（單一來源：<code>octenso/allowlist.json</code>）。<br>要新增或移除，把 email 給開發者更新即可，改完幾分鐘後生效。<br>※ 誠實提醒：這是靜態站的客戶端閘門，屬軟性存取控制，非後端級安全。</div>'
+      +'<div class="foot">Octenso ｜ 八態能格 · 白名單</div>'
     +'</div>';
 }
 
@@ -140,14 +135,12 @@ function route(){
   myEmail=lc(localStorage.getItem('jte_user_email'));
   if(!myEmail){ showLogin(); return; }
   if(!isAdmin(myEmail)){ showDenied(); return; }
-  if(!ensureFirebase()){ gate(brand()+'<div class="msg">Firebase 載入中…請稍候或重新整理。</div>'); setTimeout(route,400); return; }
   gate(brand()+'<div class="msg">讀取白名單中…</div>');
-  docRef().get().then(function(snap){
-    var d=snap.exists?snap.data():null;
-    extras=(d&&Array.isArray(d.emails))?d.emails.map(lc):[];
+  fetch('allowlist.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():[];}).then(function(arr){
+    extras=(Array.isArray(arr)?arr:[]).map(lc);
     showManager();
   }).catch(function(e){
-    gate(brand()+'<div class="msg">讀取白名單失敗：<br>'+esc(e&&e.message||String(e))+'<br><br>（可能是 Firestore 安全規則未開放讀取 octenso/allowlist）</div>'
+    gate(brand()+'<div class="msg">讀取 allowlist.json 失敗：<br>'+esc(e&&e.message||String(e))+'</div>'
       +'<button class="btn" onclick="location.reload()">重試</button>');
   });
 }

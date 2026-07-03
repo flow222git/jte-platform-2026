@@ -5,8 +5,10 @@
   // 測試/嵌入（iframe）內不啟用，避免擋住 .test.html 的 iframe 與正常嵌入
   if (window.self !== window.top) return;
 
-  // ── 白名單（小寫比對）。要放行誰就加進來 ──
-  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com','flfm0137@gmail.com'];
+  // ── 白名單（小寫比對）──
+  // 失效保險：核心團隊寫死在此，即使 allowlist.json 載入失敗也永遠進得去。
+  // 其餘所有人（含 flfm0137 等）由單一來源 allowlist.json 管理（見下方 fetchExtras）。
+  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com'];
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function allowed(email){ return !!email && ALLOW.indexOf(String(email).trim().toLowerCase()) >= 0; }
@@ -76,15 +78,11 @@
     });
   }
 
-  // 額外白名單放在 Firestore（octenso/allowlist），由管理頁(simon)線上增減；用 REST 讀、免載 SDK
-  var FS_KEY='AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg';
-  var FS_URL='https://firestore.googleapis.com/v1/projects/jointoenjoy/databases/(default)/documents/octenso/allowlist?key='+FS_KEY;
+  // 白名單改為「程式碼管理」：讀同資料夾的 allowlist.json（單一來源，要增減改該檔即可）
   function fetchExtras(cb){
     try{
-      fetch(FS_URL).then(function(r){return r.ok?r.json():null;}).then(function(j){
-        var out=[];
-        try{ var vals=(j&&j.fields&&j.fields.emails&&j.fields.emails.arrayValue.values)||[];
-          out=vals.map(function(v){return String(v.stringValue||'').trim().toLowerCase();}); }catch(e){}
+      fetch('allowlist.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():[];}).then(function(arr){
+        var out=(Array.isArray(arr)?arr:[]).map(function(e){return String(e||'').trim().toLowerCase();});
         cb(out);
       }).catch(function(){ cb([]); });
     }catch(e){ cb([]); }
