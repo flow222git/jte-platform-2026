@@ -521,7 +521,7 @@ function updateDebug(recent, beats, rr, q){
     '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
     '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
-    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nsamples '+recent.length+
+    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nsamples '+recent.length+
     '\n(點我複製原始資料)';
 }
 
@@ -553,6 +553,7 @@ function updateLiveUi(now){
     else if(session.lockSince==null) session.lockSince=now;
     if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
       session.measuring=true; session.countdownStart=now; session.samples=[];
+      stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
     }
   }
@@ -621,18 +622,45 @@ function stopCamera(){
   session.track=null; _video=null; _grabCtx=null; _grabCanvas=null; session.measuring=false;
 }
 
+// ② A 層硬體 best-effort：量測一開始（手指已貼、訊號已鎖）就凍結相機自動調整，
+//    避免中途曝光/白平衡/對焦亂跳造成訊號斷。全靠 getCapabilities 偵測——支援才鎖、不支援跳過
+//    （適應各機能力、不寫死機型；iOS Safari 多半 caps 為空→自動略過，交給訊號層）。
+async function stabilizeCamera(){
+  const track=session.track; if(!track||!track.applyConstraints) return;
+  try{
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    const adv=[];
+    if(caps.focusMode&&caps.focusMode.indexOf('manual')>=0) adv.push({ focusMode:'manual' });
+    if(caps.exposureMode&&caps.exposureMode.indexOf('manual')>=0) adv.push({ exposureMode:'manual' });
+    if(caps.whiteBalanceMode&&caps.whiteBalanceMode.indexOf('manual')>=0) adv.push({ whiteBalanceMode:'manual' });
+    if(adv.length){ await track.applyConstraints({ advanced:adv }); }
+    session._stab = adv.length ? adv.map(function(a){ return Object.keys(a)[0]; }).join('+') : '(無可鎖)';
+  }catch(e){ session._stab='err:'+((e&&e.name)||'?'); }
+}
+
+// ① 穩健 RR 聚合（結果頁與面相重算共用）：切 15 秒窗、逐窗品質把關，只收「好窗」的 RR，
+//    鏡頭自動切換/亂動弄壞的高振幅壞段整窗丟棄。好窗撿不到 3 個 RR 才退回全域偵測。
+function robustRr(samples){
+  var A=window.HrvAnalyze; if(!A) return { rr:[], good:0, bad:0, mode:'none' };
+  var gw=A.rrFromGoodWindows(samples,15);
+  var rr=A.cleanRr(gw.rr);
+  if(rr.length<3){ return { rr:A.cleanRr(A.rrFromBeats(A.detectBeats(samples))), good:gw.good, bad:gw.bad, mode:'global' }; }
+  return { rr:rr, good:gw.good, bad:gw.bad, mode:'good15' };
+}
+
 /* —— 結果頁 —— */
 function renderResult(samples){
   session.mode='result'; clearAll();
   samples=samples||[];
   const A=window.HrvAnalyze;
   // 用既有純函式算指標與品質
-  const beats=A?A.detectBeats(samples):[];
-  const rr=A?A.cleanRr(A.rrFromBeats(beats)):[]; // 偽差校正後再算指標（RMSSD 才不會被掉訊號灌爆）
+  const agg=A?robustRr(samples):{rr:[],good:0,bad:0,mode:'none'}; // ① 逐窗只收好窗
+  const rr=agg.rr;
   const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
   const quality=A?A.signalQuality(samples):'red';
-  // 誠實降級：訊號太差→不顯示任何數字、不存記錄、引導重量
-  const tooNoisy = !A || m.n<8 || quality==='red' || !(m.hr>=30&&m.hr<=220);
+  // 誠實降級：訊號太差→不顯示數字、不存記錄、引導重量。
+  // 全域雖判紅，但只要撿得到 ≥2 個好窗且拍數/心率合理，就視為可用（別誤殺被壞段拉紅的好量測）。
+  const tooNoisy = !A || m.n<8 || !(m.hr>=30&&m.hr<=220) || (quality==='red' && agg.good<2);
 
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
@@ -854,7 +882,7 @@ function computeFreqFacets(rr, sdnn){
 // 只重繪面相卡（避免重跑 renderResult 重複存檔）；用 _lastResultSamples 重算
 function refreshFacets(){
   var A=window.HrvAnalyze; if(!A||!_lastResultSamples) return false;
-  var rr=A.cleanRr(A.rrFromBeats(A.detectBeats(_lastResultSamples))), m=A.metricsFromRr(rr);
+  var rr=robustRr(_lastResultSamples).rr, m=A.metricsFromRr(rr);
   var old=document.querySelector('.facets');
   if(old){ var fresh=buildFacets(computeFreqFacets(rr, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
   return false;
