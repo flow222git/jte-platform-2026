@@ -63,8 +63,8 @@
 
 ## 5. 漸進遷移（可測、不一次全改）
 
-0. **完整盤點**：grep 全 octenso 的八卦 data 定義點（`var BAGUA`、`title:'`、`fn:'`、`QUESTIONS`、五行色…），列出所有散佈與欄位差異。
-1. **建 `bagua-data.js`**：彙整為欄位超集，值以稽核定案為準。
+0. ✅ **完整盤點**（見 §2）。
+1. ✅ **建 `bagua-data.js`**（2026-07-05，已 push）：彙整欄位超集、值採稽核定案；掛 `window.OCTENSO_BAGUA`、未改任何頁引用；JavaScriptCore 驗證通過（8 卦／25 題／錯卦 pairKey／共鳴者／循環決斷／4 極性對）。
 2. **逐頁遷移**：一頁改引用＋刪本地定義，每頁改完跑其 `*.test.html`（綠燈基準 persona136 / records96 / team86 / field44 / career29）確認行為不變，再下一頁。
 3. **i18n**：型名翻譯併入或另表引用。
 4. 全部遷移後，單一來源生效；日後改定義只動 `bagua-data.js`。
@@ -86,5 +86,16 @@
 
 ---
 
-**狀態**：v0.1 起頭草案。下一步＝先跑 Step 0 完整盤點，再細化 canonical 欄位與遷移順序。
+## 8. Step 2 試點勘查發現（bagua-records，2026-07-05，尚未遷移）
+
+遷移比「抽 data」深——逐頁會觸發定義對齊，且部分 test 固化了舊定義、需一併更新：
+1. **fn 措辭漂移**：records 的 `li` 寫「展現／覺察」（canonical＝明現／覺察）。
+2. **pos 是功能極性佈局**：records 雷達 `pos` 的 gen/xun 仍舊佈局 → 遷移時 **pos 保留各頁本地**（雷達佈局不動），只抽 sym/nm/wx/fn/title。
+3. **對極語意衝突（關鍵）**：records `strategyFor` 補「對極」用**功能極性**（兌⇄巽），且 `bagua-records.test.html:130` 斷言「補對極 巽 (dui⇄xun)」；canonical＝**錯卦**（兌⇄艮）。→ 遷移須把對極統一到錯卦（兌·交流 補 艮·喊停，比補巽·拓展更實用），並**同步更新該 test 斷言**。
+
+**結論**：Step 2 ≠「抽 data、保 test 綠」，而是「對齊 canonical 定義（含對極統一為錯卦）＋更新受影響的 test 斷言」。且需先建**可靠的 no-node headless test runner**（async iframe＋gate＋讀結果）。逐頁、配測試、擇整段時間做。
+
+---
+
+**狀態（2026-07-05）**：Step 0 盤點 ✅｜Step 1 canonical `bagua-data.js` ✅（已 push、JSC 驗證通過）｜Step 2 逐頁遷移待擇日專門做（見 §8）。
 相關：[[2026-07-05-octenso-consistency-audit-decisions]]、[[2026-06-30-bagua-64-energy-demand-table]]、[[2026-07-01-octaform-v0.6-intervention-design]]
