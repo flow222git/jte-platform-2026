@@ -20,15 +20,29 @@
 
 一份 `bagua-data.js`（純 JS 常數，無框架、無 build），各頁 `<script src>` 引用共用常數，**刪除各頁本地重複定義**。改一處 → 全站同步。
 
-## 2. 現況散佈（已知，待完整盤點＝Step 0）
+## 2. 現況散佈（Step 0 完整盤點，2026-07-05）
 
-| 檔 | 目前各自定義的八卦 data |
-|---|---|
-| `bagua-map.html` | `BAGUA[]`（fn/phase/pair/struct/state/over/under/remind/wx）、`CLASSIC`、`GUA8`、`PERSONA_TITLE`、`POLAR`、`CYCLE_ORDER` |
-| `bagua-persona.html` | 型別 data（title/essence/str/blind/grow/tools/pos）＋`QUESTIONS`(25) |
-| `bagua-records.html`、`bagua-team.html` | 型名 title + pos |
-| `bagua-i18n.html` | 型名 中/英/日 翻譯 |
-| 待盤點 | `bagua-field`、`bagua-career`、`octenso-journey`、`index` 等 |
+八卦 data **全在 `octenso/`**（根目錄 octenso-*.html 無）。各類散佈：
+
+| 資料類別 | 主定義 | 也散在（重複／漂移風險） |
+|---|---|---|
+| BAGUA 主陣列（最全） | `bagua-map` | — |
+| 古典 CLASSIC／GUA8 | `bagua-map` | — |
+| 極性 POLAR／pair／CYCLE | `bagua-map` | `octenso-wheel-min`（本次已補修為錯卦） |
+| 型名 title | `bagua-map` | persona／guide／team／records／i18n（＋persona/records/team 的 `.test.html`） |
+| 功能名 fn | `bagua-map` | persona／field／career／team／records（＋wheel-min **措辭異**：創造/覺察/啟動/界線） |
+| 五行色 wx | `bagua-map` | persona／field／career／team／records |
+| 三態 over／under | `bagua-map` | persona／team |
+| 型別描述 essence/blind/grow/tools | `bagua-persona` | —（唯一） |
+| QUESTIONS 題庫 | `bagua-persona` | field／octenso-feedback（待確認是否同題庫） |
+| i18n 翻譯 | `bagua-i18n` | —（唯一） |
+
+**關鍵洞見**：
+1. **`bagua-map` ＝事實上的主定義**（BAGUA+CLASSIC+GUA8+POLAR+CYCLE+型名+fn+wx+三態全在它）→ canonical 直接從它抽出最省。
+2. 散最廣＝**型名（9 處）、fn（6+ 頁）、wx（6 頁）**→ 最會漂移（這次兌型名即是），優先讓各頁引用。
+3. **功能名有兩套措辭**：主定義（開創/明現/行動/喊停/拓展）vs `wheel-min`（創造/覺察/啟動/界線/連結）→ canonical 須定一套。
+4. **測試頁（`.test.html`）也含 data** → 遷移須決定：引用 canonical 或保留獨立 fixture。
+5. QUESTIONS 散 persona/field/feedback → 須確認是否同一題庫。
 
 ## 3. Canonical 結構（初版）
 

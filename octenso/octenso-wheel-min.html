@@ -76,7 +76,7 @@
 </div>
 <script>
 var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
-           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
+           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:101,y:101},xun:{x:60,y:200}};
 var RING=['qian','li','zhen','dui','kun','kan','gen','xun']; // 順時針一圈
 var E={qian:{s:'☰',n:'乾',f:'創造'},li:{s:'☲',n:'離',f:'覺察'},zhen:{s:'☳',n:'震',f:'啟動'},
        dui:{s:'☱',n:'兌',f:'交流'},kun:{s:'☷',n:'坤',f:'承載'},kan:{s:'☵',n:'坎',f:'恢復'},
@@ -85,7 +85,7 @@ var NS='http://www.w3.org/2000/svg';
 function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
 
 // 極性直徑（hairline 虛線）
-var PAIRS=[['qian','kun'],['li','kan'],['zhen','gen'],['dui','xun']];
+var PAIRS=[['qian','kun'],['li','kan'],['zhen','xun'],['dui','gen']];
 var axes=document.getElementById('axes');
 PAIRS.forEach(function(p,i){
   var a=POLAR[p[0]],b=POLAR[p[1]];
