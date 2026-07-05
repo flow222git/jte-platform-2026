@@ -192,10 +192,10 @@
   <!-- Axes-pair panel (view 1 only) -->
   <div id="axes-panel">
     <div class="axes-box">
-      <span><b>給出 ⇄ 接納</b>　乾 ⇄ 坤</span>
+      <span><b>開創 ⇄ 承接</b>　乾 ⇄ 坤</span>
       <span><b>明現 ⇄ 沉澱</b>　離 ⇄ 坎</span>
-      <span><b>行動 ⇄ 喊停</b>　震 ⇄ 艮</span>
-      <span><b>表達 ⇄ 連結</b>　兌 ⇄ 巽</span>
+      <span><b>行動 ⇄ 拓展</b>　震 ⇄ 巽</span>
+      <span><b>喊停 ⇄ 交流</b>　艮 ⇄ 兌</span>
     </div>
   </div>
 
@@ -220,10 +220,10 @@
       <g id="nodes"></g>
       <!-- Axis pair labels for view 1 (inside SVG, near axis ends) -->
       <g id="axis-labels-v1">
-        <text class="axislbl" x="200" y="20">給出 乾</text>
-        <text class="axislbl" x="200" y="390">接納 坤</text>
+        <text class="axislbl" x="200" y="20">開創 乾</text>
+        <text class="axislbl" x="200" y="390">承接 坤</text>
         <text class="axislbl" x="374" y="200">行動 震</text>
-        <text class="axislbl" x="26" y="200">喊停 艮</text>
+        <text class="axislbl" x="26" y="200">拓展 巽</text>
       </g>
     </svg>
   </div>
@@ -251,11 +251,11 @@
   <div class="foot" id="foot-text">
     <b>怎麼讀這張圖：</b><br>
     ・<b>八個節點</b>＝你內在的八種能量（功能）。<br>
-    ・<b>四條軸線</b>＝四組互相平衡的極性；某個能量「過強」，往往是缺了它<b>對面那一極</b>。<br>
+    ・<b>四條軸線</b>＝四組先天對待（陰陽全反）的能量兩極；兩極可偏一邊、也可都在，想更平衡就往對面那一極多練一點。<br>
     ・<b>顏色</b>＝八種能量各自的色，方便在雷達上分辨。<br>
     ・每個卦由三條陰陽爻組成，功能其實從<b>陰陽結構</b>長出來（如乾純陽＝全動能、坤純陰＝全承接）。<br>
-    ・<b>循環</b>視圖依後天卦序排列，顯示能量流轉的自然節奏（行動→成長→明現→化育→收穫→收束→沉澱→喊停）。<br>
-    <span style="color:var(--muted);font-size:11px">＊此為「功能能量」的極性排列；古典先天八卦的陰陽全反對為 乾坤・離坎・震巽・兌艮，可另作深層對照。</span>
+    ・<b>循環</b>視圖依後天卦序排列，顯示能量流轉的節奏（行動→拓展→明現→承接→交流→決斷→沉澱→喊停）。<br>
+    <span style="color:var(--muted);font-size:11px">＊極性對＝先天八卦「對待」（陰陽全反）：乾坤・離坎・震巽・艮兌；循環順序＝後天八卦「流行」（帝出乎震）。</span>
   </div>
 
   <style>
@@ -294,7 +294,7 @@
     </details>
     <details>
       <summary>三、循環與節律（後天卦序）</summary>
-      <div class="sd-body">行動→成長→明現→化育→收穫→收束→沉澱→喊停，像四季一樣流轉——每一段都有它的任務，也都會過去。</div>
+      <div class="sd-body">行動→拓展→明現→承接→交流→決斷→沉澱→喊停，像四季一樣流轉——每一段都有它的任務，也都會過去。</div>
     </details>
     <details>
       <summary>四、底色 vs 此刻</summary>
@@ -305,7 +305,7 @@
     <ul class="sd-list">
       <li><a href="index.html"><b>八態能量（門面）</b></a><span class="sd-tag">已上線</span>：低門檻圖文入口——三句入門＋八種能量生活比喻。</li>
       <li><b>八態能量系統圖</b>（就是這一頁）<span class="sd-tag">已上線</span>：認識八卦・極性・循環・我的能量 四種看法。</li>
-      <li><a href="bagua-persona.html"><b>八態能量人格測驗</b></a><span class="sd-tag">已上線</span>：24 題 → 能量型＋雷達＋人物速寫＋優勢/盲點/成長＋導流。</li>
+      <li><a href="bagua-persona.html"><b>八態能量人格測驗</b></a><span class="sd-tag">已上線</span>：25 題 → 能量型＋雷達＋人物速寫＋優勢/盲點/成長＋導流。</li>
       <li><b>多場域側寫</b><span class="sd-tag">已上線</span>：工作／關係／獨處的你——落差＋消耗訊號＋面向地圖。</li>
       <li><b>底色 vs 此刻</b><span class="sd-tag">已上線</span>：疊上你最近一次「問易」的此刻能量輪廓做對照。</li>
       <li><a href="bagua-field.html"><b>測一個局</b></a><span class="sd-tag">已上線</span>：你×情境——適配度、發揮點、消耗點、應對策略。</li>
@@ -334,7 +334,7 @@ var NS='http://www.w3.org/2000/svg';
 
 // Polarity wheel positions (對極成直徑)
 var POLAR={qian:{x:200,y:60},li:{x:299,y:101},zhen:{x:340,y:200},dui:{x:299,y:299},
-           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:60,y:200},xun:{x:101,y:101}};
+           kun:{x:200,y:340},kan:{x:101,y:299},gen:{x:101,y:101},xun:{x:60,y:200}};
 
 // Cycle sequence: 後天八卦 order, phase/season labels, clockwise from 震(left/9 o'clock)
 // 震→巽→離→坤→兌→乾→坎→艮
@@ -350,42 +350,42 @@ CYCLE_ORDER.forEach(function(k,i){
 
 var BAGUA=[
  {k:'qian',sym:'☰',nm:'乾',wx:'metal',fn:'開創／決策',
-  phase:'決斷·收束',
+  phase:'決斷',
   state:'規劃、領導、開創',over:'控制欲、獨斷、脫離現實',under:'缺方向、缺願景',
   pair:'坤（承接）',struct:'純陽 ☰ — 全是動能，主開創',
   remind:'能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。',level:0},
  {k:'li', sym:'☲',nm:'離',wx:'fire', fn:'明現／覺察',
-  phase:'明現·夏盛',
+  phase:'明現',
   state:'洞察、理解、看見',over:'過度分析、想太多',under:'看不清方向',
   pair:'坎（沉澱）',struct:'中陰 ☲ — 光向外照，主顯明',
   remind:'看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。',level:0},
  {k:'zhen',sym:'☳',nm:'震',wx:'wood',fn:'行動／突破',
-  phase:'行動·春萌',
+  phase:'行動',
   state:'行動、冒險、開始',over:'衝動、焦躁、停不下來',under:'拖延、不敢開始',
   pair:'巽（拓展）',struct:'初陽 ☳ — 動能剛萌生，主行動',
   remind:'敢開始很可貴；但真正的力量，是衝得出去、也停得下來。',level:0},
  {k:'dui',sym:'☱',nm:'兌',wx:'metal',fn:'交流／分享',
-  phase:'交流·秋收',
+  phase:'交流',
   state:'對話、連結、人際',over:'過度社交、討好、空談',under:'封閉、不願表達',
   pair:'艮（喊停）',struct:'上陰 ☱ — 開口向外，主喜悅表達',
   remind:'表達與連結帶來喜悅；但說出口之外，也要懂得留白與傾聽。',level:0},
  {k:'kun',sym:'☷',nm:'坤',wx:'earth',fn:'承接／滋養',
-  phase:'承接·化育',
+  phase:'承接',
   state:'接納、支持、穩定',over:'過度承擔、失去自我',under:'缺耐心、缺穩定',
   pair:'乾（開創）',struct:'純陰 ☷ — 全是承接，主涵養',
   remind:'能涵容、能支持，是深厚的力量；但承接別人之前，先把自己接住。',level:0},
  {k:'kan',sym:'☵',nm:'坎',wx:'water',fn:'沉澱／恢復',
-  phase:'休息·冬藏',
+  phase:'沉澱',
   state:'沉澱、休息、反思',over:'內耗、逃避、過度退縮',under:'不會休息、不會恢復',
   pair:'離（明現）',struct:'中陽 ☵ — 力量藏於內，主沉澱',
   remind:'懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。',level:0},
  {k:'gen',sym:'☶',nm:'艮',wx:'earth',fn:'喊停／界線',
-  phase:'止·轉折',
+  phase:'喊停',
   state:'結束、拒絕、定界',over:'固執、停滯、不變通',under:'無法喊停、無法拒絕',
   pair:'兌（交流）',struct:'上陽 ☶ — 動到頂被止住，主喊停',
   remind:'知道何時停、何時說不，是難得的清醒；但別讓喊停變成卡死不動。',level:0},
  {k:'xun',sym:'☴',nm:'巽',wx:'wood',fn:'拓展／連結',
-  phase:'連結·成長',
+  phase:'拓展',
   state:'推廣、成長、合作',over:'擴張失控、分心',under:'缺資源連結',
   pair:'震（行動）',struct:'初陰 ☴ — 柔入滲透，主連結拓展',
   remind:'柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。',level:0}
@@ -743,7 +743,7 @@ function updateV3Summary(){
 
 // ── Persona builder ──────────────────────────────────────────
 var PERSONA_TITLE={
-  qian:'乾·開創者',dui:'兌·連結者',li:'離·洞見者',xun:'巽·協作者',
+  qian:'乾·開創者',dui:'兌·共鳴者',li:'離·洞見者',xun:'巽·協作者',
   zhen:'震·行動者',kan:'坎·沉潛者',gen:'艮·守界者',kun:'坤·承載者'
 };
 // 「衝/動」類 & 「休/止」類
