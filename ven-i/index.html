@@ -232,6 +232,12 @@
   .focus-tag.main{background:var(--accent);color:#fff}
   .focus-txt{font-size:14.5px;line-height:1.7;color:var(--ink)}
   .focus-note{margin:8px 0 0!important;font-size:12.5px!important;color:var(--ink-soft)!important}
+  /* 動爻解釋：爻辭白話 + 此刻狀態 兩層並列 */
+  .yao-two{display:grid;gap:8px}
+  .yao-layer{display:block;padding:9px 11px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+  .yao-layer.yao-state{background:var(--accent-soft);border-color:transparent}
+  .yl-lab{display:block;font-size:11px;letter-spacing:.14em;color:var(--ink-faint);margin-bottom:3px}
+  .yl-txt{display:block;font-size:14px;line-height:1.75;color:var(--ink)}
 
   /* 重點總結（可分享） */
   .summary-panel{background:var(--card)}
@@ -1169,6 +1175,38 @@ const GUA_KEY={
  既濟:{core:"已成而守，大致完成",attitude:"守成防變、居安思危",avoid:"鬆懈大意、忽略後續"},
  未濟:{core:"將成未成，仍在過渡",attitude:"謹慎前行、不逼自己有結論",avoid:"急著收尾、半途而廢"},
 };
+/* ============================================================
+   卦象資料庫：從 data/hexagrams.json 載入（新資料來源）
+   取代寫死的本卦重點(GUA_KEY)與爻辭；載入失敗時自動退回內建草稿
+   結構：HEX_DB.summary[卦名]={core,attitude,avoid}
+        HEX_DB.lines[卦名][爻位1..6]={original,literal,state}
+   ============================================================ */
+let HEX_DB=null;
+const HEX_DB_READY=(async function loadHexDB(){
+ try{
+   const res=await fetch("data/hexagrams.json",{cache:"no-cache"});
+   if(!res.ok) throw new Error("HTTP "+res.status);
+   const j=await res.json();
+   const summary={}, lines={}, judgment={};
+   (j.hexagrams||[]).forEach(h=>{
+     if(!h||!h.name) return;
+     // 卦名正規化：JSON 個別卦用簡體「无妄」，頁面用「無妄」，統一成傳統寫法對齊
+     const nm=h.name.replace(/无/g,"無");
+     if(h.judgment&&h.judgment.summary) summary[nm]=h.judgment.summary;
+     if(h.judgment) judgment[nm]={original:h.judgment.original,literal:h.judgment.literal};
+     if(Array.isArray(h.lines)){
+       const m={};
+       h.lines.forEach(l=>{ if(l&&l.position) m[l.position]={original:l.original,literal:l.literal,state:l.state}; });
+       lines[nm]=m;
+     }
+   });
+   HEX_DB={summary,lines,judgment};
+   console.info("[問易] hexagrams.json 載入完成：",Object.keys(summary).length,"卦");
+ }catch(e){
+   console.warn("[問易] hexagrams.json 載入失敗，改用內建草稿資料：",e);
+   HEX_DB=null;
+ }
+})();
 /* 擲一爻：三枚錢，每枚 2 或 3，和 6~9 */
 function tossLine(){
  const c=[0,0,0].map(()=>Math.random()<0.5?2:3);
@@ -1236,8 +1274,16 @@ const YAO_MEANING={
  6:"事情的頂點、極限；過則生悔，宜收、宜轉。",
 };
 
-/* 動爻白話：用該卦卦義 × 六爻階段（沿用問易的 STAGES）*/
+/* 動爻解釋：優先用 hexagrams.json 的該爻資料，顯示「爻辭白話 + 此刻狀態」兩層並列；
+   資料缺漏時退回原本的「卦義 × 六爻階段」白話 */
 function yaoReading(guaName,pos){ // pos 1..6 由下而上
+ const ln=HEX_DB&&HEX_DB.lines[guaName]&&HEX_DB.lines[guaName][pos];
+ if(ln&&(ln.literal||ln.state)){
+   return `<span class="yao-two">`+
+     `<span class="yao-layer yao-literal"><span class="yl-lab">爻辭白話</span><span class="yl-txt">${ln.literal||""}</span></span>`+
+     `<span class="yao-layer yao-state"><span class="yl-lab">此刻的你</span><span class="yl-txt">${ln.state||""}</span></span>`+
+   `</span>`;
+ }
  const st=STAGES[pos];
  return `${guaName}卦・第${pos}爻（${st.yao}・${st.name}）：${st.hint}`;
 }
@@ -1425,8 +1471,11 @@ function buyiResult(){
  const changingPos=state.lines.map((l,i)=>l.changing?i+1:0).filter(x=>x);
  const n=changingPos.length;
  const bian=n?transformedHex(state.lines):null;
- const allowSwitch=(n===3 && bian);
- const activeHex=(allowSwitch && state.bActiveHex===bian)?bian:ben;
+ // n>=3 開放本卦／變卦切換；四爻變以上重心在變卦，預設顯示變卦
+ const allowSwitch=(n>=3 && bian);
+ const focusOnBian=(n>=4 && bian);
+ const defaultHex=focusOnBian?bian:ben;
+ const activeHex=(allowSwitch && (state.bActiveHex===ben || state.bActiveHex===bian))?state.bActiveHex:defaultHex;
  const isVariant=(activeHex===bian && allowSwitch);
 
  d.insertAdjacentHTML("beforeend",`<div class="q-eyebrow" style="margin-top:6px">卜易 · 卦象</div>`);
@@ -1437,7 +1486,10 @@ function buyiResult(){
  // 三爻變：本卦／變卦切換器
  if(allowSwitch){
    const sw=document.createElement("div");sw.className="hex-switch";
-   sw.innerHTML=`<span class="sw-hint">三爻變，以本卦為主、變卦為輔，點點看：</span>`;
+   const swHint=focusOnBian
+     ? `${n}爻變，重心已轉到變卦，以變卦為主、本卦為輔，點點看：`
+     : "三爻變，以本卦為主、變卦為輔，點點看：";
+   sw.innerHTML=`<span class="sw-hint">${swHint}</span>`;
    const tags=document.createElement("div");tags.className="sw-tags";
    [{hex:ben,lab:"本卦"},{hex:bian,lab:"變卦"}].forEach(o=>{
      const themeShort=(GUA_KEY[o.hex]&&GUA_KEY[o.hex].core)||(GUA_MEAN[o.hex]||"").split("，")[0];
@@ -1465,7 +1517,7 @@ function buyiResult(){
    yaoHtml+=`<div class="yrow"><span class="ynum">${pos}</span><span class="ybars">${bars}</span><span class="ychg">${chg}</span></div>`;
    if(i===3)yaoHtml+=`<div class="divider"></div>`;
  }
- const k=GUA_KEY[activeHex]||{core:GUA_MEAN[activeHex]||"",attitude:"",avoid:""};
+ const k=(HEX_DB&&HEX_DB.summary[activeHex])||GUA_KEY[activeHex]||{core:GUA_MEAN[activeHex]||"",attitude:"",avoid:""};
  const cardLab=isVariant?"變卦 · 事情的趨向":"本卦 · 你目前的處境";
  const keyTitle=isVariant?"變卦重點":"本卦重點";
  const hc=document.createElement("div");hc.className="hex-card b-neutral";
@@ -1507,7 +1559,12 @@ function buyiResult(){
  // 焦點：依動爻數量的傳統規則，指出該讀哪裡
  const f=focusRule(state.lines,ben,bian);
  const readBlock=r=>{
-   if(r.type==="卦辭")return `${r.hex}卦的整體：${GUA_MEAN[r.hex]||""}`;
+   if(r.type==="卦辭"){
+     const jd=HEX_DB&&HEX_DB.judgment&&HEX_DB.judgment[r.hex];
+     const txt=(jd&&jd.literal)||GUA_MEAN[r.hex]||"";
+     return `<span class="yao-two"><span class="yao-layer yao-literal">`+
+       `<span class="yl-lab">${r.hex}卦・卦辭白話</span><span class="yl-txt">${txt}</span></span></span>`;
+   }
    if(r.type==="爻辭")return yaoReading(r.hex,r.pos);
    if(r.type==="用九")return "用九（乾卦六爻全變）：剛強到了極點，最好的姿態反而是不爭為首、收斂鋒芒、柔和處之，事情更能成。";
    if(r.type==="用六")return "用六（坤卦六爻全變）：柔順到了極點，要守住正道、長久持守，以靜制動，自有其吉。";
