@@ -103,6 +103,28 @@
   .tc-title{font-size:25px;letter-spacing:.08em;margin-bottom:9px}
   .tc-essence{font-size:14.5px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
 
+  /* ===== 答題傾向 2×2（標註式）===== */
+  .t-vivid{--tc:var(--pine);--tcb:#e6f0ea}
+  .t-balanced{--tc:#6f6656;--tcb:#efece3}
+  .t-swing{--tc:var(--cinnabar);--tcb:#f5e9e4}
+  .t-drift{--tc:var(--blue);--tcb:#e9edf4}
+  .tend-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 20px 16px;margin-bottom:18px}
+  .tend-h{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:3px}
+  .tend-title{text-align:center;font-size:20px;letter-spacing:.06em;margin-bottom:3px;color:var(--ink)}
+  .tend-sub{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:12px;color:var(--muted);margin-bottom:16px}
+  .tend-axis-top{text-align:center;font-family:ui-sans-serif,sans-serif;font-size:10.5px;letter-spacing:.12em;color:var(--muted);margin-bottom:7px}
+  .tend-grid-wrap{max-width:340px;margin:0 auto}
+  .tend-grid{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;aspect-ratio:1/1}
+  .tend-q{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;justify-content:center;background:var(--surface2);opacity:.48;transition:.35s}
+  .tend-q.on{opacity:1;border-width:2px;border-color:var(--tc);background:var(--tcb);box-shadow:0 8px 22px -14px rgba(0,0,0,.45)}
+  .tend-q .qn{font-size:15px;font-weight:700;color:var(--tc);margin-bottom:5px}
+  .tend-q .qd{font-family:ui-sans-serif,sans-serif;font-size:11.5px;line-height:1.55;color:var(--muted)}
+  .tend-q.on .qd{color:var(--ink-soft)}
+  .tend-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--tc);border:2.5px solid var(--surface);box-shadow:0 2px 9px rgba(0,0,0,.3);transform:translate(-50%,-50%);z-index:3;transition:.5s}
+  .tend-axis-bot{display:flex;justify-content:space-between;align-items:center;font-family:ui-sans-serif,sans-serif;font-size:10.5px;letter-spacing:.06em;color:var(--muted);margin-top:7px}
+  .tend-read{margin-top:15px;font-size:13.5px;line-height:1.85;color:var(--ink);background:var(--surface2);border-radius:12px;padding:13px 15px;border-left:3px solid var(--tc)}
+  .tend-read b{color:var(--tc)}
+
   .radar-wrap{max-width:380px;margin:6px auto 4px}
   .radar-wrap svg{width:100%;height:auto;display:block}
   .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
@@ -709,6 +731,49 @@ function computeConf(){
     else conf[k]='mild';                          // 一致但偏中 → 平淡
   });
   return conf;
+}
+
+// ════ 答題傾向（標註式）：極端度 E × 一致性 C → 四型 ════
+// E＝全題 |v−中點|/中點 平均（0–1，門檻 0.6）；C＝非 mixed 態佔比（0–1，門檻 0.6）
+var TEND={
+  vivid:{cls:'t-vivid',nm:'鮮明型',qd:'極端且穩定<br>自我認識清晰',
+    read:'你的答案<b>往兩端、又互相呼應</b>——這是最清楚的訊號，下面的能量判定<b>可信度高</b>，可以放心對照。'},
+  balanced:{cls:'t-balanced',nm:'均衡型',qd:'中間但穩定<br>真心覺得中等',
+    read:'你在多數向度上<b>偏中等或流動</b>，而且答得穩定一致——這是誠實的答案。下面請把重點放在<b>整體分布</b>，不必硬挑一個主型。'},
+  swing:{cls:'t-swing',nm:'擺盪型',qd:'極端但矛盾<br>強烈卻互相衝突',
+    read:'你答得很用力，但同一面向裡<b>互相拉扯</b>——可能是內在張力，也可能<b>在不同情境下真的是不同的你</b>。這種張力，最適合用「測一個局」看它在哪裡發作。'},
+  drift:{cls:'t-drift',nm:'游移型',qd:'中間且飄忽<br>看情況、還在找',
+    read:'你的答案偏中間、又不太一致——可能還在<b>探索自己</b>，或對題目感受模糊。下面的結果請<b>當作參考</b>，信心水準先放低，過陣子再測一次會更準。'}
+};
+function tendType(E,C){ var e=E>=0.6-1e-9, c=C>=0.6-1e-9; return c?(e?'vivid':'balanced'):(e?'swing':'drift'); }
+function computeTendency(confObj){
+  var mid=SMAX/2, ext=[], i, a;
+  for(i=0;i<QUESTIONS.length;i++){ a=answers[i]; if(a!=null){ ext.push(Math.abs(a-mid)/mid); } }
+  if(!ext.length) return null;
+  var E=ext.reduce(function(s,v){return s+v;},0)/ext.length;
+  var ks=confObj?Object.keys(confObj):[], nm=0;
+  ks.forEach(function(k){ if(confObj[k]!=='mixed') nm++; });
+  var C=ks.length? nm/ks.length : 0;
+  return {E:E,C:C,type:tendType(E,C)};
+}
+function tendencyCard(t){
+  if(!t||!TEND[t.type]) return '';
+  var cells=['balanced','vivid','drift','swing']; // 上左均衡·上右鮮明·下左游移·下右擺盪
+  var qs=cells.map(function(k){ var d=TEND[k]; return '<div class="tend-q '+d.cls+(k===t.type?' on':'')+'"><div class="qn">'+d.nm+'</div><div class="qd">'+d.qd+'</div></div>'; }).join('');
+  var a=TEND[t.type];
+  var left=Math.max(4,Math.min(96,Math.round(t.E*100)));
+  var top=Math.max(4,Math.min(96,Math.round((1-t.C)*100)));
+  return '<div class="tend-card">'
+    +'<div class="tend-h">你的答題傾向</div>'
+    +'<div class="tend-title">'+a.nm+'</div>'
+    +'<div class="tend-sub">先看你怎麼作答，再看下面的解盤</div>'
+    +'<div class="tend-axis-top">一致性 高 ↑</div>'
+    +'<div class="tend-grid-wrap"><div class="tend-grid">'+qs
+      +'<div class="tend-dot '+a.cls+'" style="left:'+left+'%;top:'+top+'%"></div>'
+    +'</div></div>'
+    +'<div class="tend-axis-bot"><span>← 偏中間作答</span><span>一致性 低 ↓</span><span>偏極端作答 →</span></div>'
+    +'<div class="tend-read '+a.cls+'">'+a.read+'</div>'
+  +'</div>';
 }
 
 // ════ 能格引擎（整體情境）：挑極端態 → 校準題 → 判定 ════
@@ -1822,9 +1887,12 @@ function showResult(viewScores){
   var conf=viewScores
     ? (function(){ try{ var b=JSON.parse(localStorage.getItem('bagua_persona_v1')); return (b&&b.conf)||null; }catch(e){ return null; } })()
     : computeConf();
+  var tend=viewScores
+    ? (function(){ try{ var b=JSON.parse(localStorage.getItem('bagua_persona_v1')); return (b&&b.tend)||null; }catch(e){ return null; } })()
+    : computeTendency(conf);
 
   // save
-  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,conf:conf,ts:new Date().toISOString()})); }catch(e){} }
+  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,conf:conf,tend:tend,ts:new Date().toISOString()})); }catch(e){} }
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -1835,6 +1903,7 @@ function showResult(viewScores){
      +'<button class="a1 on" id="fsA" onclick="setFs(0)">A</button>'
      +'<button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button>'
    +'</div>'
+   +(tend?tendencyCard(tend):'')
    +'<div class="typecard" style="--accent:'+accent+'">'
      +'<div class="tc-eyebrow">你的能量格局</div>'
      +'<div class="tc-sym">'+sig.sym+'</div>'
