@@ -324,9 +324,12 @@ function memoChecked(k){
   var then=new Date(ts).getTime(); if(isNaN(then)) return false;
   return (Date.now()-then) < 7*86400000;
 }
-function memoCheck(k){
+function memoCheck(k,el){
   try{ var all=getMemoChecks(); all[k]=new Date().toISOString(); localStorage.setItem('bagua_memo_v1',JSON.stringify(all)); }catch(e){}
-  render();
+  // 就地更新該按鈕即可，不重繪整頁（避免打勾後捲回頁首）
+  if(el){ el.classList.add('on'); el.textContent='✓ 最近有做到'; return; }
+  // 後備：無元素參照才重繪，並保留當前捲動位置
+  var y=window.scrollY||window.pageYOffset||0; render(); window.scrollTo(0,y);
 }
 
 // 適配度（與 bagua-field 同公式）：依局需求加權的覆蓋率
@@ -581,8 +584,8 @@ function renderMemo(){
   var nudgeHtml=m.nudges.map(function(n){
     var done=memoChecked(n.k);
     var btn=done
-      ? '<button class="memo-chk on" onclick="memoCheck(\''+n.k+'\')">✓ 最近有做到</button>'
-      : '<button class="memo-chk" onclick="memoCheck(\''+n.k+'\')">最近有做到？</button>';
+      ? '<button class="memo-chk on" onclick="memoCheck(\''+n.k+'\',this)">✓ 最近有做到</button>'
+      : '<button class="memo-chk" onclick="memoCheck(\''+n.k+'\',this)">最近有做到？</button>';
     return '<div class="memo-row"><div class="memo-txt">'+n.text+'</div>'+btn+'</div>';
   }).join('');
   block.innerHTML='<div class="memo-sub">依你的底色，這陣子最值得留意的（溫柔版，不是功課）。回來打個勾，給自己一個檢查的迴路。</div>'
