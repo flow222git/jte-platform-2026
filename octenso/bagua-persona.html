@@ -1354,10 +1354,14 @@ function memoChecked(k){
   var then=new Date(ts).getTime(); if(isNaN(then)) return false;
   return (Date.now()-then) < 7*86400000;
 }
-function memoCheck(k){
+function memoCheck(k,el){
   try{ var all=getMemoChecks(); all[k]=new Date().toISOString(); localStorage.setItem('bagua_memo_v1',JSON.stringify(all)); }catch(e){}
-  // 重繪結果頁（維持目前畫面，勾選即時反映）
-  if(document.getElementById('result') && document.getElementById('result').style.display==='block'){ showResult(); }
+  // 就地更新該按鈕即可，不重繪整頁（避免打勾後捲回頁首）
+  if(el){ el.classList.add('on'); el.textContent='✓ 最近有做到'; return; }
+  // 後備：無元素參照才重繪，並保留當前捲動位置
+  if(document.getElementById('result') && document.getElementById('result').style.display==='block'){
+    var y=window.scrollY||window.pageYOffset||0; showResult(); window.scrollTo(0,y);
+  }
 }
 // memo 區塊 HTML（兩檔共用同一份結構）
 function memoBlockHtml(scores){
@@ -1365,8 +1369,8 @@ function memoBlockHtml(scores){
   var nudgeHtml=m.nudges.map(function(n){
     var done=memoChecked(n.k);
     var btn=done
-      ? '<button class="memo-chk on" onclick="memoCheck(\''+n.k+'\')">✓ 最近有做到</button>'
-      : '<button class="memo-chk" onclick="memoCheck(\''+n.k+'\')">最近有做到？</button>';
+      ? '<button class="memo-chk on" onclick="memoCheck(\''+n.k+'\',this)">✓ 最近有做到</button>'
+      : '<button class="memo-chk" onclick="memoCheck(\''+n.k+'\',this)">最近有做到？</button>';
     return '<div class="memo-row"><div class="memo-txt">'+n.text+'</div>'+btn+'</div>';
   }).join('');
   return '<div class="block memo-block">'
