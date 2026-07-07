@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · 全料總覽</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>八態能格 · 全料總覽</h1>
+  <div class="meta">Compendium · 2026 · 07 · 07 · 全局五層 + 全細節快照</div>
+</header>
+<article>
+<p>整理日期:2026-07-07 ｜ 性質:<strong>參考總覽</strong>(不是設計 spec)——把散在模型、憲法、引擎、內容、頁面、決策史的所有材料收進一份,既看全局、也查細節。
+姊妹篇:<code>MODEL.md</code>(模型觀)、<code>DESIGN-PRINCIPLES.md</code>(視覺)、<code>ENGINE-REDESIGN.md</code>(引擎史)、<code>bagua-data.js</code>(canonical 資料)。
+維護原則:各層的真相來源仍在原文件/原程式;本文是<strong>索引+快照</strong>,改動原始資料後應同步回這裡。</p>
+<hr />
+<h2>0. 一頁全局</h2>
+<p>八態能格(Octenso)是一面<strong>測量鏡</strong>:把你對自己的主觀感覺,投影到「八態 × 四對生命系統」的空間,照出有水平、有形狀、有平衡的立體人格輪廓。不是診斷、不是命定;輸出是此刻快照,重測會變,正常。</p>
+<p>系統分五層,由下而上:</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>層</th>
+<th>管什麼</th>
+<th>真相來源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>模型層</strong></td>
+<td>八態是什麼、對得上八卦學理</td>
+<td>學理憲法(specs/2026-06-19)、<code>bagua-data.js</code></td>
+</tr>
+<tr>
+<td><strong>解讀層</strong></td>
+<td>分數怎麼說成話而不失真</td>
+<td>解讀憲法(specs/2026-06-21)</td>
+</tr>
+<tr>
+<td><strong>引擎層</strong></td>
+<td>分數怎麼算成剖面</td>
+<td><code>profile.js</code>、<code>bagua-persona.html</code> 計分區</td>
+</tr>
+<tr>
+<td><strong>內容層</strong></td>
+<td>每態/每格局寫了什麼字</td>
+<td>E/COST/CTX/SYSTEM_READ(persona 頁內)+ 型錄(<code>bagua-catalog-data.js</code>,2026-07-07 起)</td>
+</tr>
+<tr>
+<td><strong>頁面層</strong></td>
+<td>使用者看到的產品</td>
+<td><code>octenso/</code> 各 html</td>
+</tr>
+</tbody>
+</table></div>
+<p>流程一句話:<strong>25 題六點自評 → 8 卦 0–100 → profile.js 剖面(水平×形狀×四對×主峰) → 簽名(單峰/雙峰/多峰/格局型) → 三層讀法+能格校準+報告</strong>。</p>
+<hr />
+<h2>1. 模型層</h2>
+<h3>1.1 模型觀(MODEL.md 摘錄)</h3>
+<ul>
+<li>輸入決定性質:輸入是主觀自評,所以它只能反射自我感覺 → 「鏡子非命定」有精確技術意義。</li>
+<li><strong>身分=格局(立體輪廓),卦=峰的名字</strong>。名字當入口、格局當本體,名字自適應形狀,不硬塞 1/8。</li>
+<li>六點無中性=鏡子的解析度;同態 3 題極端=篤定、分散=兩可(確信度)。</li>
+<li>誠實邊界:主觀自評有天花板;分級邊界會跳動 → 命名留緩衝、語氣強調快照;真要推準確度=上線收資料跑因素分析。</li>
+</ul>
+<h3>1.2 八態逐態定義總表(canonical,合併 <code>bagua-data.js</code> + 學理憲法)</h3>
+<p>五行配屬(後天):乾兌金、震巽木、坎水、離火、坤艮土。※五行已自產品/引擎移除(2026-06-17 定案),僅存於學理註腳與內部色盤。</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>態</th>
+<th>卦</th>
+<th>符</th>
+<th>功能名</th>
+<th>型名</th>
+<th>對待</th>
+<th>卦德</th>
+<th>中正(用得好)</th>
+<th>亢(過用)</th>
+<th>潛(不足)</th>
+<th>學理註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>開創</td>
+<td>乾</td>
+<td>☰</td>
+<td>開創/決策</td>
+<td>乾·開創者 The Initiator</td>
+<td>天地·建構</td>
+<td>健·始·父</td>
+<td>立方向、開局、作主</td>
+<td>控制欲、獨斷、脫離現實(亢龍有悔)</td>
+<td>缺方向、缺願景(潛龍勿用)</td>
+<td>純陽,萬物資始</td>
+</tr>
+<tr>
+<td>承接</td>
+<td>坤</td>
+<td>☷</td>
+<td>承接/滋養</td>
+<td>坤·承載者 The Nurturer</td>
+<td>天地·建構</td>
+<td>順·載物·母</td>
+<td>承載、滋養、讓事穩穩運轉</td>
+<td>過度承擔、失去自我</td>
+<td>缺耐心、缺穩定</td>
+<td>純陰,厚德載物</td>
+</tr>
+<tr>
+<td>行動</td>
+<td>震</td>
+<td>☳</td>
+<td>行動/突破</td>
+<td>震·行動者 The Doer</td>
+<td>雷風·推動</td>
+<td>動·起·長男</td>
+<td>執行力、推動落地、卡關能突破</td>
+<td>衝動、焦躁、停不下來</td>
+<td>拖延、不敢開始</td>
+<td>帝出乎震,動之始</td>
+</tr>
+<tr>
+<td>拓展</td>
+<td>巽</td>
+<td>☴</td>
+<td>拓展/連結</td>
+<td>巽·協作者 The Collaborator</td>
+<td>雷風·推動</td>
+<td>入·順·長女</td>
+<td>連結資源、順勢鋪開、彈性</td>
+<td>攤太開、失焦、難拒絕</td>
+<td>侷限、錯過能借的力</td>
+<td>風無孔不入;其究為躁卦</td>
+</tr>
+<tr>
+<td>明現</td>
+<td>離</td>
+<td>☲</td>
+<td>明現/覺察</td>
+<td>離·洞見者 The Seer</td>
+<td>水火·認知</td>
+<td>明·麗·中女</td>
+<td>看清+把它顯現、讓人看見</td>
+<td>過度分析、太想被看見</td>
+<td>隱而不顯、常被低估</td>
+<td>麗也,附麗而明</td>
+</tr>
+<tr>
+<td>沉澱</td>
+<td>坎</td>
+<td>☵</td>
+<td>沉澱/恢復</td>
+<td>坎·沉潛者 The Deep Diver</td>
+<td>水火·認知</td>
+<td>陷·險·勞·中男</td>
+<td>沉得住、想得深、能恢復充電</td>
+<td>內耗、沉溺、走不出來</td>
+<td>不會休息、撐到耗盡</td>
+<td>卦德險陷;<strong>表層取水德(潤下/藏/智),非卦爻吉凶</strong>——誠實標註</td>
+</tr>
+<tr>
+<td>喊停</td>
+<td>艮</td>
+<td>☶</td>
+<td>喊停/界線</td>
+<td>艮·守界者 The Anchor</td>
+<td>山澤·調節</td>
+<td>止·成終成始·少男</td>
+<td>守界線、定位、知所進退</td>
+<td>固執、僵止、把人擋在外</td>
+<td>停不下、不會拒絕</td>
+<td>成言乎艮,終而復始</td>
+</tr>
+<tr>
+<td>交流</td>
+<td>兌</td>
+<td>☱</td>
+<td>交流/分享</td>
+<td>兌·共鳴者 The Resonator</td>
+<td>山澤·調節</td>
+<td>說·悅·口·少女</td>
+<td>表達、互通、把話說開</td>
+<td>過度社交、討好、空談</td>
+<td>話悶著、關係停表面</td>
+<td>以說接人</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>兌/巽 用語分工</strong>(曾碰撞):兌=人際對話的連結(口/說);巽=向外觸及鋪開的廣度連結(風/遍及)。兌型名 2026-07-05 由「連結者」改「共鳴者」。</p>
+<h3>1.3 四對待(骨架=先天錯卦,《說卦傳》)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>系統</th>
+<th>對</th>
+<th>卦</th>
+<th>德</th>
+<th>性質</th>
+<th>功能對比句</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>建構 Purpose</td>
+<td>天地定位</td>
+<td>乾⇄坤</td>
+<td>完整格局</td>
+<td><strong>和諧</strong></td>
+<td>主動開創 ⇄ 承接載住</td>
+</tr>
+<tr>
+<td>推動 Action</td>
+<td>雷風相薄</td>
+<td>震⇄巽</td>
+<td>鼓盪</td>
+<td><strong>唯一的張力</strong></td>
+<td>一鼓作氣猛推 ⇄ 細水長流柔滲</td>
+</tr>
+<tr>
+<td>認知 Awareness</td>
+<td>水火不相射</td>
+<td>坎⇄離</td>
+<td>既濟相成</td>
+<td><strong>和諧</strong></td>
+<td>向內沉澱藏 ⇄ 向外明現顯</td>
+</tr>
+<tr>
+<td>調節 Regulation</td>
+<td>山澤通氣</td>
+<td>艮⇄兌</td>
+<td>進退有節</td>
+<td><strong>和諧</strong></td>
+<td>收住喊停內守 ⇄ 打開交流外放</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>循環(後天流行·帝出乎震)順序:震→巽→離→坤→兌→乾→坎→艮;循環標籤用功能任務語言,節氣退為註腳(2026-07-05 定案)。</li>
+<li>「行動⇄喊停」的直覺不是極性,是循環的頭尾。</li>
+</ul>
+<hr />
+<h2>2. 解讀層(解讀憲法要點)</h2>
+<h3>2.1 唯一可用的五種素材</h3>
+<p>相對高低(ipsative dev)/四對待/能格(潛·中正·亢)/缺口/整體水平。<strong>每句解讀都要指得回其中之一,指不回=刪。</strong></p>
+<h3>2.2 八條硬約束</h3>
+<p>C1 不捏跨股因果(僅四對待例外)/C2 一拍一層(中正、亢、潛不混段)/C3 組合僅限四對待、只有雷風可講張力/C4 中正≠亢(衝勁是亢不是優勢)/C5 描述非預測/C6 felt-self 揭示(照的是你感受到的自己)/C7 每句可追溯/C8 價值中性。</p>
+<h3>2.3 三拍結構(結果頁解讀)</h3>
+<p>拍1 優勢=相對最高 1–2 股的<strong>中正</strong>樣子(並存可以、因果不行);拍2 能格=過用代價或四對待雙高讀法(無極端→問中性確認題);拍3 缺口=相對最低股<strong>自己</strong>的正向價值,不連他股。</p>
+<h3>2.4 中正詞庫(8 態 × 三層,§1.2 表內「中正/亢/潛」欄即是)</h3>
+<hr />
+<h2>3. 測驗層</h2>
+<h3>3.1 題本(25 題,離 4 題=見+顯兩面,其餘各 3;r=反向題)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>態</th>
+<th>題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>乾</td>
+<td>面對一群人沒方向時,我常是跳出來做決定、定方向的那個。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>兌</td>
+<td>我喜歡跟人聊天、分享,在互動裡會感到開心又有活力。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>離</td>
+<td>遇到事情,我習慣先看清楚、想明白,再決定怎麼做。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>巽</td>
+<td>認識新的人事物時,我會自然地想把它跟已經認識的連起來。</td>
+</tr>
+<tr>
+<td>5</td>
+<td>震</td>
+<td>有了念頭我會很快行動,不太喜歡拖。</td>
+</tr>
+<tr>
+<td>6</td>
+<td>坎</td>
+<td>我需要獨處、安靜的時間來沉澱和恢復。</td>
+</tr>
+<tr>
+<td>7</td>
+<td>艮r</td>
+<td>事情該收手了,我常還會再多撐一下、停不太下來。</td>
+</tr>
+<tr>
+<td>8</td>
+<td>坤</td>
+<td>身邊的人有情緒或困難時,我常會先去接住、照顧他們。</td>
+</tr>
+<tr>
+<td>9</td>
+<td>乾</td>
+<td>比起照著別人的安排走,我更想自己開創、自己作主。</td>
+</tr>
+<tr>
+<td>10</td>
+<td>兌</td>
+<td>心裡有想法或感受,我習慣說出來、和人交流。</td>
+</tr>
+<tr>
+<td>11</td>
+<td>離</td>
+<td>在一群人裡,我常是先注意到「哪裡怪怪的、哪裡卡住」的那個。</td>
+</tr>
+<tr>
+<td>12</td>
+<td>巽</td>
+<td>我做事偏柔軟、順勢推進,而不是硬碰硬。</td>
+</tr>
+<tr>
+<td>13</td>
+<td>震</td>
+<td>我喜歡嘗試新的、有點冒險的事,享受「開始」的衝勁。</td>
+</tr>
+<tr>
+<td>14</td>
+<td>坎</td>
+<td>累了或低潮時,我習慣往內收、慢慢調整,而不是往外衝。</td>
+</tr>
+<tr>
+<td>15</td>
+<td>艮r</td>
+<td>別人很堅持的時候,我容易順著對方、把自己的節奏讓掉。</td>
+</tr>
+<tr>
+<td>16</td>
+<td>坤</td>
+<td>比起搶著表現,我更常在背後支持、照顧,讓事情穩穩運轉。</td>
+</tr>
+<tr>
+<td>17</td>
+<td>乾</td>
+<td>一件事剛開始,我常先想「最後要長成什麼樣」,而不只是眼前這一步。</td>
+</tr>
+<tr>
+<td>18</td>
+<td>兌</td>
+<td>一群人聊天時,我常是接話、把氣氛帶起來的那個。</td>
+</tr>
+<tr>
+<td>19</td>
+<td>離</td>
+<td>有想法或成果時,我會想把它清楚地表達出來、讓人看見。</td>
+</tr>
+<tr>
+<td>20</td>
+<td>巽</td>
+<td>看到好的東西,我會很自然地想分享、鋪開給更多人。</td>
+</tr>
+<tr>
+<td>21</td>
+<td>震</td>
+<td>卡住時,我傾向用行動去突破,而不是一直想。</td>
+</tr>
+<tr>
+<td>22</td>
+<td>坎</td>
+<td>一件事我喜歡一個人慢慢想深、想透,不急著有結論。</td>
+</tr>
+<tr>
+<td>23</td>
+<td>艮</td>
+<td>一件事到一個程度,我會收手,不會硬撐到底。</td>
+</tr>
+<tr>
+<td>24</td>
+<td>坤</td>
+<td>碰到跟我很不一樣、或讓我不耐煩的人,我通常還是容得下、不會馬上想推開。</td>
+</tr>
+<tr>
+<td>25</td>
+<td>離</td>
+<td>比起默默把事做好,我更在意它有沒有被看見、被理解。</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.2 量表與施測</h3>
+<ul>
+<li>六點強迫表態:非常像我5/大致像我4/有點像我3/有點不像2/大致不像1/完全不像0 → 正規化 0–100。</li>
+<li>進題前必有施測指導語(情境+作答方式),指導語在開始鈕上方。</li>
+<li>確信度:同態 3 題都極端=篤定、分散=兩可——與分數高低是兩件事。</li>
+<li>答題傾向 2×2(2026-07-06 spec):標註式呈現作答風格,不改計分。</li>
+<li>題數路線:25 題現行;甜蜜點 32(每卦4)、完整 48;真天花板=收資料跑因素分析(信度≠效度)。</li>
+</ul>
+<h3>3.3 能格校準(耗能引擎·整體情境)</h3>
+<ul>
+<li>動態挑股:分數 ≥68 問過用、≤35 問不足,上限最極端 3–4 股;全平衡 0 題。</li>
+<li>校準題測「代價」不測特質(每股 2 題);平均 ≥2.5(0–5)=有代價。</li>
+<li>判定:高+有代價=<strong>亢</strong>;高+沒代價=中正(強而用得好);低+有代價=<strong>潛</strong>;低+沒代價=中正(不強但無礙)。</li>
+</ul>
+<hr />
+<h2>4. 引擎層(<code>profile.js</code> Phase 1)</h2>
+<h3>4.1 門檻總表(TUNE)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>鍵</th>
+<th>值</th>
+<th>意義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEAD_GAP</td>
+<td>15</td>
+<td>最高與次高差 &lt; 此=並列主旋律(≈1.5 題)</td>
+</tr>
+<tr>
+<td>LEAD_MIN</td>
+<td>60</td>
+<td>稱「單一主導」需最高卦 ≥ 此</td>
+</tr>
+<tr>
+<td>RES / GAP</td>
+<td>60 / 40</td>
+<td>資源卦 / 缺口卦門檻(絕對)</td>
+</tr>
+<tr>
+<td>AXIS_EVEN</td>
+<td>12</td>
+<td>向度左右差 &lt; 此=平衡</td>
+</tr>
+<tr>
+<td>AXIS_HI / AXIS_LO</td>
+<td>60 / 40</td>
+<td>向度雙高 / 雙低</td>
+</tr>
+<tr>
+<td>LEVEL_HI / LEVEL_LO</td>
+<td>58 / 42</td>
+<td>整體水平 高 / 低</td>
+</tr>
+<tr>
+<td>LEAD_GAP_DEV</td>
+<td>5</td>
+<td>ipsative 並列門檻</td>
+</tr>
+<tr>
+<td>DEV_PEAK</td>
+<td>6</td>
+<td>ipsative 突出/少用門檻</td>
+</tr>
+<tr>
+<td>COST_HI / COST_LO</td>
+<td>68 / 35</td>
+<td>能格挑股門檻(persona 頁)</td>
+</tr>
+<tr>
+<td>COST_AGREE</td>
+<td>2.5</td>
+<td>校準題「有代價」門檻</td>
+</tr>
+<tr>
+<td>CTX_DEMAND_HI / CTX_DRAIN_GAP</td>
+<td>60 / 20</td>
+<td>場景 demand 高 / 掏空落差</td>
+</tr>
+</tbody>
+</table></div>
+<h3>4.2 build() 輸出</h3>
+<p>scores/ranked/level(mean+band)/axes(四對:lean×intensity)/<strong>dev(ipsative 偏離)</strong>/devRanked/leads/single/resources/gaps/bands(六級)/signature。核心修正:坎90其他80 與 坎50其他20,argmax 同為坎,但 level 分 high/low——<strong>先讀水平再讀形狀</strong>。</p>
+<h3>4.3 簽名四形態(signatureTitle)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>形態</th>
+<th>條件</th>
+<th>呈現</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>single</td>
+<td>單一主峰(dev≥6 且無並列)</td>
+<td>該卦型名+essence(內容最厚)</td>
+</tr>
+<tr>
+<td>dual</td>
+<td>2 並列</td>
+<td>「A×B · x與y並重」+essence 串接+過場句</td>
+</tr>
+<tr>
+<td>multi</td>
+<td>3+ 並列</td>
+<td>「多主調型」模板句</td>
+</tr>
+<tr>
+<td>pattern</td>
+<td>無明顯主峰</td>
+<td>高能多面型/低調蓄能型/均衡型(各一句模板)</td>
+</tr>
+</tbody>
+</table></div>
+<p>格局型模板句(現況全部內容):高=「你八種能量都用得不少、沒有特別偏廢——是個能量飽滿的多面手。」低=「你整體比較收著,最鮮明的也只是淡淡突出——像在蓄能,安靜地醞釀。」中=「你各能量有高有低、但沒有單一主峰——均衡而有彈性,看情境換檔。」</p>
+<h3>4.4 L1–L5 整合解讀</h3>
+<p>L1 剖面感知的優勢/盲點/成長(盲點依錯卦搭檔高低三段;成長指真正的最低卦)/L2 四系統最高×最低落差 ≥18 → 交互句/L3 形狀×均衡一句總攬(單峰/雙峰/多峰/高原/低谷/鋸齒/均衡)/L4 確信度織入主調/L5 四對雙高點名(僅雷風=張力)。</p>
+<h3>4.5 SYSTEM_READ(四系統 × 五狀態,全文快照)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>系統</th>
+<th>兩高</th>
+<th>偏左</th>
+<th>偏右</th>
+<th>兩低</th>
+<th>中性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>建構</td>
+<td>主導承接俱全——完整的格局</td>
+<td>偏開創:善開局定向</td>
+<td>偏承接:善接納穩底</td>
+<td>建構待開發(休眠、可塑)</td>
+<td>開承彈性</td>
+</tr>
+<tr>
+<td>推動</td>
+<td>動能相互鼓盪——很強,留意過衝(唯一張力)</td>
+<td>偏行動:起得猛</td>
+<td>偏拓展:善鋪開、少落地</td>
+<td>推動待啟動(蓄勢)</td>
+<td>動展彈性</td>
+</tr>
+<tr>
+<td>認知</td>
+<td>既深又亮(既濟相成)</td>
+<td>偏沉澱:向內收</td>
+<td>偏明現:向外表達</td>
+<td>認知待點亮</td>
+<td>收放彈性</td>
+</tr>
+<tr>
+<td>調節</td>
+<td>進退有節(通氣)</td>
+<td>偏喊停:善設界</td>
+<td>偏交流:善往來、少設界</td>
+<td>調節待建立</td>
+<td>進退彈性</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>5. 內容資產層(現況全量)</h2>
+<h3>5.1 E 物件(單峰型內容,8 卦 × essence/str/blind/grow/tools)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>卦</th>
+<th>essence(精華)</th>
+<th>優勢</th>
+<th>盲點</th>
+<th>成長</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乾</td>
+<td>天生的開創者——看得見方向、敢做決定;給你白紙能畫出藍圖、帶人往前</td>
+<td>決斷力、領導、開創新局</td>
+<td>獨斷、什麼都自己扛、聽不進不同聲音</td>
+<td>練「坤」的承接——信任、授權</td>
+</tr>
+<tr>
+<td>離</td>
+<td>看得清的人——先想明白、看穿本質,常指出別人沒注意的關鍵</td>
+<td>洞察、分析、覺察力</td>
+<td>想太多、卡在分析、看太透而疏離</td>
+<td>練「坎」的沉澱——有些事先體驗才真懂</td>
+</tr>
+<tr>
+<td>震</td>
+<td>行動派——有念頭就衝,享受開始與突破,是團隊的發動機</td>
+<td>行動力、勇氣、開創突破</td>
+<td>衝動焦躁、停不下、少煞車</td>
+<td>練「艮」的暫停——適時停下設界</td>
+</tr>
+<tr>
+<td>兌</td>
+<td>靠交流而發光——把感受說出口、把人聚在一起,所到之處氣氛變熱</td>
+<td>表達、親和、人際連結</td>
+<td>過度在意他人、空談或討好、少獨處</td>
+<td>練深耕與留白——連結變扎實合作</td>
+</tr>
+<tr>
+<td>坤</td>
+<td>溫厚包容——大家的依靠,擅長承接支持,讓一切穩穩運轉</td>
+<td>包容、耐心、支持、滋養</td>
+<td>過度承擔、犧牲自己</td>
+<td>練「乾」與「艮」——為自己開創、設界</td>
+</tr>
+<tr>
+<td>坎</td>
+<td>深沉內斂——擅長獨處沉澱反思,沉得住氣、想得夠深</td>
+<td>內省、深度、恢復力、沉穩</td>
+<td>往內縮、想多動少、低潮待太久</td>
+<td>練「離」與「震」——把想清楚的事展現、化為行動</td>
+</tr>
+<tr>
+<td>艮</td>
+<td>穩定可靠——知道何時該停、敢說不,守得住節奏與界線</td>
+<td>穩定、界線感、踏實</td>
+<td>太固執、抗拒改變、停太久錯過時機</td>
+<td>練「震」的行動——對的時候鬆開煞車</td>
+</tr>
+<tr>
+<td>巽</td>
+<td>柔韌有滲透力——向外鋪開、串連資源,讓事情自然生長</td>
+<td>協作、連結資源、順勢推進、彈性</td>
+<td>攤太開失焦、什麼都想沾、難拒絕</td>
+<td>練「艮」的聚焦與界線</td>
+</tr>
+</tbody>
+</table></div>
+<p>tools 對應:乾(問易/書寫)、離(問易/HRV)、震(小憩/HRV)、兌(溝通測驗/心情溫度計)、坤(心情溫度計/HRV)、坎(呼吸覺察/書寫)、艮(小憩/問易)、巽(溝通測驗/書寫)。</p>
+<h3>5.2 COST(能格校準+建議,8 卦 × over題2/under題2/aOver/aUnder/aMidHi/aMidLo)【標草稿待潤】</h3>
+<p>全文已在 <code>bagua-persona.html:1565-1622</code>;要點式快照(o=過用建議、u=不足建議):</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>卦</th>
+<th>aOver(亢怎麼收)</th>
+<th>aUnder(潛怎麼補)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乾</td>
+<td>把方向講清楚、放手讓別人接</td>
+<td>訂一個你說了算的小目標</td>
+</tr>
+<tr>
+<td>坤</td>
+<td>你也需要被接住,先照顧自己不是自私</td>
+<td>在一件小事上主動接住某個人</td>
+</tr>
+<tr>
+<td>震</td>
+<td>每開新的先問「上一件收尾了嗎」</td>
+<td>挑最小的事今天動一步,不求完美</td>
+</tr>
+<tr>
+<td>巽</td>
+<td>挑幾條真正重要的線深耕</td>
+<td>把一件好事主動分享給一個可能受用的人</td>
+</tr>
+<tr>
+<td>離</td>
+<td>價值不全靠別人看見,先自己認可</td>
+<td>在安全場合把一個想法說出來、被看見一次</td>
+</tr>
+<tr>
+<td>坎</td>
+<td>想到一個程度就帶一個小行動出來</td>
+<td>每天留十分鐘獨處、什麼都不做</td>
+</tr>
+<tr>
+<td>艮</td>
+<td>界線是保護不是築牆,留一道門</td>
+<td>在「還行」時就先停;一週挑一件事說不</td>
+</tr>
+<tr>
+<td>兌</td>
+<td>留一點安靜給自己,不必每場都到</td>
+<td>把一個真實感受對信任的人說出口</td>
+</tr>
+</tbody>
+</table></div>
+<p>COST_GIST(敘事用短語)另存 8 卦 × o/u,見 persona:1627-1636。</p>
+<h3>5.3 CTX 場景耗能 v2(6 場景 curated + 通用 8 題 + 因應)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>場景</th>
+<th>demand 指向</th>
+<th>deny(場景不給的空間)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>帶人/扛責任</td>
+<td>乾震坤兌艮巽</td>
+<td>—</td>
+</tr>
+<tr>
+<td>趕工/高壓</td>
+<td>震乾坤兌</td>
+<td>艮(喘)、坎(沉澱)</td>
+</tr>
+<tr>
+<td>大量社交</td>
+<td>兌離坤巽</td>
+<td>坎(充電)、艮(先走)</td>
+</tr>
+<tr>
+<td>衝突/難相處</td>
+<td>坤艮兌坎</td>
+<td>—</td>
+</tr>
+<tr>
+<td>照顧/情緒勞動</td>
+<td>坤巽</td>
+<td>艮(說不行)、坎(獨處)、兌(說出口)</td>
+</tr>
+<tr>
+<td>表現/被看</td>
+<td>離震兌</td>
+<td>坎(準備收尾)</td>
+</tr>
+<tr>
+<td>一個人硬撐</td>
+<td>乾震</td>
+<td>巽(借力)、兌(說話)、坤(被接住)</td>
+</tr>
+</tbody>
+</table></div>
+<p>判定:demand ≥60 且 demand−容量 ≥20 = 掏空;demand ≥60 且容量 ≥60 = 順流。CTX_COPE 8 卦因應句在 persona:1715-1724。強度四級:還好/有點耗/蠻耗的/快撐不住。</p>
+<h3>5.4 FOURXIANG(四系統白話+提問+over/under)</h3>
+<p>各系統 plain/q/over/under 各一句(persona:1522-1526),例:建構 plain=「你怎麼定方向、又怎麼撐住它」q=「要開創什麼?又如何承接它?」</p>
+<hr />
+<h2>6. 情境與局(Route B)</h2>
+<ul>
+<li><strong>對境耗能(第二階段,已框未做)</strong>:場域側寫由「重答 25 題」改為每情境一套 demand 題;耗能=情境需求 × 底色落差。</li>
+<li><strong>64 卦需求表</strong>(specs/2026-06-30):64 卦 × 卦旨/時勢基調(進待止養交治)/召喚哪幾股/節制哪幾股/經典依據。定位=研究型工作假說 v0.1,未資料化進引擎。</li>
+<li><strong>測局(bagua-field)</strong>:局的 8 維需求 × 人的剖面 → fitScore 覆蓋率 + shine/drain。</li>
+<li><strong>職業(bagua-career)</strong>:29 職業 × 8 分數 + blurb × fit 引擎(非人格散文)。</li>
+</ul>
+<h2>7. 關係與團隊</h2>
+<ul>
+<li>雙人合盤:cosineSim 同頻 + complementarity 互補,呈現/解釋分離、一個權威結論;分享碼 encodeCode('B1'+16 位)零後端重建。</li>
+<li>團隊(bagua-team):energyCoverage、bestPair/complementScore——全演算法,無兩兩敘事。</li>
+<li>兩兩關係的規範邊界:單人內跨股僅四對待可講;跨人互動不受 C1 限,但守 C5。</li>
+</ul>
+<h2>8. 頁面地圖(octenso/)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>頁</th>
+<th>功能</th>
+<th>內容厚度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index</td>
+<td>入口</td>
+<td>—</td>
+</tr>
+<tr>
+<td>bagua-persona(+test)</td>
+<td>25 題測驗+報告(L1-L5、能格、場景、合盤、分享)</td>
+<td>主引擎,2941 行</td>
+</tr>
+<tr>
+<td>bagua-map</td>
+<td>認識八態(輪盤/循環/卦卡)</td>
+<td>事實資料庫級</td>
+</tr>
+<tr>
+<td>bagua-guide / bagua-brief / bagua-concepts</td>
+<td>導覽/簡介(concepts 空殼)</td>
+<td>概念頁</td>
+</tr>
+<tr>
+<td>bagua-field(+test)</td>
+<td>測局</td>
+<td>引擎</td>
+</tr>
+<tr>
+<td>bagua-career(+test)</td>
+<td>職業 fit</td>
+<td>引擎</td>
+</tr>
+<tr>
+<td>bagua-team(+test)</td>
+<td>團隊合盤</td>
+<td>引擎</td>
+</tr>
+<tr>
+<td>bagua-records(+test)</td>
+<td>記錄</td>
+<td>工具</td>
+</tr>
+<tr>
+<td>bagua-i18n</td>
+<td>多語準備</td>
+<td>—</td>
+</tr>
+<tr>
+<td>octenso-journey/notes/feedback/admin/ci/wheel-min</td>
+<td>旅程/筆記/回饋/管理/CI</td>
+<td>周邊</td>
+</tr>
+<tr>
+<td><strong>bagua-catalog(+data)</strong></td>
+<td><strong>型錄(2026-07-07 草稿,未上線、未接導覽)</strong></td>
+<td>內容層新家</td>
+</tr>
+</tbody>
+</table></div>
+<p>共用:<code>bagua-data.js</code>(canonical)、<code>profile.js</code>(剖面)、<code>octenso-nav.js</code>(切換列)、<code>octenso-gate.js</code>(白名單閘)。</p>
+<h2>9. 決策史(timeline)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>日期</th>
+<th>決策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>06-14</td>
+<td>八態人格測驗初版設計</td>
+</tr>
+<tr>
+<td>06-16</td>
+<td>判讀引擎重審:剖面取代 argmax 單標籤;量表 4→6 點</td>
+</tr>
+<tr>
+<td>06-16/17</td>
+<td>profile.js Phase 1 上線;並列門檻 gap&lt;15</td>
+</tr>
+<tr>
+<td>06-17</td>
+<td><strong>五行整個移除</strong>(避免算命漂移);「四象」正名「四對」;八態功能名現代化定版</td>
+</tr>
+<tr>
+<td>06-18</td>
+<td>persona v2 spec(報告改版/耗能引擎=能格/分享);整體側寫;場景耗能 v2</td>
+</tr>
+<tr>
+<td>06-19</td>
+<td><strong>學理憲法</strong>(卦德/對待/爻位定錨;坎取水德誠實標註;兩高只有雷風=張力)</td>
+</tr>
+<tr>
+<td>06-21</td>
+<td><strong>解讀憲法</strong>(五素材、C1–C8、三拍、中正詞庫)</td>
+</tr>
+<tr>
+<td>06-27</td>
+<td>能量定位/energy-helper</td>
+</tr>
+<tr>
+<td>06-30</td>
+<td>64 卦需求表 v0.1</td>
+</tr>
+<tr>
+<td>07-01</td>
+<td>Octaform v0.6 介入設計</td>
+</tr>
+<tr>
+<td>07-05</td>
+<td><strong>跨頁一致性稽核</strong>:骨架=錯卦定案;循環標籤=功能任務語言;兌型名=共鳴者;題數 25 正名;<code>bagua-data.js</code> canonical 落地</td>
+</tr>
+<tr>
+<td>07-06</td>
+<td>答題傾向 2×2(標註式)</td>
+</tr>
+<tr>
+<td>07-07</td>
+<td>人格取徑全景比較+型錄深化 spec;<strong>型錄層 T1–T5 草稿完成(本輪,未上線)</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2>10. 誠實邊界與缺口</h2>
+<ul>
+<li>邊界:主觀天花板/邊界跳動/效度待因素分析/坎表層取水德的誠實標註/「鏡子非算命」北極星。</li>
+<li>內容缺口(2026-07-07 盤點,型錄層針對此而生):愛情關係樣貌空白 → T1/T2;工作樣貌散文缺 → T1/T2;雙峰格局全模板 → T3/T4;兩兩敘事 0 篇 → T5;COST/CTX/詞庫標草稿待潤 → P0。</li>
+</ul>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · octenso/COMPENDIUM.md · main</div>
+</div>
+</div>
+
+</body>
+</html>

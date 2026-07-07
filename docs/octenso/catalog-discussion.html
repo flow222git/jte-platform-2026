@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · 型錄討論版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --metal:#b0996a; --wood:#5f7d4a; --water:#4d6b86; --fire:#9d4b34; --earth:#a98238;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f;
+    --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d;
+    --metal:#c0ab7e; --wood:#8aa878; --water:#7e9ab5; --fire:#cd8368; --earth:#c2a36a; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --metal:#b0996a; --wood:#5f7d4a; --water:#4d6b86; --fire:#9d4b34; --earth:#a98238; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d;
+  --metal:#c0ab7e; --wood:#8aa878; --water:#7e9ab5; --fire:#cd8368; --earth:#c2a36a; }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:1.95;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:66px 0 0;text-align:center}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:16px;letter-spacing:.9em;padding-left:.9em;margin-bottom:30px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(25px,5.6vw,36px);letter-spacing:.14em;margin:0 0 10px;text-wrap:balance}
+.subtitle{font-family:var(--serif);color:var(--muted);font-weight:400;font-size:clamp(13.5px,3.4vw,16px);letter-spacing:.08em;margin:0 0 18px}
+.draft{display:inline-block;font-size:12px;color:var(--cinnabar);border:1px solid var(--cinnabar);
+  border-radius:999px;padding:4px 16px;letter-spacing:.12em;margin-bottom:10px}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+section{margin-top:80px}
+.seclabel{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.seclabel .num{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,22px);letter-spacing:.12em;margin:0}
+.seclead{color:var(--muted);font-size:13.5px;margin:0 0 26px;max-width:62ch}
+h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.08em;margin:36px 0 10px}
+p{margin:0 0 16px;max-width:68ch}
+strong{font-weight:400;color:var(--ink)}
+/* ── 五層架構圖 ── */
+.layers{display:flex;flex-direction:column;align-items:center;gap:0;margin:26px 0 6px}
+.layer{width:min(430px,100%);border:1px solid var(--line);background:var(--surface);
+  padding:11px 18px;text-align:center;border-radius:3px}
+.layer .ln{font-family:var(--serif);font-weight:500;color:var(--ink);letter-spacing:.14em;font-size:14.5px}
+.layer .ld{font-size:12px;color:var(--muted);letter-spacing:.03em}
+.layer.new{border-color:var(--pine)}
+.layer.new .ln{color:var(--pine)}
+.layer.new .star{font-size:10.5px;color:var(--pine);letter-spacing:.2em}
+.arrow{color:var(--hair);font-size:13px;line-height:1.5}
+/* ── SVG 圖 ── */
+figure{margin:30px 0 8px;text-align:center}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12px;color:var(--muted);letter-spacing:.06em;margin-top:10px}
+.wheel-label{font-family:var(--serif);font-size:13px;fill:var(--ink)}
+.wheel-fn{font-size:9.5px;fill:var(--muted);letter-spacing:.08em}
+.wheel-sym{font-family:var(--serif);font-size:15px;fill:var(--ink)}
+.wheel-sys{font-size:9px;fill:var(--gold);letter-spacing:.15em}
+.arc-label{font-size:11px;letter-spacing:.1em}
+/* ── 卦 tabs ── */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 8px}
+.tab{font-family:var(--sans);font-weight:300;font-size:13px;letter-spacing:.04em;padding:8px 13px;cursor:pointer;
+  border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--muted);transition:.2s}
+.tab .sym{font-family:var(--serif);margin-right:4px}
+.tab:hover{border-color:var(--ink);color:var(--ink)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+/* ── portrait ── */
+.p-head{text-align:center;margin:30px 0 4px}
+.p-sym{font-family:var(--serif);font-size:32px;color:var(--ink);line-height:1.1}
+.p-title{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:.2em;color:var(--ink);padding-left:.2em;margin-top:6px}
+.p-fn{font-size:12px;color:var(--muted);letter-spacing:.1em;margin-top:2px}
+h4.blk{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:500;font-size:14.5px;
+  letter-spacing:.12em;color:var(--ink);margin:32px 0 8px}
+h4.blk::after{content:"";flex:1;height:1px;background:var(--line)}
+.band{font-size:11px;font-weight:300;font-family:var(--sans);letter-spacing:.1em;color:var(--muted)}
+.band.mid{color:var(--pine)}.band.over{color:var(--cinnabar)}.band.under{color:var(--gold)}
+.blktxt{font-size:14.5px;line-height:2.05;max-width:none}
+/* ── T2 matrix ── */
+.mx{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 8px}
+@media(max-width:620px){.mx{grid-template-columns:1fr}}
+.mx-dom{grid-column:1/-1;font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:14px;letter-spacing:.12em;margin-top:14px;display:flex;align-items:center;gap:12px}
+.mx-dom::after{content:"";flex:1;height:1px;background:var(--line)}
+.cell{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:12px 14px}
+.cell .ch{font-size:11px;letter-spacing:.12em;margin-bottom:5px}
+.cell.mid .ch{color:var(--pine)}.cell.over .ch{color:var(--cinnabar)}.cell.under .ch{color:var(--gold)}
+.cell p{font-size:12.8px;line-height:1.9;margin:0;color:var(--ink-soft);max-width:none}
+/* ── details ── */
+details{border-top:1px solid var(--line);padding:11px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-size:14px;color:var(--ink);letter-spacing:.05em;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋";color:var(--hair);font-size:12px}
+details[open] summary::before{content:"－"}
+.c-title{font-family:var(--serif);font-weight:500;color:var(--ink);letter-spacing:.06em}
+.c-tag{font-size:11px;color:var(--muted);letter-spacing:.08em}
+.c-tag.tension{color:var(--cinnabar)}
+.c-text{font-size:13.5px;line-height:2;margin-top:8px;white-space:pre-line;max-width:none}
+/* ── 討論框 ── */
+.ask{margin:26px 0;padding:16px 0 16px 20px;border-left:1px solid var(--pine)}
+.ask .ah{font-family:var(--serif);font-weight:500;color:var(--pine);font-size:13.5px;letter-spacing:.14em;margin-bottom:8px}
+.ask ol{margin:0;padding-left:1.3em;font-size:13.5px;line-height:2.1}
+.ask li{margin-bottom:2px}
+/* links & footer */
+a{color:var(--pine)}
+.filelist{font-size:13px;line-height:2.2;margin-top:14px}
+.filelist code{font-family:var(--latin);font-size:12px;color:var(--ink);background:var(--surface2);padding:1px 7px;border-radius:4px}
+.honest{margin-top:80px;padding:26px 0 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:12px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rv{opacity:1;transform:none;transition:none}}
+@media print{
+  .rv{opacity:1 !important;transform:none !important}
+  details{page-break-inside:avoid}
+  body{font-size:12px}
+  section{margin-top:40px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Catalog · For Discussion</div>
+  <h1>八態能格 · 型錄討論版</h1>
+  <p class="subtitle">全局架構 × 完整型錄內容 × 試讀檢核——一頁看完、方便討論</p>
+  <div><span class="draft">內容 v0.1 草稿 · 型錄尚未對使用者上線</span></div>
+  <div class="meta">2026 · 07 · 07 · 內容與 repo 資料檔同源</div>
+</header>
+
+<!-- ═══ 一 · 全局 ═══ -->
+<section class="rv" id="s1">
+  <div class="seclabel"><span class="num">一</span><h2>全局:系統五層</h2></div>
+  <p class="seclead">這一輪新增的是「內容層」——回答使用者的老問題:「我這型在工作裡、感情裡到底長什麼樣子?」鏡子照位置,型錄給語言。</p>
+  <div class="layers">
+    <div class="layer"><div class="ln">模型層</div><div class="ld">八態 × 四對待 × 能格三態(學理憲法)</div></div>
+    <div class="arrow">↓</div>
+    <div class="layer"><div class="ln">解讀層</div><div class="ld">五素材 + C1–C8 + 三拍(解讀憲法)</div></div>
+    <div class="arrow">↓</div>
+    <div class="layer"><div class="ln">引擎層</div><div class="ld">profile.js:水平 × 形狀 × 四對 × 主峰 × 確信度</div></div>
+    <div class="arrow">↓</div>
+    <div class="layer new"><div class="ln">內容層(型錄)<span class="star">　★ 本輪新增</span></div><div class="ld">(態 × 能格 × 場域)索引的散文內容庫</div></div>
+    <div class="arrow">↓</div>
+    <div class="layer"><div class="ln">頁面層</div><div class="ld">persona 報告 / map / field / team / catalog(草稿)</div></div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 400 420" width="400" role="img" aria-label="八態極性輪盤:四條直徑皆先天錯卦">
+      <circle cx="200" cy="200" r="152" fill="none" stroke="var(--line)" stroke-width="1"/>
+      <line x1="200" y1="60" x2="200" y2="340" stroke="var(--hair)" stroke-width="1"/>
+      <line x1="60"  y1="200" x2="340" y2="200" stroke="var(--hair)" stroke-width="1"/>
+      <line x1="299" y1="101" x2="101" y2="299" stroke="var(--hair)" stroke-width="1"/>
+      <line x1="101" y1="101" x2="299" y2="299" stroke="var(--hair)" stroke-width="1"/>
+      <text x="207" y="128" class="wheel-sys">建構</text>
+      <text x="118" y="196" class="wheel-sys">推動</text>
+      <text x="243" y="152" class="wheel-sys">認知</text>
+      <text x="150" y="152" class="wheel-sys">調節</text>
+      <g text-anchor="middle">
+        <circle cx="200" cy="60" r="4" fill="var(--metal)"/><text x="200" y="44" class="wheel-sym">☰</text><text x="200" y="30" class="wheel-label">乾</text><text x="245" y="58" class="wheel-fn">開創</text>
+        <circle cx="299" cy="101" r="4" fill="var(--fire)"/><text x="313" y="90" class="wheel-sym">☲</text><text x="330" y="76" class="wheel-label">離</text><text x="336" y="104" class="wheel-fn">明現</text>
+        <circle cx="340" cy="200" r="4" fill="var(--wood)"/><text x="360" y="196" class="wheel-sym">☳</text><text x="360" y="180" class="wheel-label">震</text><text x="362" y="215" class="wheel-fn">行動</text>
+        <circle cx="299" cy="299" r="4" fill="var(--metal)"/><text x="315" y="315" class="wheel-sym">☱</text><text x="332" y="330" class="wheel-label">兌</text><text x="336" y="300" class="wheel-fn">交流</text>
+        <circle cx="200" cy="340" r="4" fill="var(--earth)"/><text x="200" y="364" class="wheel-sym">☷</text><text x="200" y="382" class="wheel-label">坤</text><text x="245" y="345" class="wheel-fn">承接</text>
+        <circle cx="101" cy="299" r="4" fill="var(--water)"/><text x="85" y="315" class="wheel-sym">☵</text><text x="68" y="330" class="wheel-label">坎</text><text x="64" y="300" class="wheel-fn">沉澱</text>
+        <circle cx="60" cy="200" r="4" fill="var(--earth)"/><text x="40" y="196" class="wheel-sym">☶</text><text x="40" y="180" class="wheel-label">艮</text><text x="38" y="215" class="wheel-fn">喊停</text>
+        <circle cx="101" cy="101" r="4" fill="var(--wood)"/><text x="87" y="90" class="wheel-sym">☴</text><text x="70" y="76" class="wheel-label">巽</text><text x="64" y="104" class="wheel-fn">拓展</text>
+      </g>
+    </svg>
+    <figcaption>八態極性輪盤——四條直徑皆先天錯卦:乾⇄坤(建構)、震⇄巽(推動)、離⇄坎(認知)、艮⇄兌(調節)</figcaption>
+  </figure>
+
+  <figure>
+    <svg viewBox="0 0 460 150" width="460" role="img" aria-label="能格三態:潛、中正、亢">
+      <path d="M 30 120 C 120 118, 160 40, 230 40 C 300 40, 340 118, 430 120" fill="none" stroke="var(--hair)" stroke-width="1.4"/>
+      <circle cx="90" cy="99" r="5" fill="var(--gold)"/>
+      <circle cx="230" cy="40" r="5" fill="var(--pine)"/>
+      <circle cx="370" cy="99" r="5" fill="var(--cinnabar)"/>
+      <text x="90" y="128" text-anchor="middle" class="arc-label" fill="var(--gold)">潛 · 還沒長開</text>
+      <text x="230" y="24" text-anchor="middle" class="arc-label" fill="var(--pine)">中正 · 用得剛好</text>
+      <text x="370" y="128" text-anchor="middle" class="arc-label" fill="var(--cinnabar)">亢 · 用過了頭</text>
+      <text x="446" y="140" text-anchor="end" class="arc-label" fill="var(--muted)" font-size="9">→ 使用程度</text>
+    </svg>
+    <figcaption>能格三態——同一股能量的三種樣子;型錄每個場域都分這三段寫(物極必反,亢龍有悔)</figcaption>
+  </figure>
+
+  <p>型錄的索引=<strong>態(8)× 場域(4:工作/愛情/人際/獨處)× 能格(3)= 96 格</strong>,外加每卦一篇十節長文、四錯卦雙峰文、格局型三篇、合盤十二組。<strong>主語永遠是能量、不是人</strong>——讀者的主峰決定他讀到哪幾章,細膩但不裝箱。</p>
+</section>
+
+<!-- ═══ 二 · 八峰型錄 ═══ -->
+<section class="rv" id="s2">
+  <div class="seclabel"><span class="num">二</span><h2>八峰型錄(T1)· 點卦切換</h2></div>
+  <p class="seclead">每卦十節:神韻 → 人群中的樣子 → 工作(中正/亢)→ 愛情(中正/亢)→ 壓力階梯 → 潛 → 成長 → 給身邊人。以下為全文。</p>
+  <div class="tabs" id="tabs"></div>
+  <div id="portrait"></div>
+  <div class="ask">
+    <div class="ah">試讀檢核 · 討論用</div>
+    <ol>
+      <li>中正段像不像你的「好日子」?亢段像不像你的「壞日子」?</li>
+      <li>哪一句最中?哪一句「完全不像我」?——不像的那句,是寫歪了、還是照出了盲區?</li>
+      <li>把這篇拿給主峰不同的人讀:如果他也全中,代表寫太泛,要重寫(反 Barnum 檢驗)。</li>
+      <li>「給身邊人」那段,拿給你身邊的人看——他們點頭嗎?</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══ 三 · 96 格微文案 ═══ -->
+<section class="rv" id="s3">
+  <div class="seclabel"><span class="num">三</span><h2>場域 × 能格 微文案(T2)· 96 格</h2></div>
+  <p class="seclead">上方選的卦,在四個場域 × 三種能格的完整 12 格。這批微文案是報告引擎的積木——對境耗能上線後,「工作把你哪股掏空」會直接取用對應格。</p>
+  <div id="matrix"></div>
+</section>
+
+<!-- ═══ 四 · 雙峰/格局/合盤 ═══ -->
+<section class="rv" id="s4">
+  <div class="seclabel"><span class="num">四</span><h2>雙峰 · 格局 · 合盤(T3–T5)</h2></div>
+  <p class="seclead">雙峰只有四錯卦對可講「德」(僅雷風=張力);沒有主峰的人終於有自己的整篇;合盤先寫錯卦四組+同峰八組。</p>
+  <h3>雙峰組合 · 四對待</h3>
+  <div id="t3"></div>
+  <h3>格局型 · 無單一主峰時</h3>
+  <div id="t4"></div>
+  <h3>關係合盤 · 十二組</h3>
+  <div id="t5"></div>
+  <div class="ask">
+    <div class="ah">討論重點</div>
+    <ol>
+      <li>雷風(震×巽)是唯一寫「張力/剎車」的雙峰——其他三對讀起來夠不夠「和諧但不平淡」?</li>
+      <li>格局型三篇:高能多面/低調蓄能/均衡的人,以前只有一句話——現在的整篇,有沒有「被看見」的感覺?</li>
+      <li>同峰合盤的「共同影子」寫法(例:兩個坤都不說需要),會不會太刺?語氣要再軟嗎?</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══ 五 · 檔案與下一步 ═══ -->
+<section class="rv" id="s5">
+  <div class="seclabel"><span class="num">五</span><h2>檔案位置與上線路徑</h2></div>
+  <p class="seclead">以上內容全部已合併進 main;型錄頁未接導覽、有登入閘,對使用者尚不可見。</p>
+  <div class="filelist">
+    <code>octenso/COMPENDIUM.md</code> 全料總覽(全局+細節)<br>
+    <code>octenso/bagua-catalog-data.js</code> T2 · 96 則微文案<br>
+    <code>octenso/bagua-catalog-t1.js</code> T1 · 八峰長文<br>
+    <code>octenso/bagua-catalog-combos.js</code> T3/T4/T5<br>
+    <code>octenso/bagua-catalog.html</code> 草稿頁(gate 保護)· <code>bagua-catalog.test.html</code> 測試 144/0<br>
+    <code>docs/…/2026-07-07-octenso-new-edition-guide.md</code> 新版總說明
+  </div>
+  <h3>上線五步(尚未執行)</h3>
+  <p>① 潤稿定稿(找 2–3 位不同主峰的人試讀)→ ② persona 報告頁主峰卡加「讀完整型錄」連結 → ③ 對境耗能接 T2(個人化場域報告)→ ④ 進導覽正式上線 → ⑤ 收雙峰頻率資料,決定其餘 24 對擴寫順序。</p>
+</section>
+
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。<br>
+  型錄寫的是「這股能量在這個場域的顯相」,不是「你這種人的命定」;主峰是入口,格局是本體。
+  <div class="src">Source · flow222git/jte-platform-2026 · main · catalog v0.1-draft</div>
+</div>
+
+</div>
+
+<script>
+/* octenso/bagua-data.js — 八態能格 · 八卦定義單一真相來源（canonical）
+ * v1.0 · 2026-07-05
+ *
+ * 用法：各頁在使用它的 script 之前載入 \x3cscript src="bagua-data.js"><\/script>，
+ *       之後以 window.OCTENSO_BAGUA 取用；**勿在各頁另行定義八卦 data**。
+ *
+ * 權威值（2026-07-05 一致性稽核定案）：
+ *   - 極性配對 = 先天錯卦（乾⇄坤、離⇄坎、震⇄巽、艮⇄兌）
+ *   - 循環標籤 = 功能任務語言（cyclePhase），節氣為後天流行來源、不入表層
+ *   - 兌人格型名 = 共鳴者
+ *   - 題數 = 25
+ *   - 功能名 = 主措辭（開創／明現／行動／喊停／拓展／交流／沉澱／承接）
+ * 設計 spec：docs/superpowers/specs/2026-07-05-octenso-bagua-canonical-data-design.md
+ */
+(function (g) {
+  'use strict';
+
+  // 五行色（低彩度，只在需要分辨能量時展開）
+  var W = { metal: '#b0996a', wood: '#5f7d4a', water: '#4d6b86', fire: '#9d4b34', earth: '#a98238' };
+
+  // 八卦定義（by key）——欄位超集，各頁取所需子集
+  var BAGUA = {
+    qian: {
+      k: 'qian', sym: '☰', nm: '乾', pin: 'qián', wx: 'metal',
+      fn: '開創／決策', fnShort: '開創',
+      state: '規劃、領導、開創', over: '控制欲、獨斷、脫離現實', under: '缺方向、缺願景',
+      struct: '純陽 ☰ — 全是動能，主開創',
+      pairKey: 'kun', cyclePhase: '決斷',
+      title: '乾·開創者', titleEn: 'The Initiator',
+      nature: '天', virtue: '健（剛健）', family: '父', body: '首（頭）', animal: '馬', dir: '西北', season: '秋冬之交',
+      spirit: '「天行健，君子以自強不息。」乾是創生的原動力、宇宙運行不息的力量，為開創、決斷、領導之源。',
+      person: '天生的領導者與開創者，目標感強、敢做決定、推得動事情。要學的是放手與柔軟（坤）。',
+      classic: '純陽至剛，象天運行不息——對應「開創／決策」：開創、領導、自強不息。',
+      remind: '能開創、能決斷；但真正的剛健，是知道何時放手、何時讓別人接手。'
+    },
+    dui: {
+      k: 'dui', sym: '☱', nm: '兌', pin: 'duì', wx: 'metal',
+      fn: '交流／分享', fnShort: '交流',
+      state: '對話、連結、人際', over: '過度社交、討好、空談', under: '封閉、不願表達',
+      struct: '上陰 ☱ — 開口向外，主喜悅表達',
+      pairKey: 'gen', cyclePhase: '交流',
+      title: '兌·共鳴者', titleEn: 'The Resonator',
+      nature: '澤', virtue: '悅（喜悅）', family: '少女', body: '口', animal: '羊', dir: '西', season: '秋',
+      spirit: '「麗澤，兌；君子以朋友講習。」兌是喜悅與溝通，是人與人交流、分享、彼此滋潤的能量。',
+      person: '開朗健談、擅長連結、帶來歡樂氣氛。要學的是深度與留白（巽、坎）。',
+      classic: '澤水滋潤大地，象喜悅與交流——對應「交流／分享」：表達、共鳴、令人愉悅。',
+      remind: '表達與交流帶來喜悅；但說出口之外，也要懂得留白與傾聽。'
+    },
+    li: {
+      k: 'li', sym: '☲', nm: '離', pin: 'lí', wx: 'fire',
+      fn: '明現／覺察', fnShort: '明現',
+      state: '洞察、理解、看見', over: '過度分析、想太多', under: '看不清方向',
+      struct: '中陰 ☲ — 光向外照，主顯明',
+      pairKey: 'kan', cyclePhase: '明現',
+      title: '離·洞見者', titleEn: 'The Seer',
+      nature: '火', virtue: '麗（附麗、光明）', family: '中女', body: '目（眼）', animal: '雉', dir: '南', season: '夏',
+      spirit: '「明兩作，離；大人以繼明照于四方。」離是光明與覺察，是看見、理解、使事物顯明的能量，也象徵文明與智慧。',
+      person: '敏銳、善分析、看得透徹。要學的是行動與沉澱（震、坎），別困在想。',
+      classic: '火附於物而生光明，象明察與依附——對應「明現／覺察」：看見、洞察、使事物顯明。',
+      remind: '看得清是天賦；但別困在「想清楚」——有些事要先動，才會明白。'
+    },
+    zhen: {
+      k: 'zhen', sym: '☳', nm: '震', pin: 'zhèn', wx: 'wood',
+      fn: '行動／突破', fnShort: '行動',
+      state: '行動、冒險、開始', over: '衝動、焦躁、停不下來', under: '拖延、不敢開始',
+      struct: '初陽 ☳ — 動能剛萌生，主行動',
+      pairKey: 'xun', cyclePhase: '行動',
+      title: '震·行動者', titleEn: 'The Doer',
+      nature: '雷', virtue: '動（震動、奮起）', family: '長男', body: '足（腳）', animal: '龍', dir: '東', season: '春',
+      spirit: '「洊雷，震；君子以恐懼脩省。」震是奮起與開端——雷出地奮、萬物萌生，是打破沉寂、行動、突破的能量。',
+      person: '行動派、有衝勁、勇於開始與冒險。要學的是暫停與界線（艮）。',
+      classic: '雷出地奮，象奮起與開端——對應「行動／突破」：行動、冒險、打破沉寂。',
+      remind: '敢開始很可貴；但真正的力量，是衝得出去、也停得下來。'
+    },
+    xun: {
+      k: 'xun', sym: '☴', nm: '巽', pin: 'xùn', wx: 'wood',
+      fn: '拓展／連結', fnShort: '拓展',
+      state: '推廣、成長、合作', over: '擴張失控、分心', under: '缺資源連結',
+      struct: '初陰 ☴ — 柔入滲透，主連結拓展',
+      pairKey: 'zhen', cyclePhase: '拓展',
+      title: '巽·協作者', titleEn: 'The Collaborator',
+      nature: '風', virtue: '入（順入、滲透）', family: '長女', body: '股（大腿）', animal: '雞', dir: '東南', season: '春夏之交',
+      spirit: '「隨風，巽；君子以申命行事。」巽是順入與滲透，像風無所不入、像木漸漸生長，是協調、連結、順勢推進的能量。',
+      person: '柔軟有彈性、善協調與滲透、能把資源串起來。要學的是聚焦與界線（艮）。',
+      classic: '風無孔不入，象柔順滲透——對應「拓展／連結」：協調、滲透、順勢推進。',
+      remind: '柔能滲透、能連結；但記得收斂焦點，攤太開反而抓不住重點。'
+    },
+    kan: {
+      k: 'kan', sym: '☵', nm: '坎', pin: 'kǎn', wx: 'water',
+      fn: '沉澱／恢復', fnShort: '沉澱',
+      state: '沉澱、休息、反思', over: '內耗、逃避、過度退縮', under: '不會休息、不會恢復',
+      struct: '中陽 ☵ — 力量藏於內，主沉澱',
+      pairKey: 'li', cyclePhase: '沉澱',
+      title: '坎·沉潛者', titleEn: 'The Deep Diver',
+      nature: '水', virtue: '陷（險陷，亦主智）', family: '中男', body: '耳', animal: '豕（豬）', dir: '北', season: '冬',
+      spirit: '「水洊至，習坎；君子以常德行，習教事。」坎是險陷也是智慧與信實——水雖陷於險，卻流動不息、就下不爭，是沉潛、內省、蓄力的能量。',
+      person: '深沉內斂、想得深、耐得住沉潛。要學的是明現與行動（離、震），別讓退縮變逃避。',
+      classic: '水行於險而不失其信，象沉潛蓄力——對應「沉澱／恢復」：內省、休養、蓄勢。',
+      remind: '懂得沉潛與休息，是力量的源頭；但別讓退縮變成逃避。'
+    },
+    gen: {
+      k: 'gen', sym: '☶', nm: '艮', pin: 'gèn', wx: 'earth',
+      fn: '喊停／界線', fnShort: '喊停',
+      state: '結束、拒絕、定界', over: '固執、停滯、不變通', under: '無法喊停、無法拒絕',
+      struct: '上陽 ☶ — 動到頂被止住，主喊停',
+      pairKey: 'dui', cyclePhase: '喊停',
+      title: '艮·守界者', titleEn: 'The Anchor',
+      nature: '山', virtue: '止（靜止）', family: '少男', body: '手', animal: '狗', dir: '東北', season: '冬春之交',
+      spirit: '「兼山，艮；君子以思不出其位。」艮是靜止與守界——山靜止不移，是知道何時該停、守住分寸、安住當下的能量。',
+      person: '穩定可靠、有原則、守得住界線與節奏。要學的是行動與彈性（震）。',
+      classic: '山靜止不動，象知止守界——對應「喊停／界線」：適可而止、守住分寸。',
+      remind: '知道何時停、何時說不，是難得的清醒；但別讓喊停變成卡死不動。'
+    },
+    kun: {
+      k: 'kun', sym: '☷', nm: '坤', pin: 'kūn', wx: 'earth',
+      fn: '承接／滋養', fnShort: '承接',
+      state: '接納、支持、穩定', over: '過度承擔、失去自我', under: '缺耐心、缺穩定',
+      struct: '純陰 ☷ — 全是承接，主涵養',
+      pairKey: 'qian', cyclePhase: '承接',
+      title: '坤·承載者', titleEn: 'The Nurturer',
+      nature: '地', virtue: '順（柔順）', family: '母', body: '腹', animal: '牛', dir: '西南', season: '夏秋之交',
+      spirit: '「地勢坤，君子以厚德載物。」坤是大地般的承接與滋養——柔順而能容、能成全萬物，是包容、支持、孕育的能量。',
+      person: '溫厚包容、有耐心、是大家的依靠。要學的是為自己開創與設界（乾、艮）。',
+      classic: '純陰至柔，象大地厚德載物——對應「承接／滋養」：包容、支持、滋養萬物。',
+      remind: '能涵容、能支持，是深厚的力量；但承接別人之前，先把自己接住。'
+    }
+  };
+
+  // 認識八卦（view5）展示順序：乾兌離震巽坎艮坤
+  var ORDER = ['qian', 'dui', 'li', 'zhen', 'xun', 'kan', 'gen', 'kun'];
+
+  // 極性輪盤座標（view1）——四直徑皆先天錯卦（對極成直徑）
+  var POLAR = {
+    qian: { x: 200, y: 60 }, li: { x: 299, y: 101 }, zhen: { x: 340, y: 200 }, dui: { x: 299, y: 299 },
+    kun: { x: 200, y: 340 }, kan: { x: 101, y: 299 }, gen: { x: 101, y: 101 }, xun: { x: 60, y: 200 }
+  };
+
+  // 四組極性對＝先天錯卦（陰陽全反）＋功能對比＋四象系統名
+  var POLARITY_PAIRS = [
+    { sys: '建構', a: 'qian', b: 'kun', label: '開創 ⇄ 承接', contrast: '主動開創 ⇄ 承接載住' },
+    { sys: '認知', a: 'li', b: 'kan', label: '明現 ⇄ 沉澱', contrast: '向外明現顯 ⇄ 向內沉澱藏' },
+    { sys: '推動', a: 'zhen', b: 'xun', label: '行動 ⇄ 拓展', contrast: '一鼓作氣猛推 ⇄ 細水長流柔滲' },
+    { sys: '調節', a: 'gen', b: 'dui', label: '喊停 ⇄ 交流', contrast: '收住喊停內守 ⇄ 打開交流外放' }
+  ];
+
+  // 循環（後天流行·帝出乎震）順序；節氣為此順序的來源、不入表層標籤
+  var CYCLE_ORDER = ['zhen', 'xun', 'li', 'kun', 'dui', 'qian', 'kan', 'gen'];
+
+  // 人格測驗題數（離 4 題＝見＋顯兩面，其餘 8 卦各 3）
+  var QUESTION_COUNT = 25;
+
+  // 誠實邊界（各頁文案共用，避免措辭漂移）
+  var HONEST = '這是一面認識自己與關係的鏡子，不是算命、不是命定——能量會流動，也可以成長。';
+
+  g.OCTENSO_BAGUA = {
+    version: '1.0',
+    W: W,
+    BAGUA: BAGUA,
+    ORDER: ORDER,
+    POLAR: POLAR,
+    POLARITY_PAIRS: POLARITY_PAIRS,
+    CYCLE_ORDER: CYCLE_ORDER,
+    QUESTION_COUNT: QUESTION_COUNT,
+    HONEST: HONEST,
+    // 便利存取
+    get: function (k) { return BAGUA[k]; },
+    pairOf: function (k) { return BAGUA[k] && BAGUA[BAGUA[k].pairKey]; },
+    titleOf: function (k) { return BAGUA[k] && BAGUA[k].title; }
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+/* octenso/bagua-catalog-data.js — 型錄層 T2:場域 × 能格 微文案庫(canonical)
+ * v0.1-draft · 2026-07-07 · 【草稿·未上線——未接任何現行頁面】
+ *
+ * 索引單位=(態 × 場域 × 能格),不是「人的型」。
+ * 場域:work 工作 / love 愛情與親密 / people 人際 / solo 獨處與自我
+ * 能格:mid 中正(用得剛好) / over 亢(過用) / under 潛(此態是缺口的人)
+ *
+ * 寫作規則(R1–R8,見 2026-07-07 comparison spec §6.3):
+ *  R1 主語是能量不是人;R2 一則一層不混寫;R3 不跨股、不捏因果;
+ *  R4 每句可追溯五素材;R5 寫顯相不寫動機;R6 描述非預測;
+ *  R7 每則至少一個生活鏡頭;R8 價值中性、快照語氣。
+ * under 則=拍3 寫法:此態少用時在該場域的樣子+它自己能帶來什麼,不連他股。
+ *
+ * 設計 spec:docs/superpowers/specs/2026-07-07-octenso-personality-frameworks-comparison-and-catalog-design.md
+ */
+(function (g) {
+  'use strict';
+
+  var T2 = {
+    qian: {
+      work: {
+        mid: '用得剛好的開創,在工作裡是立方向、開局、作主:你適合站在還沒有答案的地方,開會時自然會把發散的討論收成決定,同事卡住時來找你,因為你敢拍板。一張白紙攤在面前,是你最有能量的時刻。',
+        over: '開創用過了頭:什麼都自己扛、聽不進不同版本的做法,「快點定下來」壓過「定得對」。一個訊號是團隊越來越安靜,事情都等你開口——這是開創這股能量自己滿出來了。',
+        under: '開創少用時,工作裡的你常等別人定方向:會議上不先表態、被指派了才動。這股能量能帶給你的是方向感——不必當領導者,從一件小事自己拍板開始就好。'
+      },
+      love: {
+        mid: '關係裡中正的開創是有肩膀:主動定義關係、規劃兩個人的方向,在對方搖擺時給出確定感。你表達愛的方式常是「安排」——把旅行訂好、把未來想好;對許多人,這種確定感本身就是安全感。',
+        over: '過了頭,「安排」變成「接管」:對方的週末、職涯、朋友圈都進了你的專案表。另一個樣子是難以示弱——你永遠是給方向的那個,累了也不說。上一次讓對方替你決定一件事,是什麼時候?',
+        under: '開創少用時,關係常順著對方走:約會、節奏、未來都讓對方定,自己像搭車的人。這股能量能帶來的是「我要什麼」的聲音——下一次約會,試著由你起頭安排一次。'
+      },
+      people: {
+        mid: '朋友之間,中正的開創是自然的召集人:局是你起的、方向是你定的,大家樂得跟著。群組裡沒人接話時,你一句「就這樣,週六見」讓事情成形。',
+        over: '過了頭,聚會都得照你的版本走:地點你選、行程你排,朋友從同伴變成執行者。訊號是有人開始已讀不回你的召集。',
+        under: '開創少用時,團體裡的你多半等別人提議,想去的地方放在心裡。這股能量能帶來的是發起的樂趣——下一次,換你開一次局。'
+      },
+      solo: {
+        mid: '中正的開創在獨處時,是替自己看遠:一個人喝咖啡的時候想的是「我想把日子過成什麼樣」,並且真的替它排出第一步。你為自己作主,不必等誰批准。',
+        over: '過了頭,連休息都像排程:獨處變成檢討進度,對自己的標準壓得比誰都緊,躺著也在想下一步。訊號是你已經很久沒有「沒有目的」的一天。',
+        under: '開創少用時,獨處常沒有自己的圖像:對未來的想像多半是別人給的版本。這股能量能帶來的是願景——找個安靜的時刻,替自己畫一張「我要的樣子」。'
+      }
+    },
+    kun: {
+      work: {
+        mid: '用得剛好的承接,在工作裡是團隊的底盤:交給你的事會被穩穩接住,同事有情緒你先接住人、再處理事。專案能穩穩運轉,常是因為有你在收邊。',
+        over: '承接用過了頭:不會拒絕、默默扛下所有請託,功勞隱形、疲累有形。訊號是你的待辦清單一半是別人的事,而你把自己的事排在最後。',
+        under: '承接少用時,同事來求助你容易退開,協作顯得有點疏離。這股能量能帶來的是被信任的重量——挑一次,把別人交來的事穩穩接住,做完它。'
+      },
+      love: {
+        mid: '關係裡中正的承接是穩穩的陪伴:對方低潮時你接得住,先聽、不急著解決;你的愛常長成日常的樣子——一碗熱的、一句「我在」。',
+        over: '過了頭,對方的需要永遠排在你前面:委屈累積著不說,直到某天滿出來。訊號是你已經想不起來,上一次說「我也需要」是什麼時候。',
+        under: '承接少用時,對方帶著情緒回家,你常不知道怎麼接、想快點給建議。這股能量能帶來的其實很簡單——先不解決,坐下來聽完。'
+      },
+      people: {
+        mid: '朋友之間,中正的承接是安全基地:大家有事會想到找你說,因為你聽得住、不批判、口風穩。',
+        over: '過了頭,你成了所有人的情緒出口:誰都能倒、你來者不拒,聚會散場你比誰都累。訊號是朋友找你都是有事的時候。',
+        under: '承接少用時,朋友訴苦你容易接不住、急著轉話題。這股能量能帶來的是關係的深度——有時候,在場本身就是支持。'
+      },
+      solo: {
+        mid: '中正的承接在獨處時,是把照顧的手藝也用在自己身上:把生活打理穩、給自己好好吃一頓飯,身體累了就讓它休息。',
+        over: '過了頭,獨處也閒不下來:人不在場,心還掛在每個人身上,想著誰還沒被照顧到。訊號是一個人的時候,你仍在替別人操心。',
+        under: '承接少用時,你常忘記滋養自己:生活過得將就、累了硬撐。這股能量能帶來的是安穩——今天替自己做一件「照顧等級」的小事。'
+      }
+    },
+    zhen: {
+      work: {
+        mid: '用得剛好的行動,在工作裡是發動機:別人還在討論,你已經把第一步做出來給大家看;卡關的時候,你用「先做一版再說」把局面打開。',
+        over: '行動用過了頭:新的開了一件又一件,收尾的沒幾件;衝太快做了白工,團隊被你的節奏推著跑。訊號是身邊的人開始說「等一下」。',
+        under: '行動少用時,念頭很多、起步很慢,事情常拖到不得不做。這股能量能帶來的是開始的力氣——挑最小的一件,今天就動第一步,不求完美。'
+      },
+      love: {
+        mid: '關係裡中正的行動是熱烈而直接:喜歡就說、想見就約,說走就走的小旅行是你的語言。跟你在一起,關係不會悶。',
+        over: '過了頭,你的節奏壓過對方:對方還在感受,你已經在計畫下一件事;吵架時話衝出口,停不下來。訊號是對方說「你可以慢一點嗎」。',
+        under: '行動少用時,喜歡的人放在心裡很久、關係卡住也遲遲不動。這股能量能帶來的是突破僵局的那一步——一則主動的訊息,就是開始。'
+      },
+      people: {
+        mid: '朋友之間,中正的行動是揪團的人:把大家從沙發上拉出門的是你,「現在就去」是你的口頭禪。',
+        over: '過了頭,行程排得太滿:每週都有局、每局都要到,朋友開始喊累、你也在硬撐。訊號是揪人的訊息發出去,回覆的表情符號越來越敷衍。',
+        under: '行動少用時,想聯絡的人一直拖著沒約。這股能量能帶來的是把想念變成見面——今天就傳那則「要不要出來」。'
+      },
+      solo: {
+        mid: '中正的行動在獨處時,是用身體充電:跑一段、騎一趟、把房間翻新——動起來,你就回來了。',
+        over: '過了頭,你靜不下來:獨處也要找事衝,行事曆的空白讓你發慌,忙碌變成存在感。訊號是你很久沒有純粹放空的半天。',
+        under: '行動少用時,一個人容易越坐越沉、越滑越晚。這股能量能帶來的是啟動——給自己一個很小的開始:站起來,先走到樓下。'
+      }
+    },
+    xun: {
+      work: {
+        mid: '用得剛好的拓展,在工作裡是穿針引線:跨部門的死結你能繞著解開,誰該認識誰、哪裡有資源,你心裡有一張活地圖,事情因你而順勢長起來。',
+        over: '拓展用過了頭:線鋪得太多收不回,每個案子都沾一點、深耕的沒幾個;請託難拒絕,分身乏術。訊號是你答應的事,開始想不起來。',
+        under: '拓展少用時,工作常單打獨鬥:有力可借而不借,做完也不讓它走出去。這股能量能帶來的是槓桿——這週開口借一次力,或把成果分享給一個用得上的人。'
+      },
+      love: {
+        mid: '關係裡中正的拓展是替兩個人打開世界:你把自己的朋友、路線、新發現帶進關係,兩人的生活因你而變寬。你的靠近是滲透式的——不強求,慢慢長。',
+        over: '過了頭,行程與社交把兩人時間攤薄:週末永遠有別的局,關係排進縫隙裡;什麼都說好,反而讓對方摸不到你的立場。',
+        under: '拓展少用時,兩人的世界容易越過越窄:圈子固定、路線固定。這股能量能帶來的是新鮮的風——把你的一個世界,引薦給對方一次。'
+      },
+      people: {
+        mid: '朋友之間,中正的拓展是人脈的節點:你天生會介紹人認識人,「你們兩個應該會聊得來」是你的名句。',
+        over: '過了頭,朋友多而淺:每個圈子都沾、哪裡都有你,但深夜想找人說話時,名單反而很長很空。',
+        under: '拓展少用時,圈子多年不變、新局很少接。這股能量能帶來的是意外的緣分——下一個新邀請,先說好。'
+      },
+      solo: {
+        mid: '中正的拓展在獨處時,是整理線頭:把最近遇到的人、讀到的東西彼此連起來,新的可能常在這種時刻冒出來。',
+        over: '過了頭,獨處也攤在外面:一個人卻一直滑訊息、追動態,心思仍掛在每一條線上,沒有真正收回來。',
+        under: '拓展少用時,一個人的世界容易越縮越小。這股能量能帶來的是一扇窗——替生活留一個「往外看」的小習慣,一集新的節目、一條沒走過的路。'
+      }
+    },
+    li: {
+      work: {
+        mid: '用得剛好的明現,在工作裡是看穿加上說清:你常第一個指出「問題其實在這裡」,複雜的事到你手上會變成一頁看得懂的圖;上台的時刻,你是發光的。',
+        over: '明現用過了頭:分析停不下來、遲遲不動手;或者太在意評價,成果變成自我價值的成績單,沒被稱讚就懷疑自己。',
+        under: '明現少用時,事情做得好卻不說,報告把光藏起來,久了常被低估。這股能量能帶來的是被理解——挑一個安全的場合,把一件成果好好說一次。'
+      },
+      love: {
+        mid: '關係裡中正的明現是深深地看見:對方沒說出口的變化你先注意到;同時你也渴望被看見真正的自己——被懂,是你在關係裡最深的滿足。',
+        over: '過了頭,看見變成過度解讀:一則已讀不回可以分析出三種含義;或者需要不斷的注視與肯定,對方稍微分心你就不安。',
+        under: '明現少用時,心意常不表達,對方猜不到你的在乎。這股能量能帶來的是靠近——把一句放了很久的真心話,說出口。'
+      },
+      people: {
+        mid: '朋友之間,中正的明現是聚會裡有洞察的那個:你一句話常把大家繞了半天的東西點破,聊天因你而有深度。',
+        over: '過了頭,你開始分析朋友:誰的問題出在哪你都看得見、也都想說;或者不知不覺搶了聚光燈,話題總繞回自己。',
+        under: '明現少用時,你在人群中近乎隱形:在場、但沒人記得你說過什麼。這股能量能帶來的是存在感——被看見不等於張揚,先從說出一個觀察開始。'
+      },
+      solo: {
+        mid: '中正的明現在獨處時,是把自己看清楚:一個人回顧的時候,你能誠實地看見這陣子的自己,並且說得出來。',
+        over: '過了頭,獨處變成自我審視的法庭:每句話每個決定都拿出來重播、評分,越看越不放過自己。',
+        under: '明現少用時,你很少回頭看自己,日子過了就過了。這股能量能帶來的是自我理解——每天睡前問一次:「我今天真正的感覺是什麼?」'
+      }
+    },
+    kan: {
+      work: {
+        mid: '用得剛好的沉澱,在工作裡是深水:複雜的問題你扛得住、想得透,別人慌的時候你沉得住氣;你的產出慢一點,但常是最經得起看的那份。',
+        over: '沉澱用過了頭:想太久、反芻停不下來,時機在你的深思熟慮裡溜走;低潮時整個人退進洞裡,訊息不回、門關起來。',
+        under: '沉澱少用時,你不停轉、不消化,同樣的錯誤重複出現。這股能量能帶來的是判斷的底——每天十分鐘,回顧一下今天,再開始明天。'
+      },
+      love: {
+        mid: '關係裡中正的沉澱是深水般的感情:不喧嘩、但很深;你懂得陪伴不一定要說話,兩個人安安靜靜待著,你反而覺得最親近。',
+        over: '過了頭,你收進殼裡:心事不說、門敲不開,對方在外面著急,你在裡面越沉越深;一段低潮拉得太長,關係跟著暗下來。',
+        under: '沉澱少用時,兩個人總是「在線」:行程滿、話不停,卻很少有安靜共處的時刻。這股能量能帶來的是深度——試一次不安排任何事的傍晚,只是待在一起。'
+      },
+      people: {
+        mid: '朋友之間,中正的沉澱是深交型:你的朋友不多,但每個都能聊到半夜三點;你話少,但大家知道你都有在聽。',
+        over: '過了頭,你會神隱:一段時間不回任何訊息,朋友以為你消失了、出事了,其實你只是沉下去了。',
+        under: '沉澱少用時,友誼容易停在熱鬧那一層:場子很多,深談很少。這股能量能帶來的是真正的交情——約一場一對一,聊點真的。'
+      },
+      solo: {
+        mid: '中正的沉澱在獨處時,是充電:一個人安靜待著,能量會自己長回來;你懂得休息,這在停不下來的時代是難得的本事。',
+        over: '過了頭,獨處過量:一個人待得太久,想的事越繞越深、越繞越暗,走不出來,連想出門的力氣都沉掉了。',
+        under: '沉澱少用時,你幾乎從不獨處,能量一直往外流、沒有回補的時刻。這股能量能帶來的是恢復——每天留白十分鐘,什麼都不做,就只是待著。'
+      }
+    },
+    gen: {
+      work: {
+        mid: '用得剛好的喊停,在工作裡是把關者:範圍要守、品質要收、該說不的時候你說得出口;專案能善終,常是因為你在對的時候喊了停。',
+        over: '喊停用過了頭:「不」說得太快,新的做法、好的機會也被擋在外面;流程僵住,一點改變都像冒犯。訊號是大家繞過你做事。',
+        under: '喊停少用時,你不會拒絕:事情無限膨脹、範圍一直長,拖到累垮才停。這股能量能帶來的是保護自己的力氣——這週,挑一件事說「不」。'
+      },
+      love: {
+        mid: '關係裡中正的喊停是穩:你可預期、說到做到,界線清楚反而讓人安心;你的承諾像山,放在那裡就不會動。',
+        over: '過了頭,穩變成不讓步:你的節奏、你的習慣、你的方式,對方感覺每次靠近都撞在同一面牆上。',
+        under: '喊停少用時,關係裡你沒有自己的空間:遷就到失去形狀,累了也不說「今天我不行」。這股能量能帶來的是完整的你——說一次「我需要一個晚上自己待著」。'
+      },
+      people: {
+        mid: '朋友之間,中正的喊停是定錨:你不隨波逐流、不跟風起鬨,大家心裡有數——你答應的事就是答應了。',
+        over: '過了頭,圈子封閉:新朋友進不來、舊模式改不了,聚會永遠是同一批人、同一家店、同一個位子。別人約新的局,你的第一反應永遠是「不用了吧」。',
+        under: '喊停少用時,你常被聚會綁架:想走不敢走、想推不敢推。這股能量能帶來的是自由——練習那句「我先走了」,天不會塌。'
+      },
+      solo: {
+        mid: '中正的喊停在獨處時,是節奏與儀式:你有自己的收尾方式——睡前的整理、週末的固定路線,日子有形狀。',
+        over: '過了頭,日常固化:一點變動就渾身不對勁——換一家店、改一個時間,整天都覺得歪掉;儀式從支撐變成枷鎖,日子穩,但也窄了。',
+        under: '喊停少用時,一天沒有停點:事情跟事情之間沒有縫,晚上捨不得睡、早上爬不起來。這股能量能帶來的是段落感——替一天設一個「下班儀式」,哪怕只是關燈泡茶。'
+      }
+    },
+    dui: {
+      work: {
+        mid: '用得剛好的交流,在工作裡是潤滑劑:僵住的會議你一句話讓空氣流動,跨團隊的溝通你是那座橋;你的提案有溫度、有感染力。',
+        over: '交流用過了頭:會開太多、話說太滿,社交把工作時間吃掉;為了氣氛答應了太多事,回頭才發現做不完。',
+        under: '交流少用時,有意見在會議上不說、會後才嘀咕,想法悶成心事。這股能量能帶來的是影響力——下一次會議,把那句真話說出來。'
+      },
+      love: {
+        mid: '關係裡中正的交流是把感受說出口:開心說、委屈也說,吵架吵得完、談得開;跟你在一起,關係裡有笑聲。',
+        over: '過了頭,熱鬧變成填充物:相處必須有話、有節目,沉默讓你發慌;或者太想讓對方開心,慢慢變成討好。',
+        under: '交流少用時,心裡的話悶著,對方以為你沒事,其實你有事。這股能量能帶來的是被懂的機會——從一句「其實我⋯⋯」開始。'
+      },
+      people: {
+        mid: '朋友之間,中正的交流是氣氛的來源:你到,場子就熱;冷場你接話、新人你照顧,大家因你而聚、因你而笑。散場後最常被引用的那句話,常常是你說的。',
+        over: '過了頭,每場都到、每句都接:散場後一個人虛脫;更深的訊號是——你笑著附和的,常不是你真正的意思。',
+        under: '交流少用時,關係停在點頭之交:認識很多年,還是只聊天氣。這股能量能帶來的是溫度——下次見面,多聊一層。'
+      },
+      solo: {
+        mid: '中正的交流在獨處時,是跟自己說話:寫下來、說出來,把心裡的東西給自己聽;你不怕一個人,因為你跟自己也有話聊。',
+        over: '過了頭,獨處讓你焦慮:安靜下來就想抓手機找人講話,通勤要有 podcast、吃飯要有影片,把每個空檔都填滿聲音。訊號是——你已經想不起來,上一次安靜地待著是什麼時候。',
+        under: '交流少用時的獨處,常是感受沒有出口:悶著、積著,自己也說不清。這股能量能帶來的是釋放——寫一段只給自己看的話,把它說完。'
+      }
+    }
+  };
+
+  var DOMAINS = [
+    { key: 'work', nm: '工作' },
+    { key: 'love', nm: '愛情與親密' },
+    { key: 'people', nm: '人際' },
+    { key: 'solo', nm: '獨處與自我' }
+  ];
+  var LEVELS = [
+    { key: 'mid', nm: '中正', note: '用得剛好' },
+    { key: 'over', nm: '亢', note: '過用' },
+    { key: 'under', nm: '潛', note: '此態是你的缺口時' }
+  ];
+
+  g.OCTENSO_CATALOG = g.OCTENSO_CATALOG || {};
+  g.OCTENSO_CATALOG.version = '0.1-draft';
+  g.OCTENSO_CATALOG.status = '草稿·未上線';
+  g.OCTENSO_CATALOG.T2 = T2;
+  g.OCTENSO_CATALOG.DOMAINS = DOMAINS;
+  g.OCTENSO_CATALOG.LEVELS = LEVELS;
+})(typeof window !== 'undefined' ? window : this);
+
+/* octenso/bagua-catalog-t1.js — 型錄層 T1:八峰型錄(八篇長文,canonical)
+ * v0.1-draft · 2026-07-07 · 【草稿·未上線】
+ *
+ * 每篇固定結構(10 節):
+ *  aura 神韻 / crowd 在人群中的樣子 / workMid 工作·中正 / workOver 工作·亢 /
+ *  loveMid 愛情·中正 / loveOver 愛情·亢 / stress 壓力訊號(亢的三級階梯,單股內) /
+ *  latent 還沒長開(潛,寫給此態是缺口的人) / growth 成長方向(僅錯卦之德,C3 合規) /
+ *  others 給身邊人
+ * 開頭共用 felt-self 一行(FELT)。寫作規則 R1–R8 同 bagua-catalog-data.js。
+ */
+(function (g) {
+  'use strict';
+
+  var FELT = '這是此刻你感受到的自己——會流動,也可以成長。';
+
+  var T1 = {
+    qian: {
+      aura: '當「開創」是你此刻最亮的峰,你身上有一種把空白變成方向的能力。一群人還在猶豫的時候,你已經在想第一步長什麼樣子。這不一定表現成大嗓門——有些開創者很安靜,但事情總是繞著他們定下的框架走。',
+      crowd: '在人群裡,你常不知不覺站到「定調」的位置:聚餐吃什麼、專案往哪走、假期去哪裡——懸而未決的事,最後常是你收的尾。大家未必說得出來,但都感覺得到:你在,事情就會有一個方向。',
+      workMid: '用得剛好的開創,在工作裡是「立方向、開局、作主」:你適合站在還沒有答案的地方——新專案、新市場、沒人接的爛攤子。你開會時自然會把發散的討論收成決定;同事常在卡住時來找你,因為你敢拍板。你最有能量的時刻,往往是一張白紙攤在面前的時刻。',
+      workOver: '同一股能量用過了頭,樣子會變:什麼都自己扛、聽不進不同版本的做法、把「快點定下來」看得比「定得對」重要。一個訊號是——你發現團隊越來越安靜,事情都等你開口。這不是你不好,是開創這股能量自己滿出來了;亢龍有悔,說的就是這個時刻。怎麼收:把「決定」和「執行的方式」分開,後者放手。',
+      loveMid: '在關係裡,中正的開創是「有肩膀」:你會主動定義關係、規劃兩個人的方向、在對方搖擺時給出確定感。你表達愛的方式常常是「安排」——把旅行訂好、把未來想好。對很多人來說,這種確定感本身就是安全感。',
+      loveOver: '過了頭,「安排」會變成「接管」:對方的週末、職涯、朋友圈都進了你的專案表。另一個常見樣子是難以示弱——關係裡你永遠是給方向的那個,累了也不說。一個檢查點:上一次讓對方替你決定一件事,是什麼時候?',
+      stress: '一級:語速變快、待辦變多、開始替所有人想好下一步。二級:獨斷變明顯,「討論」變成「宣布」。三級:脫離現實——方向定得又快又大,但沒人跟得上,包括你自己。越早在一級認出它,越不用走到三級。',
+      latent: '如果開創是你較少動用的一股:你可能習慣等別人定方向、開了頭的事也想先看看再說。這股能量能帶給你的是方向感與願景——不必變成領導者,從「小事自己拍板」開始練即可;潛龍勿用不是不能用,是還沒到用的時候。',
+      growth: '開創的錯卦搭檔是坤·承接。天地定位:能開也能納,才是完整的建構格局。對開創者,成長不是收起鋒芒,是練習信任與授權——讓別人也能出力,你的方向才走得遠。',
+      others: '與開創能量強的人相處:他的「快」不是否定你,是他的預設速度;要影響他,帶著方案來,不要只帶問題來。他最少說出口的需要,是「被接住」。'
+    },
+    kun: {
+      aura: '當「承接」是你此刻最亮的峰,你身上有一種讓人放心的重量。東西交到你手上不會掉,人走到你身邊會鬆一口氣。這股能量不搶眼——它的存在感,是所有人事後才發現的:原來一直是你在撐著。',
+      crowd: '在人群裡,你常是那個把場子接住的人:有人遲到你先招呼、有人失落你先看見、散場後留下來收拾的也常是你。大家形容你,用得最多的詞是「可靠」和「溫」。',
+      workMid: '用得剛好的承接,在工作裡是團隊的底盤:交給你的事會被穩穩接住、做完、收好;同事帶著情緒來,你先接住人、再處理事。專案能長期穩穩運轉,常是因為有你在收邊——這是一種被低估、但誰都離不開的專業。',
+      workOver: '同一股能量用過了頭:不會拒絕、默默扛下所有請託,待辦清單一半是別人的事,而你自己的永遠排最後。功勞隱形、疲累有形。一個訊號是——你開始覺得「沒有我不行」,同時又隱隱委屈「都沒有人問過我行不行」。怎麼收:接之前先問自己一句「這件事,非我不可嗎?」',
+      loveMid: '在關係裡,中正的承接是穩穩的陪伴:對方低潮時你接得住,先聽、不急著解決;你的愛常長成日常的樣子——一碗熱的、一句「我在」、一個永遠等得到的人。這種安穩,是很多關係裡最奢侈的東西。',
+      loveOver: '過了頭,對方的需要永遠排在你前面:你變成關係裡的照顧者,而不再是伴侶;委屈累積著不說,直到某天一件小事讓它全部滿出來。一個檢查點:上一次你開口說「我也需要」,是什麼時候?',
+      stress: '一級:嘴上說「沒關係、我來就好」的次數變多。二級:身體先累了——睡不飽、肩頸緊,但手上的事一件都放不下。三級:被掏空——照顧著所有人,卻覺得沒有人看見你;溫和的你,開始對最親近的人不耐煩。越早在一級認出它,越不用走到三級。',
+      latent: '如果承接是你較少動用的一股:別人帶著情緒靠近時,你可能想快點給建議、或悄悄退開,關係顯得有點疏離。這股能量能帶給你的是關係的深度與被信任的重量——先從「聽完、不急著解決」開始練,在場本身就是支持。',
+      growth: '承接的錯卦搭檔是乾·開創。天地定位:能納也能開,才是完整的建構格局。對承載者,成長不是少照顧別人,是也替自己開創——訂一個你說了算的小目標,把「接住自己」排進日程裡。',
+      others: '與承接能量強的人相處:他不會主動說累,請主動問;他把你們都接住了,偶爾換你接住他一次——一句「這次換我來」,對他的意義比你想的大。'
+    },
+    zhen: {
+      aura: '當「行動」是你此刻最亮的峰,你身上有一種雷的性質:安靜不了太久,念頭一來,身體已經先動了。你是讓事情「從零變一」的人——世界上大多數計畫死在想太久,而你的天賦,是開始。',
+      crowd: '在人群裡,你是節奏的來源:大家還在「改天約」,你已經訂好了店;會議繞圈時,喊「不然先試試看」的是你。有你在,事情不會停在原地——這是很多人暗暗依賴你的地方。',
+      workMid: '用得剛好的行動,在工作裡是發動機:別人還在討論,你已經把第一版做出來給大家看;卡關的時候,你用「先做再修」把局面打開。你的執行力讓想法落地,讓團隊在泥沼裡重新動起來——這是你的本錢。',
+      workOver: '同一股能量用過了頭:新的開了一件又一件,收尾的沒幾件;衝太快做了白工,回頭還要收拾;團隊被你的節奏推著跑,喘不過氣。一個訊號是——身邊的人開始常說「等一下」。怎麼收:每開一件新的,先問「上一件收尾了嗎」,給衝勁一個煞車點。',
+      loveMid: '在關係裡,中正的行動是熱烈而直接:喜歡就說、想見就約、說走就走的小旅行是你的語言。你不讓關係悶著——有問題就處理、想念就出現,這種活力本身就是一種浪漫。',
+      loveOver: '過了頭,你的節奏會壓過對方:對方還在感受,你已經在計畫下一件事;吵架時話衝出口、行動搶在思考前面,停不下來。一個檢查點:對方上次說「你可以慢一點嗎」,你聽見了嗎?',
+      stress: '一級:坐不住、同時開好幾件事、講話越來越快。二級:焦躁上身——排隊、等回覆、慢的人,全都讓你冒火。三級:引擎空轉——不動就難受,於是亂動,衝出去的方向連自己都說不清。越早在一級認出它,越不用走到三級。',
+      latent: '如果行動是你較少動用的一股:你可能念頭很多、起步很慢,事情常拖到不得不做,錯過了再懊惱。這股能量能帶給你的是開始的力氣——不必變成行動派,挑最小的一件事,今天動第一步,不求完美。',
+      growth: '行動的錯卦搭檔是巽·拓展。雷風相薄:猛推與柔滲彼此鼓盪,是唯一會相互激盪的一對——動能加乘很強,但也最要留意過衝。對行動者,成長是讓衝勁長出續航:起了頭,也讓它鋪得開、走得遠。',
+      others: '與行動能量強的人相處:他的急不是針對你,是他的引擎聲;跟他合作,把「什麼時候要」講清楚,他會是你最有力的隊友。他最需要卻最少說的,是有人幫他踩一腳剎車。'
+    },
+    xun: {
+      aura: '當「拓展」是你此刻最亮的峰,你身上有一種風的性質:無孔不入、不著痕跡。你不硬碰硬,但你到過的地方,事情悄悄地就通了。人、資源、機會,在你手上會自己長出連結——這是一種看不見、卻改變地形的力量。',
+      crowd: '在人群裡,你是那個把大家織在一起的人:「你們兩個應該會聊得來」是你的名句;新來的人是你先照應,斷掉的線是你重新接上。很多友誼、很多合作,源頭其實都是你。',
+      workMid: '用得剛好的拓展,在工作裡是穿針引線:跨部門的死結你能繞著解開,誰該認識誰、哪裡有資源,你心裡有一張活地圖。你讓事情順勢生長,而不是硬推——同樣的目標,你總能找到阻力最小的那條路。',
+      workOver: '同一股能量用過了頭:線鋪得太多收不回,每個案子都沾一點、深耕的沒幾個;請託難拒絕,答應的事開始想不起來。一個訊號是——你的行事曆滿的,但你說不出這個月「完成」了什麼。怎麼收:挑幾條真正重要的線深耕,比鋪滿更有累積。',
+      loveMid: '在關係裡,中正的拓展是替兩個人打開世界:你把自己的朋友、路線、新發現帶進關係,兩人的生活因你而變寬。你的靠近是滲透式的——不強求、不逼問,像風一樣慢慢包圍,讓人不知不覺就習慣了你。',
+      loveOver: '過了頭,行程與社交會把兩人時間攤薄:週末永遠有別的局,關係被排進縫隙裡;另一個樣子是「什麼都好」——太順著,反而讓對方摸不到你的立場,不知道你真正要什麼。一個檢查點:這個月,有幾個晚上是完整留給這段關係的?',
+      stress: '一級:同時追的線變多、每件事都回一點但都沒回完。二級:分身乏術——到處救火,答應的事開始漏掉,失去別人與自己的信任。三級:飄散——攤得太開,重心不見了,連「我在忙什麼」都答不上來(巽其究為躁卦,說的就是這個盡頭)。越早在一級認出它,越不用走到三級。',
+      latent: '如果拓展是你較少動用的一股:你可能習慣單打獨鬥,有力可借而不借,好東西做完就收著。這股能量能帶給你的是槓桿與觸及——不必變成社交高手,這週開口借一次力,或把一件好事分享給一個用得上的人。',
+      growth: '拓展的錯卦搭檔是震·行動。雷風相薄:柔滲與猛推彼此鼓盪,是唯一會相互激盪的一對。對協作者,成長是給鋪開的線一記落地的錘:選一條線,親自把它推到「完成」,你織的網才會開始承重。',
+      others: '與拓展能量強的人相處:他答應你的事是真心的,但他答應了很多人——重要的事,幫他一起收斂焦點;他最需要的不是更多機會,是有人陪他決定「不做什麼」。'
+    },
+    li: {
+      aura: '當「明現」是你此刻最亮的峰,你身上有一種火的性質:照亮。你看得清——複雜的局、模糊的人心、房間裡沒人敢說的大象;你也想被看清——真正的你,值得被好好理解。看見與被看見,是你身上同一團火的兩面。',
+      crowd: '在人群裡,你常是「點破」的那個:大家繞了半天,你一句話說中要害;同時你也是有光的那個——你在場,大家會不自覺看向你。你的觀察與你的存在感,常常一起被記住。',
+      workMid: '用得剛好的明現,在工作裡是看穿加上說清:你常第一個指出「問題其實在這裡」,複雜的事到你手上會變成一頁看得懂的圖;簡報、提案、上台的時刻,你是發光的。看得透、又講得明——這是稀有的組合,是你的本錢。',
+      workOver: '同一股能量用過了頭,有兩種樣子:一是分析停不下來,想清楚變成想不完,遲遲不動手;二是太在意被看見,成果變成自我價值的成績單,沒被稱讚就開始懷疑自己。一個訊號是——你花在「想別人怎麼看」的時間,超過了做事本身。怎麼收:記得你的價值不全靠別人看見,先自己認可一點。',
+      loveMid: '在關係裡,中正的明現是深深地看見:對方沒說出口的變化,你先注意到;一個眼神你就知道今天不對勁。同時你也渴望被看見真正的自己——被懂,是你在關係裡最深的滿足;而你給對方的「被理解」,也是最珍貴的禮物。',
+      loveOver: '過了頭,看見會變成過度解讀:一則已讀不回可以分析出三種含義,一句無心的話重播一整晚;或者需要不斷的注視與肯定,對方稍微分心,你心裡的光就暗一格。一個檢查點:你是在看他,還是在找「他不夠愛你」的證據?',
+      stress: '一級:腦子轉速變快,每件事都要想到透才安心。二級:過度分析上身——決定變難、訊息逐字推敲,同時越來越需要別人的肯定。三級:光耗盡——看誰都是問題、看自己最不順眼,明亮變成刺眼,連自己都想躲起來。越早在一級認出它,越不用走到三級。',
+      latent: '如果明現是你較少動用的一股:你可能做得好卻不說,報告把光藏起來,心意放著不表達,久了常被低估、不被理解。這股能量能帶給你的是被看見與被懂——挑一個安全的場合,把一件成果或一句真心話,好好說一次。',
+      growth: '明現的錯卦搭檔是坎·沉澱。水火不相射:向外的亮與向內的深並存而不相礙,如「既濟」般相成。對洞見者,成長是給光一個深的底:有些事不必馬上想透、馬上說破——先沉下來體驗,看見的會更真。',
+      others: '與明現能量強的人相處:他的分析不是挑剔,是他表達在乎的方式;他比看起來更需要肯定——真心的「我懂你的意思」,對他勝過一百句客套的讚美。'
+    },
+    kan: {
+      aura: '當「沉澱」是你此刻最亮的峰,你身上有一種水的性質:深、靜、不爭。熱鬧散去之後,你才開始真正運轉;別人用說話整理自己,你用安靜。你的深度不表演給人看——但認識你夠久的人都知道,你想過的事,比說出的多十倍。',
+      crowd: '在人群裡,你是安靜的那個:話少、但都有在聽;不搶場、但偶爾開口,大家會停下來。聚會你常提早離開——不是不喜歡大家,是你的電量在人群裡是往下走的,你比誰都清楚自己什麼時候該回去充電。',
+      workMid: '用得剛好的沉澱,在工作裡是深水:複雜的問題你扛得住、想得透,別人慌的時候你沉得住氣;風暴中心最穩的,常常是你。你的產出慢一點,但常是最經得起看的那份——深思熟慮,是你的專業信用。',
+      workOver: '同一股能量用過了頭:想太久、反芻停不下來,時機在你的深思熟慮裡溜走;低潮時整個人退進洞裡,訊息不回、門關起來,事情堆在洞口。一個訊號是——「再想一下」已經說了兩個星期。怎麼收:給反思設個出口——想到一個程度,就帶一個小行動出來。',
+      loveMid: '在關係裡,中正的沉澱是深水般的感情:不喧嘩、但很深;你懂得陪伴不一定要說話,兩個人安安靜靜待著,你反而覺得最親近。你的愛不常說出口,但它在——像水一樣,包著對方的形狀。',
+      loveOver: '過了頭,你會收進殼裡:心事不說、門敲不開,對方在外面著急,你在裡面越沉越深;一段低潮拉得太長,關係跟著暗下來,對方開始懷疑是不是自己做錯了什麼。一個檢查點:你的沉默,對方讀得懂嗎——還是你其實希望他讀不懂?',
+      stress: '一級:回訊息變慢、想獨處的時間變長。二級:反芻上身——同一件事在腦子裡轉了一夜又一夜,越想越沉。三級:陷落——退到誰都碰不到的地方,連求助的力氣都沉掉了(習坎重險,說的就是這個深度)。越早在一級認出它,越不用走到三級;真到了三級,記得:開口本身就是浮起來的第一下。',
+      latent: '如果沉澱是你較少動用的一股:你可能不停轉、不消化,累了硬撐、情緒積著,同樣的錯誤重複出現。這股能量能帶給你的是恢復與判斷的底——每天留白十分鐘,什麼都不做;能量會自己長回來。',
+      growth: '沉澱的錯卦搭檔是離·明現。水火不相射:向內的深與向外的亮並存而不相礙,如「既濟」般相成。對沉潛者,成長是讓深水偶爾見光:把想透的事,挑一件說出來、寫出來——你的深度值得被看見。',
+      others: '與沉澱能量強的人相處:他的安靜不是冷淡,是他消化世界的方式;別逼他馬上回應,給他時間,他會帶著想得很深的答案回來。他最需要的,是「不解釋也可以」的空間。'
+    },
+    gen: {
+      aura: '當「喊停」是你此刻最亮的峰,你身上有一種山的性質:不動、有形、可靠。在一個人人都停不下來的時代,你知道什麼時候該停、什麼該說不、哪裡是自己的邊界——這是一種越來越稀有的清醒。',
+      crowd: '在人群裡,你是定錨:不跟風、不起鬨,大家嗨過頭的時候,你那句「先等等」常常救了所有人。你答應的事就是答應了,你說不行的事,大家也知道再盧也沒用——這種可預期,是你給身邊人的安全感。',
+      workMid: '用得剛好的喊停,在工作裡是把關者:範圍要守、品質要收、該說不的時候你說得出口;需求無限膨脹的時代,你是那個守住「做什麼、不做什麼」的人。專案能善終,常是因為你在對的時候喊了停。',
+      workOver: '同一股能量用過了頭:「不」說得太快,新的做法、好的機會也被擋在外面;流程僵住,一點改變都像冒犯。一個訊號是——大家開始繞過你做事。怎麼收:界線是為了保護、不是築牆,留一道門;下一個新提案,先聽完再說不。',
+      loveMid: '在關係裡,中正的喊停是穩:你可預期、說到做到,你的承諾像山,放在那裡就不會動;你的界線清楚,反而讓人安心——跟你在一起,不用猜。',
+      loveOver: '過了頭,穩會變成不讓步:你的節奏、你的習慣、你的方式,對方感覺每次靠近都撞在同一面牆上;關係需要的一點即興與妥協,你給得很艱難。一個檢查點:上一次為對方改變一個習慣,是什麼時候?',
+      stress: '一級:「不要」變成口頭禪,新的東西一律先拒絕。二級:固執上身——明知道該調整,就是動不了;跟人的往來越縮越少。三級:卡死——整個人像上了鎖,事情停著、關係僵著、自己也困著,動彈不得。越早在一級認出它,越不用走到三級。',
+      latent: '如果喊停是你較少動用的一股:你可能不會拒絕,事情無限膨脹,想走不敢走、想停不敢停,拖到累垮才停。這股能量能帶給你的是保護自己的力氣——練習在「還行」的時候就先停;這週,挑一件事說「不」。',
+      growth: '喊停的錯卦搭檔是兌·交流。山澤通氣:收界與往來之間氣機流通,進退才有節。對守界者,成長是讓界線會呼吸:守住之餘,也主動打開一次——約一場你來發起的聚,讓山腳下有澤。',
+      others: '與喊停能量強的人相處:他的「不」不是拒絕你這個人,是他保護秩序的方式;要提案,給他時間消化,別當場逼他點頭。他最少說出口的需要,是「不必一直防守」的放鬆。'
+    },
+    dui: {
+      aura: '當「交流」是你此刻最亮的峰,你身上有一種澤的性質:滋潤。你到,場子就活;你開口,空氣就鬆。把感受說出口、把人跟人接上、讓大家在一起的時候是開心的——這是你與生俱來的手藝,麗澤相滋,朋友講習。',
+      crowd: '在人群裡,你是氣氛的來源:冷場你接話、尷尬你化解、新人你照顧,大家因你而聚、因你而笑。散場後最常被提起的話,常常是你說的那句。',
+      workMid: '用得剛好的交流,在工作裡是潤滑劑:僵住的會議你一句話讓空氣流動,跨團隊的溝通你是那座橋;你的提案有溫度、有感染力——同樣的內容,由你來說,大家聽得進去。',
+      workOver: '同一股能量用過了頭:會開太多、話說太滿,社交把工作時間吃掉;為了氣氛答應了太多事,回頭才發現做不完。一個訊號是——你今天說了一整天的話,卻想不起來哪句是真正重要的。怎麼收:留一點安靜給自己,不必每場都到、每句都接。',
+      loveMid: '在關係裡,中正的交流是把感受說出口:開心說、委屈也說,吵架吵得完、談得開;跟你在一起,關係裡有笑聲、有對話,不會有猜不完的謎。這種透明,是關係最好的體質。',
+      loveOver: '過了頭,熱鬧會變成填充物:相處必須有話、有節目,沉默讓你發慌;或者太想讓對方開心,笑著附和的越來越多,真心話越來越少——討好,是交流這股能量最深的過用。一個檢查點:你上一句「不同意」,是多久以前說的?',
+      stress: '一級:話變多、行程變滿,一個人待著就想找人。二級:討好上身——每句話先看別人臉色,附和的笑越來越僵。三級:掏空——說了一整天的話,回到家一句都不剩;人群裡最熱絡的你,是最孤單的那個。越早在一級認出它,越不用走到三級。',
+      latent: '如果交流是你較少動用的一股:你可能心裡的話悶著,會議上不說、會後才嘀咕,關係停在點頭之交,對方以為你沒事、其實你有事。這股能量能帶給你的是被懂的機會——把一個真實的感受,對一個信任的人說出口。',
+      growth: '交流的錯卦搭檔是艮·喊停。山澤通氣:往來與收界之間氣機流通,進退才有節。對共鳴者,成長是給連結留白:不必場場全勤、句句有回——留一點安靜,你的話才會更有重量。',
+      others: '與交流能量強的人相處:他的熱絡是真的,但別讓他永遠當氣氛組——問問他自己最近好不好,聽他說,換他被接住。他笑著的時候,不一定是好的時候。'
+    }
+  };
+
+  g.OCTENSO_CATALOG = g.OCTENSO_CATALOG || {};
+  g.OCTENSO_CATALOG.FELT = FELT;
+  g.OCTENSO_CATALOG.T1 = T1;
+  g.OCTENSO_CATALOG.T1_SECTIONS = [
+    { key: 'aura', nm: '神韻' },
+    { key: 'crowd', nm: '在人群中的樣子' },
+    { key: 'workMid', nm: '工作樣貌', band: '中正' },
+    { key: 'workOver', nm: '工作樣貌', band: '亢' },
+    { key: 'loveMid', nm: '愛情與親密', band: '中正' },
+    { key: 'loveOver', nm: '愛情與親密', band: '亢' },
+    { key: 'stress', nm: '壓力訊號', band: '亢的階梯' },
+    { key: 'latent', nm: '還沒長開', band: '潛' },
+    { key: 'growth', nm: '成長方向' },
+    { key: 'others', nm: '給身邊人' }
+  ];
+})(typeof window !== 'undefined' ? window : this);
+
+/* octenso/bagua-catalog-combos.js — 型錄層 T3/T4/T5(canonical)
+ * v0.1-draft · 2026-07-07 · 【草稿·未上線】
+ *
+ * T3 雙峰組合文(單人內、僅四錯卦對——只有這四對可講「德」,C3):
+ *   天地=完整格局(和諧)、雷風=鼓盪(唯一張力)、水火=既濟相成(和諧)、山澤=通氣(和諧)。
+ *   其餘 24 對非對待雙峰:引擎仍用「並存句式」模板,俟上線頻率資料再擴寫(spec §6.2 T3)。
+ * T4 格局型三篇(素材=整體水平+形狀,無主峰時的身分內容)。
+ * T5 關係合盤敘事(兩人之間;跨人不受 C1 限,仍守 C5 不預測):
+ *   4 錯卦對 + 8 同峰對 = 12 組;其餘組合由 T2 love 欄積木組裝。
+ */
+(function (g) {
+  'use strict';
+
+  // ── T3 · 雙峰組合(單人內,四對待)────────────────────────────
+  var T3 = {
+    'qian-kun': {
+      pair: '天地·建構', character: '完整格局', tension: false,
+      title: '乾×坤 · 開創與承接並重',
+      text: '在你身上,又有一股想開局作主的勁,又有一份接得住、撐得起的厚。開會時你可以是拍板的那個,散會後你也可以是把每個人都照顧到的那個——主導與承接各安其位,這是「天地定位」說的完整格局:能開、也能納。這樣的並重不是拉扯,是罕見的完整;兩股都是本錢,可以放心搭起來用。要留意的只有一件事:兩股能量各有各的過用樣貌(獨斷是開創自己的事、扛過頭是承接自己的事),累的時候,分開檢查哪一股滿出來了。'
+    },
+    'zhen-xun': {
+      pair: '雷風·推動', character: '鼓盪', tension: true,
+      title: '震×巽 · 行動與拓展並重',
+      text: '在你身上,又有一鼓作氣的猛勁,又有細水長流的柔滲——起得了頭,也鋪得開局。這是四對裡唯一會彼此鼓盪的一對:「雷風相薄」,兩股動能相互激盪、相互放大,推力非常強。強,是它的天賦;停不下來,是它的影子——動了就想鋪開、鋪開了又催生新的行動,像雷帶著風、風又助著雷。給這個組合一句誠實的提醒:你們的引擎沒有內建剎車,收與停要靠刻意練習;定期問自己一句「現在是在推進,還是只是停不下來?」',
+    },
+    'kan-li': {
+      pair: '水火·認知', character: '既濟相成', tension: false,
+      title: '坎×離 · 沉澱與明現並重',
+      text: '在你身上,又有向內沉得住的深,又有向外照得亮的明——想得深,也說得清;耐得住安靜,也站得上台前。水火不相射:這兩股並存而不相礙,像「既濟」卦水在火上,彼此成全。你獨處時像深水,上場時像火光,而且兩邊都是真的你——不必懷疑哪一面才是本性。這個組合最好的用法,是讓它們輪班:深潛去想,浮上來說;說完了,再回去沉。各自的過用(想太多是沉澱自己的事、太在意目光是明現自己的事)分開照看即可。'
+    },
+    'gen-dui': {
+      pair: '山澤·調節', character: '通氣', tension: false,
+      title: '艮×兌 · 喊停與交流並重',
+      text: '在你身上,又有守得住界線的定,又有打得開話匣的暖——會拒絕,也會連結;收得住,也放得開。山澤通氣:山把形立起來,澤讓氣流過去,收與放之間有一條活的通道,這是調節系統最健康的樣子——進退有節。你大概是朋友裡那種「有原則但不難相處」的人:大家知道你的底線,也知道你的門是開的。兩股各自的過用(太快說不是喊停自己的事、笑著討好是交流自己的事)偶爾巡一下,通道就會一直通著。'
+    }
+  };
+
+  // 非對待雙峰的並存模板(引擎現行邏輯的文案化;不宣稱機制)
+  var T3_FALLBACK = '你有兩股並重的主調——它們不是誰造成誰,而是同時都很鮮明,輪流主導你的不同時刻。兩股都是本錢,可以搭起來用;各自的過用樣貌,也各自照看。';
+
+  // ── T4 · 格局型三篇(無單一主峰時的身分內容)──────────────────
+  var T4 = {
+    high: {
+      nm: '高能多面型',
+      text: '你的八種能量都用得不少,沒有特別偏廢——這不是「沒有特色」,是另一種罕見的形狀:多面。\n\n【樣貌】能開會拍板、也能蹲下來聽;能衝、也能停;能上台、也能沉澱。你像一把有八種刀的工具,場合需要什麼,你就長出什麼。身邊的人對你的形容常常互相矛盾——有人說你強勢、有人說你溫和、有人說你外向、有人說你深沉,而他們說的都是真的:他們只是各自遇到了不同場合的你。\n\n【工作】你是天生的補位者與轉換者:團隊缺什麼,你能頂什麼;跨領域、多角色的位置最能用出你的形狀。要留意的是「全都做得來」的影子——樣樣接、樣樣上,能量再飽滿也有總量;高水平的疲勞常常是靜悄悄的,因為每一股看起來都還行。\n\n【關係】你能配合各種人,是關係裡的萬用接口。誠實的提醒:多面的人最不容易被「看全」——對方常只認識其中幾面。讓親近的人多看到幾面的你,關係會更立體。\n\n【此刻的功課】你不缺能量,缺的可能是「選擇」:全都能做,不等於全都要做。替自己挑一兩個此刻最想長的面向,把飽滿變成方向。'
+    },
+    low: {
+      nm: '低調蓄能型',
+      text: '你整體比較收著,最鮮明的能量也只是淡淡突出——像在蓄能,安靜地醞釀。先把一件事說清楚:這是「此刻的水位」,不是你這個人的天花板。\n\n【樣貌】此刻的你,對什麼都不太用力:不特別想主導、不特別想社交、不特別想衝。這可能是一段消耗後的休養、一個轉換期的觀望,也可能只是你天生省電的運轉方式——鏡子照見的是狀態,不評價高低。\n\n【工作】低水位的時期,你適合「小而穩」:守好核心的幾件事,不勉強自己燃燒。留意的訊號只有一個——「收著」和「耗盡」長得很像;如果連平常喜歡的事都提不起勁太久,值得停下來照顧自己,或找人聊聊。\n\n【關係】你此刻在關係裡可能偏安靜、偏被動,這不是不在乎——你的在乎用比較省電的方式表達。讓重要的人知道「我最近能量比較低、不是你的問題」,一句話能省掉很多誤會。\n\n【此刻的功課】蓄能期最好的策略不是逼自己振作,而是顧好回充:睡飽、留白、小小的節奏。水位會回來;回來的時候,再看看哪一股先亮,那常是你下一段路的方向。'
+    },
+    mid: {
+      nm: '均衡型',
+      text: '你的各股能量有高有低,但沒有單一主峰——均衡而有彈性,看情境換檔。\n\n【樣貌】你不容易被一句話定義,因為你真的不是「一種人」:該決定的場合你會決定,該聽的場合你會聽;沒有哪股能量綁架你,也沒有哪股完全缺席。這種形狀最大的天賦是「彈性」——你適應環境的成本,比大多數人低。\n\n【工作】均衡的人常是團隊裡的穩定器與翻譯機:你聽得懂行動派的急、也聽得懂深思者的慢,天然適合協調、整合、需要換位的角色。誠實的提醒:均衡有兩種——「真的有彈性」與「還沒長開」。分辨的方法很簡單:回想你切換模式的時刻,是自如的,還是每一種都做得有點勉強?前者是彈性,值得保持;後者是空間,值得挑一股刻意練。\n\n【關係】你在關係裡通常好相處、能配合,衝突不多。留意的影子是「沒有立場」——太能配合的人,久了容易連自己想要什麼都模糊。偶爾任性一次,說出偏好,關係才照得見你。\n\n【此刻的功課】均衡不是終點,是一個很好的底盤。在這個底盤上,你可以安全地實驗:這一季,挑一股你有點好奇的能量,刻意多用它——均衡的人長新能力,比誰都快。'
+    }
+  };
+
+  // ── T5 · 關係合盤敘事(兩人之間)────────────────────────────
+  // 錯卦對:互補的畫面+相處提醒;同峰對:同頻的畫面+共同的影子。
+  var T5 = {
+    'qian-kun': {
+      nm: '開創者 × 承載者', kind: '錯卦·天地',
+      text: '一個定方向,一個接得住——這是「天地定位」的組合:他開的局,你撐得起;你接的重,他扛得走。合作裡,這常是最省話的搭檔:一個往前看、一個顧著底。親密裡,一個給確定感、一個給安穩感,各自給的正是對方少的。相處的提醒給兩邊:開創的一方,別把對方的承接當成理所當然——接得住不代表不會累;承接的一方,你的需要也值得被排進他的藍圖裡,說出來,他才排得進去。'
+    },
+    'zhen-xun': {
+      nm: '行動者 × 協作者', kind: '錯卦·雷風',
+      text: '一個起頭,一個鋪開——「雷風相薄」,這是四對裡唯一會彼此鼓盪的組合:他點的火,你讓它燒成一片;你鋪的線,他一腳把它踹進現實。一起做事,你們的推力驚人——從想法到發生,快得旁人跟不上。也因此,這對組合的提醒特別誠實:你們在一起會互相加速,卻都不擅長踩剎車;約好一個「停下來看一眼」的節奏——每週一次也好,問彼此:我們是在推進,還是只是停不下來?'
+    },
+    'kan-li': {
+      nm: '沉潛者 × 洞見者', kind: '錯卦·水火',
+      text: '一個深、一個亮——「水火不相射」:他向外照,你向內藏,並存而不相熄。你們常是彼此最好的搭配:他把你想得很深的東西說給世界聽,你給他的光一個沉得住的底。相處裡,節奏是你們要練的功課:亮的一方想聊、想現在就說清楚;深的一方要先沉、想過才開口。給彼此的提醒:離,他的沉默不是拒絕你,是他在消化——等他浮上來;坎,他的追問不是逼你,是他在乎——偶爾在還沒想完時,先給一句「我在想,別擔心」。'
+    },
+    'gen-dui': {
+      nm: '守界者 × 共鳴者', kind: '錯卦·山澤',
+      text: '一個收、一個放——「山澤通氣」:山給澤形狀,澤給山滋潤。你們在一起,常是彼此最好的調節:他帶你出門、把你介紹給世界;你替他守住底線、給他一個不用應酬的角落。合作裡,一個對外連結、一個對內把關,是天然的分工。給彼此的提醒:兌,他的「不」不是掃興,是他保護你們倆節奏的方式;艮,他的熱絡是天性、不是不定性——他需要的不是圍欄,是一個永遠可以回來的地方。'
+    },
+    'qian-qian': {
+      nm: '開創者 × 開創者', kind: '同峰',
+      text: '兩個都想定方向的人——同頻的地方是痛快:你們說話都快、決定都敢,彼此欣賞那份「不拖」。影子也同一個:兩個人都想當定案的那個,方向不合時,誰都不讓。這對組合最實用的一句話是「分治」:把地圖切開,各自為王——這個領域聽你的、那個領域聽我的,寫下來。還有一件事輪流練:示弱。兩個都有肩膀的人,最難的不是扛,是承認今天扛不動。'
+    },
+    'kun-kun': {
+      nm: '承載者 × 承載者', kind: '同峰',
+      text: '兩個都先想到對方的人——你們的日常大概很溫:互相照顧、互相退讓,誰都捨不得讓誰累。影子也同一個:兩個人都不說自己的需要,都在等對方先開口;委屈各自默默積著,表面還是「我都可以」。這對組合最需要的儀式,是定期把「我其實想要⋯⋯」放上桌——輪流說,說了不准說「沒關係」。你們都很會接住別人;練習讓自己也被接住一次。'
+    },
+    'zhen-zhen': {
+      nm: '行動者 × 行動者', kind: '同峰',
+      text: '兩個引擎——你們在一起永遠有事發生:說走就走、說做就做,生活的節奏感是別的組合羨慕不來的。影子也同一個:兩個人都停不下來,行程疊行程;吵架時兩張嘴都比腦快,火點得快、話收不回。給這對組合兩個字:排休。把「什麼都不做的一天」當成正式行程訂下來——這對你們比訂旅行更難、也更重要。吵架則約一個暗號:誰先喊「暫停」,兩個人都先離場十分鐘。'
+    },
+    'xun-xun': {
+      nm: '協作者 × 協作者', kind: '同峰',
+      text: '兩張網——你們的世界因彼此而翻倍:朋友圈相通、機會互相引薦,生活寬得不像兩個人。影子也同一個:兩個人的線都太多,行程各自滿天飛,「我們」反而排不進去;而且兩個都柔、都順,大事沒人拍板,常常一起飄。給這對組合的提醒:每週留一個只有彼此的晚上,誰約局都擋掉;遇到要決定的事,指定這件事誰主責——柔加柔需要一個臨時的錨。'
+    },
+    'li-li': {
+      nm: '洞見者 × 洞見者', kind: '同峰',
+      text: '兩道光——你們的對話大概是別人插不進的精彩:一個點破、一個接梗,彼此都覺得「終於有人跟得上」。影子也同一個:兩個人都想被看見、都敏於解讀,順的時候互相輝映,累的時候互相分析——把對方的每句話都拆開檢查,誰都不服誰的版本。給這對組合的提醒:輪流當觀眾。今天他上台,你就好好鼓掌;明天換你。還有,約好一條線:分析事可以,分析對方,先問過。'
+    },
+    'kan-kan': {
+      nm: '沉潛者 × 沉潛者', kind: '同峰',
+      text: '兩泓深水——你們懂彼此的安靜:可以一起待一下午不說話,而且都覺得舒服;這種「不用解釋」的默契,是很多人一生沒體會過的。影子也同一個:兩個人都往內收,低潮時各自沉進自己的洞,誰也不拉誰;心事都想過一百遍,說出口的不到一遍。給這對組合的提醒:約一個「浮上來」的暗號——一週一次,把這週想的事各說一件,說淺的也行。兩個深的人,要刻意練「說」,關係的水面才有光。'
+    },
+    'gen-gen': {
+      nm: '守界者 × 守界者', kind: '同峰',
+      text: '兩座山——你們的關係大概穩得像地形:各有節奏、互不打擾,答應彼此的事從不落空;這種可預期,是你們共同的語言。影子也同一個:兩個人都守著自己的秩序,誰都不先動;日子容易固定成同一條路線,新的東西進不來,僵持的時候像兩面牆對望。給這對組合的提醒:輪流當「開門的人」——這個月你提一個沒做過的事,下個月換他;山跟山之間,要有人先修一條路。'
+    },
+    'dui-dui': {
+      nm: '共鳴者 × 共鳴者', kind: '同峰',
+      text: '兩面湖——你們在一起永遠有話說:從早聊到晚、朋友成群,你們的關係大概是圈子裡公認的「氣氛擔當」。影子也同一個:兩個人都習慣把場子撐好,笑著的時間太多,真心話反而排不上;都怕沉默,於是用熱鬧蓋過該談的事。給這對組合的提醒:練習「安靜的約會」——不找朋友、不排節目,就兩個人,把最近沒說的說一說。你們最不缺話,最缺的是那三句真的。'
+    }
+  };
+
+  g.OCTENSO_CATALOG = g.OCTENSO_CATALOG || {};
+  g.OCTENSO_CATALOG.T3 = T3;
+  g.OCTENSO_CATALOG.T3_FALLBACK = T3_FALLBACK;
+  g.OCTENSO_CATALOG.T4 = T4;
+  g.OCTENSO_CATALOG.T5 = T5;
+})(typeof window !== 'undefined' ? window : this);
+
+</script>
+<script>
+(function(){
+  var B=window.OCTENSO_BAGUA, C=window.OCTENSO_CATALOG;
+  var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+  var cur='qian';
+  var tabs=document.getElementById('tabs');
+  B.ORDER.forEach(function(k){
+    var g=B.get(k), b=document.createElement('button');
+    b.className='tab'; b.dataset.k=k;
+    b.innerHTML='<span class="sym">'+g.sym+'</span>'+g.nm+'·'+g.fnShort;
+    b.onclick=function(){cur=k;render();};
+    tabs.appendChild(b);
+  });
+  var BANDCLS={'中正':'mid','亢':'over','亢的階梯':'over','潛':'under'};
+  function render(){
+    Array.prototype.forEach.call(tabs.children,function(b){b.classList.toggle('on',b.dataset.k===cur);});
+    var g=B.get(cur), p=C.T1[cur];
+    var h='<div class="p-head"><div class="p-sym">'+g.sym+'</div>'
+      +'<div class="p-title">'+g.title+'</div>'
+      +'<div class="p-fn">'+esc(g.fn)+' · '+esc(g.titleEn)+'</div></div>';
+    C.T1_SECTIONS.forEach(function(s){
+      var band=s.band?('<span class="band '+(BANDCLS[s.band]||'')+'">'+s.band+'</span>'):'';
+      h+='<h4 class="blk">'+s.nm+band+'</h4><p class="blktxt">'+esc(p[s.key])+'</p>';
+    });
+    document.getElementById('portrait').innerHTML=h;
+    var t2=C.T2[cur], hh='<div class="mx">';
+    C.DOMAINS.forEach(function(d){
+      hh+='<div class="mx-dom">'+d.nm+'</div>';
+      C.LEVELS.forEach(function(l){
+        hh+='<div class="cell '+l.key+'"><div class="ch">'+l.nm+' · '+l.note+'</div><p>'+esc(t2[d.key][l.key])+'</p></div>';
+      });
+    });
+    hh+='</div>';
+    document.getElementById('matrix').innerHTML=hh;
+  }
+  var h3='';
+  Object.keys(C.T3).forEach(function(k){
+    var c=C.T3[k];
+    h3+='<details><summary><span class="c-title">'+c.title+'</span>'
+      +'<span class="c-tag'+(c.tension?' tension':'')+'">'+c.pair+' · '+c.character+'</span></summary>'
+      +'<p class="c-text">'+esc(c.text)+'</p></details>';
+  });
+  document.getElementById('t3').innerHTML=h3;
+  var h4='';
+  ['high','low','mid'].forEach(function(k){
+    var c=C.T4[k];
+    h4+='<details><summary><span class="c-title">'+c.nm+'</span></summary><p class="c-text">'+esc(c.text)+'</p></details>';
+  });
+  document.getElementById('t4').innerHTML=h4;
+  var h5='';
+  Object.keys(C.T5).forEach(function(k){
+    var c=C.T5[k];
+    h5+='<details><summary><span class="c-title">'+c.nm+'</span><span class="c-tag">'+c.kind+'</span></summary>'
+      +'<p class="c-text">'+esc(c.text)+'</p></details>';
+  });
+  document.getElementById('t5').innerHTML=h5;
+  render();
+
+  var els=document.querySelectorAll('.rv');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    els.forEach(function(e){e.classList.add('in')});
+  } else {
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}
+    });},{threshold:.05,rootMargin:'0px 0px -30px 0px'});
+    els.forEach(function(e){io.observe(e)});
+  }
+})();
+</script>
+
+</body>
+</html>
