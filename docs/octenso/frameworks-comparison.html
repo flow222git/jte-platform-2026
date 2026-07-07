@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 × 人格描述取徑</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next","Futura",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f;
+    --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d;
+  }
+}
+:root[data-theme="light"]{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+}
+:root[data-theme="dark"]{
+  --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+  --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink-soft);
+  font-family:var(--sans);font-weight:300;font-size:15.5px;line-height:1.95;
+  -webkit-font-smoothing:antialiased;text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:0 22px 90px}
+
+/* ── header ── */
+header{padding:76px 0 0;text-align:center}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:17px;letter-spacing:.9em;
+  margin-bottom:34px;padding-left:.9em}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:20px}
+h1{font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:clamp(26px,6vw,38px);letter-spacing:.14em;line-height:1.5;margin:0 0 14px;text-wrap:balance}
+.subtitle{font-family:var(--serif);font-weight:400;color:var(--muted);
+  font-size:clamp(14px,3.5vw,16.5px);letter-spacing:.1em;margin:0 0 30px}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+/* ── verdict ── */
+.verdict{margin:58px 0 0;padding:34px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.verdict p{font-family:var(--serif);font-weight:400;color:var(--ink);
+  font-size:clamp(17px,4.2vw,20px);letter-spacing:.06em;line-height:2;margin:0;text-align:center;text-wrap:balance}
+.verdict em{font-style:normal;color:var(--pine)}
+
+/* ── TOC ── */
+nav.toc{margin:44px 0 0}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+nav.toc li{border-bottom:1px solid var(--line)}
+nav.toc a{display:flex;gap:12px;align-items:baseline;padding:9px 2px;color:var(--ink-soft);
+  text-decoration:none;font-size:13.5px;letter-spacing:.05em;transition:color .2s}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--pine)}
+nav.toc .n{font-family:var(--serif);font-size:12px;color:var(--muted);min-width:1.4em}
+@media(max-width:540px){nav.toc ol{grid-template-columns:1fr}}
+
+/* ── sections ── */
+section{margin-top:84px}
+.seclabel{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.seclabel .num{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:clamp(19px,4.6vw,23px);letter-spacing:.12em;margin:0;text-wrap:balance}
+.seclead{color:var(--muted);font-size:14px;letter-spacing:.03em;margin:0 0 28px;max-width:60ch}
+h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16.5px;
+  letter-spacing:.08em;margin:40px 0 12px}
+p{margin:0 0 18px;max-width:66ch}
+strong{font-weight:400;color:var(--ink)}
+.accent{color:var(--pine)}
+.warn{color:var(--cinnabar)}
+
+/* ── tables ── */
+.tblwrap{overflow-x:auto;margin:22px 0 8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.8}
+th{font-family:var(--sans);font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.1em;
+  text-align:left;padding:12px 16px 10px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:13px 16px 13px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);
+  vertical-align:top;min-width:9em}
+tr:last-child td{border-bottom:none}
+td.k{font-family:var(--serif);font-weight:500;color:var(--ink);white-space:nowrap;min-width:auto}
+td.tight,th.tight{min-width:auto;white-space:nowrap}
+.sym{font-family:var(--serif)}
+
+/* status marks */
+.st{font-family:var(--serif);font-size:13px;white-space:nowrap}
+.st.yes{color:var(--pine)} .st.part{color:var(--gold)} .st.no{color:var(--cinnabar)}
+.legend{display:flex;flex-wrap:wrap;gap:22px;margin:14px 0 0;font-size:12px;color:var(--muted);letter-spacing:.06em}
+
+/* ── quote block ── */
+.pull{margin:40px 0;padding:0 0 0 20px;border-left:1px solid var(--hair)}
+.pull p{font-family:var(--serif);font-weight:400;color:var(--ink);font-size:16.5px;
+  letter-spacing:.05em;line-height:2.1;margin:0;max-width:none;text-wrap:balance}
+.kin{margin:26px 0 0;font-size:13px;color:var(--muted);letter-spacing:.04em;line-height:2.2}
+.kin b{font-weight:400;color:var(--ink)}
+.kin .sep{color:var(--hair);padding:0 6px}
+
+/* ── mechanism list ── */
+ol.mech{list-style:none;margin:26px 0 0;padding:0;counter-reset:m}
+ol.mech li{counter-increment:m;display:flex;gap:18px;padding:16px 0;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+ol.mech li:last-child{border-bottom:none}
+ol.mech li::before{content:counter(m,cjk-ideographic);font-family:var(--serif);
+  color:var(--gold);font-size:13px;line-height:2.1;flex:0 0 1.2em}
+ol.mech .t{font-family:var(--serif);font-weight:500;color:var(--ink);letter-spacing:.04em}
+ol.mech p{margin:2px 0 0;font-size:14px;color:var(--ink-soft)}
+
+/* three-way verdict */
+.triage{margin:26px 0 0;display:flex;flex-direction:column;gap:0}
+.triage>div{padding:20px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.triage>div:last-child{border-bottom:none}
+.triage .h{font-family:var(--serif);font-weight:500;letter-spacing:.06em;margin-bottom:6px}
+.triage .h .st{margin-right:10px}
+.triage p{font-size:14px;margin:0;max-width:none}
+
+/* rules list */
+ul.rules{list-style:none;margin:22px 0 0;padding:0}
+ul.rules li{padding:11px 0 11px 20px;border-left:1px solid var(--hair);margin-bottom:10px;font-size:14px}
+ul.rules b{font-weight:400;color:var(--ink);font-family:var(--serif);letter-spacing:.03em}
+
+/* ── specimen (乾 demo) ── */
+.specimen{margin-top:36px;border:1px solid var(--line);background:var(--surface);padding:46px 40px 40px}
+@media(max-width:540px){.specimen{padding:34px 22px 30px}}
+.specimen .glyph{font-family:var(--serif);font-size:34px;color:var(--ink);text-align:center;line-height:1;margin-bottom:14px}
+.specimen .name{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:22px;
+  letter-spacing:.22em;text-align:center;margin:0 0 4px;padding-left:.22em}
+.specimen .name-en{font-family:var(--latin);font-size:10.5px;letter-spacing:.3em;color:var(--muted);
+  text-transform:uppercase;text-align:center;margin-bottom:8px}
+.specimen .felt{font-size:12px;color:var(--muted);text-align:center;letter-spacing:.08em;margin-bottom:34px}
+.specimen h4{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:14.5px;letter-spacing:.14em;
+  margin:34px 0 8px;display:flex;align-items:center;gap:12px}
+.specimen h4::after{content:"";flex:1;height:1px;background:var(--line)}
+.specimen h4 .band{font-size:11px;color:var(--muted);letter-spacing:.1em;font-family:var(--sans);font-weight:300}
+.specimen h4 .band.zhong{color:var(--pine)}
+.specimen h4 .band.kang{color:var(--cinnabar)}
+.specimen p{font-size:14.5px;line-height:2.05;max-width:none}
+.specimen .note{margin-top:36px;padding-left:16px;border-left:1px solid var(--hair);
+  font-size:12.5px;color:var(--muted);line-height:1.9}
+
+/* roadmap */
+.road{margin:26px 0 0}
+.road>div{display:flex;gap:20px;padding:15px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.road>div:last-child{border-bottom:none}
+.road .ph{font-family:var(--latin);font-size:11px;letter-spacing:.18em;color:var(--gold);
+  flex:0 0 2.6em;padding-top:5px}
+.road p{margin:0;font-size:14px;max-width:none}
+.road .dep{font-size:12px;color:var(--muted);letter-spacing:.04em}
+
+/* honest footer */
+.honest{margin-top:90px;padding:28px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:14px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+}
+a{color:var(--pine)}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+
+@media print{
+  .rv{opacity:1 !important;transform:none !important;transition:none}
+  body{font-size:12px}
+  section{margin-top:40px;break-inside:auto}
+  .specimen,.tblwrap,.pull,.verdict{break-inside:avoid}
+  header{padding-top:20px}
+  nav.toc{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Research Comparison</div>
+  <h1>八態能格 × 人格描述取徑</h1>
+  <p class="subtitle">全景比較，與「型錄深化」路線</p>
+  <div class="meta">2026 · 07 · 07</div>
+</header>
+
+<div class="verdict rv">
+  <p>八態能格<em>做得到</em>九型人格做到的事——<br>而且不必違憲。<br>缺的不是模型，是把「欄位」寫成「章節」的<em>內容工程</em>。</p>
+</div>
+
+<nav class="toc rv" aria-label="目錄">
+  <ol>
+    <li><a href="#s1"><span class="n">一</span>現況速寫：哪些有、哪些沒有</a></li>
+    <li><a href="#s2"><span class="n">二</span>六大家族全景比較</a></li>
+    <li><a href="#s3"><span class="n">三</span>檢驗結論：對齊．不同．缺口</a></li>
+    <li><a href="#s4"><span class="n">四</span>解剖九型：細膩從何而來</a></li>
+    <li><a href="#s5"><span class="n">五</span>九型機制 → 八態原生對應</a></li>
+    <li><a href="#s6"><span class="n">六</span>型錄深化設計</a></li>
+    <li><a href="#s7"><span class="n">七</span>樣張：乾．開創者</a></li>
+    <li><a href="#s8"><span class="n">八</span>誠實邊界與路線圖</a></li>
+  </ol>
+</nav>
+
+<!-- ════ 一 ════ -->
+<section id="s1" class="rv">
+  <div class="seclabel"><span class="num">一</span><h2>現況速寫：哪些有、哪些沒有</h2></div>
+  <p class="seclead">主觀自評 25 題 → 八態剖面 → 三層讀法＋能格三態（潛／中正／亢）＋確信度。身分＝格局，卦名只是峰名。鏡子、快照、非命定。</p>
+
+  <div class="tblwrap"><table>
+    <tr><th>面向</th><th class="tight">狀態</th><th>現況</th></tr>
+    <tr><td class="k">優勢／盲點／成長</td><td class="tight"><span class="st yes">●</span></td><td>每態各 1–2 句（E 物件、中正詞庫）</td></tr>
+    <tr><td class="k">過用／不足＋怎麼調</td><td class="tight"><span class="st yes">●</span></td><td>每態各 1 句，標「草稿待潤」（COST）</td></tr>
+    <tr><td class="k">情境耗能雛形</td><td class="tight"><span class="st part">◐</span></td><td>6 場景：帶人／趕工／社交／衝突／照顧／表現（CTX）</td></tr>
+    <tr><td class="k">壓力下的完整側寫</td><td class="tight"><span class="st part">◐</span></td><td>只能由 COST＋CTX 拼湊，未成文</td></tr>
+    <tr><td class="k">工作樣貌（散文）</td><td class="tight"><span class="st no">○</span></td><td>career 頁是 29 職業 × fit 分數引擎，非人格描述</td></tr>
+    <tr><td class="k">愛情／關係樣貌</td><td class="tight"><span class="st no">○</span></td><td>幾乎空白——最大缺口</td></tr>
+    <tr><td class="k">雙峰／格局型內容</td><td class="tight"><span class="st no">○</span></td><td>演算法串接 essence＋一句模板，無專屬撰寫</td></tr>
+    <tr><td class="k">兩兩卦互動敘事</td><td class="tight"><span class="st no">○</span></td><td>0 篇（team 頁純互補分數）</td></tr>
+  </table></div>
+  <div class="legend"><span><span class="st yes">●</span>　已有</span><span><span class="st part">◐</span>　部分</span><span><span class="st no">○</span>　空白</span></div>
+
+  <p style="margin-top:26px">量化差距：九型每型是「數段～整章」的深度，工作、愛情、教養、領導各自成節；八態目前每態是「欄位式 1–2 句」。<strong>差的不是模型，是內容工程。</strong></p>
+</section>
+
+<!-- ════ 二 ════ -->
+<section id="s2" class="rv">
+  <div class="seclabel"><span class="num">二</span><h2>六大家族全景比較</h2></div>
+  <p class="seclead">「描述一個人」這件事，百年來大致長出六個家族。逐家檢驗八態能格的對應關係，並標出可偷師之處。</p>
+
+  <h3>類型論——「你是哪一型」</h3>
+  <div class="tblwrap"><table>
+    <tr><th>系統</th><th>結構</th><th>與八態的對應</th></tr>
+    <tr><td class="k">九型人格</td><td>9 型 × 核心恐懼／渴望 × 健康度九級 × 側翼 × 本能子型 × 壓力成長箭頭</td><td>詳見第四、五節。能格三態≈健康度、雙峰≈側翼、對境耗能≈子型；缺「動機機制」——<span class="accent">刻意不宣稱，非缺陷</span></td></tr>
+    <tr><td class="k">MBTI</td><td>4 二分 → 16 型</td><td>教訓＝切型換來內容好寫、賠上重測穩定（五週約半數換型）。八態六點無中性是「解析度」，但輸出不切型、保留剖面</td></tr>
+    <tr><td class="k">DISC</td><td>4 因子行為風格</td><td>粒度與「四對生命系統」相當；八態四對是成對軸（雙向填色），資訊多於單象限</td></tr>
+    <tr><td class="k">PCM</td><td>6 型人格大樓：底層不變＋當前樓層會變＋逐型壓力三級階梯</td><td><span class="accent">值得偷師</span>：base/phase＝「底色 vs 此刻快照」先例；壓力階梯＝「亢的階梯」現成寫法範本</td></tr>
+    <tr><td class="k">Insights Discovery</td><td>4 色 → 72 輪位</td><td>證明組合命名可量產身分感——八態 8 單峰＋28 雙峰＋3 格局型 ≈ 39 命名形態，粒度相近</td></tr>
+  </table></div>
+
+  <h3>特質論——「你在幾條連續光譜上的位置」</h3>
+  <div class="tblwrap"><table>
+    <tr><th>系統</th><th>結構</th><th>與八態的對應</th></tr>
+    <tr><td class="k">Big Five / NEO</td><td>5 大特質 × 30 面向，常模計分</td><td>科學金標準，但報告讀來像統計表——<strong>效度高 ≠ 內容黏</strong>。八態走 ipsative 形狀（相對自己），是定位選擇；上線後因素分析驗證 8/4 結構＝向它的科學紀律看齊</td></tr>
+    <tr><td class="k">Hogan（HPI/HDS）</td><td>亮面／暗面 derailers／價值</td><td><span class="accent">HDS＝「優勢在壓力下過用而出軌」的商業成熟版</span>——與能格「亢」完全同構。證明「過用面」寫得出企業願意付費的深度</td></tr>
+  </table></div>
+
+  <h3>優勢論——「你的資源組合」</h3>
+  <div class="tblwrap"><table>
+    <tr><th>系統</th><th>結構</th><th>與八態的對應</th></tr>
+    <tr><td class="k">CliftonStrengths 34</td><td>34 主題排序；身分＝Top 5 剖面，不是一個型</td><td><span class="accent">與八態最同構的商業成功案例</span>：每主題深頁＋主題×主題配對短文＋場域報告＝不靠「型」也寫出九型級厚度。直接回答「不裝箱也能細膩」</td></tr>
+    <tr><td class="k">VIA 24 品格優勢</td><td>每條優勢明確給 overuse / underuse / golden mean</td><td><span class="accent">潛／中正／亢的學術先例</span>（亞里斯多德中庸）：好奇心過用＝愛打探、不足＝無聊感</td></tr>
+  </table></div>
+
+  <h3>狀態／動力論——「你此刻的能量分佈」（與八態同宗）</h3>
+  <div class="tblwrap"><table>
+    <tr><th>系統</th><th>結構</th><th>與八態的對應</th></tr>
+    <tr><td class="k">Whole Trait Theory</td><td>人格＝狀態的分佈（Fleeson）</td><td>「快照、重測會變、正常」的學術靠山——主流人格科學已承認狀態觀</td></tr>
+    <tr><td class="k">TA 自我狀態 Egogram</td><td>5 功能自我狀態的能量長條圖</td><td>心理治療界的「狀態剖面圖」先例：不問哪型，問哪個狀態用太多／太少——與八態問法同構</td></tr>
+    <tr><td class="k">IFS 內在家族系統</td><td>內在多元部分，無固定型</td><td>「格局當本體、卦只是峰名」的治療界近親：人是多聲部，不是單標籤</td></tr>
+  </table></div>
+
+  <h3>動機／需求論——「你為什麼動」</h3>
+  <p>McClelland、Reiss 十六慾望、SDT、Schwartz 價值環。<strong>檢驗結果：這是八態刻意不踏入的層。</strong>九型的細膩一半來自動機宣稱（「因為你怕被控制，所以⋯」），但那正是解讀憲法 C1「似是而非最危險」點名的句式。八態測的是能量使用的自我感覺，不是動機——這條界線是特色，寫內容時守住。</p>
+
+  <h3>東方能量／體質論——八態的文化母體</h3>
+  <div class="tblwrap"><table>
+    <tr><th>系統</th><th>結構</th><th>與八態的對應</th></tr>
+    <tr><td class="k">《靈樞》陰陽五態人</td><td>太陰／少陰／太陽／少陽／陰陽和平（×5＝二十五人）</td><td>典籍裡現成的能量類型學祖先——八卦系統做人格分型有兩千年文獻縱深，對外論述可引</td></tr>
+    <tr><td class="k">阿育吠陀 doshas</td><td>prakriti 先天體質 vs vikriti 當前失衡</td><td>「底色 vs 此刻快照」的體質學先例；「當前失衡→調理」＝能格「亢／潛→怎麼調」同構</td></tr>
+    <tr><td class="k">Human Design．紫微．八字</td><td>出生資料決定論</td><td><span class="warn">反面對照組</span>：內容極細膩、黏著極高，但機制是命定宣稱。學它們的內容顆粒度，不學宣稱方式</td></tr>
+  </table></div>
+
+  <div class="pull">
+    <p>八態能格＝狀態論的測量觀（快照、會變）＋優勢論的內容結構（剖面即身分）＋類型論的入口體驗（峰名好記）＋東方體質論的語彙（八卦、能量、中正）；刻意不做特質論的常模比較，刻意不做動機論的機制宣稱。</p>
+  </div>
+  <p class="kin">最近親（結構同構度由高到低）——<br>
+    <b>CliftonStrengths</b> 剖面身分<span class="sep">→</span><b>VIA</b> 三態中庸<span class="sep">→</span><b>Hogan HDS</b> 過用出軌<span class="sep">→</span><b>PCM</b> 底色與壓力階梯<span class="sep">→</span><b>TA Egogram</b> 狀態剖面<span class="sep">→</span><b>九型</b> 場域章節與辨認感</p>
+</section>
+
+<!-- ════ 三 ════ -->
+<section id="s3" class="rv">
+  <div class="seclabel"><span class="num">三</span><h2>檢驗結論：對齊．不同．缺口</h2></div>
+  <div class="triage">
+    <div>
+      <div class="h"><span class="st yes">●</span>已對齊主流</div>
+      <p>狀態觀（Fleeson）、三態中庸（VIA）、過用出軌（Hogan）、剖面身分（Clifton）、底色／快照（PCM、阿育吠陀）。八態不是孤例，每個關鍵設計都有學術或商業成熟先例可引。</p>
+    </div>
+    <div>
+      <div class="h"><span class="st part">◐</span>自覺的不同——是定位，勿改</div>
+      <p>不做常模（ipsative 鏡子）、不宣稱動機機制、不切固定型（格局當本體）、不做命定（非算命）。</p>
+    </div>
+    <div>
+      <div class="h"><span class="st no">○</span>真缺口——該補的</div>
+      <p>內容厚度：場域散文（工作／愛情）、組合型專屬內容、壓力階梯成文、兩兩互動敘事。<strong>全部是內容工程，不需要動模型。</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 四 ════ -->
+<section id="s4" class="rv">
+  <div class="seclabel"><span class="num">四</span><h2>解剖九型：細膩從何而來</h2></div>
+  <p class="seclead">九型每型能寫出一整章工作、一整章愛情，靠的是六個疊加的內容機制。</p>
+  <ol class="mech">
+    <li><div><span class="t">固定身分</span><p>「你是 8 號」——所有場域內容掛在同一個掛鉤上，讀者用身分索引內容。</p></div></li>
+    <li><div><span class="t">動機機制當引擎</span><p>核心恐懼／渴望是因果假設（「8 號怕被控制 → 愛情裡會測試忠誠」），作者可以推演出新場域內容，不必逐格實寫。</p></div></li>
+    <li><div><span class="t">健康度分層</span><p>每型九級（健康／一般／不健康）——同一型有三種以上樣貌，內容格數乘三，且自帶成長敘事。</p></div></li>
+    <li><div><span class="t">側翼</span><p>9 × 2 ＝ 18 種變體，身分更「像我」。</p></div></li>
+    <li><div><span class="t">本能子型</span><p>sp／sx／so × 9 ＝ 27——同型不同味，又乘三。</p></div></li>
+    <li><div><span class="t">辨認感語氣</span><p>第二人稱、具體生活鏡頭（「你大概常在會議裡忍不住接管」）——讀者自我辨認，黏著度的來源。</p></div></li>
+  </ol>
+  <p style="margin-top:26px">內容格數 ≈ 9 型 ×（6 場域 × 3 健康帶）＋ 18 側翼 ＋ 27 子型 ≈ <strong>數百格人手撰寫</strong>。同時誠實記錄它的代價：機制是未經驗證的宣稱、辨認感有 Barnum 成分、裝箱造成的錯型傷害。<strong>八態要的是它的顆粒度與辨認感，不是它的宣稱方式。</strong></p>
+</section>
+
+<!-- ════ 五 ════ -->
+<section id="s5" class="rv">
+  <div class="seclabel"><span class="num">五</span><h2>九型機制 → 八態原生對應</h2></div>
+  <p class="seclead">六個機制，五個有原生對應、一個是自覺放棄。放棄動機推演的代價＝內容要逐格人手寫——這正是「型錄深化」是內容工程而非模型工程的原因。</p>
+  <div class="tblwrap"><table>
+    <tr><th>九型機制</th><th>八態原生對應</th><th>憲法檢核</th></tr>
+    <tr><td class="k">固定身分</td><td>峰名自適應：8 單峰稱號＋28 雙峰組合名＋3 格局型 ≈ 39 命名形態</td><td><span class="st yes">●</span>「名字當入口、格局當本體」</td></tr>
+    <tr><td class="k">健康度九級</td><td>能格三態：潛／中正／亢（已有實測校準題）</td><td><span class="st yes">●</span>比九型九級誠實——有資料撐</td></tr>
+    <tr><td class="k">動機機制推演</td><td>無對應——刻意不做。替代引擎＝每態的中正之德／亢的代價／潛的空間＋場域顯相實寫</td><td><span class="st part">◐</span>守 C1／C5；代價是逐格實寫</td></tr>
+    <tr><td class="k">側翼</td><td>雙峰組合（gap＜15 並列已上線）；四對待雙峰可講「德」，非對待雙峰只並存</td><td><span class="st yes">●</span>C3 限定下仍可寫：並存合規、因果不合規</td></tr>
+    <tr><td class="k">壓力／成長箭頭</td><td>無理論對應（C1 禁捏）。誠實替代：亢的階梯（單股內）＋重測快照對照（實測非宣稱）</td><td><span class="st yes">●</span>單股內 C1 安全</td></tr>
+    <tr><td class="k">本能子型</td><td>對境耗能（persona v2 第二階段）：同一底色 × 工作／關係情境需求——而且是實測不是推論</td><td><span class="st yes">●</span>正好是「工作／愛情樣貌」的引擎</td></tr>
+  </table></div>
+</section>
+
+<!-- ════ 六 ════ -->
+<section id="s6" class="rv">
+  <div class="seclabel"><span class="num">六</span><h2>型錄深化設計</h2></div>
+  <p class="seclead">現有三層（模型層＝學理憲法、解讀層＝解讀憲法、引擎層＝profile.js）之上，補一個內容層。</p>
+
+  <div class="pull">
+    <p>型錄＝以「態 × 能格 × 場域」為索引的散文內容庫。它不是八種人的檔案，是八股能量在各場域、各能格下的顯相圖鑑——讀者的主峰決定他讀到哪幾章，體感即「我的型的章節」。</p>
+  </div>
+
+  <h3>內容矩陣（按槓桿排序）</h3>
+  <div class="tblwrap"><table>
+    <tr><th class="tight">塊</th><th>內容</th><th>規模</th></tr>
+    <tr><td class="k tight">T1</td><td><strong>八峰型錄</strong>——固定結構：神韻 → 人群中的樣子 → 工作樣貌（中正＋亢）→ 愛情與親密（中正＋亢）→ 壓力訊號（亢的三級階梯）→ 還沒長開（潛）→ 成長方向（錯卦之德）→ 給身邊人</td><td>8 篇 × 1200–2000 字</td></tr>
+    <tr><td class="k tight">T2</td><td><strong>場域 × 能格微文案庫</strong>——報告引擎的積木；對境耗能測出「工作把你哪股掏空」後直接取用 → 自動生成個人化場域報告。T1 段落由 T2 擴寫，同源不漂移</td><td>8 態 × 4 場域 × 3 能格 ＝ 96 則</td></tr>
+    <tr><td class="k tight">T3</td><td><strong>雙峰組合文</strong>——先寫 4 錯卦對（有「德」可寫），上線後依實際雙峰頻率補其餘 24 對</td><td>每則 200–400 字</td></tr>
+    <tr><td class="k tight">T4</td><td><strong>格局型三篇</strong>——高能多面／低調蓄能／均衡。這三型的人測完最沒有「被看見」感，成篇是低成本高感動</td><td>3 篇 × 600–1000 字</td></tr>
+    <tr><td class="k tight">T5</td><td><strong>關係合盤敘事</strong>——先寫 12 組（4 錯卦對＋8 同峰對），其餘由 T2 愛情欄積木組裝</td><td>12 組實寫</td></tr>
+  </table></div>
+
+  <h3>寫作規則（憲法相容檢核，每篇過一遍）</h3>
+  <ul class="rules">
+    <li><b>R1 索引句式</b>──主語是能量不是人：「當開創是你的主峰、而且用得中正，工作中的你往往⋯」；禁「開創型的人都會⋯」。</li>
+    <li><b>R2 一段一層</b>──中正段、亢段、潛段各自獨立；「你有衝勁但容易衝過頭」這種混句拆開。</li>
+    <li><b>R3 組合句式</b>──並存可以（「又有⋯又有⋯」），因果不行（「因為⋯所以⋯」）；只有四對待可講德、只有雷風可講張力。</li>
+    <li><b>R4 可追溯</b>──每句能指回五素材之一（相對高低／四對待／能格／缺口／整體水平）；指不回＝刪。</li>
+    <li><b>R5 不碰動機層</b>──寫顯相（你在愛情裡常做什麼、需要什麼），不寫深層動機（你其實是因為怕⋯）。這是與九型的楚河漢界。</li>
+    <li><b>R6 描述非預測</b>──愛情章寫傾向與需要，不寫「你會遇到誰、關係會怎樣」。</li>
+    <li><b>R7 生活鏡頭</b>──每段至少一個具體場景；九型辨認感的來源，在 C1 邊界內完全可用。</li>
+    <li><b>R8 快照框架</b>──每篇開頭帶 felt-self 一行；價值中性，亢與潛是樣態不是缺點。</li>
+  </ul>
+</section>
+
+<!-- ════ 七 ════ -->
+<section id="s7" class="rv">
+  <div class="seclabel"><span class="num">七</span><h2>樣張：乾．開創者</h2></div>
+  <p class="seclead">T1 結構的示範稿——證明九型級的細膩，在「鏡子不裝箱、不捏因果」的憲法內寫得出來。</p>
+
+  <div class="specimen">
+    <div class="glyph">☰</div>
+    <p class="name">乾．開創者</p>
+    <div class="name-en">The Initiator</div>
+    <p class="felt">這是此刻你感受到的自己——會流動，也可以成長。</p>
+
+    <h4>神韻</h4>
+    <p>當「開創」是你此刻最亮的峰，你身上有一種把空白變成方向的能力。一群人還在猶豫的時候，你已經在想第一步長什麼樣子。這不一定表現成大嗓門——有些開創者很安靜，但事情總是繞著他們定下的框架走。</p>
+
+    <h4>工作樣貌<span class="band zhong">中正</span></h4>
+    <p>用得剛好的開創，在工作裡是「立方向、開局、作主」：你適合站在還沒有答案的地方——新專案、新市場、沒人接的爛攤子。你開會時自然會把發散的討論收成決定；同事常在卡住時來找你，因為你敢拍板。你最有能量的時刻，往往是一張白紙攤在面前的時刻。</p>
+
+    <h4>工作樣貌<span class="band kang">亢</span></h4>
+    <p>同一股能量用過了頭，樣子會變：什麼都自己扛、聽不進不同版本的做法、把「快點定下來」看得比「定得對」重要。一個訊號是——你發現團隊越來越安靜，事情都等你開口。這不是你不好，是開創這股能量自己滿出來了；亢龍有悔，說的就是這個時刻。怎麼收：把「決定」和「執行的方式」分開，後者放手。</p>
+
+    <h4>愛情與親密<span class="band zhong">中正</span></h4>
+    <p>在關係裡，中正的開創是「有肩膀」：你會主動定義關係、規劃兩個人的方向、在對方搖擺時給出確定感。你表達愛的方式常常是「安排」——把旅行訂好、把未來想好。對很多人來說，這種確定感本身就是安全感。</p>
+
+    <h4>愛情與親密<span class="band kang">亢</span></h4>
+    <p>過了頭，「安排」會變成「接管」：對方的週末、職涯、朋友圈都進了你的專案表。另一個常見樣子是難以示弱——關係裡你永遠是給方向的那個，累了也不說。一個檢查點：上一次讓對方替你決定一件事，是什麼時候？</p>
+
+    <h4>壓力訊號<span class="band kang">亢的階梯</span></h4>
+    <p>一級：語速變快、待辦變多、開始替所有人想好下一步。二級：獨斷變明顯，「討論」變成「宣布」。三級：脫離現實——方向定得又快又大，但沒人跟得上，包括你自己。越早在一級認出它，越不用走到三級。</p>
+
+    <h4>還沒長開<span class="band">潛．給開創是缺口的人</span></h4>
+    <p>如果開創是你較少動用的一股：你可能習慣等別人定方向、開了頭的事也想先看看再說。這股能量能帶給你的是方向感與願景——不必變成領導者，從「小事自己拍板」開始練即可；潛龍勿用不是不能用，是還沒到用的時候。</p>
+
+    <h4>成長方向</h4>
+    <p>開創的錯卦搭檔是坤．承接。天地定位：能開也能納，才是完整的建構格局。對開創者，成長不是收起鋒芒，是練習信任與授權——讓別人也能出力，你的方向才走得遠。</p>
+
+    <h4>給身邊人</h4>
+    <p>與開創能量強的人相處：他的「快」不是否定你，是他的預設速度；要影響他，帶著方案來，不要只帶問題來。他最少說出口的需要，是「被接住」。</p>
+
+    <div class="note">檢核：全篇主語是能量（R1）；中正／亢／潛分段（R2）；唯一的跨股句在成長方向、且是乾坤錯卦之德（R3 合規）；無動機宣稱、無預測（R5／R6）；每段有生活鏡頭（R7）。</div>
+  </div>
+</section>
+
+<!-- ════ 八 ════ -->
+<section id="s8" class="rv">
+  <div class="seclabel"><span class="num">八</span><h2>誠實邊界與路線圖</h2></div>
+
+  <p>九型的「細膩」有一部分是 Barnum 效應——誰讀都像自己。八態的目標是<strong>細膩而可追溯</strong>：每句掛在「態 × 能格 × 場域」上，主峰不同的人讀到的章節就是不同，這是結構性的反 Barnum。但寫作時仍要抽查：「這段拿給低乾的人讀，會不會也全中？」全中＝寫太泛，重寫。</p>
+  <p>型錄越厚，「裝箱」的引力越大——讀者會自稱「我是乾型」。對策：型錄頁保留 felt-self 框架與「此刻快照」語言；峰名是入口的原則寫進頁面本身，不只寫在 spec。內容量大、多輪撰寫必然漂移——全部進 canonical data，寫作規則做成撰稿模板。</p>
+
+  <h3>建議路線</h3>
+  <div class="road">
+    <div><span class="ph">P0</span><p>現有草稿潤稿回溯（COST／CTX／中正詞庫逐條對齊兩憲法）——型錄的字根先站穩<br><span class="dep">依賴：無</span></p></div>
+    <div><span class="ph">P1</span><p>T1 八峰型錄八篇（含工作／愛情章）＋型錄頁＋報告頁主峰卡連結<br><span class="dep">依賴：P0</span></p></div>
+    <div><span class="ph">P2</span><p>T2 九十六則微文案庫進 canonical data；對境耗能第二階段接上 → 個人化工作／關係報告<br><span class="dep">依賴：P1．persona v2 §4</span></p></div>
+    <div><span class="ph">P3</span><p>T3 四錯卦雙峰文＋T4 格局型三篇——補「組合全模板」缺口<br><span class="dep">依賴：P1</span></p></div>
+    <div><span class="ph">P4</span><p>T5 合盤敘事十二組（愛情／合作）<br><span class="dep">依賴：P2</span></p></div>
+    <div><span class="ph">P5</span><p>資料回饋：上線收雙峰頻率決定其餘 24 對撰寫順序；因素分析驗證 8／4 結構<br><span class="dep">依賴：上線</span></p></div>
+  </div>
+
+  <div class="pull" style="margin-top:48px">
+    <p>八態能格不必變成九型，也不必羨慕九型——它已經備齊了九型六個內容機制裡的五個原生對應物，缺的只是把「欄位」寫成「章節」的內容工程。索引從「人的型」換成「態 × 能格 × 場域」，細膩不減、誠實加倍。</p>
+  </div>
+</section>
+
+<div class="honest">
+  這是一面認識自己與關係的鏡子，不是算命、不是命定——能量會流動，也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-07-octenso-personality-frameworks-comparison-and-catalog-design.md</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var els=document.querySelectorAll('.rv');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    els.forEach(function(e){e.classList.add('in')});return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}
+    });
+  },{threshold:.06,rootMargin:'0px 0px -30px 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>

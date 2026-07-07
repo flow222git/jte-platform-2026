@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · 新版總說明</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>八態能格 · 新版總說明</h1>
+  <div class="meta">New Edition Guide v2 · 2026 · 07 · 07 · 五層全貌 + 型錄導讀 + 上線路徑</div>
+</header>
+<article>
+<p>整理日期:2026-07-07 ｜ 性質:<strong>對外/對內共用的新版說明</strong>——型錄層(內容層)完成後,八態能格的完整樣貌。
+定位:<code>MODEL.md</code> 仍是模型觀北極星、兩部憲法仍是規範;本文是站在它們之上的<strong>新版導讀</strong>——給第一次認識系統的人看全貌,給維護者看各層怎麼咬合。
+上游:<code>octenso/COMPENDIUM.md</code>(全料總覽)、<a href="比較與型錄 spec">[2026-07-07-octenso-personality-frameworks-comparison-and-catalog-design]</a>。</p>
+<hr />
+<h2>0. 一句話</h2>
+<p><strong>八態能格是一面測量鏡</strong>:25 題主觀自評,照出你此刻在「八態 × 四對生命系統」空間裡的立體輪廓——並且,從今天起,每一股能量在<strong>工作、愛情、人際、獨處</strong>四個場域、<strong>潛/中正/亢</strong>三種能格下的樣子,都有了成文的圖鑑(型錄層)。鏡子照位置,型錄給語言。</p>
+<h2>1. 系統全貌(五層,2026-07-07 起)</h2>
+<pre><code>模型層  八態×四對待×能格三態(學理憲法定錨,bagua-data.js canonical)
+  ↓
+解讀層  五素材+C1–C8+三拍(解讀憲法)——分數怎麼說成話而不失真
+  ↓
+引擎層  profile.js:水平×形狀×四對×主峰×確信度 → 簽名四形態
+  ↓
+內容層  ★新:型錄(catalog)——(態×能格×場域)索引的散文內容庫
+  ↓
+頁面層  persona 測驗報告/map 認識八態/field 測局/team 合盤/catalog 型錄(草稿)
+</code></pre>
+<p>新增的<strong>內容層</strong>回答的是使用者的老問題:「所以我這型,在工作裡、在感情裡,到底長什麼樣子?」——過去只有欄位式 1–2 句,現在是成文的章節。</p>
+<h2>2. 型錄層:有什麼(v0.1 草稿,尚未上線)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>塊</th>
+<th>內容</th>
+<th>規模</th>
+<th>所在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T1 八峰型錄</strong></td>
+<td>每卦一篇長文,固定十節:神韻/人群中的樣子/工作(中正+亢)/愛情(中正+亢)/壓力訊號(亢的三級階梯)/還沒長開(潛)/成長方向(錯卦之德)/給身邊人</td>
+<td>8 篇</td>
+<td><code>bagua-catalog-t1.js</code></td>
+</tr>
+<tr>
+<td><strong>T2 微文案庫</strong></td>
+<td>態×場域(工作/愛情/人際/獨處)×能格(中正/亢/潛)</td>
+<td>96 則</td>
+<td><code>bagua-catalog-data.js</code></td>
+</tr>
+<tr>
+<td><strong>T3 雙峰組合</strong></td>
+<td>四錯卦對成文(天地=完整格局/雷風=鼓盪·唯一張力/水火=既深又亮/山澤=進退有節);其餘 24 對用並存句式,俟上線頻率再擴寫</td>
+<td>4+模板</td>
+<td><code>bagua-catalog-combos.js</code></td>
+</tr>
+<tr>
+<td><strong>T4 格局型</strong></td>
+<td>高能多面型/低調蓄能型/均衡型,各成篇(樣貌/工作/關係/此刻功課)</td>
+<td>3 篇</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><strong>T5 合盤敘事</strong></td>
+<td>四錯卦對+八同峰對;其餘組合由 T2 愛情欄積木組裝</td>
+<td>12 組</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>渲染頁</td>
+<td>草稿頁(掛登入閘、未接導覽)</td>
+<td>—</td>
+<td><code>bagua-catalog.html</code></td>
+</tr>
+<tr>
+<td>測試</td>
+<td>完整性 144 項全綠(96/80/4/3/12+對齊 canonical)</td>
+<td>—</td>
+<td><code>bagua-catalog.test.html</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. 怎麼讀型錄(給使用者的說法)</h2>
+<ol>
+<li><strong>先測</strong>:25 題,拿到你的輪廓與主峰。</li>
+<li><strong>主峰是入口</strong>:翻到你主峰那一卦的型錄——那就是「你的章節」。雙峰的人讀兩章,外加雙峰組合(若恰為四對待,有專文)。沒有明顯主峰的人,直接讀你的格局型(高能多面/低調蓄能/均衡)——你們不再只有一句話。</li>
+<li><strong>能格決定讀哪段</strong>:同一股能量,「用得剛好」與「用過頭」是兩個樣子——中正段是你的本錢,亢段是你的訊號,潛段寫給這股是缺口的人。</li>
+<li><strong>誠實框架不變</strong>:型錄寫的是「這股能量在這個場域的顯相」,不是「你這種人的命定」。它是圖鑑,不是判決;你是格局,不是一個卦。</li>
+</ol>
+<h2>4. 憲法相容(為什麼敢寫這麼細)</h2>
+<ul>
+<li>索引=(態×能格×場域),主語是能量不是人(R1)——不裝箱。</li>
+<li>中正/亢/潛分段不混寫(C2);每句可追溯五素材(C7)。</li>
+<li>跨股只在四對待,且只有雷風講張力(C1/C3)——T1 的「成長方向」一律指向錯卦搭檔之德,T3 只寫四對。</li>
+<li>寫顯相不寫動機、描述不預測(C5/R5/R6)——與九型的楚河漢界。</li>
+<li>每篇帶 felt-self 快照框架、價值中性(C6/C8)。</li>
+<li>測試把規範鎖進 CI:growth 段必含錯卦功能名、僅 zhen-xun 帶 tension 旗標。</li>
+</ul>
+<h2>5. 與九型人格的關係(定位一句話)</h2>
+<p>九型靠「固定型+動機機制」推演內容;八態用「態×能格×場域」實寫內容。體感同樣細膩(主峰讀者讀到的就是「我的章節」),但每句可追溯、不宣稱動機、不裝箱——<strong>細膩不減,誠實加倍</strong>。詳見比較 spec。</p>
+<h2>6. 上線路徑(尚未執行——本輪只做內容,不動現行頁面)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>步</th>
+<th>動作</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>內容潤稿定稿(本 v0.1 為初稿)</td>
+<td>建議找 2–3 位不同主峰的人試讀:「亢段像不像你的壞日子?」</td>
+</tr>
+<tr>
+<td>2</td>
+<td>persona 報告頁主峰卡加「讀完整型錄 →」連結</td>
+<td>一行改動;報告=快照,型錄=圖鑑</td>
+</tr>
+<tr>
+<td>3</td>
+<td>對境耗能(persona v2 §4)上線時接 T2</td>
+<td>「工作把你哪股掏空」→ 直接引對應則,個人化場域報告</td>
+</tr>
+<tr>
+<td>4</td>
+<td>導覽(octenso-nav)加入 catalog</td>
+<td>正式上線點</td>
+</tr>
+<tr>
+<td>5</td>
+<td>收資料:雙峰頻率 → 決定其餘 24 對擴寫順序</td>
+<td>spec §6.2 T3</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7. 檔案索引(本輪新增)</h2>
+<ul>
+<li><code>octenso/COMPENDIUM.md</code> — 全料總覽(全局五層+全細節快照)</li>
+<li><code>octenso/bagua-catalog-data.js</code> — T2 96 則(canonical)</li>
+<li><code>octenso/bagua-catalog-t1.js</code> — T1 八篇</li>
+<li><code>octenso/bagua-catalog-combos.js</code> — T3/T4/T5</li>
+<li><code>octenso/bagua-catalog.html</code> — 草稿渲染頁(gate 保護、未接導覽)</li>
+<li><code>octenso/bagua-catalog.test.html</code> — 完整性測試(144/0)</li>
+<li>本文 — 新版總說明</li>
+</ul>
+<p>—— 這是一面認識自己與關係的鏡子,不是算命、不是命定;能量會流動,也可以成長。</p>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-07-octenso-new-edition-guide.md · main</div>
+</div>
+</div>
+
+</body>
+</html>

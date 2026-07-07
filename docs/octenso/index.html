@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · 文件入口</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:1.95;-webkit-font-smoothing:antialiased}
+.wrap{max-width:680px;margin:0 auto;padding:0 22px 90px}
+header{padding:70px 0 10px;text-align:center}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:16px;letter-spacing:.9em;padding-left:.9em;margin-bottom:28px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(25px,5.6vw,34px);letter-spacing:.16em;margin:0 0 10px}
+.subtitle{color:var(--muted);font-size:13.5px;letter-spacing:.08em;margin:0 0 14px}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.group{margin-top:56px}
+.glabel{font-size:12.5px;letter-spacing:.16em;color:var(--muted);margin-bottom:6px}
+.doc{border-top:1px solid var(--line);padding:20px 0}
+.doc:last-child{border-bottom:1px solid var(--line)}
+.d-name{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16.5px;letter-spacing:.06em;margin-bottom:2px}
+.d-file{font-family:var(--latin);font-size:11px;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;word-break:break-all}
+.d-desc{font-size:13.5px;color:var(--ink-soft);margin-bottom:12px;max-width:58ch}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.lnk{font-size:12.5px;letter-spacing:.08em;text-decoration:none;color:var(--pine);
+  border:1px solid var(--hair);border-radius:999px;padding:6px 16px;transition:.2s}
+.lnk:hover{border-color:var(--pine)}
+.lnk.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lnk.primary:hover{background:var(--pine);border-color:var(--pine)}
+.note{margin-top:46px;padding-left:16px;border-left:1px solid var(--hair);font-size:12.5px;color:var(--muted);line-height:2}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Documents Hub</div>
+  <h1>八態能格 · 文件入口</h1>
+  <p class="subtitle">2026-07-07 這一輪的七個新檔案——每份都有網頁版,點開即讀</p>
+  <div class="meta">All Merged Into Main · Catalog Content v0.1 Draft</div>
+</header>
+
+<div class="group">
+  <div class="glabel">總覽與說明</div>
+
+  <div class="doc">
+    <div class="d-name">① 全料總覽 Compendium</div>
+    <div class="d-file">octenso/COMPENDIUM.md</div>
+    <div class="d-desc">全局五層架構+全部細節:八態定義總表、25 題題本、引擎門檻、四系統讀法、內容資產快照、決策史 timeline。查任何東西,先來這裡。</div>
+    <div class="links">
+      <a class="lnk primary" href="compendium.html">網頁版</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/COMPENDIUM.md">GitHub 原始檔</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="d-name">② 取徑比較與型錄設計 spec</div>
+    <div class="d-file">docs/superpowers/specs/2026-07-07-octenso-personality-frameworks-comparison-and-catalog-design.md</div>
+    <div class="d-desc">八態能格 × 六大人格描述取徑全景比較、解剖九型六機制、型錄深化設計(T1–T5 + 寫作規則 R1–R8)與 roadmap。</div>
+    <div class="links">
+      <a class="lnk primary" href="frameworks-comparison.html">網頁版</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/docs/superpowers/specs/2026-07-07-octenso-personality-frameworks-comparison-and-catalog-design.md">GitHub 原始檔</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="d-name">③ 新版總說明 v2</div>
+    <div class="d-file">docs/superpowers/specs/2026-07-07-octenso-new-edition-guide.md</div>
+    <div class="d-desc">型錄完成後的新版導讀:五層全貌、怎麼讀型錄、憲法相容說明、與九型的定位、上線五步。</div>
+    <div class="links">
+      <a class="lnk primary" href="new-edition-guide.html">網頁版</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/docs/superpowers/specs/2026-07-07-octenso-new-edition-guide.md">GitHub 原始檔</a>
+    </div>
+  </div>
+</div>
+
+<div class="group">
+  <div class="glabel">型錄內容(三個資料檔的完整內容,收在同一個討論版網頁)</div>
+
+  <div class="doc">
+    <div class="d-name">④ T2 · 96 則微文案</div>
+    <div class="d-file">octenso/bagua-catalog-data.js</div>
+    <div class="d-desc">八態 × 四場域(工作/愛情/人際/獨處)× 三能格(中正/亢/潛)。討論版第三節「96 格」即其全文。</div>
+    <div class="links">
+      <a class="lnk primary" href="catalog-discussion.html">網頁版(討論版 §三)</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/bagua-catalog-data.js">GitHub 原始檔</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="d-name">⑤ T1 · 八峰型錄八篇</div>
+    <div class="d-file">octenso/bagua-catalog-t1.js</div>
+    <div class="d-desc">每卦十節長文(神韻/人群/工作/愛情/壓力階梯/潛/成長/給身邊人)。討論版第二節即其全文,點卦切換。</div>
+    <div class="links">
+      <a class="lnk primary" href="catalog-discussion.html">網頁版(討論版 §二)</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/bagua-catalog-t1.js">GitHub 原始檔</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="d-name">⑥ T3–T5 · 雙峰/格局/合盤</div>
+    <div class="d-file">octenso/bagua-catalog-combos.js</div>
+    <div class="d-desc">四錯卦雙峰文、格局型三篇、合盤敘事十二組。討論版第四節即其全文。</div>
+    <div class="links">
+      <a class="lnk primary" href="catalog-discussion.html">網頁版(討論版 §四)</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/bagua-catalog-combos.js">GitHub 原始檔</a>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="d-name">⑦ 型錄草稿頁(站上實頁)</div>
+    <div class="d-file">octenso/bagua-catalog.html</div>
+    <div class="d-desc">未接導覽的站上草稿頁——正式上線時使用者會看到的那一頁(登入閘已移除,可直接分享)。</div>
+    <div class="links">
+      <a class="lnk primary" href="../../octenso/bagua-catalog.html">站上開啟</a>
+      <a class="lnk" href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/bagua-catalog.html">GitHub 原始檔</a>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  「網頁版」是為了閱讀與討論而排的版(圖文並茂、內容與 repo 同源);「GitHub 原始檔」是正式的真相來源。潤稿請改 GitHub 檔案,網頁版可隨時重新組建。<br>
+  另有:型錄完整性測試 <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/bagua-catalog.test.html" style="color:var(--pine)">bagua-catalog.test.html</a>(144/0 全綠)。
+</div>
+
+</div>
+
+</body>
+</html>
