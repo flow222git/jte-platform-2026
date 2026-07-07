@@ -1,0 +1,71 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>catalog tests</title></head><body>
+<pre id="log"></pre>
+<script src="bagua-data.js"></script>
+<script src="bagua-catalog-data.js"></script>
+<script src="bagua-catalog-t1.js"></script>
+<script src="bagua-catalog-combos.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n';} }
+  var B=window.OCTENSO_BAGUA, C=window.OCTENSO_CATALOG;
+  var KEYS=['qian','dui','li','zhen','xun','kan','gen','kun'];
+
+  t('catalog namespace', !!C && C.version==='0.1-draft');
+  t('felt line', typeof C.FELT==='string' && C.FELT.length>10);
+
+  // T2: 8 態 × 4 場域 × 3 能格 = 96,每則 ≥40 字
+  var n2=0;
+  KEYS.forEach(function(k){
+    t('T2 has '+k, !!C.T2[k]);
+    ['work','love','people','solo'].forEach(function(d){
+      ['mid','over','under'].forEach(function(l){
+        var s=C.T2[k]&&C.T2[k][d]&&C.T2[k][d][l];
+        if(typeof s==='string' && s.length>=40) n2++;
+        else { fail++; log.textContent+='FAIL: T2 '+k+'.'+d+'.'+l+'\n'; }
+      });
+    });
+  });
+  t('T2 count 96', n2===96);
+  t('T2 domains meta', C.DOMAINS.length===4 && C.LEVELS.length===3);
+
+  // T1: 8 篇 × 10 節,每節 ≥40 字
+  var secs=C.T1_SECTIONS.map(function(s){return s.key;});
+  t('T1 sections=10', secs.length===10);
+  KEYS.forEach(function(k){
+    var p=C.T1[k]; t('T1 has '+k, !!p);
+    secs.forEach(function(s){
+      t('T1 '+k+'.'+s, !!p && typeof p[s]==='string' && p[s].length>=40);
+    });
+  });
+
+  // T3: 恰為四錯卦對;僅 zhen-xun 有張力
+  var t3k=Object.keys(C.T3);
+  t('T3 count 4', t3k.length===4);
+  ['qian-kun','zhen-xun','kan-li','gen-dui'].forEach(function(k){
+    t('T3 '+k, !!C.T3[k] && C.T3[k].text.length>=100);
+  });
+  t('T3 tension only zhen-xun', t3k.every(function(k){ return C.T3[k].tension === (k==='zhen-xun'); }));
+  t('T3 fallback', typeof C.T3_FALLBACK==='string' && C.T3_FALLBACK.length>=30);
+
+  // T4: 3 篇
+  ['high','low','mid'].forEach(function(k){ t('T4 '+k, !!C.T4[k] && C.T4[k].text.length>=300); });
+
+  // T5: 12 組 = 4 錯卦 + 8 同峰
+  var t5k=Object.keys(C.T5);
+  t('T5 count 12', t5k.length===12);
+  KEYS.forEach(function(k){ t('T5 same-peak '+k, !!C.T5[k+'-'+k]); });
+  ['qian-kun','zhen-xun','kan-li','gen-dui'].forEach(function(k){ t('T5 pair '+k, !!C.T5[k]); });
+  t5k.forEach(function(k){ t('T5 '+k+' len', C.T5[k].text.length>=100); });
+
+  // 對齊 canonical:T1 每篇 growth 段需含錯卦搭檔的功能名(C3 可追溯)
+  KEYS.forEach(function(k){
+    var pairFn=B.pairOf(k).fnShort;
+    t('T1 '+k+' growth→'+pairFn, C.T1[k].growth.indexOf(pairFn)>=0);
+  });
+
+  document.title='RESULT pass='+pass+' fail='+fail;
+  log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+})();
+</script>
+</body></html>
