@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>東西方智慧語錄庫 | 練息場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="house-style.css">
+<script defer src="jte-i18n.js"></script>
+<script src="jte-wisdom.js"></script>
+<script>
+/* 靜態文案三語（zh 用原文） */
+window.JTE_I18N = {
+  en: {
+    'w.eyebrow': 'WISDOM COLLECTION',
+    'w.title': 'Wisdom of East & West',
+    'w.sub': 'A growing collection of quotes — groundwork for a future section. One different line for every visit.',
+    'w.today': 'THIS VISIT’S LINE',
+    'w.next': 'Show another',
+    'w.all': 'All',
+    'w.east': 'East',
+    'w.west': 'West',
+    'w.count': 'quotes',
+  },
+  ja: {
+    'w.eyebrow': 'WISDOM COLLECTION',
+    'w.title': '東西の智慧・語録集',
+    'w.sub': '今後の新セクションに向けた語録コレクション。訪れるたびに違う一句と出会えます。',
+    'w.today': '今回の一句',
+    'w.next': 'もう一句',
+    'w.all': 'すべて',
+    'w.east': '東洋',
+    'w.west': '西洋',
+    'w.count': '句',
+  }
+};
+</script>
+<style>
+  body{margin:0}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+  .today-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+    padding:28px 24px;margin:26px 0 34px;text-align:center}
+  .today-card .org{font-family:var(--latin);font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+  .today-card .q{font-family:var(--serif);font-weight:600;font-size:clamp(19px,5vw,24px);letter-spacing:.04em;line-height:1.8;color:var(--ink)}
+  .today-card .by{font-family:var(--serif);font-size:13px;color:var(--muted);margin-top:14px;letter-spacing:.06em}
+  .today-card .hs-cta{margin-top:20px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+  .chip{font-family:var(--sans);font-size:12.5px;letter-spacing:.08em;padding:7px 18px;border:1px solid var(--hair);
+    border-radius:var(--rp);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+  .cnt{font-family:var(--latin);font-size:11px;letter-spacing:.14em;color:var(--muted);margin-left:auto;align-self:center}
+  .qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 15px;margin-bottom:12px;cursor:default}
+  .qcard:hover{border-color:var(--hair)}
+  .qcard .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .qcard .org{font-family:var(--latin);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    padding:3px 10px;border-radius:var(--rp);border:1px solid var(--line);color:var(--muted)}
+  .qcard .org.east{color:var(--pine);border-color:var(--pine)}
+  .qcard .org.west{color:var(--blue);border-color:var(--blue)}
+  .qcard .q{font-family:var(--serif);font-weight:500;font-size:16px;letter-spacing:.03em;line-height:1.85;color:var(--ink)}
+  .qcard .by{font-family:var(--serif);font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:.05em}
+</style>
+</head>
+<body class="hs-scope">
+<div class="wrap">
+  <div class="hs-eyebrow" data-i18n="w.eyebrow">WISDOM COLLECTION</div>
+  <h1 class="hs-h1" style="margin:10px 0 8px" data-i18n="w.title">東西方智慧語錄庫</h1>
+  <p class="hs-muted" style="font-size:13.5px;margin:0" data-i18n="w.sub">持續收集中的語錄庫——為未來的新區塊做準備。每次造訪，都會輪到不一樣的一句。</p>
+
+  <!-- 本次輪到的一句（示範「每次進站不同」的機制） -->
+  <div class="today-card">
+    <div class="org" id="t-org"></div>
+    <div class="q" id="t-q">　</div>
+    <div class="by" id="t-by"></div>
+    <div><button class="hs-cta" id="t-next" data-i18n="w.next">換一句</button></div>
+  </div>
+
+  <!-- 全部收藏 -->
+  <div class="chips">
+    <button class="chip on" data-f="all" data-i18n="w.all">全部</button>
+    <button class="chip" data-f="east" data-i18n="w.east">東方</button>
+    <button class="chip" data-f="west" data-i18n="w.west">西方</button>
+    <span class="cnt" id="cnt"></span>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+(function(){
+  var W=window.JTE_WISDOM||[];
+  var filter='all';
+  var curIdx=typeof jteWisdomPickIndex==='function'?jteWisdomPickIndex():0;
+
+  function lang(){return typeof jteLang==='function'?jteLang():'zh';}
+  function T(k,zh){return typeof jteT==='function'?jteT(k,zh):zh;}
+  function getX(it,l){return l==='en'?(it.x_en||it.x):(l==='ja'?(it.x_ja||it.x):it.x);}
+  function getBy(it,l){return l==='en'?(it.by_en||it.by):(l==='ja'?(it.by_ja||it.by):it.by);}
+  function orgLabel(o,l){
+    if(l==='en')return o==='east'?'EASTERN WISDOM':'WESTERN WISDOM';
+    if(l==='ja')return o==='east'?'東洋の智慧':'西洋の智慧';
+    return o==='east'?'東方智慧':'西方智慧';
+  }
+
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+  function renderToday(){
+    var l=lang(),it=W[curIdx];
+    if(!it)return;
+    document.getElementById('t-org').textContent=T('w.today','本次輪到的一句')+' · '+orgLabel(it.o,l);
+    document.getElementById('t-q').textContent=getX(it,l);
+    document.getElementById('t-by').textContent='— '+getBy(it,l);
+  }
+
+  function renderList(){
+    var l=lang();
+    var rows=W.map(function(it,i){return {it:it,i:i};})
+      .filter(function(r){return filter==='all'||r.it.o===filter;});
+    document.getElementById('list').innerHTML=rows.map(function(r){
+      var it=r.it;
+      return '<div class="qcard">'+
+        '<div class="top"><span class="org '+it.o+'">'+esc(orgLabel(it.o,l))+'</span></div>'+
+        '<div class="q">'+esc(getX(it,l))+'</div>'+
+        '<div class="by">— '+esc(getBy(it,l))+'</div>'+
+      '</div>';
+    }).join('');
+    document.getElementById('cnt').textContent=rows.length+' '+T('w.count','句');
+  }
+
+  document.getElementById('t-next').addEventListener('click',function(){
+    curIdx=typeof jteWisdomPickIndex==='function'?jteWisdomPickIndex():((curIdx+1)%W.length);
+    renderToday();
+  });
+  document.querySelectorAll('.chip').forEach(function(c){
+    c.addEventListener('click',function(){
+      document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on');});
+      c.classList.add('on');
+      filter=c.getAttribute('data-f');
+      renderList();
+    });
+  });
+
+  /* 語言切換時重繪動態內容 */
+  window.jteI18nApply=function(){renderToday();renderList();};
+
+  renderToday();
+  renderList();
+})();
+</script>
+</body>
+</html>
