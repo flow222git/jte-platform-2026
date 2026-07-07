@@ -238,6 +238,14 @@
   .yao-layer.yao-state{background:var(--accent-soft);border-color:transparent}
   .yl-lab{display:block;font-size:11px;letter-spacing:.14em;color:var(--ink-faint);margin-bottom:3px}
   .yl-txt{display:block;font-size:14px;line-height:1.75;color:var(--ink)}
+  /* AI 解讀區塊 */
+  .ai-card{border-left:3px solid var(--accent)}
+  .ai-card h3{margin-top:0}
+  .ai-loading{opacity:.65;animation:aipulse 1.5s ease-in-out infinite}
+  @keyframes aipulse{50%{opacity:.3}}
+  .ai-section-title{font-family:"Noto Serif TC",serif;font-size:14px;color:var(--accent);margin:14px 0 4px;letter-spacing:.04em;font-weight:700}
+  .ai-card p{font-size:14.5px;line-height:1.85;margin:6px 0;color:var(--ink)}
+  .ai-note{font-size:11.5px!important;color:var(--ink-faint)!important;margin-top:12px!important}
 
   /* 重點總結（可分享） */
   .summary-panel{background:var(--card)}
@@ -1187,11 +1195,12 @@ const HEX_DB_READY=(async function loadHexDB(){
    const res=await fetch("data/hexagrams.json",{cache:"no-cache"});
    if(!res.ok) throw new Error("HTTP "+res.status);
    const j=await res.json();
-   const summary={}, lines={}, judgment={};
+   const summary={}, lines={}, judgment={}, fullName={};
    (j.hexagrams||[]).forEach(h=>{
      if(!h||!h.name) return;
      // 卦名正規化：JSON 個別卦用簡體「无妄」，頁面用「無妄」，統一成傳統寫法對齊
      const nm=h.name.replace(/无/g,"無");
+     fullName[nm]=h.full_name||nm;
      if(h.judgment&&h.judgment.summary) summary[nm]=h.judgment.summary;
      if(h.judgment) judgment[nm]={original:h.judgment.original,literal:h.judgment.literal};
      if(Array.isArray(h.lines)){
@@ -1200,13 +1209,62 @@ const HEX_DB_READY=(async function loadHexDB(){
        lines[nm]=m;
      }
    });
-   HEX_DB={summary,lines,judgment};
+   HEX_DB={summary,lines,judgment,fullName};
    console.info("[問易] hexagrams.json 載入完成：",Object.keys(summary).length,"卦");
  }catch(e){
    console.warn("[問易] hexagrams.json 載入失敗，改用內建草稿資料：",e);
    HEX_DB=null;
  }
 })();
+/* ============================================================
+   AI 解讀：呼叫 Cloudflare Worker（密鑰只在 Worker 端，前端不碰）
+   先靜態、後 AI：卦象一出來先顯示白話，背景呼叫 Worker，
+   回來才填入；失敗就靜靜隱藏，不影響上方既有內容。
+   ============================================================ */
+const WORKER_URL="https://calm-sunset-97f8.simon-ec6.workers.dev";
+function buildAiPayload(ben,bian,lines,changingPos){
+ const guaObj=nm=>{
+   const jd=(HEX_DB&&HEX_DB.judgment&&HEX_DB.judgment[nm])||{};
+   const fn=(HEX_DB&&HEX_DB.fullName&&HEX_DB.fullName[nm])||nm;
+   return {name:nm,full_name:fn,judgment:{original:jd.original||"",literal:jd.literal||""}};
+ };
+ const benGua=guaObj(ben);
+ const bianGua=bian?guaObj(bian):benGua;
+ const lmap=(HEX_DB&&HEX_DB.lines&&HEX_DB.lines[ben])||{};
+ let dongYao;
+ if(changingPos&&changingPos.length){
+   const picked=changingPos.map(p=>lmap[p]).filter(Boolean);
+   dongYao={
+     position:changingPos.join("、"),
+     original:changingPos.map((p,i)=>`第${p}爻 ${(picked[i]&&picked[i].original)||""}`).join("\n"),
+     literal:picked.map(l=>l&&l.literal||"").join("\n"),
+     state:picked.map(l=>l&&l.state||"").join("\n")
+   };
+ }else{
+   dongYao={position:"無（六爻不變）",original:"—",literal:"六爻皆不變，重點在本卦整體卦義。",state:"此刻沒有特別的動爻，看本卦整體卦義即可。"};
+ }
+ return {question:state.question.trim(),benGua,bianGua,dongYao};
+}
+async function fetchAiInterpretation(payload){
+ const box=document.getElementById("ai-interpretation");
+ if(!box) return;
+ box.hidden=false;
+ box.innerHTML=`<h3>AI 解讀</h3><p class="ai-loading">AI 正在為你解讀這一卦…</p>`;
+ try{
+   const res=await fetch(WORKER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+   const data=await res.json();
+   if(!res.ok||!data.interpretation) throw new Error(data.error||"AI 回應為空");
+   const bodyHtml=data.interpretation.split("\n").filter(l=>l.trim()).map(line=>{
+     const m=line.match(/^【(.+?)】(.*)$/);
+     if(m) return `<h4 class="ai-section-title">${m[1]}</h4>${m[2]?`<p>${m[2]}</p>`:""}`;
+     return `<p>${line}</p>`;
+   }).join("");
+   box.innerHTML=`<h3>AI 解讀</h3>${bodyHtml}<p class="ai-note">AI 依你的問題與卦象即時生成，僅供參考。</p>`;
+ }catch(err){
+   console.error("[問易] AI 解讀失敗，靜靜隱藏：",err);
+   box.hidden=true; // 失敗不報錯，上方靜態白話仍完整
+ }
+}
 /* 擲一爻：三枚錢，每枚 2 或 3，和 6~9 */
 function tossLine(){
  const c=[0,0,0].map(()=>Math.random()<0.5?2:3);
@@ -1580,6 +1638,15 @@ function buyiResult(){
  fInner+=`<p class="ext-note">解讀為現代白話詮釋；傳統《周易》卦辭、爻辭原文可另行對照。</p>`;
  fp.innerHTML=fInner;
  d.appendChild(fp);
+
+ // AI 解讀（先靜態、後 AI；有輸入問題才呼叫，失敗靜靜隱藏）
+ const aiBox=document.createElement("section");
+ aiBox.id="ai-interpretation";aiBox.className="panel ai-card";aiBox.hidden=true;
+ d.appendChild(aiBox);
+ if(state.question.trim()){
+   const _aiPayload=buildAiPayload(ben,bian,state.lines,changingPos);
+   setTimeout(()=>fetchAiInterpretation(_aiPayload),0);
+ }
 
  // 領域連動（C 版）＋ 可分享的重點總結
  const dom=detectDomain(state.question);
