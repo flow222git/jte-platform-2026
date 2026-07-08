@@ -1,0 +1,83 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>v2 tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="bagua-catalog-data.js"></script>
+<script src="bagua-catalog-t1.js"></script>
+<script src="bagua-catalog-combos.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n';} }
+  var V=window.OCTENSO_V2, P=window.OctensoProfile;
+  var KEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
+
+  // ── 資料完整性 ──
+  t('25 questions', V.QUESTIONS.length===25);
+  var byK={}; V.QUESTIONS.forEach(function(q){byK[q.k]=(byK[q.k]||0)+1;});
+  t('li has 4', byK.li===4);
+  KEYS.filter(function(k){return k!=='li';}).forEach(function(k){ t(k+' has 3', byK[k]===3); });
+  t('2 reverse gen items', V.QUESTIONS.filter(function(q){return q.r;}).length===2);
+  t('opts 6-point no neutral', V.OPTS.length===6 && V.OPTS.every(function(o){return o.v!==2.5;}));
+  KEYS.forEach(function(k){
+    var c=V.COST[k];
+    t('COST '+k, !!c && c.over.length===2 && c.under.length===2 && [c.aOver,c.aUnder,c.aMidHi,c.aMidLo].every(function(s){return s&&s.length>10;}));
+  });
+  ['build','drive','aware','regulate'].forEach(function(sys){
+    ['bothHigh','leanL','leanR','bothLow','mid'].forEach(function(st){
+      t('SYSTEM_READ '+sys+'.'+st, !!V.SYSTEM_READ[sys][st] && V.SYSTEM_READ[sys][st].desc.length>10);
+    });
+  });
+  t('僅雷風兩高帶張力字樣', /留意|過衝|停不下/.test(V.SYSTEM_READ.drive.bothHigh.desc)
+    && !/張力|過衝/.test(V.SYSTEM_READ.build.bothHigh.desc)
+    && !/張力|過衝/.test(V.SYSTEM_READ.aware.bothHigh.desc)
+    && !/張力|過衝/.test(V.SYSTEM_READ.regulate.bothHigh.desc));
+  t('guides', V.GUIDE.intro.length>30 && V.GUIDE.cost.length>30);
+
+  // ── 引擎期望(與 iframe 渲染對照的前置驗證)──
+  var mk=function(o){ var sc={}; KEYS.forEach(function(k){sc[k]=o[k]!=null?o[k]:(o.rest!=null?o.rest:50);}); return sc; };
+  t('single expect', P.build(mk({qian:90,rest:50})).signature.kind==='single');
+  var dual=P.build(mk({kan:85,li:82,rest:45})).signature;
+  t('dual expect', dual.kind==='dual' && dual.keys.indexOf('kan')>=0 && dual.keys.indexOf('li')>=0);
+  t('pattern expect', P.build(mk({qian:54,rest:49})).signature.kind==='pattern');
+  t('multi expect', P.build(mk({rest:50})).signature.kind==='multi');
+
+  // ── iframe 渲染測試(#r=code 直開報告)──
+  var CASES=[
+    {code:'B19050505050505050', name:'single-qian', expects:['乾·開創者','神韻','工作樣貌','愛情與親密','場域 × 能格','四對 · 生命系統']},
+    {code:'B14582454545854545', name:'dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重','水火']},
+    {code:'B15449494949494949', name:'pattern-mid', expects:['均衡型','你的格局','看情境換檔']}
+  ];
+  var done=0;
+  function checkFrame(cs){
+    var f=document.createElement('iframe');
+    f.style.cssText='width:900px;height:600px';
+    f.src='bagua-persona-v2.html#r='+cs.code;
+    document.getElementById('frames').appendChild(f);
+    var tries=0;
+    var timer=setInterval(function(){
+      tries++;
+      var txt='';
+      try{ txt=f.contentDocument.body.innerText||''; }catch(e){}
+      var ready=txt.indexOf('對照與分享')>=0;
+      if(ready || tries>200){
+        clearInterval(timer);
+        cs.expects.forEach(function(s){ t(cs.name+' has 「'+s+'」', txt.indexOf(s)>=0); });
+        t(cs.name+' code echo', txt.indexOf(cs.code)>=0);
+        f.parentNode.removeChild(f);
+        done++;
+        if(done===CASES.length){
+          document.title='RESULT pass='+pass+' fail='+fail;
+          log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+        } else {
+          checkFrame(CASES[done]);
+        }
+      }
+    },150);
+  }
+  checkFrame(CASES[0]);
+})();
+</script>
+</body></html>
