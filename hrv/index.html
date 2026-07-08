@@ -601,19 +601,23 @@ function updateDebug(recent, beats, rr, q){
     el.onclick=function(){ try{ navigator.clipboard.writeText(JSON.stringify(session._dbgRecent||[])); el.style.color='#ff0'; setTimeout(function(){el.style.color='#0f0';},700); }catch(e){} };
     document.body.appendChild(el);
   }
-  session._dbgRecent = recent;
+  session._dbgRecent = (session.samples||[]).slice(-80);   // 複製時給完整緩衝尾段（含時間戳）供診斷
   let rmn=Infinity,rmx=-Infinity,gmn=Infinity,gmx=-Infinity;
   for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
   const d=session.lastDiag||{R:0,G:0,sat:0};
   const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
   let per=0, fs=0, acn=0; try{ const pr=HrvAnalyze._prep(recent); if(pr){ per=HrvAnalyze._periodicity(pr.ac, pr.fs); fs=pr.fs; acn=pr.ac.length; } }catch(e){}
   const mm=HrvAnalyze.metricsFromRr(rr);
+  // 診斷：整個緩衝長度 buf / 時間跨度 span / 是否量測中 meas / 最新一對樣本間隔 dt
+  const S=session.samples||[], buf=S.length;
+  const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
+  const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
   el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
-    '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
+    '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
     '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
-    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nsamples '+recent.length+
+    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nrecent '+recent.length+
     '\n(點我複製原始資料)';
 }
 
