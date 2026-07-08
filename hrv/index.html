@@ -573,6 +573,7 @@ function loopGrab(){
   // buf=1、永不倒數）；setInterval 不受動畫回呼節流影響，穩定每格觸發。時間戳用 performance.now。
   if(session.grabTimer){ clearInterval(session.grabTimer); }
   session.grabTimer=setInterval(function(){
+    session._nIv=(session._nIv||0)+1;                    // 診斷：計時器實際觸發次數
     const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
     _processFrame(now);
   }, 33);
@@ -608,7 +609,7 @@ function updateDebug(recent, beats, rr, q){
   const S=session.samples||[], buf=S.length;
   const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
   const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
-  el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
+  el.textContent='*** BUILD iv-2  iv '+(session._nIv||0)+' ***\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
     '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
     '\npr '+(session._nProc||0)+' ps '+(session._nPush||0)+' mx '+(session._mx||0)+' st '+(session._nStart||0)+' rn '+(session._nRender||0)+
