@@ -2,7 +2,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
-<title>Octenso 八態能格 · 完整版體驗</title>
+<title>Octenso 八態能格 · 完整版體驗(題本 v2)</title>
 <style>
   :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
     --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
@@ -38,12 +38,18 @@
   .prog{height:3px;background:var(--surface2);border-radius:2px;margin:16px 0 26px;overflow:hidden}
   .prog i{display:block;height:100%;background:var(--pine);border-radius:2px;transition:width .25s}
   .qnum{font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px;letter-spacing:.08em}
-  .qtext{font-size:17.5px;color:var(--ink);text-align:center;line-height:1.9;margin:0 auto 26px;max-width:30em;
+  .qhint{font-size:12.5px;color:var(--muted);text-align:center;margin:-4px auto 14px;max-width:28em}
+  .qtext{font-size:17.5px;color:var(--ink);text-align:center;line-height:1.9;margin:0 auto 22px;max-width:30em;
     text-wrap:balance;font-weight:300}
   body.big .qtext{font-size:19.5px}
+  .abrow{max-width:380px;margin:0 auto 22px;font-size:14.5px;line-height:2}
+  .abrow .ab{display:flex;gap:10px;align-items:baseline}
+  .abrow .tagab{flex:none;font-family:"Jost",sans-serif;font-size:12px;color:var(--gold);letter-spacing:.1em;width:1.4em}
   .opts{display:flex;flex-direction:column;gap:9px;max-width:340px;margin:0 auto}
+  .opts.fc{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:400px}
   .opt{font-family:inherit;font-weight:300;font-size:15px;letter-spacing:.06em;padding:11px 14px;cursor:pointer;
     border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--ink-soft);transition:.15s}
+  .opts.fc .opt{font-size:13.5px;padding:9px 13px}
   .opt:hover{border-color:var(--ink);color:var(--ink)}
   .opt.sel{background:var(--ink);border-color:var(--ink);color:var(--bg)}
   .navrow{display:flex;justify-content:space-between;align-items:center;max-width:340px;margin:22px auto 0}
@@ -68,9 +74,7 @@
   .band-row .bl.unlike{color:var(--muted)}
   .band-row .conf{flex:none;font-size:11px;letter-spacing:.08em}
   .conf.sure{color:var(--gold)} .conf.mixed{color:var(--muted)}
-  /* radar */
   .radar{display:block;margin:10px auto}
-  /* pair bars(雙向填色,不顯示數字) */
   .pair{margin:20px 0}
   .pair .ends{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink);margin-bottom:5px}
   .pair .track{position:relative;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
@@ -81,12 +85,12 @@
   .pair .verdict{font-size:12.5px;color:var(--muted);margin-top:6px}
   .pair .verdict b{font-weight:400;color:var(--ink)}
   .pair .verdict.tension b{color:var(--cinnabar)}
-  /* 能格 */
+  .pair .fcnote{font-size:12.5px;margin-top:4px;padding-left:14px;border-left:1px solid var(--hair);color:var(--ink-soft)}
+  .pair .fcnote.gap{border-left-color:var(--gold)}
   .cost-row{padding:14px 0;border-bottom:1px solid var(--surface2)}
   .cost-row .ch{font-size:13.5px;letter-spacing:.08em;margin-bottom:4px}
   .st-over{color:var(--cinnabar)} .st-under{color:var(--gold)} .st-mid{color:var(--pine)}
   .cost-row p{font-size:13.5px;margin:0}
-  /* catalog blocks */
   h4.blk{display:flex;align-items:center;gap:12px;font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;
     font-size:14.5px;letter-spacing:.12em;color:var(--ink);margin:28px 0 8px}
   h4.blk::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -101,7 +105,6 @@
   details[open] summary::before{content:"－"}
   .d-band{font-size:11px;letter-spacing:.08em;color:var(--muted)}
   .c-text{font-size:13.5px;line-height:2;margin-top:8px;white-space:pre-line}
-  /* code box */
   .codebox{display:flex;gap:8px;max-width:380px;margin:14px auto 0}
   .input{flex:1;background:transparent;border:1px solid var(--hair);border-radius:10px;padding:11px 13px;
     color:var(--ink);font-size:14px;font-family:"Jost",monospace}
@@ -118,8 +121,8 @@
 
 <div class="eyebrow">Octenso · Persona V2 · Experience</div>
 <h1>八態能格 · 完整版</h1>
-<div class="sub">底色 25 題 + 能格校準 → 峰名 × 四對 × 篤定 × 能格 × 型錄章節</div>
-<span class="draft">體驗版 v0.1 · 與正式版並行,不影響你的正式紀錄</span>
+<div class="sub">題本 v2(微場景×頻率×二選一)+ 能格校準 → 峰名 × 四對 × 篤定 × 能格 × 型錄章節</div>
+<span class="draft">體驗版 · 題本 v2 試測 · 與正式版並行,分數不可與 v1 互比</span>
 <div class="fontbtns">字級 <button class="fbtn on" id="fA">A</button><button class="fbtn" id="fAp">A⁺</button></div>
 
 <!-- ═ 入口 ═ -->
@@ -131,20 +134,22 @@
     <div class="honest" id="honest-intro"></div>
   </div>
   <div class="rule"></div>
-  <div class="seclabel">已經測過正式版?</div>
-  <p style="font-size:13.5px;color:var(--muted)">貼上你的分享碼(B1 開頭 18 碼),直接看完整版報告,方便新舊對照。<br>
-  <span style="font-size:12px">※ 分享碼只有八態分數,沒有能格校準——報告會以中正樣貌為主。</span></p>
-  <div class="codebox"><input class="input" id="code-in" placeholder="B1××××××××××××××××" maxlength="18">
+  <div class="seclabel">已經有分享碼?</div>
+  <p style="font-size:13.5px;color:var(--muted)">貼上 B2 碼(本頁測完給的)或正式版 B1 碼,直接看完整版報告。<br>
+  <span style="font-size:12px">※ B1 碼只有八態分數(v1 題本),報告以中正樣貌為主、無二選一對照;兩版分數不可互比。</span></p>
+  <div class="codebox"><input class="input" id="code-in" placeholder="B2×××××××××××××××××××× 或 B1…" maxlength="22">
   <button class="btn ghost" id="btn-code">看報告</button></div>
-  <p id="code-err" class="center hide" style="color:var(--cinnabar);font-size:13px;margin-top:8px">這組碼讀不懂——請確認是 B1 開頭、共 18 碼。</p>
+  <p id="code-err" class="center hide" style="color:var(--cinnabar);font-size:13px;margin-top:8px">這組碼讀不懂——B1 應為 18 碼、B2 應為 22 碼。</p>
 </div>
 
-<!-- ═ 底色測驗 ═ -->
+<!-- ═ 測驗 ═ -->
 <div id="scr-quiz" class="hide">
   <div class="stage" id="quiz-stage">第一段 · 底色</div>
   <div class="prog"><i id="prog-i" style="width:0%"></i></div>
   <div class="qnum" id="q-num"></div>
+  <div class="qhint hide" id="q-hint"></div>
   <div class="qtext" id="q-text"></div>
+  <div class="abrow hide" id="q-ab"></div>
   <div class="opts" id="q-opts"></div>
   <div class="navrow">
     <button class="navlink" id="btn-back">← 上一題</button>
@@ -176,11 +181,11 @@
 'use strict';
 var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2, C=window.OCTENSO_CATALOG;
 var EKEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
-var SMAX=5, LS='bagua_v2_exp';
+var SMAX=5, LS='bagua_v2b_exp';
+var NB=V.ITEMS.length, NF=V.FC_ITEMS.length, NT=NB+NF; // 24+4=28
 var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
 var $=function(id){return document.getElementById(id);};
 
-// ── 字級 ──
 $('fA').onclick=function(){document.body.classList.remove('big');$('fA').classList.add('on');$('fAp').classList.remove('on');};
 $('fAp').onclick=function(){document.body.classList.add('big');$('fAp').classList.add('on');$('fA').classList.remove('on');};
 
@@ -188,32 +193,29 @@ $('guide-intro').textContent=V.GUIDE.intro;
 $('guide-cost').textContent=V.GUIDE.cost;
 $('honest-intro').textContent=B.HONEST;
 
-// ── 狀態 ──
-var S={answers:new Array(V.QUESTIONS.length).fill(null), idx:0,
+var S={answers:new Array(NB).fill(null), fcAns:new Array(NF).fill(null), idx:0,
        flags:[], costQ:[], costAns:[], costIdx:0, phase:'intro'};
 function save(){ try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){} }
-function load(){ try{var d=JSON.parse(localStorage.getItem(LS)); if(d&&d.answers) S=d;}catch(e){} }
+function load(){ try{var d=JSON.parse(localStorage.getItem(LS));
+  if(d&&d.answers&&d.answers.length===NB) S=d;}catch(e){} }
 
 function show(id){['scr-intro','scr-quiz','scr-interlude','scr-report'].forEach(function(x){$(x).classList.toggle('hide',x!==id);});window.scrollTo(0,0);}
 
-// ── 計分 ──
+// ── 計分(24 題;頻率題分值已內建反向)──
 function computeScores(){
   var sum={},n={};
   EKEYS.forEach(function(k){sum[k]=0;n[k]=0;});
-  V.QUESTIONS.forEach(function(q,i){
+  V.ITEMS.forEach(function(q,i){
     var v=S.answers[i]; if(v==null) return;
-    var eff=q.r?(SMAX-v):v;
-    sum[q.k]+=eff; n[q.k]++;
+    sum[q.k]+=v; n[q.k]++;
   });
   var sc={};
   EKEYS.forEach(function(k){ sc[k]=n[k]?Math.round(sum[k]/n[k]/SMAX*100):0; });
   return sc;
 }
-// 篤定性:同態各題(反向已轉)分佈;全距 ≤1=篤定、≥3=兩可
 function confidence(){
-  var by={}; V.QUESTIONS.forEach(function(q,i){
-    var v=S.answers[i]; if(v==null) return;
-    var eff=q.r?(SMAX-v):v; (by[q.k]=by[q.k]||[]).push(eff);
+  var by={}; V.ITEMS.forEach(function(q,i){
+    var v=S.answers[i]; if(v==null) return; (by[q.k]=by[q.k]||[]).push(v);
   });
   var out={};
   EKEYS.forEach(function(k){ var a=by[k]||[]; if(!a.length){out[k]=null;return;}
@@ -222,32 +224,73 @@ function confidence(){
   });
   return out;
 }
-function encodeCode(sc){var s='B1';EKEYS.forEach(function(k){var v=Math.max(0,Math.min(99,Math.round(sc[k]||0)));s+=(v<10?'0':'')+v;});return s;}
-function decodeCode(str){str=(str||'').trim().toUpperCase().replace(/\s/g,'');
-  if(str.indexOf('B1')!==0||str.length!==18)return null;var d=str.slice(2);
-  if(!/^[0-9]{16}$/.test(d))return null;var sc={};EKEYS.forEach(function(k,i){sc[k]=parseInt(d.substr(i*2,2),10);});return sc;}
-
-// ── 底色測驗 ──
-function renderQ(){
-  var i=S.idx, q=V.QUESTIONS[i];
-  $('quiz-stage').textContent='第一段 · 底色';
-  $('prog-i').style.width=Math.round(i/V.QUESTIONS.length*100)+'%';
-  $('q-num').textContent='第 '+(i+1)+' / '+V.QUESTIONS.length+' 題';
-  $('q-text').textContent=q.t;
-  var box=$('q-opts'); box.innerHTML='';
-  V.OPTS.forEach(function(o){
-    var b=document.createElement('button'); b.className='opt'+(S.answers[i]===o.v?' sel':'');
-    b.textContent=o.t;
-    b.onclick=function(){ S.answers[i]=o.v; save();
-      if(S.idx<V.QUESTIONS.length-1){S.idx++;renderQ();} else finishBase(); };
-    box.appendChild(b);
-  });
-  $('btn-back').style.visibility=i>0?'visible':'hidden';
+// B2='B2'+16 位態分+4 位二選一(0–5;9=無);相容讀 B1
+function encodeCode(sc,fc){
+  var s='B2';
+  EKEYS.forEach(function(k){var v=Math.max(0,Math.min(99,Math.round(sc[k]||0)));s+=(v<10?'0':'')+v;});
+  for(var i=0;i<NF;i++){ var f=fc&&fc[i]!=null?fc[i]:9; s+=String(f); }
+  return s;
 }
-$('btn-back').onclick=function(){ if(S.idx>0){S.idx--;renderQ();} };
-$('btn-restart').onclick=function(){ if(confirm('確定重新開始?會清掉這次的作答。')){ S={answers:new Array(V.QUESTIONS.length).fill(null),idx:0,flags:[],costQ:[],costAns:[],costIdx:0,phase:'quiz'}; save(); renderQ(); } };
+function decodeCode(str){
+  str=(str||'').trim().toUpperCase().replace(/\s/g,'');
+  var sc={}, i;
+  if(str.indexOf('B1')===0 && str.length===18 && /^[0-9]{16}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc, fc:null, bank:'v1'};
+  }
+  if(str.indexOf('B2')===0 && str.length===22 && /^[0-9]{20}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    var fc=[];
+    for(i=0;i<4;i++){ var d=parseInt(str.charAt(18+i),10); fc.push(d<=5?d:null); }
+    return {sc:sc, fc:fc, bank:'v2'};
+  }
+  return null;
+}
 
-// ── 能格挑股 ──
+// ── 測驗(0–23 量表題;24–27 二選一)──
+function renderQ(){
+  var i=S.idx;
+  $('prog-i').style.width=Math.round(i/NT*100)+'%';
+  if(i<NB){
+    var q=V.ITEMS[i], opts=q.kind==='fq'?V.FREQ_OPTS:V.OPTS;
+    $('quiz-stage').textContent='第一段 · 底色';
+    $('q-num').textContent='第 '+(i+1)+' / '+NT+' 題';
+    $('q-hint').classList.add('hide');
+    $('q-ab').classList.add('hide');
+    $('q-text').textContent=q.t;
+    var box=$('q-opts'); box.className='opts'; box.innerHTML='';
+    opts.forEach(function(o){
+      var b=document.createElement('button'); b.className='opt'+(S.answers[i]===o.v?' sel':'');
+      b.textContent=o.t;
+      b.onclick=function(){ S.answers[i]=o.v; save(); S.idx++; renderQ(); };
+      box.appendChild(b);
+    });
+  } else if(i<NT){
+    var j=i-NB, f=V.FC_ITEMS[j];
+    $('quiz-stage').textContent='第一段 · 底色(二選一)';
+    $('q-num').textContent='二選一 '+(j+1)+' / '+NF+'　·　第 '+(i+1)+' / '+NT+' 題';
+    $('q-hint').textContent=V.FC_HINT; $('q-hint').classList.remove('hide');
+    $('q-text').textContent=f.t;
+    $('q-ab').innerHTML='<div class="ab"><span class="tagab">A</span><span>'+esc(f.a)+'</span></div>'
+      +'<div class="ab"><span class="tagab">B</span><span>'+esc(f.b)+'</span></div>';
+    $('q-ab').classList.remove('hide');
+    var box2=$('q-opts'); box2.className='opts fc'; box2.innerHTML='';
+    V.FC_OPTS.forEach(function(o){
+      var b=document.createElement('button'); b.className='opt'+(S.fcAns[j]===o.v?' sel':'');
+      b.textContent=o.t;
+      b.onclick=function(){ S.fcAns[j]=o.v; save();
+        if(S.idx<NT-1){S.idx++;renderQ();} else finishBase(); };
+      box2.appendChild(b);
+    });
+  } else { finishBase(); return; }
+  $('btn-back').style.visibility=i>0?'visible':'hidden';
+  $('btn-back').onclick=function(){ if(S.idx>0){S.idx--;renderQ();} };
+}
+$('btn-restart').onclick=function(){ if(confirm('確定重新開始?會清掉這次的作答。')){
+  S={answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),idx:0,flags:[],costQ:[],costAns:[],costIdx:0,phase:'quiz'};
+  save(); renderQ(); } };
+
+// ── 能格 ──
 function pickFlags(sc){
   var flags=[];
   EKEYS.forEach(function(k){
@@ -260,7 +303,7 @@ function pickFlags(sc){
 function finishBase(){
   var sc=computeScores();
   S.flags=pickFlags(sc);
-  if(!S.flags.length){ S.phase='report'; save(); renderReport(sc,{},null); return; }
+  if(!S.flags.length){ S.phase='report'; save(); renderReport(sc,{},confidence(),S.fcAns); return; }
   S.costQ=[]; S.flags.forEach(function(f){ (V.COST[f.k][f.dir]||[]).forEach(function(t){S.costQ.push({k:f.k,dir:f.dir,t:t});}); });
   S.costAns=new Array(S.costQ.length).fill(null); S.costIdx=0; S.phase='interlude'; save();
   $('interlude-note').textContent='這次追問:'+S.flags.map(function(f){return B.get(f.k).nm+'·'+V.COST[f.k].fn+(f.dir==='over'?'(會不會過頭)':'(夠不夠用)');}).join('、')+'——共 '+S.costQ.length+' 題。';
@@ -272,8 +315,9 @@ function renderCostQ(){
   $('quiz-stage').textContent='第二段 · 能格校準';
   $('prog-i').style.width=Math.round(i/S.costQ.length*100)+'%';
   $('q-num').textContent=B.get(q.k).nm+'·'+V.COST[q.k].fn+(q.dir==='over'?' · 會不會過頭?':' · 夠不夠用?')+'　'+(i+1)+' / '+S.costQ.length;
+  $('q-hint').classList.add('hide'); $('q-ab').classList.add('hide');
   $('q-text').textContent=q.t;
-  var box=$('q-opts'); box.innerHTML='';
+  var box=$('q-opts'); box.className='opts'; box.innerHTML='';
   V.OPTS.forEach(function(o){
     var b=document.createElement('button'); b.className='opt'+(S.costAns[i]===o.v?' sel':'');
     b.textContent=o.t;
@@ -284,7 +328,6 @@ function renderCostQ(){
   $('btn-back').style.visibility=i>0?'visible':'hidden';
   $('btn-back').onclick=function(){ if(S.costIdx>0){S.costIdx--;renderCostQ();} };
 }
-// 判定:高+有代價=亢;高+無=中正(強)。低+有代價=潛;低+無=中正(無礙)。
 function costVerdicts(){
   var st={};
   S.flags.forEach(function(f){
@@ -296,7 +339,7 @@ function costVerdicts(){
   });
   return st;
 }
-function finishCost(){ S.phase='report'; save(); renderReport(computeScores(), costVerdicts(), confidence()); }
+function finishCost(){ S.phase='report'; save(); renderReport(computeScores(), costVerdicts(), confidence(), S.fcAns); }
 
 // ── 報告 ──
 function radarSVG(sc){
@@ -342,17 +385,28 @@ function catalogSections(k,costSt){
     alt:over?[['workMid','工作樣貌','mid'],['loveMid','愛情與親密','mid']]
             :[['workOver','工作樣貌','over'],['loveOver','愛情與親密','over'],['stress','壓力訊號','over']]};
 }
-function renderReport(sc,costSt,conf){
+// 二選一 × 量表偏向 對照(標註式,不入分)
+function fcCompareNote(ax, fcVal){
+  if(fcVal==null) return '';
+  var pickLeft=fcVal<=2;
+  var pickName=pickLeft?ax.ln:ax.rn, scaleName=ax.lean==='left'?ax.ln:ax.rn;
+  var tpl;
+  if(ax.lean==='even') tpl=V.FC_READ.evenPick;
+  else if((ax.lean==='left')===pickLeft) tpl=V.FC_READ.agree;
+  else tpl=V.FC_READ.disagree;
+  var txt=tpl.replace('{X}',pickName).replace('{Y}',scaleName);
+  var gap=(ax.lean!=='even') && ((ax.lean==='left')!==pickLeft);
+  return '<div class="fcnote'+(gap?' gap':'')+'">'+esc(txt)+'</div>';
+}
+function renderReport(sc,costSt,conf,fc){
   costSt=costSt||{};
   var pf=P.build(sc), sig=signatureCard(pf);
   var h='';
-  // 精華卡
   h+='<div class="card"><div class="r-head"><div class="r-sym serif">'+sig.sym+'</div>'
     +'<div class="r-title">'+esc(sig.title)+'</div><div class="r-sub">'+esc(sig.sub)+'</div></div>'
     +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
     +radarSVG(sc)
     +'<div class="felt">'+esc(C.FELT)+' 照的是你「感受到」的自己,不是行為審計。</div></div>';
-  // 每態六級+篤定
   h+='<div class="rule"></div><div class="seclabel">每態六級 · 與答題篤定性</div><div class="band-list">';
   pf.ranked.forEach(function(o){
     var g=B.get(o.k), bd=pf.bands[o.k];
@@ -364,18 +418,18 @@ function renderReport(sc,costSt,conf){
   h+='</div><p style="font-size:12px;color:var(--muted)">整體水平:'
     +(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(八態平均 '+pf.level.mean+')。'
     +(conf?'「篤定」=該態三題答得很一致;「兩可」=分散,這一態的分數解讀請保留彈性。':'(以分享碼重建,無篤定性資料。)')+'</p>';
-  // 四對
-  h+='<div class="rule"></div><div class="seclabel">四對 · 生命系統</div>';
-  pf.axes.forEach(function(ax){
+  h+='<div class="rule"></div><div class="seclabel">四對 · 生命系統'+(fc?'(含二選一對照)':'')+'</div>';
+  pf.axes.forEach(function(ax,ai){
     var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
       :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
     var read=V.SYSTEM_READ[ax.key][st];
     var tension=(ax.key==='drive'&&st==='bothHigh');
     h+='<div class="pair"><div class="ends"><span>'+B.get(ax.l).nm+'·'+ax.ln+'</span><span>'+ax.rn+'·'+B.get(ax.r).nm+'</span></div>'
       +'<div class="track"><span class="fl" style="width:'+(ax.left/2)+'%"></span><span class="fr" style="width:'+(ax.right/2)+'%"></span><span class="mid"></span></div>'
-      +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div></div>';
+      +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
+      +(fc?fcCompareNote(ax,fc[ai]):'')
+      +'</div>';
   });
-  // 能格
   h+='<div class="rule"></div><div class="seclabel">能格 · 用得剛不剛好</div>';
   var stKeys=Object.keys(costSt);
   if(!stKeys.length){
@@ -389,7 +443,6 @@ function renderReport(sc,costSt,conf){
       h+='<div class="cost-row"><div class="ch"><span style="color:var(--ink)">'+g.nm+'·'+cd.fn+'</span> <span class="'+cls+'">'+lbl+'</span></div><p>'+esc(adv)+'</p></div>';
     });
   }
-  // 型錄章節(每個主峰)
   pf.leads.slice(0,2).forEach(function(k){
     var g=B.get(k), cs=catalogSections(k,costSt), p=C.T1[k];
     h+='<div class="rule"></div><div class="seclabel">你的章節 · '+g.title+(cs.over?'(此刻偏亢,先讀亢段)':'')+'</div>';
@@ -401,7 +454,6 @@ function renderReport(sc,costSt,conf){
     cs.alt.forEach(function(s){ h+='<h4 class="blk">'+s[1]+'<span class="bandtag '+s[2]+'">'+(s[2]==='over'?'亢':'中正')+'</span></h4><p class="blktxt">'+esc(p[s[0]])+'</p>'; });
     h+='</details>';
   });
-  // 雙峰/格局 補充
   var sg=pf.signature;
   if(sg.kind==='dual'){
     var key1=sg.keys[0]+'-'+sg.keys[1], key2=sg.keys[1]+'-'+sg.keys[0];
@@ -414,13 +466,11 @@ function renderReport(sc,costSt,conf){
     var t4=C.T4[pf.level.band==='high'?'high':pf.level.band==='low'?'low':'mid'];
     h+='<div class="rule"></div><div class="seclabel">你的格局</div><h4 class="blk">'+esc(t4.nm)+'</h4><p class="c-text">'+esc(t4.text)+'</p>';
   }
-  // 缺口
   if(pf.gaps.length){
     var gk=pf.gaps[0], gg=B.get(gk);
     h+='<div class="rule"></div><div class="seclabel">還沒長開 · '+gg.nm+'·'+gg.fnShort+'</div>'
       +'<h4 class="blk">還沒長開<span class="bandtag under">潛</span></h4><p class="blktxt">'+esc(C.T1[gk].latent)+'</p>';
   }
-  // 場域速查
   var mainK=pf.leads[0];
   h+='<div class="rule"></div><div class="seclabel">場域 × 能格 · 速查('+B.get(mainK).title+')</div>';
   C.DOMAINS.forEach(function(d,di){
@@ -431,17 +481,17 @@ function renderReport(sc,costSt,conf){
     });
     h+='</details>';
   });
-  // 你的碼+對照
-  var code=encodeCode(sc);
+  var code=encodeCode(sc,fc);
   h+='<div class="rule"></div><div class="seclabel">對照與分享</div>'
-    +'<p style="font-size:13.5px">你的分享碼:<span class="mycode">'+code+'</span><br>'
-    +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a></p>';
-  // 回饋
-  h+='<div class="ask"><div class="ah">體驗版 · 想聽你的感覺</div><ol>'
-    +'<li>精華卡那一屏,有沒有「就是我」的感覺?</li>'
-    +'<li>「你的章節」——中正段像你的好日子嗎?亢段像你的壞日子嗎?哪句最不像?</li>'
-    +'<li>跟正式版對照,完整版多出來的部分,哪一塊最有價值、哪一塊多餘?</li></ol></div>';
-  h+='<div class="honest" style="margin-top:26px">'+esc(B.HONEST)+' 這是體驗版:內容為 v0.1 草稿,你的作答只存在這台裝置上、不上傳。</div>';
+    +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
+    +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'
+    +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">※ 兩版題本不同,分數請勿直接互比——比的是「報告像不像你」。</span></p>';
+  h+='<div class="ask"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
+    +'<li>這次的題目好答嗎?「很不像/幾乎不曾」那端,你用到了嗎?</li>'
+    +'<li>二選一的四題——有沒有哪題兩邊都像、很難選?</li>'
+    +'<li>報告裡「二選一對照」的落差(如果有),你覺得哪邊更貼近你?</li>'
+    +'<li>整份報告,哪一句最中?哪一句最不像你?</li></ol></div>';
+  h+='<div class="honest" style="margin-top:26px">'+esc(B.HONEST)+' 這是體驗版(題本 v2 試測):內容為草稿,你的作答只存在這台裝置上、不上傳。</div>';
   $('scr-report').innerHTML=h;
   show('scr-report');
 }
@@ -449,17 +499,16 @@ function renderReport(sc,costSt,conf){
 // ── 入口 ──
 $('btn-start').onclick=function(){ S.phase='quiz'; save(); show('scr-quiz'); renderQ(); };
 $('btn-code').onclick=function(){
-  var sc=decodeCode($('code-in').value);
-  if(!sc){ $('code-err').classList.remove('hide'); return; }
+  var d=decodeCode($('code-in').value);
+  if(!d){ $('code-err').classList.remove('hide'); return; }
   $('code-err').classList.add('hide');
-  renderReport(sc,{},null);
+  renderReport(d.sc,{},null,d.fc);
 };
-// #r=CODE 直開報告(對照/測試用)
 (function(){
-  var m=(location.hash||'').match(/[#&]r=(B1[0-9]{16})/i);
-  if(m){ var sc=decodeCode(m[1]); if(sc){ renderReport(sc,{},null); return; } }
+  var m=(location.hash||'').match(/[#&]r=(B[12][0-9]{16,20})/i);
+  if(m){ var d=decodeCode(m[1]); if(d){ renderReport(d.sc,{},null,d.fc); return; } }
   load();
-  if(S.phase==='quiz'&&S.answers.some(function(a){return a!=null;})){ show('scr-quiz'); renderQ(); }
+  if(S.phase==='quiz'&&(S.answers.some(function(a){return a!=null;})||S.fcAns.some(function(a){return a!=null;}))){ show('scr-quiz'); renderQ(); }
   else if(S.phase==='cost'&&S.costQ.length){ show('scr-quiz'); renderCostQ(); }
   else if(S.phase==='interlude'&&S.flags.length){ $('interlude-note').textContent='繼續剛才的第二段(共 '+S.costQ.length+' 題)。'; show('scr-interlude'); }
   else show('scr-intro');

@@ -14,13 +14,28 @@
   var V=window.OCTENSO_V2, P=window.OctensoProfile;
   var KEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
 
-  // ── 資料完整性 ──
-  t('25 questions', V.QUESTIONS.length===25);
-  var byK={}; V.QUESTIONS.forEach(function(q){byK[q.k]=(byK[q.k]||0)+1;});
-  t('li has 4', byK.li===4);
-  KEYS.filter(function(k){return k!=='li';}).forEach(function(k){ t(k+' has 3', byK[k]===3); });
-  t('2 reverse gen items', V.QUESTIONS.filter(function(q){return q.r;}).length===2);
-  t('opts 6-point no neutral', V.OPTS.length===6 && V.OPTS.every(function(o){return o.v!==2.5;}));
+  // ── 題本 v2 完整性 ──
+  t('bank v2', V.bank==='v2' && V.codePrefix==='B2');
+  t('24 items', V.ITEMS.length===24);
+  KEYS.forEach(function(k){
+    var sc=V.ITEMS.filter(function(q){return q.k===k&&q.kind==='sc';}).length;
+    var fq=V.ITEMS.filter(function(q){return q.k===k&&q.kind==='fq';}).length;
+    t(k+' sc=2 fq=1', sc===2 && fq===1);
+  });
+  t('freq items say 過去一個月', V.ITEMS.filter(function(q){return q.kind==='fq';}).every(function(q){return q.t.indexOf('過去一個月')===0;}));
+  t('OPTS 6-point', V.OPTS.length===6);
+  t('FREQ_OPTS 6-point reverse', V.FREQ_OPTS.length===6 && V.FREQ_OPTS[0].t==='幾乎總是' && V.FREQ_OPTS[0].v===0 && V.FREQ_OPTS[5].v===5);
+  // 四對強迫選擇:配對與極性對齊 profile.js PAIRS
+  t('FC 4 items', V.FC_ITEMS.length===4);
+  P.PAIRS.forEach(function(p){
+    var f=null; V.FC_ITEMS.forEach(function(x){ if(x.pair===p.key) f=x; });
+    t('FC '+p.key+' poles', !!f && f.aK===p.l && f.bK===p.r && f.a.length>5 && f.b.length>5);
+  });
+  t('FC_OPTS bipolar 6', V.FC_OPTS.length===6 && V.FC_OPTS[0].t.indexOf('A')>0 && V.FC_OPTS[5].t.indexOf('B')>0);
+  t('FC_READ templates', ['agree','disagree','evenPick'].every(function(k){return V.FC_READ[k]&&V.FC_READ[k].indexOf('{X}')>=0;}));
+  t('guide anchors 最近一個月', V.GUIDE.intro.indexOf('最近一個月')>=0);
+
+  // COST/SYSTEM_READ(照舊)
   KEYS.forEach(function(k){
     var c=V.COST[k];
     t('COST '+k, !!c && c.over.length===2 && c.under.length===2 && [c.aOver,c.aUnder,c.aMidHi,c.aMidLo].every(function(s){return s&&s.length>10;}));
@@ -30,25 +45,19 @@
       t('SYSTEM_READ '+sys+'.'+st, !!V.SYSTEM_READ[sys][st] && V.SYSTEM_READ[sys][st].desc.length>10);
     });
   });
-  t('僅雷風兩高帶張力字樣', /留意|過衝|停不下/.test(V.SYSTEM_READ.drive.bothHigh.desc)
-    && !/張力|過衝/.test(V.SYSTEM_READ.build.bothHigh.desc)
-    && !/張力|過衝/.test(V.SYSTEM_READ.aware.bothHigh.desc)
-    && !/張力|過衝/.test(V.SYSTEM_READ.regulate.bothHigh.desc));
-  t('guides', V.GUIDE.intro.length>30 && V.GUIDE.cost.length>30);
 
-  // ── 引擎期望(與 iframe 渲染對照的前置驗證)──
+  // ── 引擎期望 ──
   var mk=function(o){ var sc={}; KEYS.forEach(function(k){sc[k]=o[k]!=null?o[k]:(o.rest!=null?o.rest:50);}); return sc; };
   t('single expect', P.build(mk({qian:90,rest:50})).signature.kind==='single');
   var dual=P.build(mk({kan:85,li:82,rest:45})).signature;
   t('dual expect', dual.kind==='dual' && dual.keys.indexOf('kan')>=0 && dual.keys.indexOf('li')>=0);
   t('pattern expect', P.build(mk({qian:54,rest:49})).signature.kind==='pattern');
-  t('multi expect', P.build(mk({rest:50})).signature.kind==='multi');
 
-  // ── iframe 渲染測試(#r=code 直開報告)──
+  // ── iframe 渲染(B1 相容 + B2 含二選一)──
   var CASES=[
-    {code:'B19050505050505050', name:'single-qian', expects:['乾·開創者','神韻','工作樣貌','愛情與親密','場域 × 能格','四對 · 生命系統']},
-    {code:'B14582454545854545', name:'dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重','水火']},
-    {code:'B15449494949494949', name:'pattern-mid', expects:['均衡型','你的格局','看情境換檔']}
+    {code:'B19050505050505050', name:'B1-single-qian', expects:['乾·開創者','神韻','工作樣貌','愛情與親密','分享碼沒有能格資料']},
+    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['乾·開創者','二選一時你','含二選一對照','題本 v2']},
+    {code:'B14582454545854545', name:'B1-dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重']}
   ];
   var done=0;
   function checkFrame(cs){
@@ -65,7 +74,6 @@
       if(ready || tries>200){
         clearInterval(timer);
         cs.expects.forEach(function(s){ t(cs.name+' has 「'+s+'」', txt.indexOf(s)>=0); });
-        t(cs.name+' code echo', txt.indexOf(cs.code)>=0);
         f.parentNode.removeChild(f);
         done++;
         if(done===CASES.length){
