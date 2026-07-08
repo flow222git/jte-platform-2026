@@ -620,11 +620,15 @@ function updateLiveUi(now){
   const recent=recentSamples(now, KEEP_SEC);
   drawWave(recent);
   const q=HrvAnalyze.signalQuality(recent);
-  const covered=!!(session.lastDiag && session.lastDiag.cov>=covMin());  // 鏡頭是否已被手指蓋好
+  // 覆蓋分數只當「軟提示」，不硬擋量測：訊號綠（強週期性）＝一定有蓋著手指，
+  // 就算覆蓋分數沒到門檻（門檻未依此機校準）也照樣能開始，避免好量測被誤擋。
+  const covered=!!(session.lastDiag && session.lastDiag.cov>=covMin());  // 鏡頭是否已被手指蓋好（提示用）
+  const uncoveredHint = (!covered && q!=='green');                       // 只有訊號也不綠時才提示沒蓋好
   const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
-  if(dot){ dot.className='qdot '+(covered?q:'red'); }                    // 沒蓋好一律紅點
-  if(ql){ ql.textContent = !covered ? jteT('quality.uncovered','鏡頭還沒蓋好')
-    : (q==='green'?jteT('quality.green','訊號良好'):(q==='yellow'?jteT('quality.yellow','訊號普通，盡量別動'):jteT('quality.red','正在抓穩訊號…'))); }
+  if(dot){ dot.className='qdot '+q; }
+  if(ql){ ql.textContent = q==='green'?jteT('quality.green','訊號良好')
+    : (uncoveredHint ? jteT('quality.uncovered','鏡頭還沒蓋好，用指腹蓋滿')
+    : (q==='yellow'?jteT('quality.yellow','訊號普通，盡量別動'):jteT('quality.red','正在抓穩訊號…'))); }
   // 即時心率：訊號穩定（綠燈）後才顯示，並做平滑——避免一開始偵測未穩時把雜訊當心跳、
   // 算出偏高的數字（一百多）嚇到使用者。穩定後從第一筆可信值起跑、緩緩貼近真實值。
   const beats=HrvAnalyze.detectBeats(recent);
@@ -640,10 +644,10 @@ function updateLiveUi(now){
   // 鎖定放寬：green 立即開始；或偵測到真脈搏（非紅）持穩 LOCK_HOLD_MS 也開始
   // （真人手指訊號常停在 yellow，等不到 green 會「鎖不到訊號」）。結尾 renderResult 仍有品質把關防垃圾。
   if(!session.measuring){
-    // 前置閘門：沒蓋好（或訊號紅）就不鎖定、不開始——「變綠才能開始」
-    if(q==='red' || !covered) session.lockSince=null;
+    // green 立即開始；或非紅持穩 LOCK_HOLD_MS 也開始（覆蓋分數不硬擋，只在提示層引導）。
+    if(q==='red') session.lockSince=null;
     else if(session.lockSince==null) session.lockSince=now;
-    if(covered && (q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS))){
+    if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
       session.measuring=true; session.countdownStart=now; session.samples=[];
       stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
@@ -666,9 +670,9 @@ function updateLiveUi(now){
   }else{
     if(hint && !hint.classList.contains('warn')){
       const waited=(now-session.measureStart)/1000;
-      if(!covered){
-        // 還沒蓋好鏡頭 → 直接引導蓋滿（此時不會鎖定/開始）
-        hint.textContent=jteT('hint.uncovered','還沒蓋好：用整個指腹蓋滿後鏡頭那一區（連旁邊的閃光燈），畫面變紅紅一片、下面圓點轉綠就會自動開始。');
+      if(uncoveredHint){
+        // 訊號也不綠、且覆蓋偏低 → 引導蓋滿（純提示，不擋開始）
+        hint.textContent=jteT('hint.uncovered','還沒蓋好：用整個指腹蓋滿後鏡頭那一區（連旁邊的閃光燈），畫面變紅紅一片就對了。');
       }else if(q==='red' && waited>=8){
         // 久久抓不到 → 給可操作的檢查清單
         hint.textContent=jteT('hint.acquiring.late','還抓不到：請確認 ① 整個指腹蓋滿鏡頭和閃光燈（畫面要紅紅一片）② 別壓太用力 ③ 在亮一點的地方，放鬆再等幾秒。');
