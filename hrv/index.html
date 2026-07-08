@@ -377,6 +377,7 @@ function renderIntro(){
 /* —— 量測（相機 + 即時回饋）—— */
 let waveCanvas=null, waveCtx=null;
 function renderMeasure(){
+  session._nRender=(session._nRender||0)+1;               // 診斷：renderMeasure 被呼叫次數（應為 1）
   session.mode='measure'; clearAll();
   session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
   const d=document.createElement('div');d.className='step';
@@ -534,6 +535,9 @@ async function startCamera(){
 
 // 擷取一幀：算紅/綠平均、覆蓋分數，推入樣本、維護視窗、節流更新 UI。now 為 ms 時間戳。
 function _processFrame(now){
+  session._nProc=(session._nProc||0)+1;                 // 診斷：_processFrame 被呼叫次數
+  session._vw=(_video&&_video.videoWidth)||0; session._vpaused=!!(_video&&_video.paused);
+  session._vct=(_video&&_video.currentTime!=null)?_video.currentTime:-1;   // 影片時間是否在前進
   if(_video&&_grabCtx&&_video.videoWidth){
     const vw=_video.videoWidth, vh=_video.videoHeight;
     const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
@@ -547,6 +551,8 @@ function _processFrame(now){
       const redVar=Math.max(0, r2/px - redMean*redMean), redCv=redMean>0?Math.sqrt(redVar)/redMean:0;
       const cov=window.HrvAnalyze?HrvAnalyze.coverageScore(redMean, greenMean, redCv):0;
       session.samples.push({ t:now, v:redMean, g:greenMean });
+      session._nPush=(session._nPush||0)+1;             // 診斷：成功推入次數 + 曾達到的最大緩衝
+      if(session.samples.length>(session._mx||0)) session._mx=session.samples.length;
       session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv, cov:cov };
       // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
       if(!session.measuring){
@@ -606,6 +612,8 @@ function updateDebug(recent, beats, rr, q){
   el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
     '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
+    '\npr '+(session._nProc||0)+' ps '+(session._nPush||0)+' mx '+(session._mx||0)+' st '+(session._nStart||0)+' rn '+(session._nRender||0)+
+    '\nvw '+(session._vw||0)+' pause '+(session._vpaused?1:0)+' ct '+(session._vct!=null?(+session._vct).toFixed(1):'?')+
     '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
     '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nrecent '+recent.length+
@@ -646,6 +654,7 @@ function updateLiveUi(now){
     if(q==='red') session.lockSince=null;
     else if(session.lockSince==null) session.lockSince=now;
     if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
+      session._nStart=(session._nStart||0)+1;           // 診斷：start 觸發次數（應為 1；若一直漲＝measuring 沒黏住）
       session.measuring=true; session.countdownStart=now; session.samples=[];
       stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
