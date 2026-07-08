@@ -568,15 +568,18 @@ function _processFrame(now){
 // 避免 rAF 在 120Hz 螢幕上重複讀同一格（造成 fs 虛報、平頂雜訊）；並用影格自帶的時間戳。
 // 不支援時退回 requestAnimationFrame。兩條路徑都用同一時鐘（performance.now 域），窗計算不受影響。
 function loopGrab(){
-  // 用 setInterval 固定驅動取樣（~33ms≈30fps）。實測 iOS Safari 的 requestAnimationFrame／
-  // requestVideoFrameCallback 在相機情境會被節流／只觸發一次（pr 停在 1、緩衝餵不進去、
-  // buf=1、永不倒數）；setInterval 不受動畫回呼節流影響，穩定每格觸發。時間戳用 performance.now。
+  const pnow=function(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); };
+  // setInterval 驅動取樣（~33ms）。iOS 疑似把 timer/rAF 暫停，故同時掛「影格回呼探針」對照。
   if(session.grabTimer){ clearInterval(session.grabTimer); }
   session.grabTimer=setInterval(function(){
-    session._nIv=(session._nIv||0)+1;                    // 診斷：計時器實際觸發次數
-    const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
-    _processFrame(now);
+    session._nIv=(session._nIv||0)+1;                    // 計時器實際觸發次數
+    try{ _processFrame(pnow()); }catch(e){ session._err=(e&&e.message)||String(e); }
   }, 33);
+  // 探針：影格回呼（由相機送格驅動，不走 timer）只做計數——若 timer 被暫停但這裡會漲，就改用它驅動
+  if(_video && _video.requestVideoFrameCallback){
+    var probe=function(){ if(!_video||!_video.requestVideoFrameCallback) return; session._nRvfc=(session._nRvfc||0)+1; try{ _video.requestVideoFrameCallback(probe); }catch(e){} };
+    try{ _video.requestVideoFrameCallback(probe); }catch(e){}
+  }
 }
 
 function recentSamples(now,sec){
@@ -609,7 +612,10 @@ function updateDebug(recent, beats, rr, q){
   const S=session.samples||[], buf=S.length;
   const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
   const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
-  el.textContent='*** BUILD iv-2  iv '+(session._nIv||0)+' ***\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
+  var _vis=(typeof document!=='undefined'&&document.visibilityState)||'?';
+  el.textContent='*** BUILD iv-3 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
+    '\nvis '+_vis+'  err '+(session._err||'-')+
+    '\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
     '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
     '\npr '+(session._nProc||0)+' ps '+(session._nPush||0)+' mx '+(session._mx||0)+' st '+(session._nStart||0)+' rn '+(session._nRender||0)+
