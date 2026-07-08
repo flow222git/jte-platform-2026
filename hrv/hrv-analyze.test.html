@@ -166,6 +166,37 @@ async function run(){
     near(hr, 67, 9, '好時段聚合 HR 合理，實得 '+Math.round(hr));
   });
 
+  // 頻域用「最長連續好窗」：不跨壞窗拼接（拼接會在 tachogram 接縫注入假低頻、污染 LF）
+  function synthSplit(){   // 乾淨45s | 雜訊30s | 乾淨45s（窗界對齊；兩段乾淨各 45s）
+    var s=[], fs=30, f=66/60;
+    for(var i=0;i<fs*120;i++){ var t=i*1000/fs; var bad=(t>=45000&&t<75000);
+      var v=bad ? 50+(Math.random()-0.5)*0.03 : 50+Math.sin(2*Math.PI*f*t/1000)+(Math.random()-0.5)*0.06;
+      s.push({t:t,v:v}); }
+    return s;
+  }
+  await check('rrFromLongestGoodRun：只取最長連續段、不跨壞窗拼接', async () => {
+    var sig=synthSplit();
+    var run=HrvAnalyze.rrFromLongestGoodRun(sig, 15);
+    var gw=HrvAnalyze.rrFromGoodWindows(sig, 15);
+    var stitched=0; for(var i=0;i<gw.rr.length;i++) stitched+=gw.rr[i];
+    assert(run.spanMs>0, '應找到連續好段，實得 spanMs='+Math.round(run.spanMs));
+    assert(run.bad>=1, '中間雜訊應中斷連續段，實得 bad='+run.bad);
+    assert(run.spanMs < stitched, '最長段('+Math.round(run.spanMs)+') 應短於拼接好窗總和('+Math.round(stitched)+')，證明未跨壞窗拼接');
+  });
+
+  await check('coverageScore：手指蓋住鏡頭→高分、沒蓋/邊緣漏景/近黑→低分', async () => {
+    var C=HrvAnalyze.coverageScore;
+    assert(C(200,40,0.08) >= 0.8, '覆蓋+閃光燈應高分，實得 '+C(200,40,0.08).toFixed(2));
+    assert(C(70,30,0.15)  >= 0.55,'覆蓋無燈微暗應過門檻，實得 '+C(70,30,0.15).toFixed(2));
+    assert(C(120,110,0.5) <  0.4, '室內場景(沒蓋)應低分，實得 '+C(120,110,0.5).toFixed(2));
+    assert(C(10,8,0.4)    <  0.4, '近黑(暗房沒蓋)應低分，實得 '+C(10,8,0.4).toFixed(2));
+    assert(C(90,70,0.35)  <  0.4, '部分蓋到邊緣漏景應低分，實得 '+C(90,70,0.35).toFixed(2));
+    // 可傳入 cfg 覆寫門檻：更嚴的 rg 端點 → 同一輸入分數更低（證明集中設定生效）
+    var strict={ rgLo:2, rgHi:3, cvHi:0.30, cvLo:0.10, brLo:20, brHi:60, wRg:0.45, wUni:0.40, wBr:0.15, min:0.6 };
+    assert(C(70,30,0.15,strict) < C(70,30,0.15), 'cfg 覆寫應改變分數');
+    assert(typeof HrvAnalyze.COV_CFG.min==='number', 'COV_CFG.min 應可讀（集中門檻）');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
