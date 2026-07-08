@@ -121,8 +121,6 @@
   .quality{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border-radius:999px;padding:7px 14px;font-size:13px}
   .qdot{width:11px;height:11px;border-radius:50%;background:var(--red);transition:.3s;box-shadow:0 0 0 0 rgba(255,255,255,.0)}
   .qdot.green{background:var(--green)} .qdot.yellow{background:var(--yellow)} .qdot.red{background:var(--red)}
-  .cam-tip{font-size:12.5px;color:var(--ink-faint);text-align:center;margin:9px 4px 0;line-height:1.6}
-  .cam-tip:empty{display:none}
   .hr-live{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px}
   .hr-live .hb{font-size:18px;color:#ff6b81}
   .hr-live .v{font-family:"Noto Serif TC",serif;font-size:30px;font-weight:700}
@@ -269,52 +267,13 @@ const MEASURE_SEC=180;      // 固定 3 分鐘：HR/RMSSD 涵蓋，且頻域面�
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return MEASURE_SEC; }
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
-// 覆蓋門檻集中在 HrvAnalyze.COV_CFG.min（可依機型微調）；此處只是取用的小工具。
-function covMin(){ return (window.HrvAnalyze&&HrvAnalyze.COV_CFG)?HrvAnalyze.COV_CFG.min:0.55; }
-
-// —— 覆蓋參數本機覆寫 + ?debug 即時滑桿調校面板 ——
-// 讓你拿實機邊量邊調 COV_CFG（左下除錯浮層同時顯示 cov/cv），調好的值存本機、
-// 下次沿用；記下滿意的數字後即可回寫成程式預設。純調校工具，非一般使用者路徑。
-var COV_KEY='hrv_cov_cfg', _covLoaded=false, COV_DEFAULTS=null;
-function ensureCovLoaded(){                       // 把本機覆寫套進 COV_CFG（只做一次；HrvAnalyze 就緒後才有效）
-  var A=window.HrvAnalyze; if(!A||!A.COV_CFG||_covLoaded) return;
-  _covLoaded=true; COV_DEFAULTS=Object.assign({}, A.COV_CFG);
-  try{ var saved=JSON.parse(localStorage.getItem(COV_KEY)||'null'); if(saved) Object.assign(A.COV_CFG, saved); }catch(e){}
-}
-function saveCovCfg(){ var A=window.HrvAnalyze; if(!A||!A.COV_CFG) return; try{ localStorage.setItem(COV_KEY, JSON.stringify(A.COV_CFG)); }catch(e){} }
-var COV_FIELDS=[
-  ['min','門檻',0,1,0.01],['rgLo','rg低',1,3,0.05],['rgHi','rg高',1.5,5,0.05],
-  ['cvHi','cv高',0.1,0.6,0.01],['cvLo','cv低',0,0.3,0.01],['brLo','亮低',0,120,2],['brHi','亮高',20,200,2],
-  ['wRg','權rg',0,1,0.05],['wUni','權勻',0,1,0.05],['wBr','權亮',0,1,0.05]
-];
-function buildCovPanel(){
-  if(!isDebug()) return;
-  ensureCovLoaded();
-  var A=window.HrvAnalyze; if(!A||!A.COV_CFG) return;
-  var old=document.getElementById('covPanel'); if(old) old.parentNode.removeChild(old);
-  var box=document.createElement('div'); box.id='covPanel';
-  box.style.cssText='position:fixed;right:6px;bottom:6px;z-index:99999;background:rgba(0,0,0,.85);color:#0ff;font:11px/1.3 monospace;padding:8px 9px;border-radius:7px;width:190px;pointer-events:auto';
-  var title=document.createElement('div'); title.textContent='COV_CFG 調校'; title.style.cssText='color:#fff;font-weight:bold;margin-bottom:6px'; box.appendChild(title);
-  COV_FIELDS.forEach(function(f){
-    var key=f[0], row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:5px;margin:2px 0';
-    var lab=document.createElement('span'); lab.textContent=f[1]; lab.style.cssText='width:40px;color:#9ff';
-    var sl=document.createElement('input'); sl.type='range'; sl.min=f[2]; sl.max=f[3]; sl.step=f[4]; sl.value=A.COV_CFG[key]; sl.style.cssText='flex:1;min-width:0';
-    var val=document.createElement('span'); val.style.cssText='width:34px;text-align:right;color:#0f0'; val.textContent=(+A.COV_CFG[key]).toFixed(2);
-    sl.oninput=function(){ A.COV_CFG[key]=parseFloat(sl.value); val.textContent=parseFloat(sl.value).toFixed(2); saveCovCfg(); };
-    row.appendChild(lab); row.appendChild(sl); row.appendChild(val); box.appendChild(row);
-  });
-  var reset=document.createElement('button'); reset.textContent='重設預設值'; reset.style.cssText='margin-top:6px;width:100%;font:11px monospace;cursor:pointer';
-  reset.onclick=function(){ if(COV_DEFAULTS) Object.assign(A.COV_CFG, COV_DEFAULTS); try{ localStorage.removeItem(COV_KEY); }catch(e){} buildCovPanel(); };
-  box.appendChild(reset);
-  document.body.appendChild(box);
-}
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null, lockSince:null };
 var _lastResultSamples=null; // stored for jteI18nApply re-render on lang switch
 
 // 切換畫面時回到頁面最上方，讓站台標題列也露出來（不會停在被捲到一半的位置）
-function clearAll(){ app.innerHTML=''; bar.innerHTML=''; var cp=document.getElementById('covPanel'); if(cp&&cp.parentNode)cp.parentNode.removeChild(cp); try{ window.scrollTo(0,0); }catch(e){} }
+function clearAll(){ app.innerHTML=''; bar.innerHTML=''; try{ window.scrollTo(0,0); }catch(e){} }
 function backHomeLink(){
   const b=document.createElement('button');b.className='home-link';b.textContent=jteT('btn.back','← 回練息場平台');
   b.onclick=function(){location.href='https://flow222git.github.io/jte-platform-2026/';};
@@ -331,7 +290,7 @@ const ENERGY_DISCLAIMER='「身體能量」是跟你自己平常的數值比出�
 
 /* —— 入口／說明 —— */
 function renderIntro(){
-  session.mode='intro'; stopCamera('intro'); clearAll();
+  session.mode='intro'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   // 這是什麼 card
@@ -376,29 +335,7 @@ function renderIntro(){
 
 /* —— 量測（相機 + 即時回饋）—— */
 let waveCanvas=null, waveCtx=null;
-// iOS 保活：相機啟動後 iOS/WebKit 會暫停整頁 JS（計時器/影格回呼都停），
-// 但「有在輸出音訊」的頁面不會被停 → 播一個近乎無聲的振盪器把 JS 保持活著。
-// 必須在使用者手勢（開始量測的點擊）當下建立/resume AudioContext，故放這裡。
-var _kaCtx=null, _kaOsc=null;
-function keepAliveStart(){
-  try{
-    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
-    if(!_kaCtx) _kaCtx=new AC();
-    if(_kaCtx.state==='suspended' && _kaCtx.resume) _kaCtx.resume();
-    if(!_kaOsc){
-      _kaOsc=_kaCtx.createOscillator();
-      var g=_kaCtx.createGain(); g.gain.value=0.0015;      // 近乎無聲、但確有音訊輸出
-      _kaOsc.type='sine'; _kaOsc.frequency.value=440;
-      _kaOsc.connect(g); g.connect(_kaCtx.destination);
-      _kaOsc.start();
-    }
-    session._ka=_kaCtx.state;
-  }catch(e){ session._ka='err'; }
-}
-function keepAliveStop(){ try{ if(_kaOsc){ _kaOsc.stop(); _kaOsc=null; } if(_kaCtx&&_kaCtx.suspend) _kaCtx.suspend(); }catch(e){} }
 function renderMeasure(){
-  session._nRender=(session._nRender||0)+1;               // 診斷：renderMeasure 被呼叫次數（應為 1）
-  keepAliveStart();                                        // 在手勢當下啟動保活音訊
   session.mode='measure'; clearAll();
   session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
   const d=document.createElement('div');d.className='step';
@@ -421,7 +358,6 @@ function renderMeasure(){
       '</div>'+
     '</div>');
 
-  d.insertAdjacentHTML('beforeend','<div class="cam-tip" id="camTip"></div>');
   d.insertAdjacentHTML('beforeend','<div class="wave-card"><canvas id="wave"></canvas></div>');
   d.insertAdjacentHTML('beforeend','<div id="camErr"></div>');
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
@@ -442,7 +378,6 @@ function renderMeasure(){
     if(waveCtx)waveCtx.scale(dpr,dpr);
   }
   startCamera();
-  if(isDebug()) buildCovPanel();   // ?debug：即時調校 COV_CFG 的滑桿面板
 }
 
 function showCamError(title,msg){
@@ -453,7 +388,6 @@ function showCamError(title,msg){
 
 let _video=null, _grabCanvas=null, _grabCtx=null;
 async function startCamera(){
-  ensureCovLoaded();   // 若本機曾調校過 COV_CFG，先套用（不必開面板也生效）
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
     showCamError('這個裝置不支援相機量測','請改用支援相機的手機瀏覽器（建議 Chrome 或 Safari）再試一次。');
     return;
@@ -479,24 +413,14 @@ async function startCamera(){
     const isBack=function(l){ return /back|rear|environment|後置|後|背/i.test(l||''); };
     const isVirtual=function(l){ return /dual|triple|雙|三/i.test(l||''); }; // 含「雙/三」＝自動切換虛擬鏡頭
     const isUltra=function(l){ return /超廣角|ultra[\s-]*wide/i.test(l||''); };
-    // 0) 自我校準最優先：這台之前量成功過 → 直接預選當時記住的那顆鏡頭
-    //    （deviceId 為主、label 備援；找不到就落回下面的 label 啟發式）
-    var calib=getCamCalib(); session.camCalibUsed=false;
-    let pick=null;
-    if(calib&&calib.deviceId){
-      pick=cams.filter(function(d){ return d.deviceId===calib.deviceId; })[0]
-        || (calib.label?cams.filter(function(d){ return d.label===calib.label; })[0]:null);
-      if(pick) session.camCalibUsed=true;
-    }
     // 1) 超廣角單鏡頭最優先：保證單一實體、又最會對焦近物（手指貼著），iPhone 近物本就用它→不切走。
     //    （之前鎖「後置相機」實測沒生效，active 仍是雙廣角虛擬鏡頭→改鎖超廣角這顆真．單一鏡頭）
-    if(!pick) pick=cams.filter(function(d){ return isUltra(d.label)&&!isVirtual(d.label); })[0];
+    let pick=cams.filter(function(d){ return isUltra(d.label)&&!isVirtual(d.label); })[0];
     // 2) 否則純主鏡頭「後置相機 / Back Camera」；3) 任一非虛擬後置鏡頭；4) 最短 label 後置鏡頭
     if(!pick) pick=cams.filter(function(d){ return /^\s*(後置相機|back camera)\s*$/i.test(d.label||''); })[0];
     if(!pick) pick=cams.filter(function(d){ return isBack(d.label)&&!isVirtual(d.label); })[0];
     if(!pick){ const backs=cams.filter(function(d){ return isBack(d.label); }); backs.sort(function(a,b){ return (a.label||'').length-(b.label||'').length; }); pick=backs[0]; }
     session.camPick=pick?pick.label:'(無)'; session.camReacq=false;
-    session.backCount=cams.filter(function(d){ return isBack(d.label); }).length; // 後鏡頭數（客製提示用）
     if(pick&&pick.deviceId){
       const cur=stream.getVideoTracks()[0];
       const curId=(cur&&cur.getSettings)?cur.getSettings().deviceId:null;
@@ -510,8 +434,6 @@ async function startCamera(){
   session.stream=stream;
   const track=stream.getVideoTracks()[0];
   session.track=track;
-  // 記住這次實際在用的鏡頭（量成功後才寫入校準；見 renderResult）
-  try{ var _st=(track&&track.getSettings)?track.getSettings():{}; session.activeDeviceId=_st.deviceId||''; session.activeLabel=(track&&track.label)||''; }catch(e){ session.activeDeviceId=''; session.activeLabel=''; }
   // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）。
   // z-index 蓋過使用者列；每欄各自 try 以免一處出錯整個不顯示。
   if(/debug/.test(location.search)||/debug/.test(location.hash)){
@@ -519,7 +441,7 @@ async function startCamera(){
     if(!box){ box=document.createElement('div'); box.id='hrvCamDbg'; box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483646;background:rgba(0,0,0,.9);color:#0ff;font:11px/1.45 monospace;padding:8px 10px;white-space:pre-wrap;word-break:break-all;pointer-events:none'; document.body.appendChild(box); }
     let info='[鏡頭診斷]';
     try{ const devs2=await navigator.mediaDevices.enumerateDevices(); info+='\ncams: '+devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空)';}).join('  ||  '); }catch(e){ info+='\ncams: 列舉失敗 '+(e&&e.name); }
-    info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camCalibUsed?'  [calib]':'')+(session.camPickErr?('  err:'+session.camPickErr):'');
+    info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camPickErr?('  err:'+session.camPickErr):'');
     try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?'); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
     try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
     box.textContent=info;
@@ -530,17 +452,6 @@ async function startCamera(){
       await track.applyConstraints({ advanced:[{ torch:true }] });
     }
   }catch(e){ /* 無閃光燈，靠環境光；說明已引導到亮的地方 */ }
-
-  // 依這台實際能力給一句客製指引（有無閃光燈 / 單或多後鏡頭）——用查得到的能力，不猜機型。
-  try{
-    var _caps=(track&&track.getCapabilities)?track.getCapabilities():{};
-    var _hasTorch=!!(_caps&&_caps.torch), _bc=session.backCount||0;
-    session.camAdvice = !_hasTorch
-      ? jteT('camtip.notorch','這台偵測不到閃光燈——請在明亮的地方量，讓畫面盡量紅、亮。')
-      : (_bc>=2 ? jteT('camtip.multi','你的手機有多顆後鏡頭：用整個指腹蓋住整區鏡頭、壓穩一點，避免中途自動換鏡頭。')
-                : jteT('camtip.single','已幫你開啟閃光燈：用指腹蓋滿後鏡頭那顆即可。'));
-    var _tip=document.getElementById('camTip'); if(_tip) _tip.textContent=session.camAdvice;
-  }catch(e){}
 
   _video=document.getElementById('cam');
   if(!_video){ return; }
@@ -554,11 +465,9 @@ async function startCamera(){
   loopGrab();
 }
 
-// 擷取一幀：算紅/綠平均、覆蓋分數，推入樣本、維護視窗、節流更新 UI。now 為 ms 時間戳。
-function _processFrame(now){
-  session._nProc=(session._nProc||0)+1;                 // 診斷：_processFrame 被呼叫次數
-  session._vw=(_video&&_video.videoWidth)||0; session._vpaused=!!(_video&&_video.paused);
-  session._vct=(_video&&_video.currentTime!=null)?_video.currentTime:-1;   // 影片時間是否在前進
+function loopGrab(){
+  session.raf=requestAnimationFrame(loopGrab);
+  const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
   if(_video&&_grabCtx&&_video.videoWidth){
     const vw=_video.videoWidth, vh=_video.videoHeight;
     const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
@@ -566,15 +475,10 @@ function _processFrame(now){
       _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
       // 取中央 ~50x50（7..57）：紅光平均（訊號）＋綠光平均＋紅光飽和比例（診斷用）
       const img=_grabCtx.getImageData(7,7,50,50).data, px=img.length/4;
-      let r=0,g=0,r2=0,sat=0; for(let i=0;i<img.length;i+=4){ const rv=img[i]; r+=rv; r2+=rv*rv; g+=img[i+1]; if(rv>=250)sat++; }
+      let r=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
       const redMean=r/px, greenMean=g/px;
-      // 紅通道空間均勻度（變異係數）＋覆蓋分數：判斷這顆鏡頭是否被手指蓋住（量測前對位/鎖定用）
-      const redVar=Math.max(0, r2/px - redMean*redMean), redCv=redMean>0?Math.sqrt(redVar)/redMean:0;
-      const cov=window.HrvAnalyze?HrvAnalyze.coverageScore(redMean, greenMean, redCv):0;
       session.samples.push({ t:now, v:redMean, g:greenMean });
-      session._nPush=(session._nPush||0)+1;             // 診斷：成功推入次數 + 曾達到的最大緩衝
-      if(session.samples.length>(session._mx||0)) session._mx=session.samples.length;
-      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv, cov:cov };
+      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px };
       // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
       if(!session.measuring){
         const cutoff=now-KEEP_SEC*1000;
@@ -583,26 +487,6 @@ function _processFrame(now){
     }catch(e){ /* 影格未就緒/跨域，忽略此格 */ }
   }
   if(now-session.lastUi>=500){ session.lastUi=now; updateLiveUi(now); }
-}
-
-// 優先用 requestVideoFrameCallback（rVFC）：只在「相機真的送出新影格」時觸發一次，
-// 避免 rAF 在 120Hz 螢幕上重複讀同一格（造成 fs 虛報、平頂雜訊）；並用影格自帶的時間戳。
-// 不支援時退回 requestAnimationFrame。兩條路徑都用同一時鐘（performance.now 域），窗計算不受影響。
-function loopGrab(){
-  const pnow=function(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); };
-  _logEv('LG');   // loopGrab 被呼叫
-  // setInterval 驅動取樣（~33ms）。iOS 疑似把 timer/rAF 暫停，故同時掛「影格回呼探針」對照。
-  if(session.grabTimer){ clearInterval(session.grabTimer); }
-  session.grabTimer=setInterval(function(){
-    session._nIv=(session._nIv||0)+1;                    // 計時器實際觸發次數
-    if(session._nIv<=5) _logEv('iv'+session._nIv);
-    try{ _processFrame(pnow()); }catch(e){ session._err=(e&&e.message)||String(e); }
-  }, 33);
-  // 探針：影格回呼（由相機送格驅動，不走 timer）只做計數——若 timer 被暫停但這裡會漲，就改用它驅動
-  if(_video && _video.requestVideoFrameCallback){
-    var probe=function(){ if(!_video||!_video.requestVideoFrameCallback) return; session._nRvfc=(session._nRvfc||0)+1; try{ _video.requestVideoFrameCallback(probe); }catch(e){} };
-    try{ _video.requestVideoFrameCallback(probe); }catch(e){}
-  }
 }
 
 function recentSamples(now,sec){
@@ -624,30 +508,18 @@ function updateDebug(recent, beats, rr, q){
     el.onclick=function(){ try{ navigator.clipboard.writeText(JSON.stringify(session._dbgRecent||[])); el.style.color='#ff0'; setTimeout(function(){el.style.color='#0f0';},700); }catch(e){} };
     document.body.appendChild(el);
   }
-  session._dbgRecent = (session.samples||[]).slice(-80);   // 複製時給完整緩衝尾段（含時間戳）供診斷
+  session._dbgRecent = recent;
   let rmn=Infinity,rmx=-Infinity,gmn=Infinity,gmx=-Infinity;
   for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
   const d=session.lastDiag||{R:0,G:0,sat:0};
   const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
   let per=0, fs=0, acn=0; try{ const pr=HrvAnalyze._prep(recent); if(pr){ per=HrvAnalyze._periodicity(pr.ac, pr.fs); fs=pr.fs; acn=pr.ac.length; } }catch(e){}
   const mm=HrvAnalyze.metricsFromRr(rr);
-  // 診斷：整個緩衝長度 buf / 時間跨度 span / 是否量測中 meas / 最新一對樣本間隔 dt
-  const S=session.samples||[], buf=S.length;
-  const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
-  const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
-  var _vis=(typeof document!=='undefined'&&document.visibilityState)||'?';
-  el.textContent='*** BUILD iv-6 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
-    '\nvis '+_vis+'  ka '+(session._ka||'-')+'  err '+(session._err||'-')+
-    '\nstop '+(session._nStop||0)+' hide '+(session._nHide||0)+' vc '+(session._nVis||0)+' frz '+(session._nFreeze||0)+
-    '\nlog: '+((session._log||[]).join(' '))+
-    '\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
-    '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
-    '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
-    '\npr '+(session._nProc||0)+' ps '+(session._nPush||0)+' mx '+(session._mx||0)+' st '+(session._nStart||0)+' rn '+(session._nRender||0)+
-    '\nvw '+(session._vw||0)+' pause '+(session._vpaused?1:0)+' ct '+(session._vct!=null?(+session._vct).toFixed(1):'?')+
+  el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
+    '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
     '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
-    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nrecent '+recent.length+
+    '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nsamples '+recent.length+
     '\n(點我複製原始資料)';
 }
 
@@ -657,15 +529,9 @@ function updateLiveUi(now){
   const recent=recentSamples(now, KEEP_SEC);
   drawWave(recent);
   const q=HrvAnalyze.signalQuality(recent);
-  // 覆蓋分數只當「軟提示」，不硬擋量測：訊號綠（強週期性）＝一定有蓋著手指，
-  // 就算覆蓋分數沒到門檻（門檻未依此機校準）也照樣能開始，避免好量測被誤擋。
-  const covered=!!(session.lastDiag && session.lastDiag.cov>=covMin());  // 鏡頭是否已被手指蓋好（提示用）
-  const uncoveredHint = (!covered && q!=='green');                       // 只有訊號也不綠時才提示沒蓋好
   const dot=document.getElementById('qdot'), ql=document.getElementById('qlabel');
   if(dot){ dot.className='qdot '+q; }
-  if(ql){ ql.textContent = q==='green'?jteT('quality.green','訊號良好')
-    : (uncoveredHint ? jteT('quality.uncovered','鏡頭還沒蓋好，用指腹蓋滿')
-    : (q==='yellow'?jteT('quality.yellow','訊號普通，盡量別動'):jteT('quality.red','正在抓穩訊號…'))); }
+  if(ql){ ql.textContent = q==='green'?jteT('quality.green','訊號良好'):(q==='yellow'?jteT('quality.yellow','訊號普通，盡量別動'):jteT('quality.red','正在抓穩訊號…')); }
   // 即時心率：訊號穩定（綠燈）後才顯示，並做平滑——避免一開始偵測未穩時把雜訊當心跳、
   // 算出偏高的數字（一百多）嚇到使用者。穩定後從第一筆可信值起跑、緩緩貼近真實值。
   const beats=HrvAnalyze.detectBeats(recent);
@@ -681,11 +547,9 @@ function updateLiveUi(now){
   // 鎖定放寬：green 立即開始；或偵測到真脈搏（非紅）持穩 LOCK_HOLD_MS 也開始
   // （真人手指訊號常停在 yellow，等不到 green 會「鎖不到訊號」）。結尾 renderResult 仍有品質把關防垃圾。
   if(!session.measuring){
-    // green 立即開始；或非紅持穩 LOCK_HOLD_MS 也開始（覆蓋分數不硬擋，只在提示層引導）。
     if(q==='red') session.lockSince=null;
     else if(session.lockSince==null) session.lockSince=now;
     if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
-      session._nStart=(session._nStart||0)+1;           // 診斷：start 觸發次數（應為 1；若一直漲＝measuring 沒黏住）
       session.measuring=true; session.countdownStart=now; session.samples=[];
       stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
@@ -708,10 +572,7 @@ function updateLiveUi(now){
   }else{
     if(hint && !hint.classList.contains('warn')){
       const waited=(now-session.measureStart)/1000;
-      if(uncoveredHint){
-        // 訊號也不綠、且覆蓋偏低 → 引導蓋滿（純提示，不擋開始）
-        hint.textContent=jteT('hint.uncovered','還沒蓋好：用整個指腹蓋滿後鏡頭那一區（連旁邊的閃光燈），畫面變紅紅一片就對了。');
-      }else if(q==='red' && waited>=8){
+      if(q==='red' && waited>=8){
         // 久久抓不到 → 給可操作的檢查清單
         hint.textContent=jteT('hint.acquiring.late','還抓不到：請確認 ① 整個指腹蓋滿鏡頭和閃光燈（畫面要紅紅一片）② 別壓太用力 ③ 在亮一點的地方，放鬆再等幾秒。');
       }else{
@@ -747,19 +608,13 @@ function drawWave(samples){
 function finishMeasure(){
   const collected=session.samples.slice();
   _lastResultSamples=collected;
-  stopCamera('fin');
+  stopCamera();
   session.mode='result';
   renderResult(collected);
 }
 
-function _logEv(t){ (session._log=session._log||[]).push(t); if(session._log.length>14) session._log.shift(); }
-function stopCamera(reason){
-  session._nStop=(session._nStop||0)+1;                 // 診斷：stopCamera 被呼叫次數（若>0＝有東西在關相機）
-  _logEv('SC:'+(reason||'?')+'@'+(session._nProc||0));  // 記錄呼叫來源＋當時已擷取幾格
-  keepAliveStop();
-  if(session.grabTimer){ clearInterval(session.grabTimer); session.grabTimer=null; }
+function stopCamera(){
   if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
-  if(session.rvfc){ try{ if(_video&&_video.cancelVideoFrameCallback) _video.cancelVideoFrameCallback(session.rvfc); }catch(e){} session.rvfc=null; }
   if(session.track){ try{ session.track.applyConstraints({ advanced:[{ torch:false }] }); }catch(e){} }
   if(session.stream){ try{ session.stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} session.stream=null; }
   session.track=null; _video=null; _grabCtx=null; _grabCanvas=null; session.measuring=false;
@@ -821,9 +676,6 @@ function renderResult(samples){
     bar.appendChild(inner);
     return;
   }
-
-  // 自我校準：這次通過品質把關＝當時那顆鏡頭確實量得到 → 記住它，下次直接預選
-  if(session.activeDeviceId) setCamCalib(session.activeDeviceId, session.activeLabel);
 
   const cls=A.classify(m);
   const state=cls.state;                       // relaxed / balanced / tense（仍記錄供舊資料相容）
@@ -1014,15 +866,6 @@ function buildSelfReport(recId, rec){
 }
 
 // 出生年份（只存本機、選填）→ 年齡，用來校準吃年齡的面相（活力/彈性）
-// 鏡頭自我校準（只存本機）：量成功時記住當時用的鏡頭 deviceId，下次直接預選。
-// 比「猜機型/查資料庫」穩——適應的是這支手機＋保護殼的實況，且跨平台、零維護。
-var CAM_KEY='hrv_cam_calib';
-function getCamCalib(){ try{ return JSON.parse(localStorage.getItem(CAM_KEY)||'null'); }catch(e){ return null; } }
-function setCamCalib(deviceId, label){
-  if(!deviceId) return;
-  try{ localStorage.setItem(CAM_KEY, JSON.stringify({ deviceId:deviceId, label:label||'' })); }catch(e){}
-}
-
 var BIRTH_KEY='hrv_birth_year';
 function getBirthYear(){ var y=parseInt(localStorage.getItem(BIRTH_KEY),10); return (y>=1900&&y<=2100)?y:0; }
 function setBirthYear(y){ y=parseInt(y,10); if(y>=1900&&y<=2100){ try{localStorage.setItem(BIRTH_KEY,String(y));}catch(e){} return true; } return false; }
@@ -1163,7 +1006,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
 }
 /* —— 趨勢頁 —— */
 function renderTrend(){
-  session.mode='trend'; stopCamera('trend'); clearAll();
+  session.mode='trend'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   d.insertAdjacentHTML('beforeend','<p class="lead">'+jteT('trend.lead','你的身體能量趨勢。分數是跟你自己平常比的相對參考，多量幾次會越來越貼近你。')+'</p>');
@@ -1308,10 +1151,8 @@ window.jteI18nApply = function(lang){
   // so labels update automatically on next tick. No camera restart needed.
 };
 
-window.addEventListener('pagehide',function(){ session._nHide=(session._nHide||0)+1; stopCamera('pagehide'); });
-window.addEventListener('beforeunload',function(){ session._nHide=(session._nHide||0)+1; stopCamera('beforeunload'); });
-document.addEventListener('visibilitychange',function(){ session._nVis=(session._nVis||0)+1; });
-try{ document.addEventListener('freeze',function(){ session._nFreeze=(session._nFreeze||0)+1; }); }catch(e){}
+window.addEventListener('pagehide',stopCamera);
+window.addEventListener('beforeunload',stopCamera);
 
 /* ============================================================
    平台記錄 helper（HRV 為敏感健康資料 → 一律純本機，不上傳、不接 Firestore）
