@@ -46,10 +46,10 @@
   .abrow .ab{display:flex;gap:10px;align-items:baseline}
   .abrow .tagab{flex:none;font-family:"Jost",sans-serif;font-size:12px;color:var(--gold);letter-spacing:.1em;width:1.4em}
   .opts{display:flex;flex-direction:column;gap:9px;max-width:340px;margin:0 auto}
-  .opts.fc{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:400px}
+  .opts.fc{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:420px}
   .opt{font-family:inherit;font-weight:300;font-size:15px;letter-spacing:.06em;padding:11px 14px;cursor:pointer;
     border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--ink-soft);transition:.15s}
-  .opts.fc .opt{font-size:13.5px;padding:9px 13px}
+  .opts.fc .opt{font-size:13.5px;padding:9px 6px;white-space:nowrap;text-align:center}
   .opt:hover{border-color:var(--ink);color:var(--ink)}
   .opt.sel{background:var(--ink);border-color:var(--ink);color:var(--bg)}
   .navrow{display:flex;justify-content:space-between;align-items:center;max-width:340px;margin:22px auto 0}
@@ -343,10 +343,12 @@ function finishCost(){ S.phase='report'; save(); renderReport(computeScores(), c
 
 // ── 報告 ──
 function radarSVG(sc){
-  var pts=EKEYS.map(function(k){var p=B.POLAR[k];
+  // 依圓周相鄰方位連線(canonical POLAR 幾何順序;艮/巽 已於 2026-07-05 對調座標,不可用 EKEYS 順序連)
+  var RING=['qian','li','zhen','dui','kun','kan','xun','gen'];
+  var pts=RING.map(function(k){var p=B.POLAR[k];
     var r=(sc[k]||0)/100; return [200+(p.x-200)*r, 200+(p.y-200)*r];});
-  var frame=EKEYS.map(function(k){var p=B.POLAR[k];return p.x+','+p.y;}).join(' ');
-  var half=EKEYS.map(function(k){var p=B.POLAR[k];return (200+(p.x-200)*.5)+','+(200+(p.y-200)*.5);}).join(' ');
+  var frame=RING.map(function(k){var p=B.POLAR[k];return p.x+','+p.y;}).join(' ');
+  var half=RING.map(function(k){var p=B.POLAR[k];return (200+(p.x-200)*.5)+','+(200+(p.y-200)*.5);}).join(' ');
   var poly=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
   var labels=EKEYS.map(function(k){var p=B.POLAR[k],g=B.get(k);
     var lx=200+(p.x-200)*1.22, ly=200+(p.y-200)*1.22+4;
