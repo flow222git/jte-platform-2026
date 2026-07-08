@@ -414,9 +414,18 @@ async function startCamera(){
     const isBack=function(l){ return /back|rear|environment|後置|後|背/i.test(l||''); };
     const isVirtual=function(l){ return /dual|triple|雙|三/i.test(l||''); }; // 含「雙/三」＝自動切換虛擬鏡頭
     const isUltra=function(l){ return /超廣角|ultra[\s-]*wide/i.test(l||''); };
+    // 0) 自我校準最優先：這台之前量成功過 → 直接預選當時記住的那顆鏡頭
+    //    （deviceId 為主、label 備援；找不到就落回下面的 label 啟發式）
+    var calib=getCamCalib(); session.camCalibUsed=false;
+    let pick=null;
+    if(calib&&calib.deviceId){
+      pick=cams.filter(function(d){ return d.deviceId===calib.deviceId; })[0]
+        || (calib.label?cams.filter(function(d){ return d.label===calib.label; })[0]:null);
+      if(pick) session.camCalibUsed=true;
+    }
     // 1) 超廣角單鏡頭最優先：保證單一實體、又最會對焦近物（手指貼著），iPhone 近物本就用它→不切走。
     //    （之前鎖「後置相機」實測沒生效，active 仍是雙廣角虛擬鏡頭→改鎖超廣角這顆真．單一鏡頭）
-    let pick=cams.filter(function(d){ return isUltra(d.label)&&!isVirtual(d.label); })[0];
+    if(!pick) pick=cams.filter(function(d){ return isUltra(d.label)&&!isVirtual(d.label); })[0];
     // 2) 否則純主鏡頭「後置相機 / Back Camera」；3) 任一非虛擬後置鏡頭；4) 最短 label 後置鏡頭
     if(!pick) pick=cams.filter(function(d){ return /^\s*(後置相機|back camera)\s*$/i.test(d.label||''); })[0];
     if(!pick) pick=cams.filter(function(d){ return isBack(d.label)&&!isVirtual(d.label); })[0];
@@ -435,6 +444,8 @@ async function startCamera(){
   session.stream=stream;
   const track=stream.getVideoTracks()[0];
   session.track=track;
+  // 記住這次實際在用的鏡頭（量成功後才寫入校準；見 renderResult）
+  try{ var _st=(track&&track.getSettings)?track.getSettings():{}; session.activeDeviceId=_st.deviceId||''; session.activeLabel=(track&&track.label)||''; }catch(e){ session.activeDeviceId=''; session.activeLabel=''; }
   // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）。
   // z-index 蓋過使用者列；每欄各自 try 以免一處出錯整個不顯示。
   if(/debug/.test(location.search)||/debug/.test(location.hash)){
@@ -442,7 +453,7 @@ async function startCamera(){
     if(!box){ box=document.createElement('div'); box.id='hrvCamDbg'; box.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483646;background:rgba(0,0,0,.9);color:#0ff;font:11px/1.45 monospace;padding:8px 10px;white-space:pre-wrap;word-break:break-all;pointer-events:none'; document.body.appendChild(box); }
     let info='[鏡頭診斷]';
     try{ const devs2=await navigator.mediaDevices.enumerateDevices(); info+='\ncams: '+devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空)';}).join('  ||  '); }catch(e){ info+='\ncams: 列舉失敗 '+(e&&e.name); }
-    info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camPickErr?('  err:'+session.camPickErr):'');
+    info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camCalibUsed?'  [calib]':'')+(session.camPickErr?('  err:'+session.camPickErr):'');
     try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?'); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
     try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
     box.textContent=info;
@@ -688,6 +699,9 @@ function renderResult(samples){
     return;
   }
 
+  // 自我校準：這次通過品質把關＝當時那顆鏡頭確實量得到 → 記住它，下次直接預選
+  if(session.activeDeviceId) setCamCalib(session.activeDeviceId, session.activeLabel);
+
   const cls=A.classify(m);
   const state=cls.state;                       // relaxed / balanced / tense（仍記錄供舊資料相容）
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
@@ -877,6 +891,15 @@ function buildSelfReport(recId, rec){
 }
 
 // 出生年份（只存本機、選填）→ 年齡，用來校準吃年齡的面相（活力/彈性）
+// 鏡頭自我校準（只存本機）：量成功時記住當時用的鏡頭 deviceId，下次直接預選。
+// 比「猜機型/查資料庫」穩——適應的是這支手機＋保護殼的實況，且跨平台、零維護。
+var CAM_KEY='hrv_cam_calib';
+function getCamCalib(){ try{ return JSON.parse(localStorage.getItem(CAM_KEY)||'null'); }catch(e){ return null; } }
+function setCamCalib(deviceId, label){
+  if(!deviceId) return;
+  try{ localStorage.setItem(CAM_KEY, JSON.stringify({ deviceId:deviceId, label:label||'' })); }catch(e){}
+}
+
 var BIRTH_KEY='hrv_birth_year';
 function getBirthYear(){ var y=parseInt(localStorage.getItem(BIRTH_KEY),10); return (y>=1900&&y<=2100)?y:0; }
 function setBirthYear(y){ y=parseInt(y,10); if(y>=1900&&y<=2100){ try{localStorage.setItem(BIRTH_KEY,String(y));}catch(e){} return true; } return false; }
