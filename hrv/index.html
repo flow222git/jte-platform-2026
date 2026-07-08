@@ -331,7 +331,7 @@ const ENERGY_DISCLAIMER='「身體能量」是跟你自己平常的數值比出�
 
 /* —— 入口／說明 —— */
 function renderIntro(){
-  session.mode='intro'; stopCamera(); clearAll();
+  session.mode='intro'; stopCamera('intro'); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   // 這是什麼 card
@@ -569,10 +569,12 @@ function _processFrame(now){
 // 不支援時退回 requestAnimationFrame。兩條路徑都用同一時鐘（performance.now 域），窗計算不受影響。
 function loopGrab(){
   const pnow=function(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); };
+  _logEv('LG');   // loopGrab 被呼叫
   // setInterval 驅動取樣（~33ms）。iOS 疑似把 timer/rAF 暫停，故同時掛「影格回呼探針」對照。
   if(session.grabTimer){ clearInterval(session.grabTimer); }
   session.grabTimer=setInterval(function(){
     session._nIv=(session._nIv||0)+1;                    // 計時器實際觸發次數
+    if(session._nIv<=5) _logEv('iv'+session._nIv);
     try{ _processFrame(pnow()); }catch(e){ session._err=(e&&e.message)||String(e); }
   }, 33);
   // 探針：影格回呼（由相機送格驅動，不走 timer）只做計數——若 timer 被暫停但這裡會漲，就改用它驅動
@@ -613,9 +615,10 @@ function updateDebug(recent, beats, rr, q){
   const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
   const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
   var _vis=(typeof document!=='undefined'&&document.visibilityState)||'?';
-  el.textContent='*** BUILD iv-4 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
+  el.textContent='*** BUILD iv-5 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
     '\nvis '+_vis+'  err '+(session._err||'-')+
     '\nstop '+(session._nStop||0)+' hide '+(session._nHide||0)+' vc '+(session._nVis||0)+' frz '+(session._nFreeze||0)+
+    '\nlog: '+((session._log||[]).join(' '))+
     '\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
     '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
@@ -723,13 +726,15 @@ function drawWave(samples){
 function finishMeasure(){
   const collected=session.samples.slice();
   _lastResultSamples=collected;
-  stopCamera();
+  stopCamera('fin');
   session.mode='result';
   renderResult(collected);
 }
 
-function stopCamera(){
+function _logEv(t){ (session._log=session._log||[]).push(t); if(session._log.length>14) session._log.shift(); }
+function stopCamera(reason){
   session._nStop=(session._nStop||0)+1;                 // 診斷：stopCamera 被呼叫次數（若>0＝有東西在關相機）
+  _logEv('SC:'+(reason||'?')+'@'+(session._nProc||0));  // 記錄呼叫來源＋當時已擷取幾格
   if(session.grabTimer){ clearInterval(session.grabTimer); session.grabTimer=null; }
   if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
   if(session.rvfc){ try{ if(_video&&_video.cancelVideoFrameCallback) _video.cancelVideoFrameCallback(session.rvfc); }catch(e){} session.rvfc=null; }
@@ -1136,7 +1141,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
 }
 /* —— 趨勢頁 —— */
 function renderTrend(){
-  session.mode='trend'; stopCamera(); clearAll();
+  session.mode='trend'; stopCamera('trend'); clearAll();
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
   d.insertAdjacentHTML('beforeend','<p class="lead">'+jteT('trend.lead','你的身體能量趨勢。分數是跟你自己平常比的相對參考，多量幾次會越來越貼近你。')+'</p>');
@@ -1281,8 +1286,8 @@ window.jteI18nApply = function(lang){
   // so labels update automatically on next tick. No camera restart needed.
 };
 
-window.addEventListener('pagehide',function(){ session._nHide=(session._nHide||0)+1; stopCamera(); });
-window.addEventListener('beforeunload',function(){ session._nHide=(session._nHide||0)+1; stopCamera(); });
+window.addEventListener('pagehide',function(){ session._nHide=(session._nHide||0)+1; stopCamera('pagehide'); });
+window.addEventListener('beforeunload',function(){ session._nHide=(session._nHide||0)+1; stopCamera('beforeunload'); });
 document.addEventListener('visibilitychange',function(){ session._nVis=(session._nVis||0)+1; });
 try{ document.addEventListener('freeze',function(){ session._nFreeze=(session._nFreeze||0)+1; }); }catch(e){}
 
