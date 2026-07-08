@@ -3,19 +3,24 @@
   'use strict';
   function mean(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return a.length?s/a.length:0; }
   function _clamp01(x){ return x<0?0:(x>1?1:x); }
-  // 鏡頭覆蓋分數 0~1：判斷「這顆鏡頭是不是被手指蓋住」（用於量測前的即時對位回饋與鎖定閘門）。
+  // 鏡頭覆蓋設定（集中一處，方便依機型實測微調；門檻 min 供鎖定閘門用）。
+  //   rgLo/rgHi：紅/綠比的 0→1 映射端點；cvHi/cvLo：變異係數（低=均勻）的 0→1 映射端點；
+  //   brLo/brHi：亮度端點；wRg/wUni/wBr：三項權重；min：判定「已蓋好」的分數門檻。
+  var COV_CFG={ rgLo:1.2, rgHi:2.2, cvHi:0.30, cvLo:0.10, brLo:20, brHi:60, wRg:0.45, wUni:0.40, wBr:0.15, min:0.55 };
+  // 鏡頭覆蓋分數 0~1：判斷「這顆鏡頭是不是被手指蓋住」（量測前對位回饋與鎖定閘門）。
   // 蓋住＋閃光燈的鏡頭有三個好認的特徵，全用每幀已算的統計、零額外成本：
   //   1) 紅/綠比 rg＝R/G 高：光穿過組織，紅被放行、綠藍被吸收（最強判別）。
   //   2) 空間均勻度：紅通道變異係數 cv 低＝整片紅一片（沒蓋會有場景細節→cv 高）。
   //   3) 亮度：R 有一定亮度（排除「暗房沒東西蓋」的近黑畫面）。
-  // R,G＝中央區塊紅/綠平均(0~255)；cv＝紅通道標準差/平均。閾值為相機經驗值，可依機型於除錯區微調。
-  function coverageScore(R, G, cv){
+  // R,G＝中央區塊紅/綠平均(0~255)；cv＝紅通道標準差/平均；cfg 可傳入覆寫（預設 COV_CFG）。
+  function coverageScore(R, G, cv, cfg){
+    cfg=cfg||COV_CFG;
     R=+R||0; G=+G||0; cv=+cv||0;
     var rg=R/((G||0)+1);
-    var rgS=_clamp01((rg-1.2)/(2.2-1.2));      // rg 1.2→0、≥2.2→1
-    var uniS=_clamp01((0.30-cv)/(0.30-0.10));  // cv ≤0.10→1、≥0.30→0
-    var brightS=_clamp01((R-20)/(60-20));      // R 20→0、≥60→1（排除近黑）
-    return rgS*0.45 + uniS*0.40 + brightS*0.15;
+    var rgS=_clamp01((rg-cfg.rgLo)/(cfg.rgHi-cfg.rgLo));
+    var uniS=_clamp01((cfg.cvHi-cv)/(cfg.cvHi-cfg.cvLo));
+    var brightS=_clamp01((R-cfg.brLo)/(cfg.brHi-cfg.brLo));
+    return rgS*cfg.wRg + uniS*cfg.wUni + brightS*cfg.wBr;
   }
   function _median(a){ var s=a.slice().sort(function(x,y){return x-y;}), n=s.length, h=Math.floor(n/2); return n? (n%2 ? s[h] : (s[h-1]+s[h])/2) : 0; }
   // 溫和偽差校正：只剔除偏離中位數 ±30% 的粗大偽差（漏拍倍長/假拍短間隔），
@@ -241,7 +246,7 @@
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
     detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromLongestGoodRun: rrFromLongestGoodRun, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
-    coverageScore: coverageScore,
+    coverageScore: coverageScore, COV_CFG: COV_CFG,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);

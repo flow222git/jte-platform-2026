@@ -191,6 +191,10 @@ async function run(){
     assert(C(120,110,0.5) <  0.4, '室內場景(沒蓋)應低分，實得 '+C(120,110,0.5).toFixed(2));
     assert(C(10,8,0.4)    <  0.4, '近黑(暗房沒蓋)應低分，實得 '+C(10,8,0.4).toFixed(2));
     assert(C(90,70,0.35)  <  0.4, '部分蓋到邊緣漏景應低分，實得 '+C(90,70,0.35).toFixed(2));
+    // 可傳入 cfg 覆寫門檻：更嚴的 rg 端點 → 同一輸入分數更低（證明集中設定生效）
+    var strict={ rgLo:2, rgHi:3, cvHi:0.30, cvLo:0.10, brLo:20, brHi:60, wRg:0.45, wUni:0.40, wBr:0.15, min:0.6 };
+    assert(C(70,30,0.15,strict) < C(70,30,0.15), 'cfg 覆寫應改變分數');
+    assert(typeof HrvAnalyze.COV_CFG.min==='number', 'COV_CFG.min 應可讀（集中門檻）');
   });
 
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
