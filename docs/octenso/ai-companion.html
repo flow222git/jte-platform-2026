@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · AI 伴讀設計</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>八態能格 · AI 伴讀設計</h1>
+  <div class="meta">AI Companion · 2026 · 07 · 08 · 伴讀不是主筆 · 零後端第一階段</div>
+</header>
+<article>
+<p>整理日期:2026-07-08 ｜ 狀態:第一階段已實作於體驗頁
+定位:AI 在八態能格的角色=<strong>伴讀,不是主筆</strong>——正式報告永遠由規則引擎組裝(可追溯、確定性、零後端);AI 負責報告讀完之後的開放討論。
+上游:解讀憲法(C1–C8)、<code>octenso-claude-read-demo.html</code>(早期雛形)、2026-07-07 comparison spec 中「AI 該在的兩個位置」的決策。</p>
+<hr />
+<h2>1. 為什麼報告本體不接 AI(重申既定決策)</h2>
+<ol>
+<li>LLM 天性擅長「似是而非的因果」——恰是 C1 防的東西;規則引擎每句可追溯,AI 每次生成都是新的違憲風險。</li>
+<li>零後端、作答不上傳是產品北極星;內嵌 AI = 資料出境+金鑰+費用+維運。</li>
+<li>測量鏡需要確定性:同分數同報告;LLM 有隨機性。</li>
+<li>型錄補完後內容庫已夠厚,規則組裝已能出細膩報告。</li>
+</ol>
+<h2>2. 第一階段:伴讀包(已實作)</h2>
+<p><strong>機制</strong>:報告尾新增「AI 伴讀」區——一鍵複製「伴讀守則(prompt)+報告全文(純文字版)」,使用者自行貼到慣用的 AI(Claude/ChatGPT/Gemini 連結並列)。零後端、零金鑰、隱私自主(使用者自願貼出,頁面明示揭露)。</p>
+<p><strong>伴讀守則(核心資產,canonical 於 <code>bagua-v2-data.js</code> COMPANION)</strong>——解讀憲法的 AI 行為版:</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>守則</th>
+<th>對應憲法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>陪讀者不是算命師;不預測、不斷吉凶、不下診斷</td>
+<td>C5、北極星</td>
+</tr>
+<tr>
+<td>報告=此刻快照,不是定義;不叫使用者「某某型的人」</td>
+<td>C6、身分=格局</td>
+</tr>
+<tr>
+<td>不編報告裡沒有的因果機制</td>
+<td>C1/C3/C7</td>
+</tr>
+<tr>
+<td>高低過不足皆樣態,不評價;平實具體關懷</td>
+<td>C8、voice</td>
+</tr>
+<tr>
+<td>多問具體場景、認真對待「不像」</td>
+<td>felt-self、反 Barnum</td>
+</tr>
+<tr>
+<td>「該怎麼辦」先回到報告建議,再化為很小的下一步;不開人生藥方</td>
+<td>解讀憲法治理精神</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>報告純文字版</strong>(<code>buildReportText</code>):與畫面同源組裝——峰名/八態分數與六級(含篤定)/四對判語(含二選一對照)/能格判定/主峰章節全文/雙峰或格局文/缺口潛段/三個方向。</p>
+<p><strong>同場加映:「接下來 · 三個方向」報告區</strong>(使用者提議的建議層):
+- 好好用=主峰的中正發揮一句(DIRECTIONS.use,字根=中正詞庫)
+- 留意收=能格判「亢」者的 aOver;無亢訊號則如實說明(C7)
+- 值得練=缺口的 aUnder
+三者全由既有素材組裝,無新機制宣稱。</p>
+<h2>3. 護欄與誠實揭露(頁面文案已含)</h2>
+<ul>
+<li>複製後內容仍在裝置上;貼給 AI=把報告交給該服務,自行斟酌。</li>
+<li>AI 回覆屬延伸討論,不是報告的一部分。</li>
+<li>伴讀守則對 AI 是「請求」不是「保證」——AI 仍可能違規;守則把機率壓低並給使用者辨識基準。</li>
+</ul>
+<h2>4. 第二階段(backlog,俟試測回饋與預算)</h2>
+<ul>
+<li>內嵌對話:serverless 代理(Cloudflare Workers/Vercel)+ Claude API;需金鑰管理、用量上限、濫用防護,並修改隱私聲明(報告文字將送至 API)。</li>
+<li>受限生成模式:AI 僅可引用型錄段落+重組銜接句;C1–C8 自動 lint 後才顯示。</li>
+<li>觀測:伴讀包複製率、使用者回饋「AI 討論有沒有幫助」。</li>
+</ul>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-08-octenso-ai-companion-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
