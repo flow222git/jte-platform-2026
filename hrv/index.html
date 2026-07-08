@@ -613,8 +613,9 @@ function updateDebug(recent, beats, rr, q){
   const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
   const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
   var _vis=(typeof document!=='undefined'&&document.visibilityState)||'?';
-  el.textContent='*** BUILD iv-3 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
+  el.textContent='*** BUILD iv-4 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
     '\nvis '+_vis+'  err '+(session._err||'-')+
+    '\nstop '+(session._nStop||0)+' hide '+(session._nHide||0)+' vc '+(session._nVis||0)+' frz '+(session._nFreeze||0)+
     '\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\ncov '+((d.cov||0).toFixed(2))+'  cv '+((d.cv||0).toFixed(2))+
     '\nbuf '+buf+'  span '+span.toFixed(1)+'s  meas '+(session.measuring?1:0)+'  dt '+dt+'ms'+
@@ -728,6 +729,7 @@ function finishMeasure(){
 }
 
 function stopCamera(){
+  session._nStop=(session._nStop||0)+1;                 // 診斷：stopCamera 被呼叫次數（若>0＝有東西在關相機）
   if(session.grabTimer){ clearInterval(session.grabTimer); session.grabTimer=null; }
   if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
   if(session.rvfc){ try{ if(_video&&_video.cancelVideoFrameCallback) _video.cancelVideoFrameCallback(session.rvfc); }catch(e){} session.rvfc=null; }
@@ -1279,8 +1281,10 @@ window.jteI18nApply = function(lang){
   // so labels update automatically on next tick. No camera restart needed.
 };
 
-window.addEventListener('pagehide',stopCamera);
-window.addEventListener('beforeunload',stopCamera);
+window.addEventListener('pagehide',function(){ session._nHide=(session._nHide||0)+1; stopCamera(); });
+window.addEventListener('beforeunload',function(){ session._nHide=(session._nHide||0)+1; stopCamera(); });
+document.addEventListener('visibilitychange',function(){ session._nVis=(session._nVis||0)+1; });
+try{ document.addEventListener('freeze',function(){ session._nFreeze=(session._nFreeze||0)+1; }); }catch(e){}
 
 /* ============================================================
    平台記錄 helper（HRV 為敏感健康資料 → 一律純本機，不上傳、不接 Firestore）
