@@ -184,6 +184,15 @@ async function run(){
     assert(run.spanMs < stitched, '最長段('+Math.round(run.spanMs)+') 應短於拼接好窗總和('+Math.round(stitched)+')，證明未跨壞窗拼接');
   });
 
+  await check('coverageScore：手指蓋住鏡頭→高分、沒蓋/邊緣漏景/近黑→低分', async () => {
+    var C=HrvAnalyze.coverageScore;
+    assert(C(200,40,0.08) >= 0.8, '覆蓋+閃光燈應高分，實得 '+C(200,40,0.08).toFixed(2));
+    assert(C(70,30,0.15)  >= 0.55,'覆蓋無燈微暗應過門檻，實得 '+C(70,30,0.15).toFixed(2));
+    assert(C(120,110,0.5) <  0.4, '室內場景(沒蓋)應低分，實得 '+C(120,110,0.5).toFixed(2));
+    assert(C(10,8,0.4)    <  0.4, '近黑(暗房沒蓋)應低分，實得 '+C(10,8,0.4).toFixed(2));
+    assert(C(90,70,0.35)  <  0.4, '部分蓋到邊緣漏景應低分，實得 '+C(90,70,0.35).toFixed(2));
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;
