@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態能格 · 對境耗能:愛情+工作</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>八態能格 · 對境耗能:愛情+工作</h1>
+  <div class="meta">Context Drain · 2026 · 07 · 08 · 全部題幹草案 · 過目定稿後接體驗頁</div>
+</header>
+<article>
+<p>整理日期:2026-07-08 ｜ 狀態:<strong>題幹草案待潤——過目定稿後才接上體驗頁</strong>
+定位:persona v2 spec(2026-06-18)§4「對境耗能第二階段」的落地——先做使用者最想深入的兩個場域;人際、獨處俟驗證再開。
+上游:CTX 場景耗能 v2(persona 頁,判定門檻沿用)、T2 微文案庫(內容積木)、T1 場域章節、MODEL.md 施測原則(測局框架)。</p>
+<hr />
+<h2>0. 一句話</h2>
+<p>報告主體說「乾的能量在愛情裡<strong>通常</strong>長怎樣」;對境耗能說「<strong>你這段關係</strong>正在跟你的底色怎麼互動」——從通用章節走到個人實測,是「寫出每一型的工作愛情樣貌」的最後一哩。</p>
+<h2>1. 機制(沿用既有引擎,零新發明)</h2>
+<ul>
+<li><strong>測什麼</strong>:場域的<strong>需求</strong>(demand)——這段關係/這份工作「需要你什麼」,<strong>不是再測一次你</strong>。每態 1 題,共 8 題/場域;外加 1 題整體強度。</li>
+<li><strong>判定</strong>(門檻沿用 CTX:DEMAND_HI=60、DRAIN_GAP=20):</li>
+<li>demand ≥60 且 demand−底色 ≥20 → <strong>掏空</strong>(場域很要、你此刻不多)</li>
+<li>demand ≥60 且 底色 ≥60 → <strong>順流</strong>(場域要的正是你有的=你的主場)</li>
+<li>deny 題高分 → <strong>場域不給空間</strong>(想要而要不到的縫隙)</li>
+<li><strong>輸出組裝</strong>(全部取自既有素材,C7 可追溯):</li>
+<li>順流股 → T2[該態][場域] <strong>中正段</strong>(若該股能格判亢 → 改帶亢段+提醒)</li>
+<li>掏空股 → CTX_COPE 因應句 + T2[該態][場域] <strong>潛段</strong></li>
+<li>deny 股 → 「這個場域少給你○○的空間」語彙(CTX v2 既有)</li>
+<li>不重複 T1:主報告已有通用章節,場域專頁只講 demand × 底色的實測結果。</li>
+</ul>
+<h2>2. 施測框架(憲法要件:測局不是測你)</h2>
+<p><strong>進題前指導語(工作)</strong>:</p>
+<blockquote>
+<p>接下來 8 題,評的是你目前的工作「需要你什麼」——不是你像不像,是<strong>它要不要</strong>。想著最近一個月實際的工作日常,憑直覺作答。</p>
+</blockquote>
+<p><strong>進題前指導語(愛情)</strong>:</p>
+<blockquote>
+<p>先在心裡想定一段你最在意的親密關係——伴侶、正在靠近的人,或最親近的那個人。接下來 8 題,評的是這段關係「需要你什麼」——不是你像不像。如果此刻沒有想探的關係,這個場域可以先跳過,等有了再回來。</p>
+</blockquote>
+<p>量尺(六點無中性):非常符合 100/大致符合 80/有點符合 60/有點不符合 40/大致不符合 20/完全不符合 0。
+強度題(沿用 CTX_INTENSITY):整體來說,這份工作/這段關係此刻讓你覺得——還好/有點耗/蠻耗的/快撐不住。</p>
+<h2>3. 題幹(草案,d=deny 題)</h2>
+<h3>3.1 工作場域(8+1)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>態</th>
+<th>題幹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乾</td>
+<td>你的工作,常常需要你定方向、做決定、扛結果。</td>
+</tr>
+<tr>
+<td>坤</td>
+<td>同事、客戶或團隊的情緒與狀況,常常需要你接住、顧到。</td>
+</tr>
+<tr>
+<td>震</td>
+<td>你的工作常要你快速啟動、往前推進度、開新的東西。</td>
+</tr>
+<tr>
+<td>巽</td>
+<td>人脈、資源、跨部門的串連,常常要靠你來牽。</td>
+</tr>
+<tr>
+<td>離</td>
+<td>你的工作需要你常常表達、簡報、把成果讓人看見。</td>
+</tr>
+<tr>
+<td>坎 d</td>
+<td>工作中,你不太有安靜下來、好好想一件事的空間。</td>
+</tr>
+<tr>
+<td>艮 d</td>
+<td>工作上想拒絕、或說「先到這裡」,常常不太容易。</td>
+</tr>
+<tr>
+<td>兌</td>
+<td>你的工作需要大量溝通——會議、訊息、對話幾乎不間斷。</td>
+</tr>
+<tr>
+<td>強度</td>
+<td>整體來說,這份工作此刻讓你覺得——(四級)</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.2 愛情場域(8+1)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>態</th>
+<th>題幹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乾</td>
+<td>這段關係裡,方向和決定(去哪、怎麼安排、下一步),常常需要由你來定。</td>
+</tr>
+<tr>
+<td>坤</td>
+<td>對方的情緒和需要,常常是你在承接。</td>
+</tr>
+<tr>
+<td>震</td>
+<td>關係卡住或悶住的時候,常常要你先開口、先行動,事情才會動。</td>
+</tr>
+<tr>
+<td>巽</td>
+<td>兩個人的生活安排、大小事的張羅與串連,常常落在你身上。</td>
+</tr>
+<tr>
+<td>離</td>
+<td>這段關係需要你把心意說清楚、把自己表達出來,對方才接得到。</td>
+</tr>
+<tr>
+<td>坎 d</td>
+<td>想要自己安靜一下的時間,在這段關係裡不太容易開口要。</td>
+</tr>
+<tr>
+<td>艮 d</td>
+<td>想說「今天我不行」或「我需要一點空間」,在這段關係裡不太容易說出口。</td>
+</tr>
+<tr>
+<td>兌</td>
+<td>這段關係需要很多的說與聊——很多事要談開、要對話。</td>
+</tr>
+<tr>
+<td>強度</td>
+<td>整體來說,這段關係此刻讓你覺得——(四級)</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. UX 動線(體驗頁)</h2>
+<ol>
+<li>報告底部新增「<strong>想更深入?</strong>」——〔工作〕〔愛情〕兩顆門(人際/獨處灰字「整備中」)。</li>
+<li>點入 → 場域指導語 → 8 題+強度 1 題(約 90 秒)。</li>
+<li><strong>場域專頁</strong>:順流(你的主場,綠)→ 掏空(被抽走的,朱,含因應)→ 場域不給的空間(金)→ 強度回扣一句 → 「跟 AI 聊這個場域」(伴讀包附加場域結果)。</li>
+<li>結果存 localStorage(獨立 key,如 <code>bagua_v2_ctx_work/love</code>);第一版<strong>不進分享碼</strong>。</li>
+<li>重測自由:場域會變,鼓勵「換了工作/關係有變化時再測」。</li>
+</ol>
+<h2>5. 誠實邊界</h2>
+<ul>
+<li>指導語明示「評的是場域的需求,不是你」;結果語彙用「這段關係/這份工作正在…」,主語是場域。</li>
+<li>demand × 底色只做<strong>對照</strong>,不宣稱因果(「場域很需要溝通、你的兌此刻不多」→ 描述落差,不說「所以你們吵架」)。</li>
+<li>愛情場域尊重狀態:沒有想探的關係=可跳過,不製造焦慮。</li>
+<li>樣本回饋問題:「這 8 題有沒有問到你這段關係/這份工作真正的樣子?哪題最不像?」</li>
+</ul>
+<h2>6. 驗收</h2>
+<ul>
+<li>題幹經使用者(老師)潤稿定稿 → 接上 bagua-persona-v2(資料進 <code>bagua-v2-data.js</code> CTXD 區塊)→ 測試(判定三態/組裝取用/deny 語彙)→ 試測。</li>
+</ul>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-08-octenso-context-drain-love-work-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
