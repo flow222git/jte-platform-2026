@@ -562,24 +562,15 @@ function _processFrame(now){
 // 避免 rAF 在 120Hz 螢幕上重複讀同一格（造成 fs 虛報、平頂雜訊）；並用影格自帶的時間戳。
 // 不支援時退回 requestAnimationFrame。兩條路徑都用同一時鐘（performance.now 域），窗計算不受影響。
 function loopGrab(){
-  // 時間戳一律用 performance.now（單一單調時鐘）：rVFC 只負責「每格觸發一次」以去重複格，
-  // 不採用其 ts 參數當時間戳——iOS Safari 的 rVFC ts 可能與 performance.now 不同時鐘，
-  // 會讓樣本緩衝的窗計算崩掉（samples 掉到 1、fs 0）。re-register 放 finally 確保不因例外而斷。
-  const pnow=function(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); };
-  if(_video && _video.requestVideoFrameCallback){
-    const onFrame=function(){
-      if(!_video || !_video.requestVideoFrameCallback) return;   // 已停鏡頭→停止迴圈
-      try{ _processFrame(pnow()); }
-      finally{ if(_video && _video.requestVideoFrameCallback) session.rvfc=_video.requestVideoFrameCallback(onFrame); }
-    };
-    session.rvfc=_video.requestVideoFrameCallback(onFrame);
-  } else {
-    const tick=function(){
-      session.raf=requestAnimationFrame(tick);
-      _processFrame(pnow());
-    };
-    tick();
-  }
+  // 用 requestAnimationFrame 穩定每格觸發（實測 iOS Safari 的 requestVideoFrameCallback
+  // 對 getUserMedia 串流不穩、可能只觸發一次→樣本緩衝餵不進去、buf 停在 1、不倒數）。
+  // 時間戳用 performance.now（單一單調時鐘）。
+  const tick=function(){
+    session.raf=requestAnimationFrame(tick);
+    const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
+    _processFrame(now);
+  };
+  tick();
 }
 
 function recentSamples(now,sec){
