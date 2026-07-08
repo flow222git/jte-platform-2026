@@ -166,6 +166,24 @@ async function run(){
     near(hr, 67, 9, '好時段聚合 HR 合理，實得 '+Math.round(hr));
   });
 
+  // 頻域用「最長連續好窗」：不跨壞窗拼接（拼接會在 tachogram 接縫注入假低頻、污染 LF）
+  function synthSplit(){   // 乾淨45s | 雜訊30s | 乾淨45s（窗界對齊；兩段乾淨各 45s）
+    var s=[], fs=30, f=66/60;
+    for(var i=0;i<fs*120;i++){ var t=i*1000/fs; var bad=(t>=45000&&t<75000);
+      var v=bad ? 50+(Math.random()-0.5)*0.03 : 50+Math.sin(2*Math.PI*f*t/1000)+(Math.random()-0.5)*0.06;
+      s.push({t:t,v:v}); }
+    return s;
+  }
+  await check('rrFromLongestGoodRun：只取最長連續段、不跨壞窗拼接', async () => {
+    var sig=synthSplit();
+    var run=HrvAnalyze.rrFromLongestGoodRun(sig, 15);
+    var gw=HrvAnalyze.rrFromGoodWindows(sig, 15);
+    var stitched=0; for(var i=0;i<gw.rr.length;i++) stitched+=gw.rr[i];
+    assert(run.spanMs>0, '應找到連續好段，實得 spanMs='+Math.round(run.spanMs));
+    assert(run.bad>=1, '中間雜訊應中斷連續段，實得 bad='+run.bad);
+    assert(run.spanMs < stitched, '最長段('+Math.round(run.spanMs)+') 應短於拼接好窗總和('+Math.round(stitched)+')，證明未跨壞窗拼接');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;

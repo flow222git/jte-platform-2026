@@ -822,6 +822,11 @@ function buildFacets(facets){
     cell.insertAdjacentHTML('beforeend', metricInfo(f.k));
     wrap.appendChild(cell);
   });
+  if(facets.partial){
+    const pn=document.createElement('div'); pn.className='facet-na';
+    pn.textContent=jteT('facets.partial','這次乾淨的連續片段偏短，壓力／活力需要更長一段穩定訊號才準，先顯示放鬆與彈性。下次坐穩、手指蓋好量滿就會補齊。');
+    wrap.appendChild(pn);
+  }
   wrap.appendChild(birthYearRow());
   return wrap;
 }
@@ -866,15 +871,24 @@ function getBirthYear(){ var y=parseInt(localStorage.getItem(BIRTH_KEY),10); ret
 function setBirthYear(y){ y=parseInt(y,10); if(y>=1900&&y<=2100){ try{localStorage.setItem(BIRTH_KEY,String(y));}catch(e){} return true; } return false; }
 function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).getFullYear()-y; return (a>=0&&a<=120)?a:0; }
 
-// 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null。年齡校準活力/彈性
-function computeFreqFacets(rr, sdnn){
-  var F=window.HrvFreq; if(!F||!rr||rr.length<8) return null;
-  var span=0; for(var s=0;s<rr.length;s++) span+=rr[s];     // 量測總時長(ms)
-  if(span < 150000) return null;                            // <2.5 分鐘 → LF 不可信 → 不顯示頻域面相（請用深測）
+// 從「最長連續好窗」算頻域面相；依可用長度分層降級（長度不夠就只出撐得起的面相，不硬湊）。
+// samples=原始樣本；sdnn=全段時域 SDNN（彈性用，時域不吃連續性）。資料太短回 null。
+//   ≥150 秒連續：四面相全出（LF 可信）。
+//   60–150 秒：只出放鬆(HF)＋彈性(SDNN)；壓力/活力(吃 LF 0.04Hz=週期25秒)不可信 → 不出，標 partial。
+//   <60 秒：頻域全不出（退回 HR/RMSSD/能量）。
+function computeFreqFacets(samples, sdnn){
+  var F=window.HrvFreq, A=window.HrvAnalyze;
+  if(!F||!A||!samples) return null;
+  var run=A.rrFromLongestGoodRun(samples,15);               // 最長連續好窗（頻域不拼接碎段）
+  var rr=run.rr, span=run.spanMs||0;
+  if(rr.length<8 || span<60000) return null;                // 連續好資料 <60 秒 → 頻域全不出
   try{
     var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
     var bp=F.bandPowers(rs.series, rs.fs);
-    return F.indices(bp, {sdnn:sdnn}, getAge());
+    var all=F.indices(bp, {sdnn:sdnn}, getAge());
+    if(span>=150000) return all;                            // LF 可信 → 全部四面相
+    // 60–150 秒：HF 撐得起放鬆、SDNN(時域)撐得起彈性；LF 不可信 → 壓力/活力不出
+    return { relax:all.relax, flexibility:all.flexibility, ageAdjusted:all.ageAdjusted, partial:true };
   }catch(e){ return null; }
 }
 // 只重繪面相卡（避免重跑 renderResult 重複存檔）；用 _lastResultSamples 重算
@@ -882,7 +896,7 @@ function refreshFacets(){
   var A=window.HrvAnalyze; if(!A||!_lastResultSamples) return false;
   var rr=robustRr(_lastResultSamples).rr, m=A.metricsFromRr(rr);
   var old=document.querySelector('.facets');
-  if(old){ var fresh=buildFacets(computeFreqFacets(rr, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
+  if(old){ var fresh=buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
   return false;
 }
 function applyBirthYear(){ var el=document.getElementById('byIn'); if(el && setBirthYear(el.value)) refreshFacets(); return false; }
@@ -935,8 +949,8 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
     hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' });
 
-  // —— 身體面相（頻域四面相：放鬆/壓力/活力/彈性）——
-  d.appendChild(buildFacets(computeFreqFacets(rr, m.sdnn)));
+  // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
+  d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
   d.appendChild(buildSelfReport(recId, rec));
   // —— 生活記錄（標籤＋選填一句，量完即可貼）——

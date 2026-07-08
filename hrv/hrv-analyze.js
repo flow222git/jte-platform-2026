@@ -193,9 +193,39 @@
     return { rr:allRr, good:good, bad:bad };
   }
 
+  // 頻域專用：回「最長一段連續好窗」的 RR（不跨壞窗拼接）。
+  // 頻域把不連續好窗接起來會在 tachogram 接縫注入相位跳變、污染低頻(LF)；
+  // 故頻域改以最長連續段為準。逐窗品質把關：好窗延續當前連續段，壞窗/空窗中斷之。
+  // 回 { rr:最長段的 RR, spanMs:該段總時長, good, bad }。
+  function rrFromLongestGoodRun(samples, winSec){
+    winSec = winSec || 15;
+    samples = samples || [];
+    if (samples.length < 10) return { rr:[], spanMs:0, good:0, bad:0 };
+    var t0=samples[0].t, tEnd=samples[samples.length-1].t, good=0, bad=0, start=t0;
+    var curRr=[], curSpan=0, bestRr=[], bestSpan=0;      // 當前連續段 vs 目前最長段
+    while (start < tEnd){
+      var end=start+winSec*1000, seg=[];
+      for (var i=0;i<samples.length;i++){ if (samples[i].t>=start && samples[i].t<end) seg.push(samples[i]); }
+      var winOk=false, winRr=null;
+      if (seg.length >= 10){
+        if (signalQuality(seg) !== 'red'){
+          var rr=cleanRrGentle(rrFromBeats(detectBeats(seg)));
+          var hr=rr.length ? 60000/mean(rr) : 0;
+          if (hr>=40 && hr<=150){ winOk=true; winRr=rr; good++; } else bad++;
+        } else bad++;
+      }
+      if (winOk){
+        for(var j=0;j<winRr.length;j++){ curRr.push(winRr[j]); curSpan+=winRr[j]; }
+        if (curSpan>bestSpan){ bestSpan=curSpan; bestRr=curRr.slice(); }
+      } else { curRr=[]; curSpan=0; }                    // 壞窗/空窗中斷連續段
+      start=end;
+    }
+    return { rr:bestRr, spanMs:bestSpan, good:good, bad:bad };
+  }
+
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
-    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
+    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromLongestGoodRun: rrFromLongestGoodRun, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);
