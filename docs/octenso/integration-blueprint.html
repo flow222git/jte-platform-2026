@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>練息場 · 平台整合藍圖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; --blue:#4d6b86;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; --blue:#8aa4bd; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; --blue:#4d6b86; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; --blue:#8aa4bd; }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:1.95;-webkit-font-smoothing:antialiased}
+.wrap{max-width:740px;margin:0 auto;padding:0 22px 90px}
+header{padding:66px 0 0;text-align:center}
+.enso{font-family:var(--serif);font-size:30px;color:var(--hair);margin-bottom:20px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(25px,5.6vw,36px);letter-spacing:.14em;margin:0 0 10px;text-wrap:balance}
+.subtitle{font-family:var(--serif);color:var(--muted);font-weight:400;font-size:clamp(13.5px,3.4vw,16px);letter-spacing:.08em;margin:0 0 16px}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.verdict{margin:52px 0 0;padding:30px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.verdict p{font-family:var(--serif);font-weight:400;color:var(--ink);font-size:clamp(17px,4.2vw,21px);letter-spacing:.1em;line-height:2;margin:0;text-wrap:balance}
+.verdict em{font-style:normal;color:var(--pine)}
+section{margin-top:80px}
+.seclabel{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.seclabel .num{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,22px);letter-spacing:.12em;margin:0}
+.seclead{color:var(--muted);font-size:13.5px;margin:0 0 26px;max-width:62ch}
+p{margin:0 0 16px;max-width:68ch}
+strong{font-weight:400;color:var(--ink)}
+figure{margin:30px 0 8px;text-align:center}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12px;color:var(--muted);letter-spacing:.06em;margin-top:10px}
+.tblwrap{overflow-x:auto;margin:20px 0 8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.85}
+th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.1em;text-align:left;padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 14px 12px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.k{font-family:var(--serif);font-weight:500;color:var(--ink);white-space:nowrap}
+.role{font-size:11px;letter-spacing:.1em;padding:2px 10px;border:1px solid var(--hair);border-radius:999px;white-space:nowrap}
+.role.mirror{color:var(--blue);border-color:var(--blue)}
+.role.field{color:var(--pine);border-color:var(--pine)}
+.role.bridge{color:var(--gold);border-color:var(--gold)}
+.role.door{color:var(--cinnabar);border-color:var(--cinnabar)}
+/* wireframe */
+.wf{max-width:430px;margin:26px auto 8px;border:1px solid var(--ink);border-radius:18px;padding:18px 16px;background:var(--surface)}
+.wf .wf-t{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:14px;letter-spacing:.14em;text-align:center;margin-bottom:12px}
+.wf .blk{border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:9px;background:var(--paper)}
+.wf .blk .bt{font-size:12.5px;color:var(--ink);letter-spacing:.08em}
+.wf .blk .bd{font-size:11.5px;color:var(--muted);line-height:1.7}
+.wf .blk.hero{display:flex;align-items:center;gap:12px}
+.wf .blk.hero .sym{font-family:var(--serif);font-size:22px;color:var(--ink)}
+.wf .row2{display:flex;gap:9px}
+.wf .row2 .blk{flex:1;margin-bottom:9px}
+/* journey steps */
+ol.journey{list-style:none;margin:24px 0 0;padding:0;counter-reset:j}
+ol.journey li{counter-increment:j;display:flex;gap:18px;padding:15px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+ol.journey li:last-child{border-bottom:none}
+ol.journey li::before{content:counter(j);font-family:var(--latin);color:var(--gold);font-size:13px;line-height:2.1;flex:0 0 1.2em;text-align:center}
+ol.journey .t{font-family:var(--serif);font-weight:500;color:var(--ink);letter-spacing:.05em}
+ol.journey p{margin:2px 0 0;font-size:13.5px;max-width:none}
+/* roadmap */
+.road{margin:24px 0 0}
+.road>div{display:flex;gap:18px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.road>div:last-child{border-bottom:none}
+.road .ph{font-family:var(--serif);font-size:15px;color:var(--gold);flex:0 0 1.6em;text-align:center;padding-top:3px}
+.road .t{font-family:var(--serif);font-weight:500;color:var(--ink);letter-spacing:.04em}
+.road p{margin:0;font-size:13px;max-width:none;color:var(--muted)}
+.pull{margin:36px 0;padding:0 0 0 20px;border-left:1px solid var(--pine)}
+.pull p{font-family:var(--serif);color:var(--ink);font-size:15.5px;letter-spacing:.05em;line-height:2.1;margin:0;max-width:none}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+.dg-t{font-family:var(--serif);font-size:13px;fill:var(--ink);letter-spacing:2px}
+.dg-s{font-size:10px;fill:var(--muted)}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="enso">◯</div>
+  <div class="eyebrow">Lianxichang · Integration Blueprint</div>
+  <h1>練息場 · 平台整合藍圖</h1>
+  <p class="subtitle">鏡 · 橋 · 場——把六個工具,變成一條使用者感受得到的迴圈</p>
+  <div class="meta">2026 · 07 · 08 · 收斂自平台白皮書既有策略</div>
+</header>
+
+<div class="verdict">
+  <p>看見你的能量,選擇你的流動,<em>練</em>——<br>鏡(看見)→ 橋(翻譯)→ 場(練)→ 再照鏡。</p>
+</div>
+
+<!-- 一 · 迴圈 -->
+<section>
+  <div class="seclabel"><span class="num">一</span><h2>核心迴圈與護城河</h2></div>
+  <figure>
+    <svg viewBox="0 0 460 400" width="440" role="img" aria-label="鏡橋場迴圈圖">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9" fill="none" stroke="var(--hair)" stroke-width="1.4"/>
+        </marker>
+      </defs>
+      <path d="M 230 78 A 122 122 0 0 1 342 200" fill="none" stroke="var(--hair)" stroke-width="1.2" marker-end="url(#ah)"/>
+      <path d="M 342 214 A 122 122 0 0 1 230 322" fill="none" stroke="var(--hair)" stroke-width="1.2" marker-end="url(#ah)"/>
+      <path d="M 216 322 A 122 122 0 0 1 118 214" fill="none" stroke="var(--hair)" stroke-width="1.2" marker-end="url(#ah)"/>
+      <path d="M 118 200 A 122 122 0 0 1 216 78" fill="none" stroke="var(--hair)" stroke-width="1.2" marker-end="url(#ah)"/>
+      <circle cx="223" cy="64" r="36" fill="var(--surface)" stroke="var(--blue)"/>
+      <text x="223" y="60" text-anchor="middle" class="dg-t" fill="var(--blue)">鏡</text>
+      <text x="223" y="76" text-anchor="middle" class="dg-s">看見</text>
+      <circle cx="356" cy="207" r="36" fill="var(--surface)" stroke="var(--gold)"/>
+      <text x="356" y="203" text-anchor="middle" class="dg-t" fill="var(--gold)">橋</text>
+      <text x="356" y="219" text-anchor="middle" class="dg-s">翻譯</text>
+      <circle cx="223" cy="330" r="36" fill="var(--surface)" stroke="var(--pine)"/>
+      <text x="223" y="326" text-anchor="middle" class="dg-t" fill="var(--pine)">場</text>
+      <text x="223" y="342" text-anchor="middle" class="dg-s">練</text>
+      <circle cx="104" cy="207" r="36" fill="var(--surface)" stroke="var(--cinnabar)"/>
+      <text x="104" y="203" text-anchor="middle" class="dg-t" fill="var(--cinnabar)">證</text>
+      <text x="104" y="219" text-anchor="middle" class="dg-s">HRV 再照鏡</text>
+      <text x="223" y="196" text-anchor="middle" class="dg-s" style="font-size:11px">AI 伴讀</text>
+      <text x="223" y="212" text-anchor="middle" class="dg-s">陪你走完整條迴圈</text>
+      <text x="315" y="112" class="dg-s">八態/HRV/心情/問易</text>
+      <text x="318" y="292" class="dg-s">三個方向 · Route B</text>
+      <text x="80" y="292" class="dg-s">呼吸/小憩/書寫</text>
+      <text x="60" y="112" class="dg-s">練前練後對比</text>
+    </svg>
+    <figcaption>核心迴圈——鏡看見、橋翻譯、場練習、HRV 給證據,再回到鏡</figcaption>
+  </figure>
+  <p><strong>護城河</strong>:九型有鏡子沒練功房;冥想 App 有練功房沒鏡子;練息場兩者兼備,中間還有 HRV 當客觀裁判——「練完,身體真的變了」。主觀鏡子+生理證據+練習閉環,同時做到三件事的沒有第二家。這正是「科學,讓療癒更有據」。</p>
+</section>
+
+<!-- 二 · 資產角色 -->
+<section>
+  <div class="seclabel"><span class="num">二</span><h2>資產盤點 × 角色</h2></div>
+  <p class="seclead">每個工具都已存在——整合不是重做,是給每個工具一個明確的角色與出場時機。</p>
+  <div class="tblwrap"><table>
+    <tr><th>資產</th><th>角色</th><th>節奏</th><th>現況</th></tr>
+    <tr><td class="k">八態能格</td><td><span class="role mirror">鏡 · 底色</span></td><td>季</td><td>v1 正式+v2 體驗(型錄/題本 v2/AI 伴讀)</td></tr>
+    <tr><td class="k">HRV</td><td><span class="role mirror">鏡 · 身體</span></td><td>日</td><td>已上線,含研究頁;練習前後的裁判</td></tr>
+    <tr><td class="k">心情溫度計</td><td><span class="role mirror">鏡 · 情緒</span></td><td>週</td><td>已上線</td></tr>
+    <tr><td class="k">問易 64 卦</td><td><span class="role mirror">鏡 · 處境</span></td><td>事件</td><td>已上線;Route B 需求表 v0.1</td></tr>
+    <tr><td class="k">能量小幫手</td><td><span class="role door">前門</span></td><td>入口</td><td>空/滿/卡 三態分流 v1</td></tr>
+    <tr><td class="k">呼吸/小憩/書寫</td><td><span class="role field">場</span></td><td>日</td><td>已上線;八態↔工具對應已有</td></tr>
+    <tr><td class="k">優勢幸福力+研究</td><td><span class="role mirror">鏡 · 資源</span></td><td>季</td><td>外部專案,槽位保留(§六)</td></tr>
+    <tr><td class="k">AI 伴讀</td><td><span class="role bridge">迴圈的線</span></td><td>隨時</td><td>伴讀包已上線</td></tr>
+  </table></div>
+</section>
+
+<!-- 三 · 一人一頁 -->
+<section>
+  <div class="seclabel"><span class="num">三</span><h2>IA:從工具目錄到「一人一頁」</h2></div>
+  <p class="seclead">經營心智圖已給答案:「從 modality 目錄 → 被愛的社群之家」。UX 的基本單位=「我的練息場」個人頁——所有資料已在 localStorage,純前端聚合、零後端即可成立。</p>
+  <div class="wf">
+    <div class="wf-t">我 的 練 息 場</div>
+    <div class="blk hero"><span class="sym">☲☵</span><div><div class="bt">我的底色 · 離×坎並重</div><div class="bd">八態峰名卡+迷你雷達 · 上次:6/12 · 下次照鏡:9月</div></div></div>
+    <div class="row2">
+      <div class="blk"><div class="bt">此刻</div><div class="bd">三態快篩:有點滿<br>心情溫度:3(週)</div></div>
+      <div class="blk"><div class="bt">身體的話</div><div class="bd">HRV 七日趨勢 ↗<br>練前 42 → 練後 58</div></div>
+    </div>
+    <div class="blk"><div class="bt">今日一步 · 留意收(離)</div><div class="bd">→ 十分鐘小憩・觀息法(練完量一次 HRV)</div></div>
+    <div class="blk"><div class="bt">我的處境</div><div class="bd">最近的卦:水雷屯——召喚承接與沉澱,節制行動</div></div>
+    <div class="blk"><div class="bt">伴讀</div><div class="bd">帶著完整快照去跟 AI 聊(管家包)</div></div>
+  </div>
+  <figure><figcaption>「我的練息場」個人頁線框——家,不是牢籠;各工具維持獨立頁可直達</figcaption></figure>
+</section>
+
+<!-- 四 · 旅程 -->
+<section>
+  <div class="seclabel"><span class="num">四</span><h2>旅程:每個工具在對的時刻出現</h2></div>
+  <figure>
+    <svg viewBox="0 0 640 190" width="620" role="img" aria-label="前門三態分流圖">
+      <rect x="250" y="12" width="140" height="40" rx="20" fill="var(--surface)" stroke="var(--ink)"/>
+      <text x="320" y="37" text-anchor="middle" class="dg-t" style="letter-spacing:4px">此刻如何?</text>
+      <line x1="320" y1="52" x2="120" y2="96" stroke="var(--hair)" marker-end="url(#ah)"/>
+      <line x1="320" y1="52" x2="320" y2="96" stroke="var(--hair)" marker-end="url(#ah)"/>
+      <line x1="320" y1="52" x2="520" y2="96" stroke="var(--hair)" marker-end="url(#ah)"/>
+      <g text-anchor="middle">
+        <rect x="45" y="100" width="150" height="66" rx="10" fill="var(--surface)" stroke="var(--blue)"/>
+        <text x="120" y="126" class="dg-t" fill="var(--blue)">空了</text>
+        <text x="120" y="146" class="dg-s">HRV+恢復呼吸</text>
+        <rect x="245" y="100" width="150" height="66" rx="10" fill="var(--surface)" stroke="var(--cinnabar)"/>
+        <text x="320" y="126" class="dg-t" fill="var(--cinnabar)">太滿</text>
+        <text x="320" y="146" class="dg-s">喊停工具+卸壓呼吸</text>
+        <rect x="445" y="100" width="150" height="66" rx="10" fill="var(--surface)" stroke="var(--pine)"/>
+        <text x="520" y="126" class="dg-t" fill="var(--pine)">卡住</text>
+        <text x="520" y="146" class="dg-s">八態深鏡 25 題</text>
+      </g>
+    </svg>
+    <figcaption>前門三態分流(策略頁原設計,搬到真首頁)——不需先懂理論,先被接住</figcaption>
+  </figure>
+  <ol class="journey">
+    <li><div><span class="t">第一分鐘 · 前門</span><p>三態快篩,零知識門檻。空了先充電、太滿先卸壓,卡住的人才進深鏡——先接住疲累的人。</p></div></li>
+    <li><div><span class="t">深鏡之後 · 掛鉤</span><p>報告「三個方向」逐條接練習:乾亢→承接式呼吸、坎潛→十分鐘小憩。需補一份「練習↔八態」反向標籤(每個呼吸法補哪股/收哪股)。</p></div></li>
+    <li><div><span class="t">練習前後 · 證據(aha 時刻)</span><p>HRV 三明治:練前量、練後量——身體給你看差別。做成儀式,這一刻是平台的靈魂。</p></div></li>
+    <li><div><span class="t">事件觸發 · 橋(皇冠時刻)</span><p>遇到處境→問易抽卦→卦的召喚 × 你的能格=Route B 客製建議→回到練習。同一卦、不同人、不同建議。</p></div></li>
+    <li><div><span class="t">節奏 · 留存</span><p>HRV 日、心情週、八態季、對境耗能按需——三種週期=自然回訪理由;個人頁顯示「下一次照鏡」。</p></div></li>
+  </ol>
+</section>
+
+<!-- 五 · 共通語與 AI -->
+<section>
+  <div class="seclabel"><span class="num">五</span><h2>共通語與 AI 的兩層</h2></div>
+  <p><strong>八態是平台的共通語</strong>:HRV 報告可註「恢復(坎)的身體版」、呼吸法標「補哪股/收哪股」、心情溫度偏高→坤/坎照顧路徑、優勢幸福力的優勢→八態中正語言。真相來源單一(canonical data),視覺已統一。</p>
+  <div class="pull"><p>AI 的兩層,分開決策:<br>① 讓使用者更了解自己——全力做:伴讀包 → 管家包(整份個人頁快照帶去聊),零後端、隱私自主。<br>② 讓平台更了解使用者——戰略決定,不是功能:先走「這個解讀貼切嗎?」匿名回饋迴路;帳號化綁 Route C 一起決策。</p></div>
+  <p style="font-size:13px;color:var(--muted)">平台級誠實邊界:跨工具的資料只能<strong>並列呈現、不捏因果</strong>(C1 的平台版)——HRV 低+乾亢只能並列;三面鏡子不一致時,呈現為反思點,不裁決誰對。</p>
+</section>
+
+<!-- 六 · 動工順序 -->
+<section>
+  <div class="seclabel"><span class="num">六</span><h2>動工順序(每步獨立可上線)</h2></div>
+  <div class="road">
+    <div><span class="ph">①</span><div><div class="t">「我的練息場」個人頁</div><p>localStorage 聚合,零後端——成本最低、體感最大,整合的「家」先立起來</p></div></div>
+    <div><span class="ph">②</span><div><div class="t">三個方向 → 練習接線</div><p>練習↔八態反向標籤;鏡到場的掛鉤,資料半現成</p></div></div>
+    <div><span class="ph">③</span><div><div class="t">對境耗能 · 愛情+工作</div><p>深鏡的縱深(已 GO);T2 積木就位</p></div></div>
+    <div><span class="ph">④</span><div><div class="t">問易 × 八態 Route B MVP</div><p>皇冠時刻;64 卦需求表已 v0.1</p></div></div>
+    <div><span class="ph">⑤</span><div><div class="t">AI 管家包</div><p>①的自然延伸——快照版伴讀</p></div></div>
+    <div><span class="ph">⑥</span><div><div class="t">回饋迴路</div><p>「貼切嗎?」匿名回傳——模型越用越準的引擎</p></div></div>
+  </div>
+  <p style="margin-top:24px;font-size:13px;color:var(--muted)">優勢幸福力與心理研究(外部專案):槽位已留——優勢=「資源盤點」餵「好好用」;研究頁=誠實印章彈藥庫。專案併入後依共通語掛上。</p>
+</section>
+
+<div class="honest">
+  誠實印章照掛:「v0.1 研究假設 · 待考」不是免責聲明,是信任的來源。鏡子非算命——反映「是什麼」,而非「將如何」。
+  <div class="src">Source · docs/superpowers/specs/2026-07-08-lianxichang-integration-blueprint.md</div>
+</div>
+
+</div>
+
+</body>
+</html>
