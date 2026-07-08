@@ -12,10 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<!-- 登入＋記錄：沿用練息場平台的 Google 登入 + Firebase/Firestore -->
+<!-- 登入：沿用練息場平台的 Google 登入（僅用來區分本機紀錄的使用者；HRV 資料一律不上傳） -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
@@ -1143,68 +1141,26 @@ window.addEventListener('pagehide',stopCamera);
 window.addEventListener('beforeunload',stopCamera);
 
 /* ============================================================
-   平台記錄 helper（HRV 走「一般記錄」明文，不加密；localStorage + Firestore）
+   平台記錄 helper（HRV 為敏感健康資料 → 一律純本機，不上傳、不接 Firestore）
+   隱私決策見 spec 2026-06-19 第 5 節；UI 亦承諾「只留在這台裝置上」。
+   Google 登入僅用來替本機紀錄分使用者命名空間（jteKey），不做雲端同步。
    ============================================================ */
-var _db=null;
-function initFirebase(){
-  if(typeof firebase==='undefined'){setTimeout(initFirebase,200);return;}
-  try{
-    if(firebase.apps.length===0){
-      firebase.initializeApp({
-        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
-        authDomain:"jointoenjoy.firebaseapp.com",
-        projectId:"jointoenjoy",
-        storageBucket:"jointoenjoy.firebasestorage.app",
-        messagingSenderId:"978242729427",
-        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
-      });
-    }
-    _db=firebase.firestore();
-  }catch(e){console.warn('Firebase init failed',e);}
-}
-window.addEventListener('load',initFirebase);
-
 function jteEmail(){return localStorage.getItem('jte_user_email')||'';}
 function jteKey(){const e=jteEmail();return e?'jte_daily_'+e.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';}
 function jteTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function jteAll(){try{return JSON.parse(localStorage.getItem(jteKey())||'{}')}catch(e){return{}}}
-function jteFsSave(dateKey,day){
-  const e=jteEmail();if(!_db||!e)return;
-  // HRV 為一般記錄、明文直接上雲（不加密）。
-  _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').doc(dateKey).set(day,{merge:true})
-    .catch(function(err){console.warn('Firestore write failed',err);});
-}
 function jteWriteRecord(rec){
   const k=jteKey(),today=jteTodayKey(),all=jteAll();
   const day=all[today]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
   if(!day.linked)day.linked=[];
   day.linked.push(rec);day.updatedAt=new Date().toISOString();
   all[today]=day;localStorage.setItem(k,JSON.stringify(all));
-  jteFsSave(today,day);
 }
 function _flattenHrv(all){var out=[];Object.keys(all).forEach(function(dk){(all[dk].linked||[]).forEach(function(l){if(l.source==='HRV')out.push(l);});});out.sort(function(a,b){return (a.ts||'').localeCompare(b.ts||'');});return out;}
-function jteFsLoadDays(){
-  const e=jteEmail();if(!_db||!e)return Promise.resolve({});
-  return _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').get()
-   .then(function(snap){var days={};snap.forEach(function(doc){days[doc.id]=doc.data();});return days;})
-   .catch(function(){return {};});
-}
-/* 把雲端 daily 的 HRV 記錄併回本機（依 recordId 去重）、hydrate localStorage，回傳攤平清單（時間正序） */
+/* 讀取本機所有 HRV 紀錄，攤平回傳（時間正序）。純本機，不讀雲端。
+   仍回 Promise，讓呼叫端（非同步渲染 baseline）介面不變。 */
 function jteListRecordsMerged(){
-  const localAll=jteAll();
-  return jteFsLoadDays().then(function(cloudDays){
-    const merged=Object.assign({},localAll);
-    Object.keys(cloudDays).forEach(function(dk){
-      const cloudDay=cloudDays[dk]||{};
-      const base=merged[dk]?Object.assign({},merged[dk]):Object.assign({},cloudDay);
-      const seen={}; const linked=[];
-      (merged[dk]&&merged[dk].linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id)seen[id]=1; linked.push(r); });
-      (cloudDay.linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id&&!seen[id]){ seen[id]=1; linked.push(r); } else if(!id){ linked.push(r); } });
-      base.linked=linked; merged[dk]=base;
-    });
-    try{localStorage.setItem(jteKey(),JSON.stringify(merged));}catch(e){}
-    return _flattenHrv(merged);
-  });
+  return Promise.resolve(_flattenHrv(jteAll()));
 }
 function jteDeleteRecord(id){
   const k=jteKey(),all=jteAll();let touched=null;
@@ -1214,9 +1170,9 @@ function jteDeleteRecord(id){
     all[dk].linked=all[dk].linked.filter(function(l){return (l.recordId||l.id)!==id;});
     if(all[dk].linked.length!==before)touched=dk;
   });
-  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));}
 }
-// 依 recordId 補丁更新一筆記錄（用於量完後補貼狀態標記）。本機＋雲端同步。
+// 依 recordId 補丁更新一筆記錄（用於量完後補貼狀態標記）。純本機。
 function jteUpdateRecord(id, patch){
   const k=jteKey(),all=jteAll();let touched=null;
   Object.keys(all).forEach(function(dk){
@@ -1224,7 +1180,7 @@ function jteUpdateRecord(id, patch){
       if((l.recordId||l.id)===id){ Object.assign(l, patch); touched=dk; }
     });
   });
-  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));}
 }
 
 /* —— Google 登入（惰性）—— */
