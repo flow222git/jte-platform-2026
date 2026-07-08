@@ -1,0 +1,212 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>練息場 · 首頁提案 2026</title>
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b;--blue:#4d6b86}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.95;font-size:15px}
+  .wrap{max-width:640px;margin:0 auto;padding:0 20px 90px}
+  .serif{font-family:"Songti TC","Noto Serif TC",serif}
+  .proposal-tag{position:sticky;top:0;z-index:9;text-align:center;background:var(--surface2);
+    border-bottom:1px solid var(--line);font-size:11.5px;color:var(--cinnabar);letter-spacing:.14em;padding:5px}
+  /* hero */
+  header{padding:74px 0 0;text-align:center}
+  .enso{font-family:"Songti TC","Noto Serif TC",serif;font-size:44px;color:var(--ink);line-height:1;margin-bottom:22px;opacity:.85}
+  .brand{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+  h1{font-weight:200;font-size:clamp(24px,6vw,32px);letter-spacing:.16em;color:var(--ink);line-height:1.8;margin-bottom:14px;text-wrap:balance}
+  h1 .lian{color:var(--pine);font-weight:300}
+  .honest-line{font-size:12.5px;color:var(--muted);letter-spacing:.08em}
+  .rule{height:1px;background:var(--line);margin:56px 0}
+  .seclabel{font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+  h2{font-weight:200;font-size:20px;letter-spacing:.12em;color:var(--ink);margin-bottom:6px}
+  .seclead{font-size:13px;color:var(--muted);margin-bottom:24px}
+  /* 三態前門 */
+  .gates{display:flex;flex-direction:column;gap:12px}
+  .gate{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+  .gate>button{all:unset;display:flex;align-items:baseline;gap:14px;width:100%;padding:16px 18px;cursor:pointer;box-sizing:border-box}
+  .gate>button:hover .g-name{color:var(--pine)}
+  .g-name{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:17px;letter-spacing:.14em;color:var(--ink);flex:none;transition:.2s}
+  .g-desc{font-size:13px;color:var(--muted);flex:1}
+  .g-mark{color:var(--hair);font-size:13px;flex:none}
+  .g-body{display:none;padding:2px 18px 18px;border-top:1px solid var(--surface2)}
+  .gate.open .g-body{display:block}
+  .gate.open .g-mark{color:var(--pine)}
+  .g-say{font-size:13.5px;color:var(--ink-soft);margin:12px 0 14px;line-height:1.9}
+  .doors{display:flex;flex-wrap:wrap;gap:10px}
+  .door{font-size:13px;letter-spacing:.06em;text-decoration:none;color:var(--ink);
+    border:1px solid var(--hair);border-radius:999px;padding:8px 18px;transition:.2s;background:transparent}
+  .door:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .door.main{border-color:var(--pine);color:var(--pine)}
+  .door.main:hover{background:var(--pine);color:#fff}
+  /* 工具地圖 */
+  .grp{margin-top:34px}
+  .grp-name{display:flex;align-items:center;gap:12px;font-family:"Songti TC","Noto Serif TC",serif;
+    font-weight:500;font-size:14.5px;letter-spacing:.16em;color:var(--ink);margin-bottom:14px}
+  .grp-name::after{content:"";flex:1;height:1px;background:var(--line)}
+  .grp-name .en{font-family:"Jost",sans-serif;font-size:10px;letter-spacing:.2em;color:var(--muted);font-weight:300}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:520px){.cards{grid-template-columns:1fr}}
+  .card{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);
+    border-radius:13px;padding:15px 16px;transition:border-color .2s,transform .15s}
+  .card:hover{border-color:var(--hair);transform:translateY(-2px)}
+  .card .nm{font-size:14px;color:var(--ink);letter-spacing:.06em;margin-bottom:2px}
+  .card .nm .sym{font-family:"Songti TC","Noto Serif TC",serif;margin-right:6px;color:var(--pine)}
+  .card .ds{font-size:12px;color:var(--muted);line-height:1.7}
+  .card.first{grid-column:1/-1;border-color:var(--hair)}
+  .card.first .nm{font-size:15px}
+  /* 我的練息場 */
+  .me{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:24px 22px;text-align:center}
+  .me .t{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:17px;letter-spacing:.18em;color:var(--ink);margin-bottom:6px}
+  .me p{font-size:13px;color:var(--muted);max-width:30em;margin:0 auto 14px}
+  .me .soon{display:inline-block;font-size:11.5px;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:3px 14px;letter-spacing:.12em}
+  /* 企業 */
+  .b2b{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .b2b .t{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:14px;letter-spacing:.12em;color:var(--ink);flex:none}
+  .b2b p{font-size:12.5px;color:var(--muted);flex:1;min-width:16em}
+  .b2b a{font-size:12.5px;color:var(--pine);letter-spacing:.06em;white-space:nowrap}
+  footer{margin-top:64px;text-align:center}
+  .honest{font-size:12px;color:var(--muted);line-height:2;letter-spacing:.05em}
+  .stamp{display:inline-block;margin-top:12px;font-family:"Jost",sans-serif;font-size:9.5px;letter-spacing:.22em;
+    color:var(--muted);border:1px solid var(--hair);border-radius:999px;padding:3px 14px;text-transform:uppercase}
+</style>
+</head><body>
+<div class="proposal-tag">首頁提案 · 2026 · 與現行首頁並行,未接導覽——看過討論後才動 index.html</div>
+<div class="wrap">
+
+<header>
+  <div class="enso">◯</div>
+  <div class="brand">Lianxichang · Join to Enjoy</div>
+  <h1>看見你的能量,<br>選擇你的流動,<span class="lian">練</span>。</h1>
+  <div class="honest-line">科學,讓療癒更有據。這裡是鏡子,不是算命——反映是什麼,不預測將如何。</div>
+</header>
+
+<div class="rule"></div>
+
+<!-- 前門 · 三態分流 -->
+<section>
+  <div class="seclabel">This Moment</div>
+  <h2>此刻的你,比較像哪一種?</h2>
+  <p class="seclead">不用懂任何理論——選一個,我們接住你。</p>
+  <div class="gates">
+    <div class="gate" id="g-empty">
+      <button aria-expanded="false">
+        <span class="g-name">空了</span>
+        <span class="g-desc">電量見底,提不起勁——身體先累了</span>
+        <span class="g-mark">＋</span>
+      </button>
+      <div class="g-body">
+        <p class="g-say">先不急著解決任何事。空了的時候,第一步是把電充回來——量一下身體,然後跟著呼吸休息。</p>
+        <div class="doors">
+          <a class="door main" href="hrv/">量一下 HRV · 1 分鐘</a>
+          <a class="door" href="BreatheAware/">呼吸覺察 · 回到當下</a>
+        </div>
+      </div>
+    </div>
+    <div class="gate" id="g-full">
+      <button aria-expanded="false">
+        <span class="g-name">太滿</span>
+        <span class="g-desc">事情與情緒都超載——停不下來</span>
+        <span class="g-mark">＋</span>
+      </button>
+      <div class="g-body">
+        <p class="g-say">滿出來的時候,需要的不是更多方法,是一個縫隙。先用十分鐘把壓卸掉,再想界線的事。</p>
+        <div class="doors">
+          <a class="door main" href="xiaoqi/">小憩 · 練息 10 分鐘</a>
+          <a class="door" href="bsrs/">心情溫度計 · 1 分鐘</a>
+        </div>
+      </div>
+    </div>
+    <div class="gate" id="g-stuck">
+      <button aria-expanded="false">
+        <span class="g-name">卡住</span>
+        <span class="g-desc">說不清哪裡不對——就是卡卡的</span>
+        <span class="g-mark">＋</span>
+      </button>
+      <div class="g-body">
+        <p class="g-say">卡住,常是某股能量用過了頭、或還沒長開。照一面深一點的鏡子,看看此刻的你長什麼形狀。</p>
+        <div class="doors">
+          <a class="door main" href="octenso/bagua-persona.html">八態能格 · 25 題深鏡</a>
+          <a class="door" href="ven-i/">問易 · 看看這個處境</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- 場域地圖 -->
+<section>
+  <div class="seclabel">The Grounds</div>
+  <h2>場域</h2>
+  <p class="seclead">每個工具都是完整的一扇門——想做什麼,就從哪裡開始。</p>
+
+  <div class="grp">
+    <div class="grp-name">鏡 · 照見<span class="en">Mirrors</span></div>
+    <div class="cards">
+      <a class="card first" href="octenso/bagua-persona.html">
+        <div class="nm"><span class="sym">☰☷</span>八態能格</div>
+        <div class="ds">25 題,照出你此刻的能量輪廓——哪股最亮、哪股還沒長開,工作與愛情裡各是什麼樣子。</div>
+      </a>
+      <a class="card" href="hrv/"><div class="nm">心率變異 HRV</div><div class="ds">手指貼鏡頭,一分鐘量身體。</div></a>
+      <a class="card" href="bsrs/"><div class="nm">心情溫度計</div><div class="ds">一分鐘,看看最近的情緒。</div></a>
+      <a class="card" href="ven-i/"><div class="nm">問易 · 卜卦</div><div class="ds">遇到具體的事,從易經回來看此刻。</div></a>
+      <a class="card" href="https://flow222git.github.io/twct/"><div class="nm">溝通類型測驗</div><div class="ds">5 分鐘,看你在壓力下怎麼溝通。</div></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="grp-name">場 · 練習<span class="en">Practice</span></div>
+    <div class="cards">
+      <a class="card" href="BreatheAware/"><div class="nm">呼吸覺察</div><div class="ds">即時看見你的呼吸狀態。</div></a>
+      <a class="card" href="xiaoqi/"><div class="nm">小憩 · 練息</div><div class="ds">15 種呼吸法,選一個現在做。</div></a>
+      <a class="card" href="https://flow222git.github.io/writespace/"><div class="nm">心理位移書寫</div><div class="ds">換個位置,把心裡的話寫出來。</div></a>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- 我的練息場 -->
+<section>
+  <div class="me">
+    <div class="t">我 的 練 息 場</div>
+    <p>你的底色、你的紀錄、今天的一步——都收在同一個安靜的地方。紀錄與日曆將搬進這裡。</p>
+    <span class="soon">整備中 · 動工順序 ①</span>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- 企業 -->
+<section>
+  <div class="b2b">
+    <span class="t">給企業</span>
+    <p>優勢幸福力健檢、療癒工作坊、心理師深度服務——讓自我照顧成為專業能力。</p>
+    <a href="https://www.jointoenjoy.com/" target="_blank" rel="noopener">了解企業方案 →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="honest">這裡的每一面鏡子,照的都是「此刻的你」——會流動,也可以成長。<br>如果你正經歷明顯困擾:安心專線 1925 · 生命線 1995 · 張老師 1980</div>
+  <span class="stamp">Honest by design · 研究假設標示為假設</span>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.gate>button').forEach(function(b){
+  b.addEventListener('click',function(){
+    var g=b.parentNode, open=g.classList.contains('open');
+    document.querySelectorAll('.gate').forEach(function(x){x.classList.remove('open');
+      x.querySelector('button').setAttribute('aria-expanded','false');
+      x.querySelector('.g-mark').textContent='＋';});
+    if(!open){g.classList.add('open');b.setAttribute('aria-expanded','true');
+      g.querySelector('.g-mark').textContent='－';}
+  });
+});
+</script>
+</body></html>
