@@ -106,6 +106,13 @@
   .trend-filter{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
   .trend-filter .tagchip{font-size:12.5px;padding:5px 11px}
   .trend-filter-note{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.6}
+  .tagcmp-sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.6}
+  .tagcmp-row{margin:10px 0}
+  .tagcmp-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--ink);margin-bottom:4px;gap:8px}
+  .tagcmp-top b{font-variant-numeric:tabular-nums}
+  .tagcmp-top .n{font-size:11px;color:var(--ink-faint)}
+  .tagcmp-bar{height:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .tagcmp-fill{display:block;height:100%;border-radius:999px;transition:width .3s}
   .hist-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
   .hist-tags span{font-size:11.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
 
@@ -1040,6 +1047,31 @@ const ENERGY_LABEL={ high:'充足', mid:'平穩', low:'偏低' };
 function recColor(r){ return ENERGY_COLOR[r.level]||STATE_COLOR[r.state]||'#003D7C'; }
 var _trendFilter=null;
 function recTags(r){ return Array.isArray(r.tags)?r.tags:[]; }
+// 情境對照：各狀態標記下的平均身體能量排行——讓使用者看出「什麼情境 → 身體如何」。
+// 用全部記錄（不受篩選影響）；少於兩個有分數的標記則不顯示（無從對照）。
+function buildTagCompare(everything){
+  var stats={};
+  everything.forEach(function(r){
+    if(!isFinite(Number(r.energy))) return;
+    recTags(r).forEach(function(t){ if(!stats[t]) stats[t]={sum:0,n:0}; stats[t].sum+=Number(r.energy); stats[t].n++; });
+  });
+  var rows=Object.keys(stats).map(function(t){ return { tag:t, avg:Math.round(stats[t].sum/stats[t].n), n:stats[t].n }; });
+  if(rows.length<2) return null;
+  rows.sort(function(a,b){ return b.avg-a.avg; });
+  var lvl=function(v){ return v>=75?'high':(v>=45?'mid':'low'); };
+  var wrap=document.createElement('div'); wrap.className='guide-card';
+  wrap.innerHTML='<h3><i class="ti ti-adjustments-horizontal"></i>'+jteT('trend.cmp.title','情境對照')+'</h3>'+
+    '<p class="tagcmp-sub">'+jteT('trend.cmp.sub','不同狀態標記下，你的平均身體能量（分數越高越好）')+'</p>';
+  rows.forEach(function(r){
+    var row=document.createElement('div'); row.className='tagcmp-row';
+    var col=ENERGY_COLOR[lvl(r.avg)]||'#003D7C';
+    row.innerHTML='<div class="tagcmp-top"><span>'+_h(r.tag)+'</span><span><b>'+r.avg+'</b> <span class="n">'+
+        jteT('trend.cmp.n','· %1 次').replace('%1',String(r.n))+'</span></span></div>'+
+      '<div class="tagcmp-bar"><span class="tagcmp-fill" style="width:'+Math.max(3,Math.min(100,r.avg))+'%;background:'+col+'"></span></div>';
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
 function drawTrend(list){
   const body=document.getElementById('trendBody'); if(!body)return;
   body.innerHTML='';
@@ -1108,6 +1140,9 @@ function drawTrend(list){
       '<p style="font-size:14px;color:var(--ink-soft);margin:0;line-height:1.7">'+jteT('trend.empty.no.score.body','再量一次，這裡就會畫出你的身體能量趨勢。')+'</p>';
     body.appendChild(c);
   }
+
+  // —— 情境對照（各標記平均能量排行；用全部記錄、不受篩選影響）——
+  var cmp=buildTagCompare(everything); if(cmp) body.appendChild(cmp);
 
   // —— 列表（新到舊）——
   for(let i=all.length-1;i>=0;i--){
