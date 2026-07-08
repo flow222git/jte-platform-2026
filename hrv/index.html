@@ -376,8 +376,29 @@ function renderIntro(){
 
 /* —— 量測（相機 + 即時回饋）—— */
 let waveCanvas=null, waveCtx=null;
+// iOS 保活：相機啟動後 iOS/WebKit 會暫停整頁 JS（計時器/影格回呼都停），
+// 但「有在輸出音訊」的頁面不會被停 → 播一個近乎無聲的振盪器把 JS 保持活著。
+// 必須在使用者手勢（開始量測的點擊）當下建立/resume AudioContext，故放這裡。
+var _kaCtx=null, _kaOsc=null;
+function keepAliveStart(){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    if(!_kaCtx) _kaCtx=new AC();
+    if(_kaCtx.state==='suspended' && _kaCtx.resume) _kaCtx.resume();
+    if(!_kaOsc){
+      _kaOsc=_kaCtx.createOscillator();
+      var g=_kaCtx.createGain(); g.gain.value=0.0015;      // 近乎無聲、但確有音訊輸出
+      _kaOsc.type='sine'; _kaOsc.frequency.value=440;
+      _kaOsc.connect(g); g.connect(_kaCtx.destination);
+      _kaOsc.start();
+    }
+    session._ka=_kaCtx.state;
+  }catch(e){ session._ka='err'; }
+}
+function keepAliveStop(){ try{ if(_kaOsc){ _kaOsc.stop(); _kaOsc=null; } if(_kaCtx&&_kaCtx.suspend) _kaCtx.suspend(); }catch(e){} }
 function renderMeasure(){
   session._nRender=(session._nRender||0)+1;               // 診斷：renderMeasure 被呼叫次數（應為 1）
+  keepAliveStart();                                        // 在手勢當下啟動保活音訊
   session.mode='measure'; clearAll();
   session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
   const d=document.createElement('div');d.className='step';
@@ -615,8 +636,8 @@ function updateDebug(recent, beats, rr, q){
   const span=buf>=2 ? (S[buf-1].t-S[0].t)/1000 : 0;
   const dt=buf>=2 ? Math.round(S[buf-1].t-S[buf-2].t) : 0;
   var _vis=(typeof document!=='undefined'&&document.visibilityState)||'?';
-  el.textContent='*** BUILD iv-5 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
-    '\nvis '+_vis+'  err '+(session._err||'-')+
+  el.textContent='*** BUILD iv-6 ***  iv '+(session._nIv||0)+'  rvfc '+(session._nRvfc||0)+
+    '\nvis '+_vis+'  ka '+(session._ka||'-')+'  err '+(session._err||'-')+
     '\nstop '+(session._nStop||0)+' hide '+(session._nHide||0)+' vc '+(session._nVis||0)+' frz '+(session._nFreeze||0)+
     '\nlog: '+((session._log||[]).join(' '))+
     '\nR '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
@@ -735,6 +756,7 @@ function _logEv(t){ (session._log=session._log||[]).push(t); if(session._log.len
 function stopCamera(reason){
   session._nStop=(session._nStop||0)+1;                 // 診斷：stopCamera 被呼叫次數（若>0＝有東西在關相機）
   _logEv('SC:'+(reason||'?')+'@'+(session._nProc||0));  // 記錄呼叫來源＋當時已擷取幾格
+  keepAliveStop();
   if(session.grabTimer){ clearInterval(session.grabTimer); session.grabTimer=null; }
   if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
   if(session.rvfc){ try{ if(_video&&_video.cancelVideoFrameCallback) _video.cancelVideoFrameCallback(session.rvfc); }catch(e){} session.rvfc=null; }
