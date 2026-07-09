@@ -202,6 +202,14 @@
     ].join('\n')
   };
 
+  // ── 八態伴讀 bot 入口(結果頁用;url 改一處即全站生效;空字串=隱藏入口)──
+  var COMPANION_BOT = {
+    url: 'http://localhost:8000',
+    title: '八態伴讀 · 帶著報告去聊',
+    desc: '把這份報告交給伴讀機器人——它守著伴讀守則(不算命、不編因果、快照非定義),專心陪你解讀,也會把你覺得「像/不像」的回饋整理下來,幫我們把解讀修得更準。',
+    note: '測試階段:伴讀機器人跑在本機(localhost:8000),需先啟動 guan bot;正式部署後此連結會換成雲端網址。'
+  };
+
   // ── 施測指導語(v2:錨定「最近一個月」)──
   var GUIDE = {
     intro: '請想著「最近一個月的日常」作答——不是理想中的你,是實際發生的樣子。憑直覺選,沒有對錯;選項沒有中間值,就算只是「有點」,也請選一邊。共 28 題(含 4 題二選一),加上依你的結果追問的幾題,大約 5–8 分鐘。',
@@ -214,7 +222,7 @@
     FC_ITEMS: FC_ITEMS, FC_OPTS: FC_OPTS, FC_HINT: FC_HINT, FC_READ: FC_READ,
     COST: COST, COST_HI: COST_HI, COST_LO: COST_LO, COST_AGREE: COST_AGREE, COST_MAX_FLAGS: COST_MAX_FLAGS,
     SYSTEM_READ: SYSTEM_READ,
-    DIRECTIONS: DIRECTIONS, COMPANION: COMPANION,
+    DIRECTIONS: DIRECTIONS, COMPANION: COMPANION, COMPANION_BOT: COMPANION_BOT,
     GUIDE: GUIDE
   };
 })(typeof window !== 'undefined' ? window : this);
