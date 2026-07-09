@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>題庫池規格 + 題本 v3 候選題幹</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>題庫池規格 + 題本 v3 候選題幹</h1>
+  <div class="meta">ITEM POOL &amp; FORM V3 · 2026-07-09 · DRAFT</div>
+</header>
+<article>
+<p>整理日期:2026-07-09 ｜ 狀態:<strong>草案待潤</strong>——池規格為設計決策,v3 題幹未經試測
+緣起:使用者實測回饋「v2 的題目蠻容易回答的」→ 決定發展系列題庫;本檔回答「一組一組,還是隨機組合?」並給出第一批候選題
+上游:<a href="題本 v2 spec">[2026-07-08-octenso-item-bank-v2-design]</a>、<code>octenso/bagua-v2-data.js</code>(v2 現行 28 題)、學理憲法、解讀憲法</p>
+<hr />
+<h2>0. 決策:固定平行題組,不做隨機組卷</h2>
+<p><strong>結論:題庫用「池」累積,出題用「固定題組」輪替(Form v2、v3、v4…),不隨機抽題。</strong></p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>固定平行題組</th>
+<th>隨機組卷</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分數意義</td>
+<td>門檻(LEAD_GAP、LEVEL_HI、COST_HI…)跟著「這一組題」校準,成立</td>
+<td>每人拿到的尺不同,絕對門檻全部失效</td>
+</tr>
+<tr>
+<td>訊號配比</td>
+<td>每態固定 2 微場景+1 頻率、四對各 1 FC——設計出來的比例不會被打破</td>
+<td>抽題即打破配比,六訊號組裝的前提崩掉</td>
+</tr>
+<tr>
+<td>題目證據</td>
+<td>30 人答同一組,每題就有 30 筆——鑑別度、天花板看得見</td>
+<td>每題樣本被稀釋,小樣本學不到東西</td>
+</tr>
+<tr>
+<td>所需樣本</td>
+<td>試測 N≥30 即可迭代</td>
+<td>要做到跨卷可比需 IRT 等化,數百到上千樣本</td>
+</tr>
+<tr>
+<td>防背題/重測</td>
+<td>用「版本輪替」拿到同樣的好處:重測換一組平行題</td>
+<td>唯一優勢,但代價不成比例</td>
+</tr>
+</tbody>
+</table></div>
+<p>隨機的好處(題目多樣、防記憶效應)由<strong>版本輪替</strong>取得;可比性鐵律照舊:<strong>跨題組分數不互比</strong>(B1/B2/B3 前綴分流),重測想比數字就用同一組,換組比的是形狀、級別與「像不像」。</p>
+<p><strong>重測紅利</strong>:平行題組天然支援「月照鏡」——每月換組,避免記憶效應,又維持同一把設計尺。</p>
+<h2>1. 槽位規格(池的結構)</h2>
+<p>一組題本 = <strong>28 個槽位</strong>,配比固定:</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>槽位</th>
+<th>數量</th>
+<th>量尺</th>
+<th>餵給誰</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>態 × sc</code>(微場景像我)</td>
+<td>8 態 × 2</td>
+<td>六點像我(5→0)</td>
+<td>絕對強度/水平/能格門檻/雷達</td>
+</tr>
+<tr>
+<td><code>態 × fq</code>(頻率反向)</td>
+<td>8 態 × 1</td>
+<td>幾乎總是 0 → 幾乎不曾 5</td>
+<td>行為錨定、抗美化(轉正入分)</td>
+</tr>
+<tr>
+<td><code>對待 × fc</code>(強迫選擇)</td>
+<td>4 對 × 1</td>
+<td>雙極六點(A0→B5)</td>
+<td>四對偏向(標註式,不入分)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>題目 ID</strong>:<code>{態}-{題型}-{流水號}</code>,例 <code>qian-sc-003</code>、<code>kan-fq-002</code>、<code>aware-fc-002</code>。v2 現行 28 題回填為各槽 001(sc 兩題依卷面順序 001/002)。</p>
+<p><strong>池內每題的欄位</strong>:</p>
+<ul>
+<li><code>id</code>、<code>k</code>(態/對)、<code>kind</code>(sc/fq/fc)、<code>t</code>(題幹)、FC 另有 <code>aK/a/bK/b</code></li>
+<li><code>scene</code>:場景域標記——<code>人際</code>/<code>工作</code>/<code>自處</code>/<code>生活</code> 四選一</li>
+<li><code>status</code>:<code>池</code> → <code>試測中</code> → <code>正式</code> / <code>退役</code>(退役題<strong>留檔不刪</strong>——歷史分享碼還要能對回題本)</li>
+<li><code>born</code>:寫入日期與出處(哪次討論、哪個觀察)</li>
+<li><code>evidence</code>:試測回填——選項使用分布、題均值、與同槽舊題方向一致性、主觀回饋摘錄</li>
+</ul>
+<p><strong>寫作守則</strong>(承 v2,全部照舊):</p>
+<ol>
+<li>場景具體、可回憶(點餐、群組、週五晚上),不用抽象人格語。</li>
+<li><strong>正向題只寫中正顯相,不得用亢面當題幹</strong>(C4:「坐不住」是亢,不是行動的中正)。</li>
+<li>fq 題一律問「該態少用/被壓抑時的行為」→ 反向計分;一律以「過去一個月」開頭。</li>
+<li>FC 兩邊都正向、都體面——社會期許無處施力;極性對齊 <code>profile.js</code> PAIRS(A=左極)。</li>
+<li><strong>同態兩題 sc 的場景域必須不同</strong>(一題人際、一題工作/自處/生活)——v3 起入規;跨版本同槽也盡量換域,讓池自然覆蓋生活面。</li>
+<li>台灣日常語感,題幹以 40 字內為度。</li>
+</ol>
+<h2>2. 版本推進管線</h2>
+<pre><code>寫題 → 入池(status=池)
+     → 編組:湊滿 28 槽 → 候選題組(v3、v4…),排序規則同 v2
+       (三輪各一題/態,輪內 qian dui li xun zhen kan gen kun,第三輪=頻率題)
+     → 試測:N≥30,獨立 bank 前綴(B3…),與正式版並行、分數不互比
+     → 檢核 → 晉升(status=正式)或退回改寫/退役
+</code></pre>
+<p><strong>試測檢核指標</strong>(參考值,v0.1 待資料校正):</p>
+<ul>
+<li><strong>低端使用率</strong>:六點量尺的 0/1 兩檔合計 ≥10% 有人選——「完全不像」不再形同虛設(v2 的初衷)。</li>
+<li><strong>天花板嫌疑</strong>:題均值 &gt; 4.2(0–5 尺)→ 過於討喜,改寫或退役。</li>
+<li><strong>槽內方向一致</strong>:與同槽既有題(如 <code>qian-sc-001</code>)相關為正且不過低——量同一個態,但不要求高到變同義改寫(那等於沒加新訊息)。</li>
+<li><strong>主觀回饋</strong>:結果頁試測四問+八態伴讀回饋摘要——「哪題難答、哪題歪頭」直接對回題目 ID。</li>
+</ul>
+<p><strong>晉升與退役</strong>:表現好的題留在正式組;弱題退回池改寫或標退役。門檻(TUNE)在每次換正式組時重新目測校準——門檻屬於題組,不屬於模型。</p>
+<h2>3. 題本 v3 候選題幹(全 28 題,草案待潤)</h2>
+<p>與 v2 同槽不同景:每態 2 微場景(場景域錯開)+1 頻率反向,四對各 1 強迫選擇。</p>
+<h3>3.1 微場景題(16 題,六點像我)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>態</th>
+<th>場景域</th>
+<th>題幹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>qian-sc-003</td>
+<td>乾</td>
+<td>工作</td>
+<td>案子開天窗、現場亂成一團時,我會自然站出來分工——你做這個、我做那個。</td>
+</tr>
+<tr>
+<td>qian-sc-004</td>
+<td>乾</td>
+<td>自處</td>
+<td>換工作、搬家這類人生選擇,身邊的人還在猶豫時,我通常已經知道自己要什麼。</td>
+</tr>
+<tr>
+<td>dui-sc-003</td>
+<td>兌</td>
+<td>人際</td>
+<td>排隊、搭車遇到陌生人,我常能自然聊起來,不覺得尷尬。</td>
+</tr>
+<tr>
+<td>dui-sc-004</td>
+<td>兌</td>
+<td>生活</td>
+<td>群組裡有人丟話題沒人接,我常會回一句,不讓它掉在地上。</td>
+</tr>
+<tr>
+<td>li-sc-003</td>
+<td>離</td>
+<td>工作</td>
+<td>大家七嘴八舌講不清楚時,我常能一句話把重點收攏:「所以其實是——」</td>
+</tr>
+<tr>
+<td>li-sc-004</td>
+<td>離</td>
+<td>人際</td>
+<td>輪到我上台或自我介紹時,我知道怎麼讓人記住我。</td>
+</tr>
+<tr>
+<td>xun-sc-003</td>
+<td>巽</td>
+<td>人際</td>
+<td>在聚會認識新朋友,離開前我常已經加了聯絡方式、約好下次。</td>
+</tr>
+<tr>
+<td>xun-sc-004</td>
+<td>巽</td>
+<td>生活</td>
+<td>規劃旅行或活動時,我很會挖資源——優惠、路線、在地人推薦,都能被我找出來。</td>
+</tr>
+<tr>
+<td>zhen-sc-003</td>
+<td>震</td>
+<td>生活</td>
+<td>說走就走的小旅行、臨時起意的計畫,我通常是點頭最快的那個。</td>
+</tr>
+<tr>
+<td>zhen-sc-004</td>
+<td>震</td>
+<td>工作</td>
+<td>新工具、新 App 拿到手,我不太看說明,直接按按看、邊錯邊學。</td>
+</tr>
+<tr>
+<td>kan-sc-003</td>
+<td>坎</td>
+<td>自處</td>
+<td>一個人吃飯、一個人看電影,對我來說是享受,不是將就。</td>
+</tr>
+<tr>
+<td>kan-sc-004</td>
+<td>坎</td>
+<td>生活</td>
+<td>日子過得再滿,我也會想辦法留一段安靜時間,把最近的事想一遍。</td>
+</tr>
+<tr>
+<td>gen-sc-003</td>
+<td>艮</td>
+<td>自處</td>
+<td>工作再急,到了我給自己設的休息時間,我大多放得下、明天再說。</td>
+</tr>
+<tr>
+<td>gen-sc-004</td>
+<td>艮</td>
+<td>人際</td>
+<td>討論快變成爭吵之前,先說「我們停一下」的,常常是我。</td>
+</tr>
+<tr>
+<td>kun-sc-003</td>
+<td>坤</td>
+<td>工作</td>
+<td>同事或家人忙不過來時,我會自然把他手上的事接一部分過來,不用他開口。</td>
+</tr>
+<tr>
+<td>kun-sc-004</td>
+<td>坤</td>
+<td>人際</td>
+<td>新人或客人剛加入、還不熟時,最先照應他的通常是我。</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.2 頻率題(8 題,反向計分,過去一個月)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>態</th>
+<th>題幹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>qian-fq-002</td>
+<td>乾</td>
+<td>過去一個月,菜單拿起來就說「都可以,你們決定」的情況——</td>
+</tr>
+<tr>
+<td>dui-fq-002</td>
+<td>兌</td>
+<td>過去一個月,聚會裡我全程當聽眾、幾乎沒開口的情況——</td>
+</tr>
+<tr>
+<td>li-fq-002</td>
+<td>離</td>
+<td>過去一個月,被問「最近在忙什麼」,我含糊帶過、沒把真正在做的事說出來的情況——</td>
+</tr>
+<tr>
+<td>xun-fq-002</td>
+<td>巽</td>
+<td>過去一個月,手上的好東西(機會、資訊、名額)放到過期、沒轉給任何人的情況——</td>
+</tr>
+<tr>
+<td>zhen-fq-002</td>
+<td>震</td>
+<td>過去一個月,看著別人已經動起來、我還在觀望的情況——</td>
+</tr>
+<tr>
+<td>kan-fq-002</td>
+<td>坎</td>
+<td>過去一個月,行程滿到連「發呆十分鐘」都排不進去的情況——</td>
+</tr>
+<tr>
+<td>gen-fq-002</td>
+<td>艮</td>
+<td>過去一個月,明知該收了(再吃、再滑、再加班),還是讓它繼續下去的情況——</td>
+</tr>
+<tr>
+<td>kun-fq-002</td>
+<td>坤</td>
+<td>過去一個月,發現身邊有人不太對勁,我裝作沒看到、沒去問的情況——</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.3 四對強迫選擇(4 題,雙極六點,A=左極)</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>對待</th>
+<th>題幹</th>
+<th>A(左極)</th>
+<th>B(右極)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>build-fc-002</td>
+<td>乾⇄坤</td>
+<td>朋友群要辦一場大活動——你更自然會變成?</td>
+<td>說「我們來辦吧」、拍板主題的人(乾)</td>
+<td>活動當天把每個人都照顧到的人(坤)</td>
+</tr>
+<tr>
+<td>drive-fc-002</td>
+<td>震⇄巽</td>
+<td>你有一個很想完成的計畫——你的第一步更可能是?</td>
+<td>今天就做出第一個看得見的東西(震)</td>
+<td>先找到對的人和資源,把路鋪好(巽)</td>
+</tr>
+<tr>
+<td>aware-fc-002</td>
+<td>坎⇄離</td>
+<td>讀到一本很打中你的書——你更想?</td>
+<td>留在心裡多泡幾天,慢慢消化(坎)</td>
+<td>馬上跟人分享、把心得寫出來(離)</td>
+</tr>
+<tr>
+<td>regulate-fc-002</td>
+<td>艮⇄兌</td>
+<td>假期最後一天——你更想怎麼過?</td>
+<td>把門關上,誰的訊息都不急著回(艮)</td>
+<td>約人碰面,把假期的故事說一說(兌)</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. 待決與下一步</h2>
+<ol>
+<li><strong>v2 先跑完試測</strong>(N≥30)——v3 的檢核指標需要 v2 當基準;兩組不搶同一批人。</li>
+<li>v3 題幹<strong>潤稿</strong>(使用者過一輪語感)後入池,<code>status=池</code>。</li>
+<li>池的落地形式:先用本檔+<code>bagua-v2-data.js</code> 註記即可;題目多到需要工具時,再考慮獨立的 <code>bagua-item-pool.js</code>(meta A 同源)。</li>
+<li>檢核參考值(低端 ≥10%、均值 &gt;4.2)為 v0.1 研究假設,首輪試測後校正。</li>
+</ol>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-09-octenso-item-pool-v3-candidates.md</div>
+</div>
+</div>
+
+</body>
+</html>
