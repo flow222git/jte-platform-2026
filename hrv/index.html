@@ -400,8 +400,18 @@ async function startCamera(){
     return;
   }
   let stream;
+  // 先「強制」後鏡頭（exact:environment）——部分手機/瀏覽器把 ideal 當參考、會開到前鏡頭；
+  // exact 保證後鏡頭。裝置真的沒有後鏡頭（如桌機）才退回 ideal。
+  async function _getEnvCam(){
+    try{ return await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ exact:'environment' }, frameRate:{ ideal:60 } } }); }
+    catch(e){
+      if(e&&(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'||e.name==='NotFoundError'))
+        return await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, frameRate:{ ideal:60 } } });
+      throw e;
+    }
+  }
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, frameRate:{ ideal:60 } } });
+    stream=await _getEnvCam();
   }catch(e){
     if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){
       showCamError('需要相機權限','請允許使用相機才能量測。你可以在網址列或設定中開啟相機權限，再回來重試。');
@@ -439,8 +449,21 @@ async function startCamera(){
     }
   }catch(e){ session.camPickErr=(e&&e.name)||'err'; }
   session.stream=stream;
-  const track=stream.getVideoTracks()[0];
+  let track=stream.getVideoTracks()[0];
   session.track=track;
+  // —— 前鏡頭防呆：萬一最後拿到的是前鏡頭（部分手機忽略 environment、或 label 認不出而沒重抓），
+  //    強制切回後鏡頭。判斷：track 的 facingMode 為 'user'，或 label 明確是前鏡頭。
+  try{
+    var _st=(track&&track.getSettings)?track.getSettings():{};
+    var _facing=_st.facingMode||'';
+    var _frontLbl=/front|前置|facetime|face\s*time/i.test((track&&track.label)||'');
+    if(_facing==='user' || (_facing!=='environment' && _frontLbl)){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ exact:'environment' }, frameRate:{ ideal:60 } } });
+      session.stream=stream; track=stream.getVideoTracks()[0]; session.track=track;
+      session.camReacq=true; session.camFrontFixed=true;
+    }
+  }catch(e){ session.camPickErr=(session.camPickErr?session.camPickErr+' ':'')+'frontfix:'+((e&&e.name)||'e'); }
   // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）。
   // z-index 蓋過使用者列；每欄各自 try 以免一處出錯整個不顯示。
   if(/debug/.test(location.search)||/debug/.test(location.hash)){
@@ -449,7 +472,7 @@ async function startCamera(){
     let info='[鏡頭診斷]';
     try{ const devs2=await navigator.mediaDevices.enumerateDevices(); info+='\ncams: '+devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空)';}).join('  ||  '); }catch(e){ info+='\ncams: 列舉失敗 '+(e&&e.name); }
     info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camPickErr?('  err:'+session.camPickErr):'');
-    try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?'); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
+    try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?')+'  facing:'+(st.facingMode||'?')+(session.camFrontFixed?'  [前鏡頭已修正]':''); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
     try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
     box.textContent=info;
   }
