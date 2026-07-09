@@ -400,69 +400,6 @@ function fcCompareNote(ax, fcVal){
   var gap=(ax.lean!=='even') && ((ax.lean==='left')!==pickLeft);
   return '<div class="fcnote'+(gap?' gap':'')+'">'+esc(txt)+'</div>';
 }
-// 純文字報告(給 AI 伴讀複製用;與畫面同源組裝)
-function buildReportText(pf,sc,costSt,conf,fc){
-  var L=[], sig=signatureCard(pf);
-  L.push('【八態能格 · 完整版報告(題本 v2 · 此刻快照)】');
-  L.push('峰名:'+sig.title+'('+sig.sub+')');
-  if(sig.ess) L.push(sig.ess);
-  L.push('');
-  L.push('■ 八態分數(0–100)與六級:');
-  pf.ranked.forEach(function(o){
-    var g=B.get(o.k), bd=pf.bands[o.k];
-    var cf=conf?conf[o.k]:null, cfTxt=cf==='sure'?'(答題篤定)':cf==='mixed'?'(答題兩可)':'';
-    L.push('・'+g.nm+'·'+g.fnShort+' '+o.v+' — '+bd.label+cfTxt);
-  });
-  L.push('整體水平:'+(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(平均 '+pf.level.mean+')');
-  L.push('');
-  L.push('■ 四對生命系統:');
-  pf.axes.forEach(function(ax,ai){
-    var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
-      :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
-    var read=V.SYSTEM_READ[ax.key][st];
-    L.push('・'+B.get(ax.l).nm+'·'+ax.ln+' ⇄ '+ax.rn+'·'+B.get(ax.r).nm+':'+read.tag+'——'+read.desc);
-    if(fc&&fc[ai]!=null){
-      var note=fcCompareNote(ax,fc[ai]).replace(/<[^>]+>/g,'');
-      if(note) L.push('  ('+note+')');
-    }
-  });
-  L.push('');
-  var stKeys=Object.keys(costSt||{});
-  L.push('■ 能格(用得剛不剛好):');
-  if(!stKeys.length){ L.push('・無極端態,未觸發校準——以中正樣貌閱讀。'); }
-  else stKeys.forEach(function(k){
-    var st=costSt[k], cd=V.COST[k];
-    var lbl=st==='over'?'亢·過用':st==='under'?'潛·不足':'中正';
-    var adv=st==='over'?cd.aOver:st==='under'?cd.aUnder:st==='midHi'?cd.aMidHi:cd.aMidLo;
-    L.push('・'+B.get(k).nm+'·'+cd.fn+':'+lbl+'——'+adv);
-  });
-  pf.leads.slice(0,2).forEach(function(k){
-    var g=B.get(k), cs=catalogSections(k,costSt), p=C.T1[k];
-    L.push(''); L.push('■ 我的章節 · '+g.title+(cs.over?'(此刻偏亢)':''));
-    cs.secs.forEach(function(s){ L.push('▍'+s[1]+(s[2]?'('+(s[2]==='over'?'亢':'中正')+')':'')); L.push(p[s[0]]); });
-  });
-  var sg=pf.signature;
-  if(sg.kind==='dual'){
-    var combo=C.T3[sg.keys[0]+'-'+sg.keys[1]]||C.T3[sg.keys[1]+'-'+sg.keys[0]];
-    L.push(''); L.push('■ 雙峰組合:'+(combo?combo.title+'('+combo.pair+'·'+combo.character+')\n'+combo.text:C.T3_FALLBACK));
-  }
-  if(sg.kind==='pattern'||sg.kind==='multi'){
-    var t4=C.T4[pf.level.band==='high'?'high':pf.level.band==='low'?'low':'mid'];
-    L.push(''); L.push('■ 我的格局:'+t4.nm); L.push(t4.text);
-  }
-  if(pf.gaps.length){
-    var gk=pf.gaps[0];
-    L.push(''); L.push('■ 還沒長開(潛)· '+B.get(gk).nm+'·'+B.get(gk).fnShort); L.push(C.T1[gk].latent);
-  }
-  L.push(''); L.push('■ 接下來 · 三個方向:');
-  pf.leads.slice(0,2).forEach(function(k){ L.push('・好好用|'+B.get(k).nm+'·'+B.get(k).fnShort+':'+V.DIRECTIONS[k].use); });
-  var overs=stKeys.filter(function(k){return costSt[k]==='over';});
-  if(overs.length) overs.forEach(function(k){ L.push('・留意收|'+B.get(k).nm+'·'+V.COST[k].fn+':'+V.COST[k].aOver); });
-  else L.push('・留意收|這次校準沒有出現過用訊號。');
-  if(pf.gaps.length){ var gk2=pf.gaps[0]; L.push('・值得練|'+B.get(gk2).nm+'·'+V.COST[gk2].fn+':'+V.COST[gk2].aUnder); }
-  return L.join('\n');
-}
-var lastReportText='';
 function renderReport(sc,costSt,conf,fc){
   costSt=costSt||{};
   var pf=P.build(sc), sig=signatureCard(pf);
@@ -565,15 +502,6 @@ function renderReport(sc,costSt,conf,fc){
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
     +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'
     +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">※ 兩版題本不同,分數請勿直接互比——比的是「報告像不像你」。</span></p>';
-  // AI 伴讀(零後端:複製守則+報告,貼給使用者慣用的 AI)
-  h+='<div class="rule"></div><div class="seclabel">'+esc(V.COMPANION.title)+'</div>'
-    +'<p style="font-size:13.5px">'+esc(V.COMPANION.desc)+'</p>'
-    +'<p class="center" style="margin:14px 0 8px"><button class="btn" id="btn-copy-comp">複製「伴讀守則+我的報告」</button>'
-    +'</p><p id="copy-done" class="center hide" style="font-size:12.5px;color:var(--pine)">已複製——到你慣用的 AI 貼上即可開始。</p>'
-    +'<p class="center" style="font-size:12.5px"><a href="https://claude.ai" target="_blank" rel="noopener">開 Claude</a> · '
-    +'<a href="https://chatgpt.com" target="_blank" rel="noopener">開 ChatGPT</a> · '
-    +'<a href="https://gemini.google.com" target="_blank" rel="noopener">開 Gemini</a></p>'
-    +'<div class="honest">'+esc(V.COMPANION.privacy)+'</div>';
   h+='<div class="ask"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
     +'<li>這次的題目好答嗎?「很不像/幾乎不曾」那端,你用到了嗎?</li>'
     +'<li>二選一的四題——有沒有哪題兩邊都像、很難選?</li>'
@@ -581,20 +509,6 @@ function renderReport(sc,costSt,conf,fc){
     +'<li>整份報告,哪一句最中?哪一句最不像你?</li></ol></div>';
   h+='<div class="honest" style="margin-top:26px">'+esc(B.HONEST)+' 這是體驗版(題本 v2 試測):內容為草稿,你的作答只存在這台裝置上、不上傳。</div>';
   $('scr-report').innerHTML=h;
-  lastReportText=V.COMPANION.prompt+'\n'+buildReportText(pf,sc,costSt,conf,fc)+'\n'+V.COMPANION.promptEnd;
-  var cb=$('btn-copy-comp');
-  if(cb) cb.onclick=function(){
-    function done(){ var d=$('copy-done'); if(d) d.classList.remove('hide'); }
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(lastReportText).then(done,function(){fallback();});
-    } else fallback();
-    function fallback(){
-      var ta=document.createElement('textarea'); ta.value=lastReportText;
-      document.body.appendChild(ta); ta.select();
-      try{ document.execCommand('copy'); done(); }catch(e){}
-      document.body.removeChild(ta);
-    }
-  };
   show('scr-report');
 }
 
