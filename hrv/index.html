@@ -214,6 +214,8 @@
   .selfrep-out{font-size:13px;line-height:1.7;margin-top:11px;padding:9px 12px;border-radius:10px}
   .selfrep-out.match{background:rgba(46,139,87,.10);color:var(--ink)}
   .selfrep-out.diff{background:var(--paper);color:var(--ink-soft)}
+  .selfrep-streak{font-size:12px;color:var(--ink-soft);line-height:1.65;margin-top:8px}
+  .selfrep-streak:empty{display:none}
   /* 生活記錄 note */
   .tagnote{margin-top:11px}
   .tagnote-in{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
@@ -862,13 +864,30 @@ function buildFacets(facets){
 }
 
 // 事後自我回饋：選身體/精神感覺 → 對照身體量到的 state（中性、非糾正）
-function buildSelfReport(recId, rec){
+// 身體感覺文字（放鬆/普通/緊繃）↔ 量測 state 是否一致
+function _feltBodyMatch(feltBody, state){
+  var m = state==='relaxed'?'放鬆':(state==='tense'?'緊繃':'普通');
+  return feltBody===m;
+}
+// 過去記錄的「感覺 vs 身體」同步統計（只算有填 felt.body 的）→ {n, agree}
+function feltAgreementStats(list){
+  var n=0, agree=0;
+  (list||[]).forEach(function(r){
+    if(!r || r.source!=='HRV') return;
+    var fb=r.felt&&r.felt.body; if(!fb) return;
+    n++; if(_feltBodyMatch(fb, r.state)) agree++;
+  });
+  return { n:n, agree:agree };
+}
+function buildSelfReport(recId, rec, list){
   const wrap=document.createElement('div'); wrap.className='selfrep';
   const head=document.createElement('div'); head.className='selfrep-head';
   head.innerHTML='<b>'+jteT('self.head','跟你的感覺對得上嗎？')+'</b><span>'+jteT('self.sub','選填 — 比對「身體量到的」和「你感覺到的」')+'</span>';
   wrap.appendChild(head);
+  const past=feltAgreementStats(list);           // 這次之前的自評同步統計
   const felt={body:'',energy:''};
   const out=document.createElement('div'); out.className='selfrep-out';
+  const streak=document.createElement('div'); streak.className='selfrep-streak';
   function makeGroup(label, key, opts){
     const g=document.createElement('div'); g.className='selfrep-g';
     g.innerHTML='<span class="selfrep-q">'+label+'</span>';
@@ -884,14 +903,24 @@ function buildSelfReport(recId, rec){
     g.appendChild(r); return g;
   }
   function renderCompare(){
-    if(!felt.body){ out.textContent=''; out.className='selfrep-out'; return; }
+    if(!felt.body){ out.textContent=''; out.className='selfrep-out'; streak.textContent=''; return; }
     var measured=rec.state==='relaxed'?'放鬆':(rec.state==='tense'?'緊繃':'普通');
     if(felt.body===measured){ out.className='selfrep-out match'; out.textContent=jteT('self.match','你的感覺和身體挺同步的 🌿'); }
     else { out.className='selfrep-out diff'; out.textContent='你覺得「'+felt.body+'」，身體量到比較像「'+measured+'」——感覺和身體有時不同步，值得留意，不用評斷。'; }
+    // 深化：把這次算進累積同步率，給一句長期回饋（記滿 3 次才顯示，否則樣本太少）
+    var total=past.n+1, ag=past.agree+(_feltBodyMatch(felt.body, rec.state)?1:0);
+    if(total>=3){
+      var rate=ag/total;
+      var interp = rate>=0.7 ? jteT('self.streak.hi','你對自己狀態蠻敏感的 🌿')
+        : (rate<=0.4 ? jteT('self.streak.lo','你的感覺和身體常對不上——多留意身體給你的訊號。')
+        : jteT('self.streak.mid','時準時不準，多對照幾次會越來越熟。'));
+      streak.textContent=jteT('self.streak','你記錄過 %1 次感覺，有 %2 次和身體同步。').replace('%1',String(total)).replace('%2',String(ag))+' '+interp;
+    } else { streak.textContent=''; }
   }
   wrap.appendChild(makeGroup(jteT('self.body','身體感覺'),'body',['放鬆','普通','緊繃']));
   wrap.appendChild(makeGroup(jteT('self.energy','精神感覺'),'energy',['有電','普通','累']));
   wrap.appendChild(out);
+  wrap.appendChild(streak);
   return wrap;
 }
 
@@ -1002,7 +1031,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
   d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
-  d.appendChild(buildSelfReport(recId, rec));
+  d.appendChild(buildSelfReport(recId, rec, list));
   // —— 生活記錄（標籤＋選填一句，量完即可貼）——
   d.appendChild(buildTagPicker(recId));
 
