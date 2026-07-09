@@ -25,6 +25,7 @@
 const ALLOWED_ORIGINS = [
   'https://flow222git.github.io',
   'http://localhost:8000', // 本機開發用,上線後可移除
+  'http://localhost:8901', // 本機測試結果頁(python3 -m http.server 8901)
 ];
 
 const DAILY_LIMIT_PER_IP = 20; // 每個 IP 每天最多 20 次解讀
@@ -53,6 +54,124 @@ const SYSTEM_PROMPT = `你是「問易」的解卦引擎,隸屬於練息場(Join
 【事情的趨向】根據變卦,描述可能的發展方向
 【下一步】1-2 個具體行動建議`;
 
+/* ============================================================
+   八態伴讀(/octenso):結果頁內嵌聊天的代理
+   前端送「報告全文+對話歷史」,Worker 帶守則呼叫 API。
+   守則(系統提示)只放這裡,前端無法改寫——金鑰不會被
+   當成通用代理濫用,伴讀也永遠守著伴讀守則。
+   mode:'chat'=陪讀回覆;'feedback'=結束時整理回饋摘要
+   (若綁定 KV namespace FEEDBACK,摘要會順手存一份)。
+   ============================================================ */
+const OCTENSO_MODEL = 'claude-sonnet-5';
+const OCTENSO_MAX_TOKENS = 800;
+const OCTENSO_DAILY_LIMIT_PER_IP = 80; // 一段對話多輪,獨立於問易的 20 次
+
+const OCTENSO_SYSTEM = `你是「八態伴讀」,隸屬於練息場(Join to Enjoy)。使用者剛做完「八態能格」測驗,帶著整份報告來找你討論。
+
+你的守則(嚴格遵守):
+- 你不是算命師。報告是「此刻的能量快照」,不是命運、不是人格定型;身分=格局,卦只是峰名。
+- 陪讀不主筆:報告已經寫好了,你的工作是陪使用者「讀懂、對到生活」,不是重寫或延伸報告。
+- 不要發明:只根據報告內容討論;報告沒說的,不要補。不跨股捏因果;只有報告裡的四對待可以談關係。
+- 中正≠亢:「強而剛好」與「強但過頭」是兩回事,依報告的能格標記說話。
+- 描述不預測:談「是什麼」,不談「將如何」。不給診斷、不給命運式斷言。
+- 語氣:溫和、具體、好奇。一次只聊一件事,多用開放式問題,回覆保持在 150 字以內。
+- 全文使用台灣慣用的繁體中文。
+
+另外,你有一個安靜的任務:留意使用者覺得報告「很像」或「不像」的段落——遇到時自然地追問一句(哪裡像?怎麼個不像法?),對話結束時你會被要求整理這些回饋。但別讓任務蓋過陪伴,聊天優先。`;
+
+const OCTENSO_FEEDBACK_SYSTEM = `你是「八態伴讀」的回饋整理員。以下是一段使用者與伴讀關於「八態能格」報告的完整對話。請把使用者對報告的反應整理成三類,盡量引用使用者的原話:
+
+【有共鳴】使用者覺得「很像我」的段落或說法
+【不像或存疑】使用者覺得不像、存疑或歪頭的地方
+【其他觀察】對題目、報告呈現或整體體驗的其他意見
+
+沒有內容的類別寫「(無)」。只整理使用者說過的,不要腦補。全文繁體中文,精簡。`;
+
+const OCTENSO_FIRST_USER = '我把我的報告帶來了,請陪我讀。';
+
+async function handleOctenso(request, env, corsHeaders) {
+  // 獨立限流(與問易分開計)
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `oct:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= OCTENSO_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今天聊得夠多了——伴讀明天再陪你繼續。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ error: 'Invalid JSON' }, 400, corsHeaders);
+  }
+  const { report, messages, mode } = payload;
+  // 護欄:長度與型別鎖死,token 成本有天花板
+  if (typeof report !== 'string' || !report.trim() || report.length > 24000) {
+    return json({ error: 'Bad report' }, 400, corsHeaders);
+  }
+  if (!Array.isArray(messages) || messages.length > 60) {
+    return json({ error: 'Bad messages' }, 400, corsHeaders);
+  }
+  for (const m of messages) {
+    if (!m || (m.role !== 'user' && m.role !== 'assistant')
+      || typeof m.content !== 'string' || !m.content.trim() || m.content.length > 2000) {
+      return json({ error: 'Bad message item' }, 400, corsHeaders);
+    }
+  }
+
+  const isFeedback = mode === 'feedback';
+  const systemText = isFeedback ? OCTENSO_FEEDBACK_SYSTEM : OCTENSO_SYSTEM;
+  // 報告全文另立一個 system 區塊並快取:同一段對話每一輪都命中快取
+  const system = [
+    { type: 'text', text: systemText, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: '使用者的報告全文如下:\n───\n' + report + '\n───', cache_control: { type: 'ephemeral' } },
+  ];
+  // 開場白由前端在本機生成(assistant 起頭),API 要求第一則是 user → 固定墊一句
+  const msgs = [{ role: 'user', content: OCTENSO_FIRST_USER }, ...messages];
+  if (isFeedback) {
+    msgs.push({ role: 'user', content: '(對話結束)請依守則整理這段對話的回饋摘要。' });
+  }
+
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: OCTENSO_MODEL,
+      max_tokens: OCTENSO_MAX_TOKENS,
+      system,
+      messages: msgs,
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (octenso):', apiResponse.status, errText);
+    return json({ error: '伴讀暫時無法回應,請稍後再試。', detail: `${apiResponse.status}: ${errText.slice(0, 400)}` }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+
+  if (isFeedback) {
+    // 回饋摘要落檔(選配:綁定 KV namespace FEEDBACK 才會存;沒綁就只回給前端)
+    if (env.FEEDBACK) {
+      try {
+        await env.FEEDBACK.put(`fb:${new Date().toISOString()}`, JSON.stringify({ turns: messages.length, summary: text }));
+      } catch (e) {
+        console.error('FEEDBACK KV put failed:', e);
+      }
+    }
+    return json({ summary: text }, 200, corsHeaders);
+  }
+  return json({ reply: text }, 200, corsHeaders);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -72,6 +191,11 @@ export default {
     // 阻擋非白名單來源
     if (!ALLOWED_ORIGINS.includes(origin)) {
       return json({ error: 'Origin not allowed' }, 403, corsHeaders);
+    }
+
+    // 八態伴讀(結果頁內嵌聊天)走 /octenso;問易解卦維持原路徑
+    if (new URL(request.url).pathname === '/octenso') {
+      return handleOctenso(request, env, corsHeaders);
     }
 
     // --- 每 IP 每日限流(需綁定 KV namespace: RATE_LIMIT)---
