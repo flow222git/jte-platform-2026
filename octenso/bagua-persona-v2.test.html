@@ -34,7 +34,11 @@
   t('FC_OPTS bipolar 6', V.FC_OPTS.length===6 && V.FC_OPTS[0].t.indexOf('A')>0 && V.FC_OPTS[5].t.indexOf('B')>0);
   t('FC_READ templates', ['agree','disagree','evenPick'].every(function(k){return V.FC_READ[k]&&V.FC_READ[k].indexOf('{X}')>=0;}));
   t('guide anchors 最近一個月', V.GUIDE.intro.indexOf('最近一個月')>=0);
-  t('COMPANION_BOT config', !!V.COMPANION_BOT && typeof V.COMPANION_BOT.url==='string' && V.COMPANION_BOT.desc.length>20);
+  t('COMPANION_BOT config', !!V.COMPANION_BOT && typeof V.COMPANION_BOT.url==='string' && V.COMPANION_BOT.desc.length>20
+    && ['privacy','opening','startBtn','placeholder','sendBtn','endBtn','endTitle','endThanks','offline','crisis','note'].every(function(k){return V.COMPANION_BOT[k]&&V.COMPANION_BOT[k].length>1;}));
+  t('COMPANION_BOT opening has {peak}', V.COMPANION_BOT.opening.indexOf('{peak}')>=0);
+  t('COMPANION_BOT crisis list+lines', Array.isArray(V.COMPANION_BOT.crisisKeys) && V.COMPANION_BOT.crisisKeys.length>=8
+    && ['1925','1995','1980'].every(function(n){return V.COMPANION_BOT.crisis.indexOf(n)>=0;}));
   // 三個方向 + AI 伴讀
   KEYS.forEach(function(k){ t('DIRECTIONS '+k, !!V.DIRECTIONS[k] && V.DIRECTIONS[k].use.length>15); });
   t('COMPANION fields', !!V.COMPANION && [V.COMPANION.title,V.COMPANION.desc,V.COMPANION.privacy,V.COMPANION.prompt,V.COMPANION.promptEnd].every(function(s){return s&&s.length>10;}));
@@ -61,7 +65,8 @@
   // ── iframe 渲染(B1 相容 + B2 含二選一)──
   var CASES=[
     {code:'B19050505050505050', name:'B1-single-qian', expects:['乾·開創者','神韻','工作樣貌','愛情與親密','分享碼沒有能格資料']},
-    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['乾·開創者','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','帶著報告去聊']},
+    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['乾·開創者','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊'],
+     click:'bot-start', expectsAfter:['我讀完你的報告了','結束伴讀 · 整理回饋']},
     {code:'B14582454545854545', name:'B1-dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重']}
   ];
   var done=0;
@@ -79,6 +84,11 @@
       if(ready || tries>200){
         clearInterval(timer);
         cs.expects.forEach(function(s){ t(cs.name+' has 「'+s+'」', txt.indexOf(s)>=0); });
+        if(cs.click){
+          try{ f.contentDocument.getElementById(cs.click).click(); }catch(e){}
+          var txt2=''; try{ txt2=f.contentDocument.body.innerText||''; }catch(e){}
+          (cs.expectsAfter||[]).forEach(function(s){ t(cs.name+' after click has 「'+s+'」', txt2.indexOf(s)>=0); });
+        }
         f.parentNode.removeChild(f);
         done++;
         if(done===CASES.length){
