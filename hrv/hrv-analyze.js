@@ -2,6 +2,26 @@
 (function (root) {
   'use strict';
   function mean(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return a.length?s/a.length:0; }
+  function _clamp01(x){ return x<0?0:(x>1?1:x); }
+  // 鏡頭覆蓋設定（集中一處，方便依機型實測微調；門檻 min 供鎖定閘門用）。
+  //   rgLo/rgHi：紅/綠比的 0→1 映射端點；cvHi/cvLo：變異係數（低=均勻）的 0→1 映射端點；
+  //   brLo/brHi：亮度端點；wRg/wUni/wBr：三項權重；min：判定「已蓋好」的分數門檻。
+  var COV_CFG={ rgLo:1.2, rgHi:2.2, cvHi:0.30, cvLo:0.10, brLo:20, brHi:60, wRg:0.45, wUni:0.40, wBr:0.15, min:0.55 };
+  // 鏡頭覆蓋分數 0~1：判斷「這顆鏡頭是不是被手指蓋住」（量測前對位回饋與鎖定閘門）。
+  // 蓋住＋閃光燈的鏡頭有三個好認的特徵，全用每幀已算的統計、零額外成本：
+  //   1) 紅/綠比 rg＝R/G 高：光穿過組織，紅被放行、綠藍被吸收（最強判別）。
+  //   2) 空間均勻度：紅通道變異係數 cv 低＝整片紅一片（沒蓋會有場景細節→cv 高）。
+  //   3) 亮度：R 有一定亮度（排除「暗房沒東西蓋」的近黑畫面）。
+  // R,G＝中央區塊紅/綠平均(0~255)；cv＝紅通道標準差/平均；cfg 可傳入覆寫（預設 COV_CFG）。
+  function coverageScore(R, G, cv, cfg){
+    cfg=cfg||COV_CFG;
+    R=+R||0; G=+G||0; cv=+cv||0;
+    var rg=R/((G||0)+1);
+    var rgS=_clamp01((rg-cfg.rgLo)/(cfg.rgHi-cfg.rgLo));
+    var uniS=_clamp01((cfg.cvHi-cv)/(cfg.cvHi-cfg.cvLo));
+    var brightS=_clamp01((R-cfg.brLo)/(cfg.brHi-cfg.brLo));
+    return rgS*cfg.wRg + uniS*cfg.wUni + brightS*cfg.wBr;
+  }
   function _median(a){ var s=a.slice().sort(function(x,y){return x-y;}), n=s.length, h=Math.floor(n/2); return n? (n%2 ? s[h] : (s[h-1]+s[h])/2) : 0; }
   // 溫和偽差校正：只剔除偏離中位數 ±30% 的粗大偽差（漏拍倍長/假拍短間隔），
   // 保留真實逐拍變異。頻域分析要的就是變異，故進階用這版。
@@ -193,9 +213,40 @@
     return { rr:allRr, good:good, bad:bad };
   }
 
+  // 頻域專用：回「最長一段連續好窗」的 RR（不跨壞窗拼接）。
+  // 頻域把不連續好窗接起來會在 tachogram 接縫注入相位跳變、污染低頻(LF)；
+  // 故頻域改以最長連續段為準。逐窗品質把關：好窗延續當前連續段，壞窗/空窗中斷之。
+  // 回 { rr:最長段的 RR, spanMs:該段總時長, good, bad }。
+  function rrFromLongestGoodRun(samples, winSec){
+    winSec = winSec || 15;
+    samples = samples || [];
+    if (samples.length < 10) return { rr:[], spanMs:0, good:0, bad:0 };
+    var t0=samples[0].t, tEnd=samples[samples.length-1].t, good=0, bad=0, start=t0;
+    var curRr=[], curSpan=0, bestRr=[], bestSpan=0;      // 當前連續段 vs 目前最長段
+    while (start < tEnd){
+      var end=start+winSec*1000, seg=[];
+      for (var i=0;i<samples.length;i++){ if (samples[i].t>=start && samples[i].t<end) seg.push(samples[i]); }
+      var winOk=false, winRr=null;
+      if (seg.length >= 10){
+        if (signalQuality(seg) !== 'red'){
+          var rr=cleanRrGentle(rrFromBeats(detectBeats(seg)));
+          var hr=rr.length ? 60000/mean(rr) : 0;
+          if (hr>=40 && hr<=150){ winOk=true; winRr=rr; good++; } else bad++;
+        } else bad++;
+      }
+      if (winOk){
+        for(var j=0;j<winRr.length;j++){ curRr.push(winRr[j]); curSpan+=winRr[j]; }
+        if (curSpan>bestSpan){ bestSpan=curSpan; bestRr=curRr.slice(); }
+      } else { curRr=[]; curSpan=0; }                    // 壞窗/空窗中斷連續段
+      start=end;
+    }
+    return { rr:bestRr, spanMs:bestSpan, good:good, bad:bad };
+  }
+
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
-    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
+    detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromLongestGoodRun: rrFromLongestGoodRun, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
+    coverageScore: coverageScore, COV_CFG: COV_CFG,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);

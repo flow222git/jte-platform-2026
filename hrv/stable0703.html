@@ -12,8 +12,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<!-- 登入：沿用練息場平台的 Google 登入（僅用來區分本機紀錄的使用者；HRV 資料一律不上傳） -->
+<!-- 登入＋記錄：沿用練息場平台的 Google 登入 + Firebase/Firestore -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --ink:#23252b; --ink-soft:#5b6270; --ink-faint:#8a93a3;
@@ -106,13 +108,6 @@
   .trend-filter{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
   .trend-filter .tagchip{font-size:12.5px;padding:5px 11px}
   .trend-filter-note{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 12px;line-height:1.6}
-  .tagcmp-sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.6}
-  .tagcmp-row{margin:10px 0}
-  .tagcmp-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--ink);margin-bottom:4px;gap:8px}
-  .tagcmp-top b{font-variant-numeric:tabular-nums}
-  .tagcmp-top .n{font-size:11px;color:var(--ink-faint)}
-  .tagcmp-bar{height:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden}
-  .tagcmp-fill{display:block;height:100%;border-radius:999px;transition:width .3s}
   .hist-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
   .hist-tags span{font-size:11.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
 
@@ -829,11 +824,6 @@ function buildFacets(facets){
     cell.insertAdjacentHTML('beforeend', metricInfo(f.k));
     wrap.appendChild(cell);
   });
-  if(facets.partial){
-    const pn=document.createElement('div'); pn.className='facet-na';
-    pn.textContent=jteT('facets.partial','這次乾淨的連續片段偏短，壓力／活力需要更長一段穩定訊號才準，先顯示放鬆與彈性。下次坐穩、手指蓋好量滿就會補齊。');
-    wrap.appendChild(pn);
-  }
   wrap.appendChild(birthYearRow());
   return wrap;
 }
@@ -878,24 +868,15 @@ function getBirthYear(){ var y=parseInt(localStorage.getItem(BIRTH_KEY),10); ret
 function setBirthYear(y){ y=parseInt(y,10); if(y>=1900&&y<=2100){ try{localStorage.setItem(BIRTH_KEY,String(y));}catch(e){} return true; } return false; }
 function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).getFullYear()-y; return (a>=0&&a<=120)?a:0; }
 
-// 從「最長連續好窗」算頻域面相；依可用長度分層降級（長度不夠就只出撐得起的面相，不硬湊）。
-// samples=原始樣本；sdnn=全段時域 SDNN（彈性用，時域不吃連續性）。資料太短回 null。
-//   ≥150 秒連續：四面相全出（LF 可信）。
-//   60–150 秒：只出放鬆(HF)＋彈性(SDNN)；壓力/活力(吃 LF 0.04Hz=週期25秒)不可信 → 不出，標 partial。
-//   <60 秒：頻域全不出（退回 HR/RMSSD/能量）。
-function computeFreqFacets(samples, sdnn){
-  var F=window.HrvFreq, A=window.HrvAnalyze;
-  if(!F||!A||!samples) return null;
-  var run=A.rrFromLongestGoodRun(samples,15);               // 最長連續好窗（頻域不拼接碎段）
-  var rr=run.rr, span=run.spanMs||0;
-  if(rr.length<8 || span<60000) return null;                // 連續好資料 <60 秒 → 頻域全不出
+// 從 RR 算頻域四面相（放鬆/壓力/活力/彈性）；資料不足回 null。年齡校準活力/彈性
+function computeFreqFacets(rr, sdnn){
+  var F=window.HrvFreq; if(!F||!rr||rr.length<8) return null;
+  var span=0; for(var s=0;s<rr.length;s++) span+=rr[s];     // 量測總時長(ms)
+  if(span < 150000) return null;                            // <2.5 分鐘 → LF 不可信 → 不顯示頻域面相（請用深測）
   try{
     var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
     var bp=F.bandPowers(rs.series, rs.fs);
-    var all=F.indices(bp, {sdnn:sdnn}, getAge());
-    if(span>=150000) return all;                            // LF 可信 → 全部四面相
-    // 60–150 秒：HF 撐得起放鬆、SDNN(時域)撐得起彈性；LF 不可信 → 壓力/活力不出
-    return { relax:all.relax, flexibility:all.flexibility, ageAdjusted:all.ageAdjusted, partial:true };
+    return F.indices(bp, {sdnn:sdnn}, getAge());
   }catch(e){ return null; }
 }
 // 只重繪面相卡（避免重跑 renderResult 重複存檔）；用 _lastResultSamples 重算
@@ -903,7 +884,7 @@ function refreshFacets(){
   var A=window.HrvAnalyze; if(!A||!_lastResultSamples) return false;
   var rr=robustRr(_lastResultSamples).rr, m=A.metricsFromRr(rr);
   var old=document.querySelector('.facets');
-  if(old){ var fresh=buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
+  if(old){ var fresh=buildFacets(computeFreqFacets(rr, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
   return false;
 }
 function applyBirthYear(){ var el=document.getElementById('byIn'); if(el && setBirthYear(el.value)) refreshFacets(); return false; }
@@ -919,27 +900,6 @@ function birthYearRow(){
   else { wrap.innerHTML='<span class="age-q">'+jteT('age.q','填出生年份，讓「活力/彈性」更貼合你的年齡（選填 · 只存本機）')+'</span>'
     +'<span class="age-in"><input type="number" id="byIn" inputmode="numeric" placeholder="如 1985" min="1900" max="2100"><button type="button" onclick="return applyBirthYear()">套用</button></span>'; }
   return wrap;
-}
-// 個人化建議：引用「你自己」的數字與趨勢，取代公版三句。依量測次數分層，
-// 資料太少時誠實說「還在建立基準」而非硬比。hist＝過去 HRV 記錄（{rmssd,hr,ts}）。
-function buildPersonalAdvice(en, m, hist){
-  hist=(hist||[]).filter(function(r){ return r&&r.rmssd>0; });
-  var n=hist.length, rmssd=Math.round(m.rmssd), hr=Math.round(m.hr);
-  if(n===0) return jteT('padv.first','這是你第一次量。先記住現在身體的感覺——多量幾次之後，我就能告訴你「今天這個數字」對你自己算高還是低。');
-  if(n<3) return jteT('padv.few','你已經量了 %1 次，再幾次我就能比出「對你」的高低。今天 RMSSD %2、靜息心率 %3。')
-    .replace('%1',String(n)).replace('%2',String(rmssd)).replace('%3',String(hr));
-  // 你平常的 RMSSD：取中位數（比平均穩健、抗離群）
-  var arr=hist.map(function(r){ return r.rmssd; }).sort(function(a,b){ return a-b; });
-  var usual=Math.round(arr[Math.floor(arr.length/2)])||0;
-  var d=usual>0?(m.rmssd-usual)/usual:0, main;
-  if(d>=0.15) main=jteT('padv.hi','今天 RMSSD %1，比你平常的 %2 高一些——恢復得不錯，好好把握今天。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  else if(d<=-0.15) main=jteT('padv.lo','今天 RMSSD %1，比你平常的 %2 低一些，能量偏低——多留點空間給自己休息和恢復。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  else main=jteT('padv.mid','今天和你平常差不多（RMSSD %1，你平常約 %2）——穩穩的。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  // 恢復（RMSSD）與平靜（HR）分歧時，補一句更有洞察的話
-  var rc=en.recovery&&en.recovery.level, cl=en.calm&&en.calm.level, extra='';
-  if(rc==='low'&&cl==='high') extra=jteT('padv.div1','恢復訊號偏低、但心跳算安定——身體在放電、但還撐得住。');
-  else if(rc==='high'&&cl==='low') extra=jteT('padv.div2','恢復不錯、但心跳偏快——可能有點亢奮，或剛動過。');
-  return extra?(main+' '+extra):main;
 }
 function renderEnergyResult(d, card, list, m, rec, rr){
   const E=window.HrvEnergy;
@@ -958,7 +918,8 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   labelEl.style.cssText='font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;margin-top:4px;opacity:1';
   const LEVEL_LABEL_MAP={high:jteT('result.level.high','充足'),mid:jteT('result.level.mid','平穩'),low:jteT('result.level.low','偏低')};
   labelEl.textContent=LEVEL_LABEL_MAP[en.level]||String(en.label);
-  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=buildPersonalAdvice(en, m, hist);
+  const LEVEL_ADVICE={high:jteT('advice.high','今天恢復得很好，身體狀態不錯，好好把握。'),mid:jteT('advice.mid','今天狀態和你平常差不多，穩穩的。'),low:jteT('advice.low','今天能量偏低，多留點空間給自己休息和恢復。')};
+  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=LEVEL_ADVICE[en.level]||String(en.advice||'');
   card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
   card.insertAdjacentHTML('beforeend', mBar(Number(en.score), false)); // 能量 0–100 落點
   card.insertAdjacentHTML('beforeend', metricInfo('energy'));
@@ -976,8 +937,8 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
     hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' });
 
-  // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
-  d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
+  // —— 身體面相（頻域四面相：放鬆/壓力/活力/彈性）——
+  d.appendChild(buildFacets(computeFreqFacets(rr, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
   d.appendChild(buildSelfReport(recId, rec));
   // —— 生活記錄（標籤＋選填一句，量完即可貼）——
@@ -1067,31 +1028,6 @@ const ENERGY_LABEL={ high:'充足', mid:'平穩', low:'偏低' };
 function recColor(r){ return ENERGY_COLOR[r.level]||STATE_COLOR[r.state]||'#003D7C'; }
 var _trendFilter=null;
 function recTags(r){ return Array.isArray(r.tags)?r.tags:[]; }
-// 情境對照：各狀態標記下的平均身體能量排行——讓使用者看出「什麼情境 → 身體如何」。
-// 用全部記錄（不受篩選影響）；少於兩個有分數的標記則不顯示（無從對照）。
-function buildTagCompare(everything){
-  var stats={};
-  everything.forEach(function(r){
-    if(!isFinite(Number(r.energy))) return;
-    recTags(r).forEach(function(t){ if(!stats[t]) stats[t]={sum:0,n:0}; stats[t].sum+=Number(r.energy); stats[t].n++; });
-  });
-  var rows=Object.keys(stats).map(function(t){ return { tag:t, avg:Math.round(stats[t].sum/stats[t].n), n:stats[t].n }; });
-  if(rows.length<2) return null;
-  rows.sort(function(a,b){ return b.avg-a.avg; });
-  var lvl=function(v){ return v>=75?'high':(v>=45?'mid':'low'); };
-  var wrap=document.createElement('div'); wrap.className='guide-card';
-  wrap.innerHTML='<h3><i class="ti ti-adjustments-horizontal"></i>'+jteT('trend.cmp.title','情境對照')+'</h3>'+
-    '<p class="tagcmp-sub">'+jteT('trend.cmp.sub','不同狀態標記下，你的平均身體能量（分數越高越好）')+'</p>';
-  rows.forEach(function(r){
-    var row=document.createElement('div'); row.className='tagcmp-row';
-    var col=ENERGY_COLOR[lvl(r.avg)]||'#003D7C';
-    row.innerHTML='<div class="tagcmp-top"><span>'+_h(r.tag)+'</span><span><b>'+r.avg+'</b> <span class="n">'+
-        jteT('trend.cmp.n','· %1 次').replace('%1',String(r.n))+'</span></span></div>'+
-      '<div class="tagcmp-bar"><span class="tagcmp-fill" style="width:'+Math.max(3,Math.min(100,r.avg))+'%;background:'+col+'"></span></div>';
-    wrap.appendChild(row);
-  });
-  return wrap;
-}
 function drawTrend(list){
   const body=document.getElementById('trendBody'); if(!body)return;
   body.innerHTML='';
@@ -1161,9 +1097,6 @@ function drawTrend(list){
     body.appendChild(c);
   }
 
-  // —— 情境對照（各標記平均能量排行；用全部記錄、不受篩選影響）——
-  var cmp=buildTagCompare(everything); if(cmp) body.appendChild(cmp);
-
   // —— 列表（新到舊）——
   for(let i=all.length-1;i>=0;i--){
     const r=all[i];
@@ -1210,26 +1143,68 @@ window.addEventListener('pagehide',stopCamera);
 window.addEventListener('beforeunload',stopCamera);
 
 /* ============================================================
-   平台記錄 helper（HRV 為敏感健康資料 → 一律純本機，不上傳、不接 Firestore）
-   隱私決策見 spec 2026-06-19 第 5 節；UI 亦承諾「只留在這台裝置上」。
-   Google 登入僅用來替本機紀錄分使用者命名空間（jteKey），不做雲端同步。
+   平台記錄 helper（HRV 走「一般記錄」明文，不加密；localStorage + Firestore）
    ============================================================ */
+var _db=null;
+function initFirebase(){
+  if(typeof firebase==='undefined'){setTimeout(initFirebase,200);return;}
+  try{
+    if(firebase.apps.length===0){
+      firebase.initializeApp({
+        apiKey:"AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg",
+        authDomain:"jointoenjoy.firebaseapp.com",
+        projectId:"jointoenjoy",
+        storageBucket:"jointoenjoy.firebasestorage.app",
+        messagingSenderId:"978242729427",
+        appId:"1:978242729427:web:ab31364f21c67c2ab56b26"
+      });
+    }
+    _db=firebase.firestore();
+  }catch(e){console.warn('Firebase init failed',e);}
+}
+window.addEventListener('load',initFirebase);
+
 function jteEmail(){return localStorage.getItem('jte_user_email')||'';}
 function jteKey(){const e=jteEmail();return e?'jte_daily_'+e.replace(/[^a-zA-Z0-9]/g,'_'):'jte_daily_v1';}
 function jteTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function jteAll(){try{return JSON.parse(localStorage.getItem(jteKey())||'{}')}catch(e){return{}}}
+function jteFsSave(dateKey,day){
+  const e=jteEmail();if(!_db||!e)return;
+  // HRV 為一般記錄、明文直接上雲（不加密）。
+  _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').doc(dateKey).set(day,{merge:true})
+    .catch(function(err){console.warn('Firestore write failed',err);});
+}
 function jteWriteRecord(rec){
   const k=jteKey(),today=jteTodayKey(),all=jteAll();
   const day=all[today]||{moods:[],energy:5,note:'',tags:[],linked:[],createdAt:new Date().toISOString()};
   if(!day.linked)day.linked=[];
   day.linked.push(rec);day.updatedAt=new Date().toISOString();
   all[today]=day;localStorage.setItem(k,JSON.stringify(all));
+  jteFsSave(today,day);
 }
 function _flattenHrv(all){var out=[];Object.keys(all).forEach(function(dk){(all[dk].linked||[]).forEach(function(l){if(l.source==='HRV')out.push(l);});});out.sort(function(a,b){return (a.ts||'').localeCompare(b.ts||'');});return out;}
-/* 讀取本機所有 HRV 紀錄，攤平回傳（時間正序）。純本機，不讀雲端。
-   仍回 Promise，讓呼叫端（非同步渲染 baseline）介面不變。 */
+function jteFsLoadDays(){
+  const e=jteEmail();if(!_db||!e)return Promise.resolve({});
+  return _db.collection('users').doc(e.toLowerCase().trim()).collection('daily').get()
+   .then(function(snap){var days={};snap.forEach(function(doc){days[doc.id]=doc.data();});return days;})
+   .catch(function(){return {};});
+}
+/* 把雲端 daily 的 HRV 記錄併回本機（依 recordId 去重）、hydrate localStorage，回傳攤平清單（時間正序） */
 function jteListRecordsMerged(){
-  return Promise.resolve(_flattenHrv(jteAll()));
+  const localAll=jteAll();
+  return jteFsLoadDays().then(function(cloudDays){
+    const merged=Object.assign({},localAll);
+    Object.keys(cloudDays).forEach(function(dk){
+      const cloudDay=cloudDays[dk]||{};
+      const base=merged[dk]?Object.assign({},merged[dk]):Object.assign({},cloudDay);
+      const seen={}; const linked=[];
+      (merged[dk]&&merged[dk].linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id)seen[id]=1; linked.push(r); });
+      (cloudDay.linked||[]).forEach(function(r){ const id=r.recordId||r.id; if(id&&!seen[id]){ seen[id]=1; linked.push(r); } else if(!id){ linked.push(r); } });
+      base.linked=linked; merged[dk]=base;
+    });
+    try{localStorage.setItem(jteKey(),JSON.stringify(merged));}catch(e){}
+    return _flattenHrv(merged);
+  });
 }
 function jteDeleteRecord(id){
   const k=jteKey(),all=jteAll();let touched=null;
@@ -1239,9 +1214,9 @@ function jteDeleteRecord(id){
     all[dk].linked=all[dk].linked.filter(function(l){return (l.recordId||l.id)!==id;});
     if(all[dk].linked.length!==before)touched=dk;
   });
-  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));}
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
 }
-// 依 recordId 補丁更新一筆記錄（用於量完後補貼狀態標記）。純本機。
+// 依 recordId 補丁更新一筆記錄（用於量完後補貼狀態標記）。本機＋雲端同步。
 function jteUpdateRecord(id, patch){
   const k=jteKey(),all=jteAll();let touched=null;
   Object.keys(all).forEach(function(dk){
@@ -1249,7 +1224,7 @@ function jteUpdateRecord(id, patch){
       if((l.recordId||l.id)===id){ Object.assign(l, patch); touched=dk; }
     });
   });
-  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));}
+  if(touched){all[touched].updatedAt=new Date().toISOString();localStorage.setItem(k,JSON.stringify(all));jteFsSave(touched,all[touched]);}
 }
 
 /* —— Google 登入（惰性）—— */
