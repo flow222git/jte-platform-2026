@@ -502,6 +502,14 @@ function renderReport(sc,costSt,conf,fc){
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
     +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'
     +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">※ 兩版題本不同,分數請勿直接互比——比的是「報告像不像你」。</span></p>';
+  // 八態伴讀入口(bot;url 為空則隱藏)
+  if(V.COMPANION_BOT && V.COMPANION_BOT.url){
+    h+='<div class="rule"></div><div class="seclabel">'+esc(V.COMPANION_BOT.title)+'</div>'
+      +'<p style="font-size:13.5px">'+esc(V.COMPANION_BOT.desc)+'</p>'
+      +'<p class="center" style="margin:14px 0 8px"><a class="btn" target="_blank" rel="noopener" href="'
+      +V.COMPANION_BOT.url+'/?code='+code+'">帶著報告去聊 →</a></p>'
+      +'<p class="center" style="font-size:12px;color:var(--muted)">'+esc(V.COMPANION_BOT.note)+'</p>';
+  }
   h+='<div class="ask"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
     +'<li>這次的題目好答嗎?「很不像/幾乎不曾」那端,你用到了嗎?</li>'
     +'<li>二選一的四題——有沒有哪題兩邊都像、很難選?</li>'
