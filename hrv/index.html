@@ -920,6 +920,27 @@ function birthYearRow(){
     +'<span class="age-in"><input type="number" id="byIn" inputmode="numeric" placeholder="如 1985" min="1900" max="2100"><button type="button" onclick="return applyBirthYear()">套用</button></span>'; }
   return wrap;
 }
+// 個人化建議：引用「你自己」的數字與趨勢，取代公版三句。依量測次數分層，
+// 資料太少時誠實說「還在建立基準」而非硬比。hist＝過去 HRV 記錄（{rmssd,hr,ts}）。
+function buildPersonalAdvice(en, m, hist){
+  hist=(hist||[]).filter(function(r){ return r&&r.rmssd>0; });
+  var n=hist.length, rmssd=Math.round(m.rmssd), hr=Math.round(m.hr);
+  if(n===0) return jteT('padv.first','這是你第一次量。先記住現在身體的感覺——多量幾次之後，我就能告訴你「今天這個數字」對你自己算高還是低。');
+  if(n<3) return jteT('padv.few','你已經量了 %1 次，再幾次我就能比出「對你」的高低。今天 RMSSD %2、靜息心率 %3。')
+    .replace('%1',String(n)).replace('%2',String(rmssd)).replace('%3',String(hr));
+  // 你平常的 RMSSD：取中位數（比平均穩健、抗離群）
+  var arr=hist.map(function(r){ return r.rmssd; }).sort(function(a,b){ return a-b; });
+  var usual=Math.round(arr[Math.floor(arr.length/2)])||0;
+  var d=usual>0?(m.rmssd-usual)/usual:0, main;
+  if(d>=0.15) main=jteT('padv.hi','今天 RMSSD %1，比你平常的 %2 高一些——恢復得不錯，好好把握今天。').replace('%1',String(rmssd)).replace('%2',String(usual));
+  else if(d<=-0.15) main=jteT('padv.lo','今天 RMSSD %1，比你平常的 %2 低一些，能量偏低——多留點空間給自己休息和恢復。').replace('%1',String(rmssd)).replace('%2',String(usual));
+  else main=jteT('padv.mid','今天和你平常差不多（RMSSD %1，你平常約 %2）——穩穩的。').replace('%1',String(rmssd)).replace('%2',String(usual));
+  // 恢復（RMSSD）與平靜（HR）分歧時，補一句更有洞察的話
+  var rc=en.recovery&&en.recovery.level, cl=en.calm&&en.calm.level, extra='';
+  if(rc==='low'&&cl==='high') extra=jteT('padv.div1','恢復訊號偏低、但心跳算安定——身體在放電、但還撐得住。');
+  else if(rc==='high'&&cl==='low') extra=jteT('padv.div2','恢復不錯、但心跳偏快——可能有點亢奮，或剛動過。');
+  return extra?(main+' '+extra):main;
+}
 function renderEnergyResult(d, card, list, m, rec, rr){
   const E=window.HrvEnergy;
   // 過去 HRV 記錄（已含本次？本次尚未寫入，故 list 即為「過去」）：過濾 source==='HRV' 且有 rmssd
@@ -937,8 +958,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   labelEl.style.cssText='font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;margin-top:4px;opacity:1';
   const LEVEL_LABEL_MAP={high:jteT('result.level.high','充足'),mid:jteT('result.level.mid','平穩'),low:jteT('result.level.low','偏低')};
   labelEl.textContent=LEVEL_LABEL_MAP[en.level]||String(en.label);
-  const LEVEL_ADVICE={high:jteT('advice.high','今天恢復得很好，身體狀態不錯，好好把握。'),mid:jteT('advice.mid','今天狀態和你平常差不多，穩穩的。'),low:jteT('advice.low','今天能量偏低，多留點空間給自己休息和恢復。')};
-  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=LEVEL_ADVICE[en.level]||String(en.advice||'');
+  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=buildPersonalAdvice(en, m, hist);
   card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
   card.insertAdjacentHTML('beforeend', mBar(Number(en.score), false)); // 能量 0–100 落點
   card.insertAdjacentHTML('beforeend', metricInfo('energy'));
