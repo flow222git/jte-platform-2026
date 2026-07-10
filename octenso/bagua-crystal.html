@@ -121,27 +121,9 @@ var EKEYS=P.EKEYS;
 var VERT={ qian:[ 1, 1, 1], kun:[-1,-1,-1], zhen:[ 1,-1,-1], xun:[-1, 1, 1],
            kan:[-1, 1,-1], li:[ 1,-1, 1], gen:[-1,-1, 1], dui:[ 1, 1,-1] };
 var YANG={qian:1,zhen:1,kan:1,gen:1}; // 陽卦組;其餘=陰卦組
-// ── 白話層(草案文案;採用後移入 canonical 資料檔)──
-// 門名+生活問句:四對待=一件事走一圈會經過的四道門
-var GATE={build:'開局',drive:'推進',aware:'消化',regulate:'收工'};
-var GATE_Q={
-  build:'事情來了——你先「定方向」,還是先「接住人」?',
-  drive:'想讓它發生——你「直接動手」,還是「先鋪路、找幫手」?',
-  aware:'想通了之後——你「收著慢慢想」,還是「說出來讓人看見」?',
-  regulate:'累了——你「關起門休息」,還是「找人說一說」?'
-};
-// 每個極的白話動詞(卦名降為註腳)
-var POLE={qian:'定方向',kun:'接住人',zhen:'直接動手',xun:'先鋪路',
-          kan:'收著想',li:'說出來',gen:'關起門',dui:'找人聊'};
-// 五種狀態的白話說法({L}/{R}=兩端白話動詞)
-var STATE_PLAIN={
-  bothHigh:'兩隻手都熟——「{L}」和「{R}」你都使得動,這道門你雙手都靈。',
-  leanL:'有慣用手——你多半先「{L}」;「{R}」不是沒有,只是比較少召喚。',
-  leanR:'有慣用手——你多半先「{R}」;「{L}」不是沒有,只是比較少召喚。',
-  bothLow:'這道門你此刻輕輕經過——兩隻手都先收著。可能是季節,不是缺陷。',
-  mid:'看場合換手——沒有固定偏好,彈性帶著走。'
-};
-var STATE_TENSION='兩具引擎都在催——「直接動手」和「先鋪路」都是往外衝的力,同時全開會互相搶方向盤,記得讓它們輪流。';
+// ── 白話層:同源自 canonical(bagua-v2-data.js 的 GATES;meta A)──
+var GT=V.GATES;
+var GATE=GT.name, GATE_Q=GT.q, POLE=GT.pole, STATE_PLAIN=GT.state, STATE_TENSION=GT.tension;
 
 function decodeCode(str){
   str=(str||'').trim().toUpperCase().replace(/\s/g,'');

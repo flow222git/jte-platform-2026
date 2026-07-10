@@ -85,6 +85,10 @@
   .pair .verdict{font-size:12.5px;color:var(--muted);margin-top:6px}
   .pair .verdict b{font-weight:400;color:var(--ink)}
   .pair .verdict.tension b{color:var(--cinnabar)}
+  .pair .gq{font-size:13.5px;color:var(--ink);margin-bottom:8px}
+  .pair .gq b{font-weight:400;color:var(--pine);letter-spacing:.06em}
+  .pair .plain{font-size:13.5px;color:var(--ink-soft);margin-top:8px}
+  .pair .cnote{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
   .pair .fcnote{font-size:12.5px;margin-top:4px;padding-left:14px;border-left:1px solid var(--hair);color:var(--ink-soft)}
   .pair .fcnote.gap{border-left-color:var(--gold)}
   .cost-row{padding:14px 0;border-bottom:1px solid var(--surface2)}
@@ -491,15 +495,34 @@ function renderReport(sc,costSt,conf,fc){
   h+='</div><p style="font-size:12px;color:var(--muted)">整體水平:'
     +(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(八態平均 '+pf.level.mean+')。'
     +(conf?'「篤定」=該態三題答得很一致;「兩可」=分散,這一態的分數解讀請保留彈性。':'(以分享碼重建,無篤定性資料。)')+'</p>';
-  h+='<div class="rule"></div><div class="seclabel">四對 · 生命系統'+(fc?'(含二選一對照)':'')+'</div>';
-  pf.axes.forEach(function(ax,ai){
+  h+='<div class="rule"></div><div class="seclabel">四道門 · 你的能量怎麼動'+(fc?'(含二選一對照)':'')+'</div>';
+  var GT=V.GATES;
+  h+='<p style="font-size:13px;color:var(--muted)">'+esc(GT.intro)+'</p>';
+  // 錨定敘事:從主峰所在的門讀起(不是強度排序,是「從你認識的自己」讀進去)
+  var lead0=pf.leads[0], lead1=pf.leads[1];
+  if(lead0){
+    var g0=null;P.PAIRS.forEach(function(p){if(p.l===lead0||p.r===lead0)g0=p.key;});
+    h+='<p style="font-size:13px;color:var(--pine)">'+esc(GT.anchor.replace('{P}',B.get(lead0).nm+'·'+B.get(lead0).fnShort).replace('{G}',GT.name[g0]))+'</p>';
+  }
+  var axArr=pf.axes.slice().sort(function(a,b){
+    function w(x){ if(lead0&&(x.l===lead0||x.r===lead0)) return 0;
+      if(lead1&&(x.l===lead1||x.r===lead1)) return 1; return 2; }
+    return w(a)-w(b);
+  });
+  axArr.forEach(function(ax){
+    var ai=pf.axes.indexOf(ax);
     var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
       :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
     var read=V.SYSTEM_READ[ax.key][st];
     var tension=(ax.key==='drive'&&st==='bothHigh');
-    h+='<div class="pair"><div class="ends"><span>'+B.get(ax.l).nm+'·'+ax.ln+'</span><span>'+ax.rn+'·'+B.get(ax.r).nm+'</span></div>'
+    var plain=tension?GT.tension:GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
+    h+='<div class="pair">'
+      +'<div class="gq"><b>'+GT.name[ax.key]+'之門</b> · '+esc(GT.q[ax.key])+'</div>'
+      +'<div class="ends"><span>'+esc(GT.pole[ax.l])+'</span><span>'+esc(GT.pole[ax.r])+'</span></div>'
       +'<div class="track"><span class="fl" style="width:'+(ax.left/2)+'%"></span><span class="fr" style="width:'+(ax.right/2)+'%"></span><span class="mid"></span></div>'
+      +'<div class="plain">'+esc(plain)+'</div>'
       +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
+      +'<div class="cnote">'+B.get(ax.l).nm+'·'+ax.ln+' '+sc[ax.l]+' ⇄ '+sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
       +(fc?fcCompareNote(ax,fc[ai]):'')
       +'</div>';
   });
