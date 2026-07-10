@@ -259,15 +259,19 @@ function draw(){
   order.forEach(function(k2){
     var p=pv[k2],sc=S.sc[k2],g=B.get(k2);
     var leadIdx=S.pf.leads.slice(0,2).indexOf(k2);
-    var isLead=leadIdx>=0, isMain=leadIdx===0;
+    var isLead=leadIdx>=0;
+    // 雙峰/多峰=並立,所有峰同級;單峰才分主副
+    var kind=S.pf.signature.kind;
+    var isMain=isLead&&(leadIdx===0||kind==='dual'||kind==='multi');
     var isSelEnd=selAx&&(selAx.l===k2||selAx.r===k2);
     var dim=(selAx&&!isSelEnd)?(isLead?0.55:0.4):1; // 選了軸:非兩端退淡(峰稍留存在感)
-    var r=(4+sc*0.115)*DPR*p.s*(isMain?1.35:isLead?1.18:1)*(isSelEnd?1.12:1);
+    var r=(4+sc*0.115)*DPR*p.s*(isMain?1.35:isLead?1.22:1)*(isSelEnd?1.12:1);
     var da=dAlpha(p.z)*dim;
+    if(isLead) da=Math.max(da,(isMain?0.85:0.72)*dim); // 峰不被深度變淡吃掉:轉到背面也要清楚
     if(isLead){ // 峰的光暈(主峰大而亮、副峰小而淡)
       var halo=r+(isMain?18:11)*DPR;
       var rg=ctx.createRadialGradient(p.x,p.y,r*0.3,p.x,p.y,halo);
-      rg.addColorStop(0,pine((isMain?0.30:0.16)*da));rg.addColorStop(1,pine(0));
+      rg.addColorStop(0,pine((isMain?0.30:0.22)*da));rg.addColorStop(1,pine(0));
       ctx.beginPath();ctx.arc(p.x,p.y,halo,0,7);ctx.fillStyle=rg;ctx.fill();
       ctx.beginPath();ctx.arc(p.x,p.y,r+(isMain?6:4.5)*DPR,0,7);
       ctx.strokeStyle=pine((isMain?0.7:0.45)*da);ctx.lineWidth=(isMain?2:1.4)*DPR;ctx.stroke();
