@@ -45,7 +45,8 @@
   .chip{font-family:inherit;font-weight:300;font-size:12.5px;letter-spacing:.04em;padding:9px 6px;cursor:pointer;
     border:1px solid var(--hair);border-radius:12px;background:transparent;color:var(--ink-soft);transition:.15s;line-height:1.7}
   .chip:hover{border-color:var(--ink)}
-  .chip.sel{border-color:var(--ink);background:var(--surface2)}
+  .chip.sel{border-color:var(--pine);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--pine)}
+  .chip.sel .ct{color:var(--pine)}
   .chip .cx{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted)}
   .chip .ct{display:block;color:var(--ink)}
   .howto{margin:14px 0 4px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
@@ -91,9 +92,9 @@
   <div class="seclabel">你此刻最有力的能量</div>
   <p class="peak" id="peakline"></p>
   <div class="howto" id="howto">
-    <div class="hrow"><span class="hn">1</span>最亮、帶著光圈的角,就是此刻的你最順手的能量。</div>
-    <div class="hrow"><span class="hn">2</span>四條穿過中心的線=生活裡的四道門:事情來了(開局)、要推進、要消化、該收工。</div>
-    <div class="hrow"><span class="hn">3</span>每道門的兩端<b>可以同時亮</b>——都亮=兩隻手都熟;一亮一暗=有慣用手;都暗=此刻先收著,不是沒有。</div>
+    <div class="hrow"><span class="hn">1</span><b>這顆晶體的形狀就是你</b>——每個角往外長多少,就是那股能量此刻的分數;最亮、帶光圈的角是你的峰。後面淡淡的方框是滿格的樣子:縮著的角不是沒有,是還有空間長。</div>
+    <div class="hrow"><span class="hn">2</span>四條穿過中心的線=生活裡的四道門:事情來了(開局)、要推進、要消化、該收工。哪邊的臂伸得長,你就偏用那隻手。</div>
+    <div class="hrow"><span class="hn">3</span>每道門的兩端<b>可以同時亮</b>——都長=兩隻手都熟;一長一短=有慣用手;都短=此刻先收著,不是沒有。</div>
   </div>
   <canvas id="cv" width="560" height="560" aria-label="能量晶體立體圖"></canvas>
   <p class="hint">拖一拖,轉動你的晶體 · 點一條線(或下面的門),讀那道門的你</p>
@@ -192,13 +193,28 @@ function gold(a){return 'rgba(169,130,59,'+a+')';}
 function cinn(a){return 'rgba(157,75,52,'+a+')';}
 function dAlpha(z){return 0.42+0.34*(z+1)/2;} // 遠淡近深
 
+// 分數 → 角離中心的距離(留 0.25 底,潛的角不會消失)
+function scaledVert(k){
+  var s=0.25+0.75*Math.max(0,Math.min(100,S.sc[k]))/100;
+  return [VERT[k][0]*s,VERT[k][1]*s,VERT[k][2]*s];
+}
 function draw(){
   if(!S.pf) return;
   var w=cv.width;ctx.clearRect(0,0,w,w);
-  var pv={},k;
-  for(k in VERT) pv[k]=proj(VERT[k]);
+  var pv={},pvRef={},k;
+  for(k in VERT){ pv[k]=proj(scaledVert(k)); pvRef[k]=proj(VERT[k]); }
   ctx.lineCap='round';
-  // 陽/陰兩組四面體(極淡)
+  var ks=Object.keys(VERT);
+  function edges(pts,style,width){
+    ctx.strokeStyle=style;ctx.lineWidth=width;
+    for(var i=0;i<ks.length;i++)for(var j=i+1;j<ks.length;j++){
+      var d3=Math.abs(VERT[ks[i]][0]-VERT[ks[j]][0])+Math.abs(VERT[ks[i]][1]-VERT[ks[j]][1])+Math.abs(VERT[ks[i]][2]-VERT[ks[j]][2]);
+      if(d3===2){ctx.beginPath();ctx.moveTo(pts[ks[i]].x,pts[ks[i]].y);ctx.lineTo(pts[ks[j]].x,pts[ks[j]].y);ctx.stroke();}
+    }
+  }
+  // 滿格外框(標準立方體,髮絲)——你的晶體長在裡面,還有空間可以長
+  edges(pvRef,ink(0.10),1*DPR);
+  // 陽/陰兩組四面體(極淡,掛在你的形狀上)
   function tetra(keys,col){
     ctx.strokeStyle=col;ctx.lineWidth=1*DPR;
     for(var i=0;i<keys.length;i++)for(var j=i+1;j<keys.length;j++){
@@ -207,55 +223,69 @@ function draw(){
   }
   tetra(['qian','zhen','kan','gen'],pine(0.10));
   tetra(['kun','xun','li','dui'],gold(0.12));
-  // 立方體稜線(髮絲)
-  ctx.strokeStyle=ink(0.13);ctx.lineWidth=1*DPR;
-  var ks=Object.keys(VERT);
-  for(var i=0;i<ks.length;i++)for(var j=i+1;j<ks.length;j++){
-    var d3=Math.abs(VERT[ks[i]][0]-VERT[ks[j]][0])+Math.abs(VERT[ks[i]][1]-VERT[ks[j]][1])+Math.abs(VERT[ks[i]][2]-VERT[ks[j]][2]);
-    if(d3===2){ctx.beginPath();ctx.moveTo(pv[ks[i]].x,pv[ks[i]].y);ctx.lineTo(pv[ks[j]].x,pv[ks[j]].y);ctx.stroke();}
-  }
-  // 四條對角線=四對待
-  S.pf.axes.forEach(function(ax){
+  // 你的晶體(依分數變形的稜線)
+  edges(pv,ink(0.26),1.3*DPR);
+  // 四條對角線=四對待(先畫未選的,選中的最後畫、帶高光底帶)
+  var selAx=null;
+  function strokeAxis(ax,isSel){
     var p1=pv[ax.l],p2=pv[ax.r],st=axState(ax);
-    var selDim=(S.sel&&S.sel!==ax.key)?0.35:1;
-    var isSel=S.sel===ax.key;
+    var dim=(S.sel&&!isSel)?0.18:1;
+    if(isSel){ // 高光底帶:像被螢光筆畫過
+      ctx.strokeStyle=pine(0.10);ctx.lineWidth=13*DPR;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+    }
     ctx.setLineDash([]);
     if(st==='bothHigh'){
       var col=(ax.key==='drive')?cinn:pine;
-      ctx.strokeStyle=col(0.75*selDim);ctx.lineWidth=(isSel?3.2:2.4)*DPR;
+      ctx.strokeStyle=col(0.8*dim);ctx.lineWidth=(isSel?3.4:2.2)*DPR;
     } else if(st==='bothLow'){
-      ctx.strokeStyle=ink(0.28*selDim);ctx.lineWidth=(isSel?1.8:1.2)*DPR;ctx.setLineDash([4*DPR,5*DPR]);
+      ctx.strokeStyle=ink(0.3*dim);ctx.lineWidth=(isSel?2:1.2)*DPR;ctx.setLineDash([4*DPR,5*DPR]);
     } else if(st==='mid'){
-      ctx.strokeStyle=ink(0.34*selDim);ctx.lineWidth=(isSel?2.2:1.4)*DPR;
+      ctx.strokeStyle=ink(0.36*dim);ctx.lineWidth=(isSel?2.4:1.3)*DPR;
     } else {
       var g=ctx.createLinearGradient(p1.x,p1.y,p2.x,p2.y);
-      var hi=ink(0.72*selDim),lo=ink(0.12*selDim);
+      var hi=ink(0.78*dim),lo=ink(0.14*dim);
       if(ax.lean==='left'){g.addColorStop(0,hi);g.addColorStop(1,lo);}else{g.addColorStop(0,lo);g.addColorStop(1,hi);}
-      ctx.strokeStyle=g;ctx.lineWidth=(isSel?2.8:2)*DPR;
+      ctx.strokeStyle=g;ctx.lineWidth=(isSel?3:1.8)*DPR;
     }
     ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
     ctx.setLineDash([]);
-  });
-  // 頂點(遠的先畫)
+  }
+  S.pf.axes.forEach(function(ax){ if(S.sel===ax.key){selAx=ax;} else strokeAxis(ax,false); });
+  if(selAx) strokeAxis(selAx,true);
+  // 頂點(遠的先畫):主峰最大最亮+呼吸光暈,副峰次之;選中軸的兩端浮起、其餘退淡
   var order=ks.slice().sort(function(a,b){return pv[a].z-pv[b].z;});
   order.forEach(function(k2){
     var p=pv[k2],sc=S.sc[k2],g=B.get(k2);
-    var r=(4+sc*0.115)*DPR*p.s, da=dAlpha(p.z);
-    var isLead=S.pf.leads.slice(0,2).indexOf(k2)>=0;
-    if(isLead){
-      ctx.beginPath();ctx.arc(p.x,p.y,r+5*DPR,0,7);
-      ctx.strokeStyle=pine(0.55*da);ctx.lineWidth=1.6*DPR;ctx.stroke();
+    var leadIdx=S.pf.leads.slice(0,2).indexOf(k2);
+    var isLead=leadIdx>=0, isMain=leadIdx===0;
+    var isSelEnd=selAx&&(selAx.l===k2||selAx.r===k2);
+    var dim=(selAx&&!isSelEnd)?(isLead?0.55:0.4):1; // 選了軸:非兩端退淡(峰稍留存在感)
+    var r=(4+sc*0.115)*DPR*p.s*(isMain?1.35:isLead?1.18:1)*(isSelEnd?1.12:1);
+    var da=dAlpha(p.z)*dim;
+    if(isLead){ // 峰的光暈(主峰大而亮、副峰小而淡)
+      var halo=r+(isMain?18:11)*DPR;
+      var rg=ctx.createRadialGradient(p.x,p.y,r*0.3,p.x,p.y,halo);
+      rg.addColorStop(0,pine((isMain?0.30:0.16)*da));rg.addColorStop(1,pine(0));
+      ctx.beginPath();ctx.arc(p.x,p.y,halo,0,7);ctx.fillStyle=rg;ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,r+(isMain?6:4.5)*DPR,0,7);
+      ctx.strokeStyle=pine((isMain?0.7:0.45)*da);ctx.lineWidth=(isMain?2:1.4)*DPR;ctx.stroke();
+    }
+    if(isSelEnd){ // 選中軸兩端:墨圈標記
+      ctx.beginPath();ctx.arc(p.x,p.y,r+3*DPR,0,7);
+      ctx.strokeStyle=ink(0.5*da);ctx.lineWidth=1.2*DPR;ctx.stroke();
     }
     ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);
     ctx.fillStyle=ink((0.16+sc*0.0062)*da);ctx.fill();
-    ctx.strokeStyle=ink(0.5*da);ctx.lineWidth=1*DPR;ctx.stroke();
-    // 標籤(沿中心向外偏移)
+    ctx.strokeStyle=ink(0.55*da);ctx.lineWidth=1*DPR;ctx.stroke();
+    // 標籤(沿中心向外偏移;峰與選中端字大且深)
     var cxn=w/2,dx=p.x-cxn,dy=p.y-cxn,dl=Math.hypot(dx,dy)||1;
+    var big=isMain||isSelEnd;
     var lx=p.x+dx/dl*(r+11*DPR), ly=p.y+dy/dl*(r+11*DPR);
-    ctx.font=(11*DPR)+'px "Noto Sans TC",sans-serif';
+    ctx.font=(big?'400 ':'300 ')+((isMain?13:isSelEnd||isLead?12:11)*DPR)+'px "Noto Sans TC",sans-serif';
     ctx.textAlign=dx>4*DPR?'left':dx<-4*DPR?'right':'center';
     ctx.textBaseline=dy>4*DPR?'top':dy<-4*DPR?'bottom':'middle';
-    ctx.fillStyle=isLead?ink(0.92*da):ink(0.55*da);
+    ctx.fillStyle=(isLead||isSelEnd)?ink(0.95*da):ink(0.55*da);
     ctx.fillText(g.nm+'·'+g.fnShort,lx,ly);
   });
 }
@@ -325,7 +355,7 @@ cv.addEventListener('click',function(e){
   if(!S.pf)return;
   var r=cv.getBoundingClientRect(),mx=(e.clientX-r.left)*DPR,my=(e.clientY-r.top)*DPR,hit=null;
   S.pf.axes.forEach(function(ax){
-    var p1=proj(VERT[ax.l]),p2=proj(VERT[ax.r]);
+    var p1=proj(scaledVert(ax.l)),p2=proj(scaledVert(ax.r));
     var dx=p2.x-p1.x,dy=p2.y-p1.y,L2=dx*dx+dy*dy;
     var t=Math.max(0,Math.min(1,((mx-p1.x)*dx+(my-p1.y)*dy)/L2));
     var d=Math.hypot(mx-(p1.x+t*dx),my-(p1.y+t*dy));
