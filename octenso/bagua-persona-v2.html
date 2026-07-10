@@ -85,8 +85,15 @@
   .pair .verdict{font-size:12.5px;color:var(--muted);margin-top:6px}
   .pair .verdict b{font-weight:400;color:var(--ink)}
   .pair .verdict.tension b{color:var(--cinnabar)}
-  .pair .gq{font-size:13.5px;color:var(--ink);margin-bottom:8px}
+  .pair .gq{font-size:13.5px;color:var(--ink);margin-bottom:10px}
   .pair .gq b{font-weight:400;color:var(--pine);letter-spacing:.06em}
+  .pole-row{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .pole-row .pl{flex:none;width:5em;font-size:13px;color:var(--ink)}
+  .pole-row .pbar{flex:1;height:9px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .pole-row .pbar i{display:block;height:100%;border-radius:5px;background:var(--hair);opacity:.75}
+  .pole-row .pbar i.on{background:var(--pine);opacity:.8}
+  .pole-row .pbar i.on.tens{background:var(--cinnabar)}
+  .pole-row .ps{flex:none;width:2em;text-align:right;font-family:"Jost",sans-serif;font-size:11.5px;color:var(--muted)}
   .pair .plain{font-size:13.5px;color:var(--ink-soft);margin-top:8px}
   .pair .cnote{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
   .pair .fcnote{font-size:12.5px;margin-top:4px;padding-left:14px;border-left:1px solid var(--hair);color:var(--ink-soft)}
@@ -516,13 +523,20 @@ function renderReport(sc,costSt,conf,fc){
     var read=V.SYSTEM_READ[ax.key][st];
     var tension=(ax.key==='drive'&&st==='bothHigh');
     var plain=tension?GT.tension:GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
+    // 兩個音量條:每隻手一條,同一把尺;顏色=這隻手此刻有沒有被慣用
+    var onL=(st==='leanL'||st==='bothHigh'), onR=(st==='leanR'||st==='bothHigh');
+    var cls=tension?'tens':'';
     h+='<div class="pair">'
       +'<div class="gq"><b>'+GT.name[ax.key]+'之門</b> · '+esc(GT.q[ax.key])+'</div>'
-      +'<div class="ends"><span>'+esc(GT.pole[ax.l])+'</span><span>'+esc(GT.pole[ax.r])+'</span></div>'
-      +'<div class="track"><span class="fl" style="width:'+(ax.left/2)+'%"></span><span class="fr" style="width:'+(ax.right/2)+'%"></span><span class="mid"></span></div>'
+      +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.l])+'</span>'
+      +  '<div class="pbar"><i class="'+(onL?'on ':'')+cls+'" style="width:'+sc[ax.l]+'%"></i></div>'
+      +  '<span class="ps">'+sc[ax.l]+'</span></div>'
+      +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.r])+'</span>'
+      +  '<div class="pbar"><i class="'+(onR?'on ':'')+cls+'" style="width:'+sc[ax.r]+'%"></i></div>'
+      +  '<span class="ps">'+sc[ax.r]+'</span></div>'
       +'<div class="plain">'+esc(plain)+'</div>'
       +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
-      +'<div class="cnote">'+B.get(ax.l).nm+'·'+ax.ln+' '+sc[ax.l]+' ⇄ '+sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
+      +'<div class="cnote">'+B.get(ax.l).nm+'·'+ax.ln+' ⇄ '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
       +(fc?fcCompareNote(ax,fc[ai]):'')
       +'</div>';
   });
