@@ -92,7 +92,7 @@
   <div class="seclabel">你此刻最有力的能量</div>
   <p class="peak" id="peakline"></p>
   <div class="howto" id="howto">
-    <div class="hrow"><span class="hn">1</span><b>這顆晶體的形狀就是你</b>——每個角往外長多少,就是那股能量此刻的分數;最亮、帶光圈的角是你的峰。後面淡淡的方框是滿格的樣子:縮著的角不是沒有,是還有空間長。</div>
+    <div class="hrow"><span class="hn">1</span><b>這顆晶體的形狀就是你</b>——比的是你自己八股能量的相對強弱:峰的那角撐得最開(最亮、帶光圈),其他角依比例收放。縮著的角不是沒有,是此刻收著、還有空間長。</div>
     <div class="hrow"><span class="hn">2</span>四條穿過中心的線=生活裡的四道門:事情來了(開局)、要推進、要消化、該收工。哪邊的臂伸得長,你就偏用那隻手。</div>
     <div class="hrow"><span class="hn">3</span>每道門的兩端<b>可以同時亮</b>——都長=兩隻手都熟;一長一短=有慣用手;都短=此刻先收著,不是沒有。</div>
   </div>
@@ -193,16 +193,19 @@ function gold(a){return 'rgba(169,130,59,'+a+')';}
 function cinn(a){return 'rgba(157,75,52,'+a+')';}
 function dAlpha(z){return 0.42+0.34*(z+1)/2;} // 遠淡近深
 
-// 分數 → 角離中心的距離(留 0.25 底,潛的角不會消失)
+// 分數 → 角離中心的距離:以「你自己的峰」為滿格(相對比例,ipsative——
+// 看形狀不比大小;整體偏高偏收由報告的「整體水平」文字交代)。留 0.2 底,潛的角不消失。
 function scaledVert(k){
-  var s=0.25+0.75*Math.max(0,Math.min(100,S.sc[k]))/100;
+  var mx=1;
+  P.EKEYS.forEach(function(e){ if(S.sc[e]>mx) mx=S.sc[e]; });
+  var s=0.2+0.8*Math.max(0,S.sc[k])/mx;
   return [VERT[k][0]*s,VERT[k][1]*s,VERT[k][2]*s];
 }
 function draw(){
   if(!S.pf) return;
   var w=cv.width;ctx.clearRect(0,0,w,w);
-  var pv={},pvRef={},k;
-  for(k in VERT){ pv[k]=proj(scaledVert(k)); pvRef[k]=proj(VERT[k]); }
+  var pv={},k;
+  for(k in VERT){ pv[k]=proj(scaledVert(k)); }
   ctx.lineCap='round';
   var ks=Object.keys(VERT);
   function edges(pts,style,width){
@@ -212,8 +215,6 @@ function draw(){
       if(d3===2){ctx.beginPath();ctx.moveTo(pts[ks[i]].x,pts[ks[i]].y);ctx.lineTo(pts[ks[j]].x,pts[ks[j]].y);ctx.stroke();}
     }
   }
-  // 滿格外框(標準立方體,髮絲)——你的晶體長在裡面,還有空間可以長
-  edges(pvRef,ink(0.10),1*DPR);
   // 陽/陰兩組四面體(極淡,掛在你的形狀上)
   function tetra(keys,col){
     ctx.strokeStyle=col;ctx.lineWidth=1*DPR;
