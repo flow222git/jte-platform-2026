@@ -635,7 +635,12 @@ function wireBot(pf,sc,costSt,conf,fc){
     }).catch(function(){ w.textContent=CB.offline; msgs.pop(); }).then(function(){ busy=false; });
   }
   $('bot-send').onclick=send;
-  $('bot-in').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  // Enter 送出;但輸入法組字中(中文選字未定)或按住 Shift 時不送——避免還沒打完就被送出
+  $('bot-in').addEventListener('keydown',function(e){
+    if(e.key!=='Enter' || e.shiftKey) return;
+    if(e.isComposing || e.keyCode===229) return;
+    e.preventDefault(); send();
+  });
   $('bot-end').onclick=function(){
     if(!started||busy||msgs.length<3) return;
     busy=true; var w=msg(CB.thinking,'bot');
