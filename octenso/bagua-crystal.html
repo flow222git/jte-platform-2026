@@ -48,7 +48,16 @@
   .chip.sel{border-color:var(--ink);background:var(--surface2)}
   .chip .cx{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted)}
   .chip .ct{display:block;color:var(--ink)}
+  .howto{margin:14px 0 4px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+  .hrow{font-size:13px;line-height:1.95;padding-left:1.6em;text-indent:-1.6em}
+  .hrow+.hrow{margin-top:4px}
+  .hrow b{font-weight:400;color:var(--ink)}
+  .hn{display:inline-block;width:1.2em;text-indent:0;font-family:"Jost",sans-serif;font-size:11px;color:var(--gold);letter-spacing:.1em}
   .reading{border-left:1px solid var(--pine);padding:4px 0 4px 16px;margin-bottom:8px}
+  .reading .rq{font-size:14px;color:var(--ink);letter-spacing:.04em;margin-bottom:6px}
+  .reading .rs{font-size:13.5px;margin-bottom:6px}
+  .reading .rs b{font-weight:400;color:var(--ink)}
+  .reading .rnote{font-size:12px;color:var(--muted)}
   .reading .rh{font-size:13.5px;color:var(--ink);letter-spacing:.06em;margin-bottom:2px}
   .reading .rh b{font-weight:400}
   .reading .rt{font-size:12px;letter-spacing:.1em;color:var(--pine);margin-bottom:4px}
@@ -63,12 +72,12 @@
 
 <div class="eyebrow">Octenso · Energy Crystal · Prototype</div>
 <h1>能量晶體</h1>
-<div class="sub">三爻=三軸 → 八態=一顆晶體的八個角;四對待=四條穿心的軸</div>
+<div class="sub">把你的能量快照立體看一次——八個角是你的八股能量,四條軸是你過日子的四道門</div>
 <span class="draft">探索原型 · 草案 · 未接導覽</span>
 
 <div id="scr-code" class="card">
-  <p style="font-size:13.5px;margin-bottom:14px">貼上你的分享碼(B1 或 B2),把這份快照立體地看一次——
-  八個角的亮度是你的八態,四條對角線是四對待:兩端可以都亮(並重)、一亮一暗(偏用)、都暗(此刻收著)。</p>
+  <p style="font-size:13.5px;margin-bottom:14px">做完八態能格測驗,報告會給你一串分享碼(B 開頭)——貼進下面,
+  就能把你的結果變成一顆轉得動的晶體。還沒測過?先按「用示範資料」感受一下。</p>
   <input id="code-in" class="input" placeholder="B2…(22 碼)或 B1…(18 碼)">
   <p class="center" style="margin-top:14px">
     <button class="btn" id="btn-go">看我的晶體</button>
@@ -79,15 +88,20 @@
 
 <div id="scr-view" class="hide">
   <div class="rule"></div>
-  <div class="seclabel">此刻的峰</div>
+  <div class="seclabel">你此刻最有力的能量</div>
   <p class="peak" id="peakline"></p>
+  <div class="howto" id="howto">
+    <div class="hrow"><span class="hn">1</span>最亮、帶著光圈的角,就是此刻的你最順手的能量。</div>
+    <div class="hrow"><span class="hn">2</span>四條穿過中心的線=生活裡的四道門:事情來了(開局)、要推進、要消化、該收工。</div>
+    <div class="hrow"><span class="hn">3</span>每道門的兩端<b>可以同時亮</b>——都亮=兩隻手都熟;一亮一暗=有慣用手;都暗=此刻先收著,不是沒有。</div>
+  </div>
   <canvas id="cv" width="560" height="560" aria-label="能量晶體立體圖"></canvas>
-  <p class="hint">拖一拖,轉動你的晶體 · 點一條軸讀它的判讀</p>
+  <p class="hint">拖一拖,轉動你的晶體 · 點一條線(或下面的門),讀那道門的你</p>
   <div class="chips" id="chips"></div>
   <div class="reading" id="reading"></div>
-  <p class="legend">亮的角=此刻分數高;最亮那顆有松綠光=你的峰。四條穿過中心的線=四對待——實線亮=並重、
-  往一端漸亮=偏用、虛線=此刻收著;唯獨雷風(行動⇄拓展)兩端同亮時是硃砂色:兩具引擎同向,並存但會搶拍。
-  底下淡淡兩組三角=陽卦組(乾震坎艮)與陰卦組(坤巽離兌),每條軸都是一座橋,一端在陽組、一端在陰組。</p>
+  <p class="legend">線的讀法:實心亮線=兩端並重 · 往一端漸亮=偏用那隻手 · 虛線=此刻收著 ·
+  唯獨「推進之門」兩端同亮會變硃砂色——衝勁和鋪路都是往外的引擎,同時全開會互相搶方向盤,是唯一要留意輪流的一對。
+  (淡淡兩組三角形是八個角天生的家族分組,看個結構就好,不影響讀法。)</p>
   <div class="honest" id="honest"></div>
 </div>
 
@@ -105,8 +119,27 @@ var EKEYS=P.EKEYS;
 var VERT={ qian:[ 1, 1, 1], kun:[-1,-1,-1], zhen:[ 1,-1,-1], xun:[-1, 1, 1],
            kan:[-1, 1,-1], li:[ 1,-1, 1], gen:[-1,-1, 1], dui:[ 1, 1,-1] };
 var YANG={qian:1,zhen:1,kan:1,gen:1}; // 陽卦組;其餘=陰卦組
-// 門名(草案文案;採用後移入 canonical 資料檔)
+// ── 白話層(草案文案;採用後移入 canonical 資料檔)──
+// 門名+生活問句:四對待=一件事走一圈會經過的四道門
 var GATE={build:'開局',drive:'推進',aware:'消化',regulate:'收工'};
+var GATE_Q={
+  build:'事情來了——你先「定方向」,還是先「接住人」?',
+  drive:'想讓它發生——你「直接動手」,還是「先鋪路、找幫手」?',
+  aware:'想通了之後——你「收著慢慢想」,還是「說出來讓人看見」?',
+  regulate:'累了——你「關起門休息」,還是「找人說一說」?'
+};
+// 每個極的白話動詞(卦名降為註腳)
+var POLE={qian:'定方向',kun:'接住人',zhen:'直接動手',xun:'先鋪路',
+          kan:'收著想',li:'說出來',gen:'關起門',dui:'找人聊'};
+// 五種狀態的白話說法({L}/{R}=兩端白話動詞)
+var STATE_PLAIN={
+  bothHigh:'兩隻手都熟——「{L}」和「{R}」你都使得動,這道門你雙手都靈。',
+  leanL:'有慣用手——你多半先「{L}」;「{R}」不是沒有,只是比較少召喚。',
+  leanR:'有慣用手——你多半先「{R}」;「{L}」不是沒有,只是比較少召喚。',
+  bothLow:'這道門你此刻輕輕經過——兩隻手都先收著。可能是季節,不是缺陷。',
+  mid:'看場合換手——沒有固定偏好,彈性帶著走。'
+};
+var STATE_TENSION='兩具引擎都在催——「直接動手」和「先鋪路」都是往外衝的力,同時全開會互相搶方向盤,記得讓它們輪流。';
 
 function decodeCode(str){
   str=(str||'').trim().toUpperCase().replace(/\s/g,'');
@@ -231,11 +264,10 @@ function draw(){
 function renderChips(){
   var h='';
   S.pf.axes.forEach(function(ax){
-    var pr=null;P.PAIRS.forEach(function(p){if(p.key===ax.key)pr=p;});
     var read=V.SYSTEM_READ[ax.key][axState(ax)];
     h+='<button class="chip'+(S.sel===ax.key?' sel':'')+'" data-k="'+ax.key+'">'
-      +'<span class="cx">'+pr.xiang+' · '+GATE[ax.key]+'之門</span>'
-      +'<span class="ct">'+ax.ln+' ⇄ '+ax.rn+'</span>'
+      +'<span class="cx">'+GATE[ax.key]+'之門</span>'
+      +'<span class="ct">'+POLE[ax.l]+' ⇄ '+POLE[ax.r]+'</span>'
       +'<span class="cx">'+read.tag+'</span></button>';
   });
   $('chips').innerHTML=h;
@@ -249,17 +281,22 @@ function renderReading(){
   var pr=null;P.PAIRS.forEach(function(p){if(p.key===ax.key)pr=p;});
   var st=axState(ax),read=V.SYSTEM_READ[ax.key][st];
   var tension=(ax.key==='drive'&&st==='bothHigh');
+  var plain=tension?STATE_TENSION
+    :STATE_PLAIN[st].replace('{L}',POLE[ax.l]).replace('{R}',POLE[ax.r])
+                    .replace('{L}',POLE[ax.l]).replace('{R}',POLE[ax.r]);
   $('reading').innerHTML=
-    '<div class="rh"><b>'+pr.xiang+'軸 · '+GATE[ax.key]+'之門</b> — '
-    +B.get(ax.l).nm+'·'+ax.ln+' '+S.sc[ax.l]+' ⇄ '+S.sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
+    '<div class="rq">'+GATE[ax.key]+'之門:'+GATE_Q[ax.key]+'</div>'
+    +'<div class="rs">你此刻的樣子:<b>'+plain+'</b></div>'
     +'<div class="rt'+(tension?' tension':'')+'">'+read.tag+'</div>'
-    +'<p>'+read.desc+'</p>';
+    +'<p>'+read.desc+'</p>'
+    +'<div class="rnote">'+pr.xiang+'軸 · '+B.get(ax.l).nm+'·'+ax.ln+' '+S.sc[ax.l]
+    +' ⇄ '+S.sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>';
 }
 function peakText(){
-  var leads=S.pf.leads.slice(0,2).map(function(k){return B.get(k).nm+'·'+B.get(k).fnShort;});
+  var leads=S.pf.leads.slice(0,2).map(function(k){return B.get(k).nm+'·'+B.get(k).fnShort+'(擅長'+POLE[k]+')';});
   var kind=S.pf.signature.kind;
-  var kn=kind==='single'?'單峰':kind==='dual'?'雙峰':kind==='multi'?'多峰':'格局';
-  return (leads.length?leads.join(' × '):'—')+'('+kn+')——你的峰就在下面這顆晶體最亮的角上。';
+  var kn=kind==='single'?'一枝獨秀':kind==='dual'?'雙峰並立':kind==='multi'?'多峰同行':'看整體格局';
+  return (leads.length?leads.join(' × '):'—')+','+kn+'——就是晶體上最亮、帶著光圈的那顆角。';
 }
 
 function start(sc){
@@ -315,7 +352,7 @@ var m=(location.hash||'').match(/#r=([A-Za-z0-9]+)/);
 if(m) go(m[1]);
 
 // 測試掛鉤
-window.CRYSTAL={VERT:VERT,YANG:YANG,GATE:GATE,decode:decodeCode};
+window.CRYSTAL={VERT:VERT,YANG:YANG,GATE:GATE,GATE_Q:GATE_Q,POLE:POLE,STATE_PLAIN:STATE_PLAIN,decode:decodeCode};
 })();
 </script>
 </body></html>

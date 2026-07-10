@@ -54,7 +54,13 @@
     var pf=P.build(dec.sc);
     t('canvas exists', !!doc.querySelector('canvas'));
     t('chips ×4', doc.getElementById('chips').children.length===4);
-    t('peak line', txt.indexOf('乾·開創')>=0 && txt.indexOf('最亮的角')>=0);
+    t('peak line plain', txt.indexOf('乾·開創')>=0 && txt.indexOf('擅長定方向')>=0 && txt.indexOf('帶著光圈')>=0);
+    // 白話層:導讀三步 + 生活問句 + 白話動詞 + 「你此刻的樣子」
+    t('howto 3 steps', txt.indexOf('最順手的能量')>=0 && txt.indexOf('四道門')>=0 && txt.indexOf('可以同時亮')>=0);
+    t('gate question shown', txt.indexOf('先「定方向」,還是先「接住人」')>=0);
+    t('plain poles on chips', ['定方向','接住人','直接動手','先鋪路','收著想','說出來','關起門','找人聊']
+      .every(function(s){return txt.indexOf(s)>=0;}));
+    t('plain state line', txt.indexOf('你此刻的樣子')>=0 && (txt.indexOf('慣用手')>=0||txt.indexOf('兩隻手')>=0||txt.indexOf('看場合')>=0));
     // 四對籤的 tag 全部來自 canonical SYSTEM_READ
     pf.axes.forEach(function(ax){
       var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
