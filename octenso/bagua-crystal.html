@@ -1,0 +1,321 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>Octenso 八態能格 · 能量晶體(探索原型)</title>
+<!--
+  能量晶體 · 探索原型(草案,未接導覽)
+  概念:三爻=三個座標軸 → 八卦=立方體八個頂點;錯卦=四條體對角線(=四對待);
+       陽卦組(乾震坎艮)與陰卦組(坤巽離兌)=立方體內兩個交纏的正四面體。
+  判讀文字全部取自 canonical(profile.js 判定 + bagua-v2-data.js SYSTEM_READ),
+  本頁僅新增少量導覽文案(門名等,草案;若採用將移入 canonical 資料檔)。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:640px;margin:0 auto;padding:26px 20px 90px}
+  .serif{font-family:"Songti TC","Noto Serif TC",serif}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:26px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.05em;margin-bottom:14px}
+  .draft{display:block;width:fit-content;margin:0 auto 22px;text-align:center;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .btn{display:inline-block;font-size:14px;font-weight:300;letter-spacing:.08em;padding:10px 26px;cursor:pointer;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);background:transparent;transition:.2s}
+  .btn:hover{background:var(--ink);color:var(--bg)}
+  .btn.ghost{border-color:var(--hair);color:var(--muted)}
+  .btn.ghost:hover{border-color:var(--ink);color:var(--ink);background:transparent}
+  .center{text-align:center}
+  .hide{display:none}
+  .input{width:100%;background:transparent;border:1px solid var(--hair);border-radius:10px;padding:11px 13px;
+    color:var(--ink);font-size:14px;font-family:"Jost",monospace;letter-spacing:.08em}
+  .input:focus{outline:none;border-color:var(--ink)}
+  .rule{height:1px;background:var(--line);margin:30px 0}
+  .seclabel{font-size:13px;letter-spacing:.14em;color:var(--muted);margin-bottom:10px}
+  .peak{font-size:15px;color:var(--ink);letter-spacing:.06em}
+  canvas{display:block;margin:6px auto;touch-action:none;cursor:grab}
+  canvas.drag{cursor:grabbing}
+  .hint{text-align:center;font-size:12px;color:var(--muted);letter-spacing:.08em;margin:2px 0 16px}
+  .chips{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:0 0 16px}
+  @media(min-width:560px){.chips{grid-template-columns:repeat(4,1fr)}}
+  .chip{font-family:inherit;font-weight:300;font-size:12.5px;letter-spacing:.04em;padding:9px 6px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:12px;background:transparent;color:var(--ink-soft);transition:.15s;line-height:1.7}
+  .chip:hover{border-color:var(--ink)}
+  .chip.sel{border-color:var(--ink);background:var(--surface2)}
+  .chip .cx{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted)}
+  .chip .ct{display:block;color:var(--ink)}
+  .reading{border-left:1px solid var(--pine);padding:4px 0 4px 16px;margin-bottom:8px}
+  .reading .rh{font-size:13.5px;color:var(--ink);letter-spacing:.06em;margin-bottom:2px}
+  .reading .rh b{font-weight:400}
+  .reading .rt{font-size:12px;letter-spacing:.1em;color:var(--pine);margin-bottom:4px}
+  .reading .rt.tension{color:var(--cinnabar)}
+  .reading p{font-size:13.5px}
+  .legend{font-size:12px;color:var(--muted);line-height:2;margin-top:14px}
+  .honest{font-size:12.5px;color:var(--muted);line-height:1.95;padding-left:15px;border-left:1px solid var(--hair);margin-top:26px}
+  .err{color:var(--cinnabar);font-size:12.5px;text-align:center;margin-top:8px}
+  a{color:var(--pine)}
+</style>
+</head><body>
+
+<div class="eyebrow">Octenso · Energy Crystal · Prototype</div>
+<h1>能量晶體</h1>
+<div class="sub">三爻=三軸 → 八態=一顆晶體的八個角;四對待=四條穿心的軸</div>
+<span class="draft">探索原型 · 草案 · 未接導覽</span>
+
+<div id="scr-code" class="card">
+  <p style="font-size:13.5px;margin-bottom:14px">貼上你的分享碼(B1 或 B2),把這份快照立體地看一次——
+  八個角的亮度是你的八態,四條對角線是四對待:兩端可以都亮(並重)、一亮一暗(偏用)、都暗(此刻收著)。</p>
+  <input id="code-in" class="input" placeholder="B2…(22 碼)或 B1…(18 碼)">
+  <p class="center" style="margin-top:14px">
+    <button class="btn" id="btn-go">看我的晶體</button>
+    <button class="btn ghost" id="btn-demo" style="margin-left:8px">用示範資料</button>
+  </p>
+  <p id="code-err" class="err hide">這串碼讀不出來——請確認是 B1(18 碼)或 B2(22 碼)。</p>
+</div>
+
+<div id="scr-view" class="hide">
+  <div class="rule"></div>
+  <div class="seclabel">此刻的峰</div>
+  <p class="peak" id="peakline"></p>
+  <canvas id="cv" width="560" height="560" aria-label="能量晶體立體圖"></canvas>
+  <p class="hint">拖一拖,轉動你的晶體 · 點一條軸讀它的判讀</p>
+  <div class="chips" id="chips"></div>
+  <div class="reading" id="reading"></div>
+  <p class="legend">亮的角=此刻分數高;最亮那顆有松綠光=你的峰。四條穿過中心的線=四對待——實線亮=並重、
+  往一端漸亮=偏用、虛線=此刻收著;唯獨雷風(行動⇄拓展)兩端同亮時是硃砂色:兩具引擎同向,並存但會搶拍。
+  底下淡淡兩組三角=陽卦組(乾震坎艮)與陰卦組(坤巽離兌),每條軸都是一座橋,一端在陽組、一端在陰組。</p>
+  <div class="honest" id="honest"></div>
+</div>
+
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script>
+(function(){
+'use strict';
+var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2;
+var $=function(id){return document.getElementById(id);};
+var EKEYS=P.EKEYS;
+
+// 三爻(下中上)→ 座標(陽=+1,陰=-1);錯卦=對角頂點
+var VERT={ qian:[ 1, 1, 1], kun:[-1,-1,-1], zhen:[ 1,-1,-1], xun:[-1, 1, 1],
+           kan:[-1, 1,-1], li:[ 1,-1, 1], gen:[-1,-1, 1], dui:[ 1, 1,-1] };
+var YANG={qian:1,zhen:1,kan:1,gen:1}; // 陽卦組;其餘=陰卦組
+// 門名(草案文案;採用後移入 canonical 資料檔)
+var GATE={build:'開局',drive:'推進',aware:'消化',regulate:'收工'};
+
+function decodeCode(str){
+  str=(str||'').trim().toUpperCase().replace(/\s/g,'');
+  var sc={},i;
+  if(str.indexOf('B1')===0&&str.length===18&&/^[0-9]{16}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc};
+  }
+  if(str.indexOf('B2')===0&&str.length===22&&/^[0-9]{20}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc};
+  }
+  return null;
+}
+function axState(ax){
+  return ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
+    :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
+}
+
+// ── 檢視基底:乾(1,1,1)朝上、坤朝下(天地定位) ──
+function nrm(v){var l=Math.hypot(v[0],v[1],v[2]);return [v[0]/l,v[1]/l,v[2]/l];}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+var U=nrm([1,1,1]), A=nrm([1,-1,0]), Bv=nrm(cross(U,A));
+
+var S={sc:null,pf:null,sel:null,yaw:0.6,pitch:0.18,spin:true,drag:false};
+var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var cv=$('cv'),ctx=cv.getContext('2d'),DPR=Math.min(2,window.devicePixelRatio||1);
+function sizeCanvas(){
+  var w=Math.min(560,Math.floor(document.body.clientWidth-40));
+  cv.style.width=w+'px';cv.style.height=w+'px';
+  cv.width=w*DPR;cv.height=w*DPR;
+}
+sizeCanvas();window.addEventListener('resize',function(){sizeCanvas();});
+
+function proj(p){
+  var x=dot(p,A),y=dot(p,U),z=dot(p,Bv);
+  var cy=Math.cos(S.yaw),sy=Math.sin(S.yaw);
+  var x2=x*cy+z*sy, z2=-x*sy+z*cy;
+  var cp=Math.cos(S.pitch),sp=Math.sin(S.pitch);
+  var y2=y*cp-z2*sp, z3=y*sp+z2*cp;
+  var w=cv.width, R=w*0.21, F=5.2;
+  var s=F/(F-z3);
+  return {x:w/2+x2*R*s, y:w/2-y2*R*s, z:z3, s:s};
+}
+function ink(a){return 'rgba(35,36,31,'+a+')';}
+function pine(a){return 'rgba(53,97,79,'+a+')';}
+function gold(a){return 'rgba(169,130,59,'+a+')';}
+function cinn(a){return 'rgba(157,75,52,'+a+')';}
+function dAlpha(z){return 0.42+0.34*(z+1)/2;} // 遠淡近深
+
+function draw(){
+  if(!S.pf) return;
+  var w=cv.width;ctx.clearRect(0,0,w,w);
+  var pv={},k;
+  for(k in VERT) pv[k]=proj(VERT[k]);
+  ctx.lineCap='round';
+  // 陽/陰兩組四面體(極淡)
+  function tetra(keys,col){
+    ctx.strokeStyle=col;ctx.lineWidth=1*DPR;
+    for(var i=0;i<keys.length;i++)for(var j=i+1;j<keys.length;j++){
+      ctx.beginPath();ctx.moveTo(pv[keys[i]].x,pv[keys[i]].y);ctx.lineTo(pv[keys[j]].x,pv[keys[j]].y);ctx.stroke();
+    }
+  }
+  tetra(['qian','zhen','kan','gen'],pine(0.10));
+  tetra(['kun','xun','li','dui'],gold(0.12));
+  // 立方體稜線(髮絲)
+  ctx.strokeStyle=ink(0.13);ctx.lineWidth=1*DPR;
+  var ks=Object.keys(VERT);
+  for(var i=0;i<ks.length;i++)for(var j=i+1;j<ks.length;j++){
+    var d3=Math.abs(VERT[ks[i]][0]-VERT[ks[j]][0])+Math.abs(VERT[ks[i]][1]-VERT[ks[j]][1])+Math.abs(VERT[ks[i]][2]-VERT[ks[j]][2]);
+    if(d3===2){ctx.beginPath();ctx.moveTo(pv[ks[i]].x,pv[ks[i]].y);ctx.lineTo(pv[ks[j]].x,pv[ks[j]].y);ctx.stroke();}
+  }
+  // 四條對角線=四對待
+  S.pf.axes.forEach(function(ax){
+    var p1=pv[ax.l],p2=pv[ax.r],st=axState(ax);
+    var selDim=(S.sel&&S.sel!==ax.key)?0.35:1;
+    var isSel=S.sel===ax.key;
+    ctx.setLineDash([]);
+    if(st==='bothHigh'){
+      var col=(ax.key==='drive')?cinn:pine;
+      ctx.strokeStyle=col(0.75*selDim);ctx.lineWidth=(isSel?3.2:2.4)*DPR;
+    } else if(st==='bothLow'){
+      ctx.strokeStyle=ink(0.28*selDim);ctx.lineWidth=(isSel?1.8:1.2)*DPR;ctx.setLineDash([4*DPR,5*DPR]);
+    } else if(st==='mid'){
+      ctx.strokeStyle=ink(0.34*selDim);ctx.lineWidth=(isSel?2.2:1.4)*DPR;
+    } else {
+      var g=ctx.createLinearGradient(p1.x,p1.y,p2.x,p2.y);
+      var hi=ink(0.72*selDim),lo=ink(0.12*selDim);
+      if(ax.lean==='left'){g.addColorStop(0,hi);g.addColorStop(1,lo);}else{g.addColorStop(0,lo);g.addColorStop(1,hi);}
+      ctx.strokeStyle=g;ctx.lineWidth=(isSel?2.8:2)*DPR;
+    }
+    ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+    ctx.setLineDash([]);
+  });
+  // 頂點(遠的先畫)
+  var order=ks.slice().sort(function(a,b){return pv[a].z-pv[b].z;});
+  order.forEach(function(k2){
+    var p=pv[k2],sc=S.sc[k2],g=B.get(k2);
+    var r=(4+sc*0.115)*DPR*p.s, da=dAlpha(p.z);
+    var isLead=S.pf.leads.slice(0,2).indexOf(k2)>=0;
+    if(isLead){
+      ctx.beginPath();ctx.arc(p.x,p.y,r+5*DPR,0,7);
+      ctx.strokeStyle=pine(0.55*da);ctx.lineWidth=1.6*DPR;ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);
+    ctx.fillStyle=ink((0.16+sc*0.0062)*da);ctx.fill();
+    ctx.strokeStyle=ink(0.5*da);ctx.lineWidth=1*DPR;ctx.stroke();
+    // 標籤(沿中心向外偏移)
+    var cxn=w/2,dx=p.x-cxn,dy=p.y-cxn,dl=Math.hypot(dx,dy)||1;
+    var lx=p.x+dx/dl*(r+11*DPR), ly=p.y+dy/dl*(r+11*DPR);
+    ctx.font=(11*DPR)+'px "Noto Sans TC",sans-serif';
+    ctx.textAlign=dx>4*DPR?'left':dx<-4*DPR?'right':'center';
+    ctx.textBaseline=dy>4*DPR?'top':dy<-4*DPR?'bottom':'middle';
+    ctx.fillStyle=isLead?ink(0.92*da):ink(0.55*da);
+    ctx.fillText(g.nm+'·'+g.fnShort,lx,ly);
+  });
+}
+
+// ── 判讀卡與軸籤 ──
+function renderChips(){
+  var h='';
+  S.pf.axes.forEach(function(ax){
+    var pr=null;P.PAIRS.forEach(function(p){if(p.key===ax.key)pr=p;});
+    var read=V.SYSTEM_READ[ax.key][axState(ax)];
+    h+='<button class="chip'+(S.sel===ax.key?' sel':'')+'" data-k="'+ax.key+'">'
+      +'<span class="cx">'+pr.xiang+' · '+GATE[ax.key]+'之門</span>'
+      +'<span class="ct">'+ax.ln+' ⇄ '+ax.rn+'</span>'
+      +'<span class="cx">'+read.tag+'</span></button>';
+  });
+  $('chips').innerHTML=h;
+  Array.prototype.forEach.call($('chips').children,function(b){
+    b.onclick=function(){S.sel=b.getAttribute('data-k');renderChips();renderReading();draw();};
+  });
+}
+function renderReading(){
+  var ax=null;S.pf.axes.forEach(function(a){if(a.key===S.sel)ax=a;});
+  if(!ax){$('reading').innerHTML='';return;}
+  var pr=null;P.PAIRS.forEach(function(p){if(p.key===ax.key)pr=p;});
+  var st=axState(ax),read=V.SYSTEM_READ[ax.key][st];
+  var tension=(ax.key==='drive'&&st==='bothHigh');
+  $('reading').innerHTML=
+    '<div class="rh"><b>'+pr.xiang+'軸 · '+GATE[ax.key]+'之門</b> — '
+    +B.get(ax.l).nm+'·'+ax.ln+' '+S.sc[ax.l]+' ⇄ '+S.sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
+    +'<div class="rt'+(tension?' tension':'')+'">'+read.tag+'</div>'
+    +'<p>'+read.desc+'</p>';
+}
+function peakText(){
+  var leads=S.pf.leads.slice(0,2).map(function(k){return B.get(k).nm+'·'+B.get(k).fnShort;});
+  var kind=S.pf.signature.kind;
+  var kn=kind==='single'?'單峰':kind==='dual'?'雙峰':kind==='multi'?'多峰':'格局';
+  return (leads.length?leads.join(' × '):'—')+'('+kn+')——你的峰就在下面這顆晶體最亮的角上。';
+}
+
+function start(sc){
+  S.sc=sc;S.pf=P.build(sc);
+  // 預選=主峰所在的那一對
+  var lead=S.pf.leads[0];S.sel=null;
+  P.PAIRS.forEach(function(p){if(p.l===lead||p.r===lead)S.sel=p.key;});
+  $('scr-code').classList.add('hide');$('scr-view').classList.remove('hide');
+  $('peakline').textContent=peakText();
+  $('honest').textContent=B.HONEST+' 立體只是「看見」的方式——判讀以文字與規則為準。';
+  renderChips();renderReading();draw();
+  document.body.setAttribute('data-ready','1');
+}
+
+// ── 互動 ──
+var last=null;
+cv.addEventListener('pointerdown',function(e){last=[e.clientX,e.clientY];S.drag=true;S.spin=false;cv.classList.add('drag');cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',function(e){
+  if(!S.drag)return;
+  S.yaw+=(e.clientX-last[0])*0.008;
+  S.pitch=Math.max(-1.15,Math.min(1.15,S.pitch+(e.clientY-last[1])*0.006));
+  last=[e.clientX,e.clientY];draw();
+});
+cv.addEventListener('pointerup',function(){S.drag=false;cv.classList.remove('drag');});
+cv.addEventListener('click',function(e){
+  if(!S.pf)return;
+  var r=cv.getBoundingClientRect(),mx=(e.clientX-r.left)*DPR,my=(e.clientY-r.top)*DPR,hit=null;
+  S.pf.axes.forEach(function(ax){
+    var p1=proj(VERT[ax.l]),p2=proj(VERT[ax.r]);
+    var dx=p2.x-p1.x,dy=p2.y-p1.y,L2=dx*dx+dy*dy;
+    var t=Math.max(0,Math.min(1,((mx-p1.x)*dx+(my-p1.y)*dy)/L2));
+    var d=Math.hypot(mx-(p1.x+t*dx),my-(p1.y+t*dy));
+    if(d<9*DPR) hit=ax.key;
+  });
+  if(hit){S.sel=hit;renderChips();renderReading();draw();}
+});
+(function loop(){
+  if(S.pf&&S.spin&&!reduced){S.yaw+=0.0035;draw();}
+  requestAnimationFrame(loop);
+})();
+
+// ── 入口 ──
+var DEMO='B282745866457038522413';
+function go(str){
+  var d=decodeCode(str);
+  if(!d){$('code-err').classList.remove('hide');return;}
+  $('code-err').classList.add('hide');start(d.sc);
+}
+$('btn-go').onclick=function(){go($('code-in').value);};
+$('btn-demo').onclick=function(){$('code-in').value=DEMO;go(DEMO);};
+$('code-in').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.isComposing)go($('code-in').value);});
+var m=(location.hash||'').match(/#r=([A-Za-z0-9]+)/);
+if(m) go(m[1]);
+
+// 測試掛鉤
+window.CRYSTAL={VERT:VERT,YANG:YANG,GATE:GATE,decode:decodeCode};
+})();
+</script>
+</body></html>
