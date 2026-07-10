@@ -1,0 +1,77 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>crystal tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
+  var P=window.OctensoProfile, V=window.OCTENSO_V2;
+  var DEMO='B282745866457038522413';
+
+  function finish(){
+    document.title='RESULT pass='+pass+' fail='+fail;
+    log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+  }
+
+  var f=document.createElement('iframe');
+  f.style.cssText='width:700px;height:900px';
+  f.src='bagua-crystal.html#r='+DEMO;
+  document.getElementById('frames').appendChild(f);
+  var tries=0;
+  var timer=setInterval(function(){
+    tries++;
+    var doc=null,ready=false;
+    try{ doc=f.contentDocument; ready=doc.body.getAttribute('data-ready')==='1'; }catch(e){}
+    if(!ready && tries<=220) return;
+    clearInterval(timer);
+    if(!ready){ t('page ready', false); finish(); return; }
+    var win=f.contentWindow, C=win.CRYSTAL, txt=doc.body.innerText||'';
+
+    // ── 幾何:錯卦=正對角(座標相加=零向量) ──
+    P.PAIRS.forEach(function(p){
+      var a=C.VERT[p.l], b=C.VERT[p.r];
+      t('antipodal '+p.key, a[0]+b[0]===0 && a[1]+b[1]===0 && a[2]+b[2]===0);
+    });
+    // 陽卦組=乾震坎艮;每一對一端陽一端陰(橋)
+    t('yang group', ['qian','zhen','kan','gen'].every(function(k){return C.YANG[k]===1;}) &&
+                    ['kun','xun','li','dui'].every(function(k){return !C.YANG[k];}));
+    P.PAIRS.forEach(function(p){
+      t('bridge '+p.key, (C.YANG[p.l]?1:0)+(C.YANG[p.r]?1:0)===1);
+    });
+    // 同組四頂點兩兩相差 2 位元(正四面體邊)
+    var yg=['qian','zhen','kan','gen'], okTetra=true;
+    for(var i=0;i<4;i++)for(var j=i+1;j<4;j++){
+      var d=0;for(var m=0;m<3;m++) if(C.VERT[yg[i]][m]!==C.VERT[yg[j]][m]) d++;
+      if(d!==2) okTetra=false;
+    }
+    t('yang tetrahedron edges', okTetra);
+    // 解碼與畫面
+    var dec=C.decode(DEMO);
+    t('decode demo', !!dec && dec.sc.qian===82 && dec.sc.li===74 && dec.sc.gen===38);
+    var pf=P.build(dec.sc);
+    t('canvas exists', !!doc.querySelector('canvas'));
+    t('chips ×4', doc.getElementById('chips').children.length===4);
+    t('peak line', txt.indexOf('乾·開創')>=0 && txt.indexOf('最亮的角')>=0);
+    // 四對籤的 tag 全部來自 canonical SYSTEM_READ
+    pf.axes.forEach(function(ax){
+      var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
+        :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
+      var tag=V.SYSTEM_READ[ax.key][st].tag;
+      t('tag on page '+ax.key+' 「'+tag+'」', txt.indexOf(tag)>=0);
+    });
+    // 預選=主峰所在對(build,乾),判讀卡顯示該 desc 開頭
+    var st0=pf.axes[0].intensity==='single'?(pf.axes[0].lean==='left'?'leanL':'leanR'):'mid';
+    var desc=V.SYSTEM_READ.build[st0].desc.slice(0,10);
+    t('default reading = build desc', txt.indexOf(desc)>=0);
+    t('gate names', ['開局','推進','消化','收工'].every(function(s){return txt.indexOf(s)>=0;}));
+    t('honest line', txt.indexOf('不是算命')>=0);
+
+    f.parentNode.removeChild(f);
+    finish();
+  },150);
+})();
+</script>
+</body></html>
