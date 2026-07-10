@@ -1,0 +1,24 @@
+name: Deploy ven-i Worker
+
+# 只要 worker.js / wrangler.toml / 本 workflow 有變動並 push 到 main,
+# 就自動把 Worker 部署到 Cloudflare。也可在 Actions 頁手動觸發。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ven-i/worker.js'
+      - 'ven-i/wrangler.toml'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ven-i

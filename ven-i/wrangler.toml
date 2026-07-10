@@ -1,0 +1,30 @@
+# Cloudflare Worker 部署設定(問易 + 八態伴讀 共用代理)
+# 由 .github/workflows/deploy-worker.yml 在 push 到 main 時自動部署。
+#
+# ⚠️ name 必須維持 calm-sunset-97f8——這是線上那顆 Worker 的名字,
+#    也決定網址 https://calm-sunset-97f8.simon-ec6.workers.dev。
+#    改名會部署到「另一顆新 Worker」,前端指向的網址就對不上了。
+name = "calm-sunset-97f8"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# ── 金鑰 ──
+# ANTHROPIC_API_KEY 是 Secret,不寫在這裡(寫進來等於公開)。
+# 它已經存在 Worker 裡;wrangler 部署「不會」動到既有 Secret,免重設。
+
+# ── 選配 KV(速率限制 + 回饋摘要落檔)──
+# Worker 裡這兩個綁定是「有才用、沒有也能跑」(if (env.RATE_LIMIT) / if (env.FEEDBACK))。
+#
+# ⚠️ 重要:wrangler 以本檔為準覆寫綁定。若你「已經在 Dashboard 手動綁過」
+#    RATE_LIMIT 或 FEEDBACK,務必在下面填上對應 id 並解除註解,
+#    否則自動部署會把 Dashboard 上的綁定移除、限流與落檔就失效。
+#    取得 id:Cloudflare Dashboard → Storage & Databases → KV →
+#            點該 namespace → 複製 Namespace ID。
+#
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "貼上 RATE_LIMIT 的 namespace id"
+#
+# [[kv_namespaces]]
+# binding = "FEEDBACK"
+# id = "貼上 FEEDBACK 的 namespace id"
