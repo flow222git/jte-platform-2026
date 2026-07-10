@@ -50,7 +50,8 @@
     t('yang tetrahedron edges', okTetra);
     // 解碼與畫面
     var dec=C.decode(DEMO);
-    t('decode demo', !!dec && dec.sc.qian===82 && dec.sc.li===74 && dec.sc.gen===38);
+    t('decode demo', !!dec && dec.sc.qian===82 && dec.sc.li===74 && dec.sc.gen===38 && dec.bank==='v2');
+    t('back to report link', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+DEMO+'"]'));
     var pf=P.build(dec.sc);
     t('canvas exists', !!doc.querySelector('canvas'));
     t('chips ×4', doc.getElementById('chips').children.length===4);

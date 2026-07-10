@@ -472,12 +472,13 @@ function buildReportText(pf,sc,costSt,conf,fc){
 
 function renderReport(sc,costSt,conf,fc){
   costSt=costSt||{};
-  var pf=P.build(sc), sig=signatureCard(pf);
+  var pf=P.build(sc), sig=signatureCard(pf), code=encodeCode(sc,fc);
   var h='';
   h+='<div class="card"><div class="r-head"><div class="r-sym serif">'+sig.sym+'</div>'
     +'<div class="r-title">'+esc(sig.title)+'</div><div class="r-sub">'+esc(sig.sub)+'</div></div>'
     +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
     +radarSVG(sc)
+    +'<p class="center" style="margin:12px 0 4px"><a class="btn ghost" href="bagua-crystal.html#r='+code+'">立體看這份快照 · 能量晶體 →</a></p>'
     +'<div class="felt">'+esc(C.FELT)+' 照的是你「感受到」的自己,不是行為審計。</div></div>';
   h+='<div class="rule"></div><div class="seclabel">每態六級 · 與答題篤定性</div><div class="band-list">';
   pf.ranked.forEach(function(o){
@@ -567,7 +568,6 @@ function renderReport(sc,costSt,conf,fc){
   if(pf.gaps.length){ var gkD=pf.gaps[0];
     h+='<div class="cost-row"><div class="ch"><span class="st-under">值得練</span> <span style="color:var(--ink)">'+B.get(gkD).nm+'·'+V.COST[gkD].fn+'</span></div><p>'+esc(V.COST[gkD].aUnder)+'</p></div>';
   }
-  var code=encodeCode(sc,fc);
   h+='<div class="rule"></div><div class="seclabel">對照與分享</div>'
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
     +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'

@@ -103,6 +103,7 @@
   <p class="legend">線的讀法:實心亮線=兩端並重 · 往一端漸亮=偏用那隻手 · 虛線=此刻收著 ·
   唯獨「推進之門」兩端同亮會變硃砂色——衝勁和鋪路都是往外的引擎,同時全開會互相搶方向盤,是唯一要留意輪流的一對。
   (淡淡兩組三角形是八個角天生的家族分組,看個結構就好,不影響讀法。)</p>
+  <p class="center" id="backrow" style="margin:20px 0 0"></p>
   <div class="honest" id="honest"></div>
 </div>
 
@@ -147,11 +148,11 @@ function decodeCode(str){
   var sc={},i;
   if(str.indexOf('B1')===0&&str.length===18&&/^[0-9]{16}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
-    return {sc:sc};
+    return {sc:sc,bank:'v1',code:str};
   }
   if(str.indexOf('B2')===0&&str.length===22&&/^[0-9]{20}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
-    return {sc:sc};
+    return {sc:sc,bank:'v2',code:str};
   }
   return null;
 }
@@ -334,13 +335,16 @@ function peakText(){
   return (leads.length?leads.join(' × '):'—')+','+kn+'——就是晶體上最亮、帶著光圈的那顆角。';
 }
 
-function start(sc){
-  S.sc=sc;S.pf=P.build(sc);
+function start(d){
+  S.sc=d.sc;S.pf=P.build(d.sc);
   // 預選=主峰所在的那一對
   var lead=S.pf.leads[0];S.sel=null;
   P.PAIRS.forEach(function(p){if(p.l===lead||p.r===lead)S.sel=p.key;});
   $('scr-code').classList.add('hide');$('scr-view').classList.remove('hide');
   $('peakline').textContent=peakText();
+  // 回完整報告(依分享碼版本帶回對應報告頁)
+  var back=d.bank==='v2'?'bagua-persona-v2.html#r='+d.code:'bagua-persona.html#r='+d.code;
+  $('backrow').innerHTML='<a class="btn ghost" href="'+back+'">← 回到完整報告</a>';
   $('honest').textContent=B.HONEST+' 立體只是「看見」的方式——判讀以文字與規則為準。';
   renderChips();renderReading();draw();
   document.body.setAttribute('data-ready','1');
@@ -378,7 +382,7 @@ var DEMO='B282745866457038522413';
 function go(str){
   var d=decodeCode(str);
   if(!d){$('code-err').classList.remove('hide');return;}
-  $('code-err').classList.add('hide');start(d.sc);
+  $('code-err').classList.add('hide');start(d);
 }
 $('btn-go').onclick=function(){go($('code-in').value);};
 $('btn-demo').onclick=function(){$('code-in').value=DEMO;go(DEMO);};
