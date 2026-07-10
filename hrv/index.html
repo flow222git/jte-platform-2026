@@ -214,6 +214,8 @@
   .selfrep-out{font-size:13px;line-height:1.7;margin-top:11px;padding:9px 12px;border-radius:10px}
   .selfrep-out.match{background:rgba(46,139,87,.10);color:var(--ink)}
   .selfrep-out.diff{background:var(--paper);color:var(--ink-soft)}
+  .selfrep-streak{font-size:12px;color:var(--ink-soft);line-height:1.65;margin-top:8px}
+  .selfrep-streak:empty{display:none}
   /* 生活記錄 note */
   .tagnote{margin-top:11px}
   .tagnote-in{width:100%;box-sizing:border-box;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
@@ -231,7 +233,7 @@
 
   /* —— 趨勢 —— */
   .trend-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 14px 10px;margin-bottom:16px}
-  .trend-svg{width:100%;height:170px;display:block}
+  .trend-svg{width:100%;height:auto;display:block}
   .hist-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px}
   .hist-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .hist-badge{font-size:10.5px;padding:2px 9px;border-radius:999px;font-weight:500;color:#fff}
@@ -400,8 +402,18 @@ async function startCamera(){
     return;
   }
   let stream;
+  // 先「強制」後鏡頭（exact:environment）——部分手機/瀏覽器把 ideal 當參考、會開到前鏡頭；
+  // exact 保證後鏡頭。裝置真的沒有後鏡頭（如桌機）才退回 ideal。
+  async function _getEnvCam(){
+    try{ return await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ exact:'environment' }, frameRate:{ ideal:60 } } }); }
+    catch(e){
+      if(e&&(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'||e.name==='NotFoundError'))
+        return await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, frameRate:{ ideal:60 } } });
+      throw e;
+    }
+  }
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, frameRate:{ ideal:60 } } });
+    stream=await _getEnvCam();
   }catch(e){
     if(e&&(e.name==='NotAllowedError'||e.name==='SecurityError')){
       showCamError('需要相機權限','請允許使用相機才能量測。你可以在網址列或設定中開啟相機權限，再回來重試。');
@@ -439,8 +451,21 @@ async function startCamera(){
     }
   }catch(e){ session.camPickErr=(e&&e.name)||'err'; }
   session.stream=stream;
-  const track=stream.getVideoTracks()[0];
+  let track=stream.getVideoTracks()[0];
   session.track=track;
+  // —— 前鏡頭防呆：萬一最後拿到的是前鏡頭（部分手機忽略 environment、或 label 認不出而沒重抓），
+  //    強制切回後鏡頭。判斷：track 的 facingMode 為 'user'，或 label 明確是前鏡頭。
+  try{
+    var _st=(track&&track.getSettings)?track.getSettings():{};
+    var _facing=_st.facingMode||'';
+    var _frontLbl=/front|前置|facetime|face\s*time/i.test((track&&track.label)||'');
+    if(_facing==='user' || (_facing!=='environment' && _frontLbl)){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ exact:'environment' }, frameRate:{ ideal:60 } } });
+      session.stream=stream; track=stream.getVideoTracks()[0]; session.track=track;
+      session.camReacq=true; session.camFrontFixed=true;
+    }
+  }catch(e){ session.camPickErr=(session.camPickErr?session.camPickErr+' ':'')+'frontfix:'+((e&&e.name)||'e'); }
   // 鏡頭診斷（?debug 時，畫面最上方顯示：有哪些鏡頭、目前用哪顆、可控能力）。
   // z-index 蓋過使用者列；每欄各自 try 以免一處出錯整個不顯示。
   if(/debug/.test(location.search)||/debug/.test(location.hash)){
@@ -449,7 +474,7 @@ async function startCamera(){
     let info='[鏡頭診斷]';
     try{ const devs2=await navigator.mediaDevices.enumerateDevices(); info+='\ncams: '+devs2.filter(function(d){return d.kind==='videoinput';}).map(function(d){return d.label||'(空)';}).join('  ||  '); }catch(e){ info+='\ncams: 列舉失敗 '+(e&&e.name); }
     info+='\npicked: '+(session.camPick||'?')+'  reacq:'+(session.camReacq?'Y':'N')+(session.camPickErr?('  err:'+session.camPickErr):'');
-    try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?'); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
+    try{ const st=(track&&track.getSettings)?track.getSettings():{}; info+='\nactive: '+(track&&track.label||'?')+'  '+(st.width||'?')+'x'+(st.height||'?')+'  facing:'+(st.facingMode||'?')+(session.camFrontFixed?'  [前鏡頭已修正]':''); }catch(e){ info+='\nactive: ? '+(e&&e.name); }
     try{ const caps=(track&&track.getCapabilities)?track.getCapabilities():null; info+='\ncaps: '+(caps?(Object.keys(caps).join(',')||'(空)'):'無 getCapabilities'); }catch(e){ info+='\ncaps: err '+(e&&e.name); }
     box.textContent=info;
   }
@@ -839,13 +864,30 @@ function buildFacets(facets){
 }
 
 // 事後自我回饋：選身體/精神感覺 → 對照身體量到的 state（中性、非糾正）
-function buildSelfReport(recId, rec){
+// 身體感覺文字（放鬆/普通/緊繃）↔ 量測 state 是否一致
+function _feltBodyMatch(feltBody, state){
+  var m = state==='relaxed'?'放鬆':(state==='tense'?'緊繃':'普通');
+  return feltBody===m;
+}
+// 過去記錄的「感覺 vs 身體」同步統計（只算有填 felt.body 的）→ {n, agree}
+function feltAgreementStats(list){
+  var n=0, agree=0;
+  (list||[]).forEach(function(r){
+    if(!r || r.source!=='HRV') return;
+    var fb=r.felt&&r.felt.body; if(!fb) return;
+    n++; if(_feltBodyMatch(fb, r.state)) agree++;
+  });
+  return { n:n, agree:agree };
+}
+function buildSelfReport(recId, rec, list){
   const wrap=document.createElement('div'); wrap.className='selfrep';
   const head=document.createElement('div'); head.className='selfrep-head';
   head.innerHTML='<b>'+jteT('self.head','跟你的感覺對得上嗎？')+'</b><span>'+jteT('self.sub','選填 — 比對「身體量到的」和「你感覺到的」')+'</span>';
   wrap.appendChild(head);
+  const past=feltAgreementStats(list);           // 這次之前的自評同步統計
   const felt={body:'',energy:''};
   const out=document.createElement('div'); out.className='selfrep-out';
+  const streak=document.createElement('div'); streak.className='selfrep-streak';
   function makeGroup(label, key, opts){
     const g=document.createElement('div'); g.className='selfrep-g';
     g.innerHTML='<span class="selfrep-q">'+label+'</span>';
@@ -861,14 +903,24 @@ function buildSelfReport(recId, rec){
     g.appendChild(r); return g;
   }
   function renderCompare(){
-    if(!felt.body){ out.textContent=''; out.className='selfrep-out'; return; }
+    if(!felt.body){ out.textContent=''; out.className='selfrep-out'; streak.textContent=''; return; }
     var measured=rec.state==='relaxed'?'放鬆':(rec.state==='tense'?'緊繃':'普通');
     if(felt.body===measured){ out.className='selfrep-out match'; out.textContent=jteT('self.match','你的感覺和身體挺同步的 🌿'); }
     else { out.className='selfrep-out diff'; out.textContent='你覺得「'+felt.body+'」，身體量到比較像「'+measured+'」——感覺和身體有時不同步，值得留意，不用評斷。'; }
+    // 深化：把這次算進累積同步率，給一句長期回饋（記滿 3 次才顯示，否則樣本太少）
+    var total=past.n+1, ag=past.agree+(_feltBodyMatch(felt.body, rec.state)?1:0);
+    if(total>=3){
+      var rate=ag/total;
+      var interp = rate>=0.7 ? jteT('self.streak.hi','你對自己狀態蠻敏感的 🌿')
+        : (rate<=0.4 ? jteT('self.streak.lo','你的感覺和身體常對不上——多留意身體給你的訊號。')
+        : jteT('self.streak.mid','時準時不準，多對照幾次會越來越熟。'));
+      streak.textContent=jteT('self.streak','你記錄過 %1 次感覺，有 %2 次和身體同步。').replace('%1',String(total)).replace('%2',String(ag))+' '+interp;
+    } else { streak.textContent=''; }
   }
   wrap.appendChild(makeGroup(jteT('self.body','身體感覺'),'body',['放鬆','普通','緊繃']));
   wrap.appendChild(makeGroup(jteT('self.energy','精神感覺'),'energy',['有電','普通','累']));
   wrap.appendChild(out);
+  wrap.appendChild(streak);
   return wrap;
 }
 
@@ -979,7 +1031,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
   d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
-  d.appendChild(buildSelfReport(recId, rec));
+  d.appendChild(buildSelfReport(recId, rec, list));
   // —— 生活記錄（標籤＋選填一句，量完即可貼）——
   d.appendChild(buildTagPicker(recId));
 
@@ -1132,27 +1184,45 @@ function drawTrend(list){
     return;
   }
 
-  // —— SVG 身體能量折線（0–100 固定刻度）——
+  // —— SVG 身體能量折線：平常範圍帶（過去 25–75 百分位）+ 真實日期軸 ——
   if(recs.length){
-    const W=520, H=170, padL=8, padR=8, padT=14, padB=18;
-    const mn=0, mx=100, span=100;
+    const W=340, H=190, padL=8, padR=8, padT=14, padB=24;
     const n=recs.length;
-    function px(i){ return n===1 ? W/2 : padL + (W-padL-padR)*i/(n-1); }
-    function py(v){ return padT + (H-padT-padB)*(1-(v-mn)/span); }
+    function py(v){ return padT + (H-padT-padB)*(1-v/100); }
+    // 真實日期 x：依實際時間排點（看得出間隔）；同時刻/單點則退回均勻或置中
+    const ts=recs.map(function(r){ return Date.parse(r.ts)||0; });
+    const t0=Math.min.apply(null,ts), t1=Math.max.apply(null,ts), tspan=t1-t0;
+    const even=!(tspan>0);
+    function xAt(i){ return even ? (n===1?W/2:padL+(W-padL-padR)*i/(n-1)) : padL+(W-padL-padR)*((ts[i]-t0)/tspan); }
+    // 平常範圍帶：用「全部」有分數記錄的 25–75 百分位＋中位數，當你的個人參照（不受篩選影響）
+    const bandVals=everything.filter(function(r){ return isFinite(Number(r.energy)); }).map(function(r){ return Number(r.energy); }).sort(function(a,b){ return a-b; });
+    function pct(a,p){ var i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return a[lo]+(a[hi]-a[lo])*(i-lo); }
+    let bandSvg='';
+    if(bandVals.length>=4){
+      const q1=pct(bandVals,0.25), q2=pct(bandVals,0.5), q3=pct(bandVals,0.75);
+      bandSvg='<rect x="'+padL+'" y="'+py(q3).toFixed(1)+'" width="'+(W-padL-padR)+'" height="'+(py(q1)-py(q3)).toFixed(1)+'" fill="#cfe0f2" opacity="0.5" rx="3"/>'+
+        '<line x1="'+padL+'" y1="'+py(q2).toFixed(1)+'" x2="'+(W-padR)+'" y2="'+py(q2).toFixed(1)+'" stroke="#7ba4d0" stroke-width="1" stroke-dasharray="4 4"/>'+
+        '<text x="'+(W-padR)+'" y="'+(py(q2)-3).toFixed(1)+'" text-anchor="end" font-size="9" fill="#8a93a3">'+jteT('trend.band.usual','平常 ')+Math.round(q2)+'</text>';
+    }
     let path='';
-    for(let i=0;i<n;i++){ path += (i===0?'M':'L')+px(i).toFixed(1)+' '+py(Number(recs[i].energy)).toFixed(1)+' '; }
-    let dots='';
+    for(let i=0;i<n;i++){ path += (i===0?'M':'L')+xAt(i).toFixed(1)+' '+py(Number(recs[i].energy)).toFixed(1)+' '; }
+    let dots='', labels='', lastLabX=-999;
     for(let i=0;i<n;i++){
-      const r=recs[i]; const col=recColor(r);
-      const whenT=String(r.ts||'');
+      const r=recs[i], col=recColor(r), x=xAt(i), y=py(Number(r.energy));
       const lvZh=ENERGY_LABEL[r.level]||'';
-      dots+='<circle cx="'+px(i).toFixed(1)+'" cy="'+py(Number(r.energy)).toFixed(1)+'" r="4.5" fill="'+col+'">'+
-        '<title>身體能量 '+Number(r.energy)+(lvZh?(' · '+_h(lvZh)):'')+' · '+_h(whenT.slice(0,16).replace('T',' '))+'</title></circle>';
+      dots+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4" fill="'+col+'" stroke="#fff" stroke-width="1.3">'+
+        '<title>身體能量 '+Number(r.energy)+(lvZh?(' · '+_h(lvZh)):'')+' · '+_h(String(r.ts||'').slice(0,16).replace('T',' '))+'</title></circle>';
+      if(!even && (i===0 || i===n-1 || x-lastLabX>=46)){
+        const dt=new Date(ts[i]);
+        labels+='<text x="'+x.toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#8a93a3">'+(dt.getMonth()+1)+'/'+dt.getDate()+'</text>';
+        lastLabX=x;
+      }
     }
     const wrap=document.createElement('div');wrap.className='trend-wrap';
-    wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
-      '<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'+
-      dots+'</svg>';
+    wrap.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+
+      bandSvg+
+      '<path d="'+path.trim()+'" fill="none" stroke="#003D7C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'+
+      dots+labels+'</svg>';
     body.appendChild(wrap);
   }else{
     const c=document.createElement('div');c.className='guide-card';
