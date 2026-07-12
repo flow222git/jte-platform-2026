@@ -66,8 +66,9 @@
   .felt{font-size:12.5px;color:var(--muted);text-align:center;letter-spacing:.06em;margin:16px 0 6px}
   .seclabel{font-size:13px;letter-spacing:.14em;color:var(--muted);font-weight:400;margin:0 0 14px}
   .band-list{margin:8px 0}
-  .band-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--surface2)}
-  .band-row .nm{flex:none;width:86px;color:var(--ink)}
+  .band-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0 0}
+  .band-brief{font-size:11.5px;color:var(--muted);line-height:1.8;padding:1px 0 7px;border-bottom:1px solid var(--surface2)}
+  .band-row .nm{flex:none;width:96px;color:var(--ink)}
   .band-row .sc{flex:none;width:28px;text-align:right;color:var(--muted);font-family:"Jost",sans-serif;font-size:12px}
   .band-row .bl{flex:1}
   .band-row .bl.like{color:var(--pine)}
@@ -370,7 +371,7 @@ function radarSVG(sc){
   var poly=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
   var labels=EKEYS.map(function(k){var p=B.POLAR[k],g=B.get(k);
     var lx=200+(p.x-200)*1.22, ly=200+(p.y-200)*1.22+4;
-    return '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+g.nm+'·'+g.fnShort+'</text>';}).join('');
+    return '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+g.fnShort+'者</text>';}).join('');
   return '<svg class="radar" viewBox="0 0 400 400" width="300" role="img" aria-label="八態雷達">'
     +'<polygon points="'+frame+'" fill="none" stroke="var(--line)"/>'
     +'<polygon points="'+half+'" fill="none" stroke="var(--surface2)"/>'
@@ -393,6 +394,9 @@ function signatureCard(pf){
   return {sym:B.get(pf.leads[0]).sym,title:nm,sub:'沒有單一主峰,以整體格局描述',ess:''};
 }
 var BANDS_TXT={sure:'篤定',mixed:'兩可'};
+// 顯示層:先「者」後卦(2026-07-12 使用者回饋);canonical title 原樣不動
+function reTitle(s){return String(s).replace(/([乾坤震巽離坎艮兌])·([^×\s()]+)/g,'$2·$1');}
+function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
 function catalogSections(k,costSt){
   var over=costSt[k]==='over';
   var secs=[['aura','神韻',''],['crowd','在人群中的樣子','']];
@@ -486,7 +490,7 @@ function renderReport(sc,costSt,conf,fc){
   var pf=P.build(sc), sig=signatureCard(pf), code=encodeCode(sc,fc);
   var h='';
   h+='<div class="card"><div class="r-head"><div class="r-sym serif">'+sig.sym+'</div>'
-    +'<div class="r-title">'+esc(sig.title)+'</div><div class="r-sub">'+esc(sig.sub)+'</div></div>'
+    +'<div class="r-title">'+esc(reTitle(sig.title))+'</div><div class="r-sub">'+esc(sig.sub)+'</div></div>'
     +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
     +radarSVG(sc)
     +'<p class="center" style="margin:12px 0 4px"><a class="btn ghost" href="bagua-crystal.html#r='+code+'">立體看這份快照 · 能量晶體 →</a></p>'
@@ -495,9 +499,10 @@ function renderReport(sc,costSt,conf,fc){
   pf.ranked.forEach(function(o){
     var g=B.get(o.k), bd=pf.bands[o.k];
     var cf=conf?conf[o.k]:null, cfTxt=(cf==='sure'||cf==='mixed')?BANDS_TXT[cf]:'';
-    h+='<div class="band-row"><span class="nm">'+g.nm+'·'+g.fnShort+'</span><span class="sc">'+o.v+'</span>'
+    h+='<div class="band-row"><span class="nm">'+pn(o.k)+'</span><span class="sc">'+o.v+'</span>'
       +'<span class="bl '+(bd.like?'like':'unlike')+'">'+bd.label+(bd.like?'你':'')+'</span>'
-      +(cfTxt?'<span class="conf '+cf+'">'+cfTxt+'</span>':'')+'</div>';
+      +(cfTxt?'<span class="conf '+cf+'">'+cfTxt+'</span>':'')+'</div>'
+      +'<div class="band-brief">'+esc(V.BRIEF[o.k])+'</div>';
   });
   h+='</div><p style="font-size:12px;color:var(--muted)">整體水平:'
     +(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(八態平均 '+pf.level.mean+')。'
@@ -509,7 +514,7 @@ function renderReport(sc,costSt,conf,fc){
   var lead0=pf.leads[0], lead1=pf.leads[1];
   if(lead0){
     var g0=null;P.PAIRS.forEach(function(p){if(p.l===lead0||p.r===lead0)g0=p.key;});
-    h+='<p style="font-size:13px;color:var(--pine)">'+esc(GT.anchor.replace('{P}',B.get(lead0).nm+'·'+B.get(lead0).fnShort).replace('{G}',GT.name[g0]))+'</p>';
+    h+='<p style="font-size:13px;color:var(--pine)">'+esc(GT.anchor.replace('{P}',pn(lead0)).replace('{G}',GT.name[g0]))+'</p>';
   }
   var axArr=pf.axes.slice().sort(function(a,b){
     function w(x){ if(lead0&&(x.l===lead0||x.r===lead0)) return 0;
@@ -534,9 +539,9 @@ function renderReport(sc,costSt,conf,fc){
       +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.r])+'</span>'
       +  '<div class="pbar"><i class="'+(onR?'on ':'')+cls+'" style="width:'+sc[ax.r]+'%"></i></div>'
       +  '<span class="ps">'+sc[ax.r]+'</span></div>'
-      +'<div class="plain">'+esc(plain)+'</div>'
+      +'<div class="plain"><b style="font-weight:400;color:var(--ink)">你這兩個特性的用法:</b>'+esc(plain)+'</div>'
       +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
-      +'<div class="cnote">'+B.get(ax.l).nm+'·'+ax.ln+' ⇄ '+ax.rn+'·'+B.get(ax.r).nm+'</div>'
+      +'<div class="cnote">'+pn(ax.l)+' ⇄ '+pn(ax.r)+'</div>'
       +(fc?fcCompareNote(ax,fc[ai]):'')
       +'</div>';
   });
@@ -550,12 +555,12 @@ function renderReport(sc,costSt,conf,fc){
       var lbl=st==='over'?'亢 · 過用':st==='under'?'潛 · 不足':st==='midHi'?'中正 · 強而用得剛好':'中正 · 不強但無礙';
       var cls=st==='over'?'st-over':st==='under'?'st-under':'st-mid';
       var adv=st==='over'?cd.aOver:st==='under'?cd.aUnder:st==='midHi'?cd.aMidHi:cd.aMidLo;
-      h+='<div class="cost-row"><div class="ch"><span style="color:var(--ink)">'+g.nm+'·'+cd.fn+'</span> <span class="'+cls+'">'+lbl+'</span></div><p>'+esc(adv)+'</p></div>';
+      h+='<div class="cost-row"><div class="ch"><span style="color:var(--ink)">'+pn(k)+'</span> <span class="'+cls+'">'+lbl+'</span></div><p>'+esc(adv)+'</p></div>';
     });
   }
   pf.leads.slice(0,2).forEach(function(k){
     var g=B.get(k), cs=catalogSections(k,costSt), p=C.T1[k];
-    h+='<div class="rule"></div><div class="seclabel">你的章節 · '+g.title+(cs.over?'(此刻偏亢,先讀亢段)':'')+'</div>';
+    h+='<div class="rule"></div><div class="seclabel">你的章節 · '+reTitle(g.title)+(cs.over?'(此刻偏亢,先讀亢段)':'')+'</div>';
     cs.secs.forEach(function(s){
       var tag=s[2]?'<span class="bandtag '+s[2]+'">'+(s[2]==='over'?'亢':'中正')+'</span>':'';
       h+='<h4 class="blk">'+s[1]+tag+'</h4><p class="blktxt">'+esc(p[s[0]])+'</p>';
@@ -578,11 +583,11 @@ function renderReport(sc,costSt,conf,fc){
   }
   if(pf.gaps.length){
     var gk=pf.gaps[0], gg=B.get(gk);
-    h+='<div class="rule"></div><div class="seclabel">還沒長開 · '+gg.nm+'·'+gg.fnShort+'</div>'
+    h+='<div class="rule"></div><div class="seclabel">還沒長開 · '+pn(gk)+'</div>'
       +'<h4 class="blk">還沒長開<span class="bandtag under">潛</span></h4><p class="blktxt">'+esc(C.T1[gk].latent)+'</p>';
   }
   var mainK=pf.leads[0];
-  h+='<div class="rule"></div><div class="seclabel">場域 × 能格 · 速查('+B.get(mainK).title+')</div>';
+  h+='<div class="rule"></div><div class="seclabel">場域 × 能格 · 速查('+reTitle(B.get(mainK).title)+')</div>';
   C.DOMAINS.forEach(function(d,di){
     h+='<details'+(di===C.DOMAINS.length-1?' class="last"':'')+'><summary>'+d.nm+'</summary>';
     C.LEVELS.forEach(function(l){
@@ -594,16 +599,16 @@ function renderReport(sc,costSt,conf,fc){
   // 接下來 · 三個方向(好好用=主峰中正發揮;留意收=能格亢的建議;值得練=缺口潛的第一步)
   h+='<div class="rule"></div><div class="seclabel">接下來 · 三個方向</div>';
   pf.leads.slice(0,2).forEach(function(k){
-    h+='<div class="cost-row"><div class="ch"><span class="st-mid">好好用</span> <span style="color:var(--ink)">'+B.get(k).nm+'·'+B.get(k).fnShort+'</span></div><p>'+esc(V.DIRECTIONS[k].use)+'</p></div>';
+    h+='<div class="cost-row"><div class="ch"><span class="st-mid">好好用</span> <span style="color:var(--ink)">'+pn(k)+'</span></div><p>'+esc(V.DIRECTIONS[k].use)+'</p></div>';
   });
   var oversH=Object.keys(costSt).filter(function(k){return costSt[k]==='over';});
   if(oversH.length){ oversH.forEach(function(k){
-    h+='<div class="cost-row"><div class="ch"><span class="st-over">留意收</span> <span style="color:var(--ink)">'+B.get(k).nm+'·'+V.COST[k].fn+'</span></div><p>'+esc(V.COST[k].aOver)+'</p></div>';
+    h+='<div class="cost-row"><div class="ch"><span class="st-over">留意收</span> <span style="color:var(--ink)">'+pn(k)+'</span></div><p>'+esc(V.COST[k].aOver)+'</p></div>';
   }); } else {
     h+='<div class="cost-row"><div class="ch"><span class="st-over">留意收</span></div><p style="color:var(--muted)">這次校準沒有出現過用訊號——先放心用你的本錢。</p></div>';
   }
   if(pf.gaps.length){ var gkD=pf.gaps[0];
-    h+='<div class="cost-row"><div class="ch"><span class="st-under">值得練</span> <span style="color:var(--ink)">'+B.get(gkD).nm+'·'+V.COST[gkD].fn+'</span></div><p>'+esc(V.COST[gkD].aUnder)+'</p></div>';
+    h+='<div class="cost-row"><div class="ch"><span class="st-under">值得練</span> <span style="color:var(--ink)">'+pn(gkD)+'</span></div><p>'+esc(V.COST[gkD].aUnder)+'</p></div>';
   }
   h+='<div class="rule"></div><div class="seclabel">對照與分享</div>'
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'

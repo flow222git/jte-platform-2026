@@ -274,7 +274,7 @@ function draw(){
     ctx.textAlign=dx>4*DPR?'left':dx<-4*DPR?'right':'center';
     ctx.textBaseline=dy>4*DPR?'top':dy<-4*DPR?'bottom':'middle';
     ctx.fillStyle=(isLead||isSelEnd)?ink(0.95*da):ink(0.55*da);
-    ctx.fillText(g.nm+'·'+g.fnShort,lx,ly);
+    ctx.fillText(g.fnShort+'者·'+g.nm,lx,ly);
   });
 }
 
@@ -307,11 +307,11 @@ function renderReading(){
     +'<div class="rs">你此刻的樣子:<b>'+plain+'</b></div>'
     +'<div class="rt'+(tension?' tension':'')+'">'+read.tag+'</div>'
     +'<p>'+read.desc+'</p>'
-    +'<div class="rnote">'+pr.xiang+'軸 · '+B.get(ax.l).nm+'·'+ax.ln+' '+S.sc[ax.l]
-    +' ⇄ '+S.sc[ax.r]+' '+ax.rn+'·'+B.get(ax.r).nm+'</div>';
+    +'<div class="rnote">'+pr.xiang+'軸 · '+ax.ln+'者('+B.get(ax.l).nm+') '+S.sc[ax.l]
+    +' ⇄ '+S.sc[ax.r]+' '+ax.rn+'者('+B.get(ax.r).nm+')</div>';
 }
 function peakText(){
-  var leads=S.pf.leads.slice(0,2).map(function(k){return B.get(k).nm+'·'+B.get(k).fnShort+'(擅長'+POLE[k]+')';});
+  var leads=S.pf.leads.slice(0,2).map(function(k){return B.get(k).fnShort+'者·'+B.get(k).nm+'(擅長'+POLE[k]+')';});
   var kind=S.pf.signature.kind;
   var kn=kind==='single'?'一枝獨秀':kind==='dual'?'雙峰並立':kind==='multi'?'多峰同行':'看整體格局';
   return (leads.length?leads.join(' × '):'—')+','+kn+'——就是晶體上最亮、帶著光圈的那顆角。';
