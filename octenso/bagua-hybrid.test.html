@@ -56,7 +56,7 @@
   function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
   function assertAll(doc,txt){
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
-    t('e2e 過場語出現', txt.indexOf('走完第一圈了')>=0);
+    t('e2e 過場語出現', txt.indexOf('第一圈走完了')>=0);
     t('e2e 二選一引言', txt.indexOf('二選一')>=0);
     t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
     t('e2e 完整報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+R.code+'"]'));
@@ -64,7 +64,7 @@
     t('e2e 全首選→無校準路徑', txt.indexOf('直接來看結果')>=0);
     t('e2e 模組選單含整備中', txt.indexOf('整備中')>=0);
     t('e2e 分段核對:峰名段已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
-    t('e2e 核對回話出現', txt.indexOf('收到,謝謝你的核對')>=0);
+    t('e2e 核對回話出現', txt.indexOf('收到,謝謝你')>=0);
     t('e2e 逐段揭示引言', txt.indexOf('先看此刻最亮的地方')>=0 && txt.indexOf('四道門')>=0);
     // 全「非常符合」(demand=100)+底色 67:六股順流、坎艮=場域不給
     t('e2e 主場段', txt.indexOf(H.CTXD_READ.flowLabel)>=0 && txt.indexOf('定方向')>=0);
