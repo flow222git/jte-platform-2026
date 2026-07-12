@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>半題庫半對話 · 自適應了解過程</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>半題庫半對話 · 自適應了解過程</h1>
+  <div class="meta">HYBRID ASSESSMENT · 2026-07-12 · DECISION + ROADMAP</div>
+</header>
+<article>
+<p>整理日期:2026-07-12 ｜ 狀態:<strong>架構定案、分階段實作</strong>——紅線與分工為決策,模組內容為草案
+緣起:使用者提案「半題庫半對話的了解過程,依使用者的反應選擇相對應的題庫」
+上游:<a href="題庫池">[2026-07-09-octenso-item-pool-v3-candidates]</a>、<a href="對境耗能,曾擱置">[2026-07-08-octenso-context-drain-love-work-design]</a>、八態伴讀(結果頁內嵌聊天)、學理憲法、解讀憲法</p>
+<hr />
+<h2>0. 紅線(本 spec 的第一決策)</h2>
+<blockquote>
+<p><strong>題庫負責測量,對話負責選路。對話可以決定「接下來測什麼」,永遠不能「打分數」。</strong></p>
+</blockquote>
+<p>這是「AI=伴讀不是主筆」在測量上的對應版本。分數必須來自固定量尺的結構化題目——可追溯、確定性、可重現(同一串作答永遠得到同一份報告與同一組分享碼)。一旦讓 AI 從自由對話「聽出」分數:換個聊法分數就變、無法重測、無法試測統計、無法對任何人交代分數怎麼來。守住紅線,半題庫半對話是加分;越過紅線,公信力歸零。</p>
+<h2>1. 角色分工</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>題庫(結構化題目)</th>
+<th>對話(伴讀)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>職責</td>
+<td><strong>測量</strong>:產生分數、觸發判讀</td>
+<td><strong>導流</strong>:發現線索、推薦下一個模組</td>
+</tr>
+<tr>
+<td></td>
+<td>校準:能格追問(現行)</td>
+<td><strong>潤語境</strong>:解釋題目在問什麼、安撫作答焦慮</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><strong>收回饋</strong>:像/不像 摘要(現行)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><strong>陪讀</strong>:報告討論(現行)</td>
+</tr>
+<tr>
+<td>禁區</td>
+<td>題目不追問生活細節(那是對話的事)</td>
+<td><strong>不打分、不改分、不下診斷、不預測</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>對話「選路」的輸出只有一種:<strong>推薦(或開啟)某個結構化模組</strong>。就算未來把作答嵌進聊天視窗,答的也是固定量尺的選項按鈕,不是讓 AI 解讀自由文字。</p>
+<h2>2. 架構:固定核心 + 分支模組 + 對話導流</h2>
+<pre><code>① 固定核心題庫(v2 的 28 題,人人相同)
+      → 八態分數、四道門、能格 → 主報告、B 碼
+      【唯一可跨人比較、可入分享碼的分數來源】
+② 規則觸發的追問(現行能格校準)
+      → 亢/潛才追問——自適應的第一層,照舊
+③ 伴讀對話(讀報告、聊生活)
+      → 發現線索:「你三句不離工作」「這段感情讓你很緊」
+④ 分支模組(依 ③ 的線索或使用者自選,結構化小題組)
+      → 對境耗能·工作 / 對境耗能·愛情 / 場景耗能 / 澄清微模組…
+⑤ 模組結果以「並列註記」掛回報告
+      → 補充鏡頭,不回灌八態主分數(C1:並列不捏因果)
+      → 之後可再回 ③ 繼續聊,形成循環
+</code></pre>
+<p><strong>順序鐵律:固定核心永遠第一關、先測後聊。</strong> 對話在前會暗示答題方向(框架效應);現行動線(測→報告→聊)剛好正確,不得倒置。</p>
+<h2>3. 分流訊號(「依使用者的反應」的三種來源)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>訊號</th>
+<th>來源</th>
+<th>觸發方式</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>報告訊號</td>
+<td>規則引擎</td>
+<td>確定性規則(現行能格校準即此類)</td>
+<td>兩可篤定 → 澄清微模組;雙峰 → 二選一加測</td>
+</tr>
+<tr>
+<td>對話線索</td>
+<td>伴讀</td>
+<td>伴讀依守則<strong>推薦</strong>,使用者點頭才開</td>
+<td>聊天多次提到職場 → 推薦「對境耗能·工作」</td>
+</tr>
+<tr>
+<td>使用者自選</td>
+<td>選單</td>
+<td>報告尾模組清單,想測就測</td>
+<td>「我想看看感情那塊」</td>
+</tr>
+</tbody>
+</table></div>
+<p>三種訊號一律<strong>只開門、不塞人</strong>——模組永遠是邀請,不是必經關卡。</p>
+<h2>4. 模組槽規格(銜接題庫池 spec)</h2>
+<p>每個分支模組是題庫池裡的一個「模組槽」:</p>
+<pre><code>module = {
+  id: 'ctx-work',                    // 模組 ID
+  title: '對境耗能 · 工作',
+  ask: '這份工作正在需要你什麼?',     // 一句話說明(邀請語)
+  trigger: {                         // 三種分流訊號的掛法
+    rule: null,                      // 報告訊號(如 conf==='mixed')
+    chat: ['工作','上班','老闆','同事'], // 伴讀線索詞(推薦用,非硬觸發)
+    menu: true                       // 是否進自選清單
+  },
+  items: [...],                      // 題目(進題庫池管理:id/status/證據)
+  scale: 'freq6',                    // 固定量尺
+  output: 'annex'                    // 輸出=並列註記(不回灌主分數)
+}
+</code></pre>
+<ul>
+<li>模組題目與核心題庫同樣走 <code>status: 池→試測→正式/退役</code>,同樣累積試測證據。</li>
+<li><strong>輸出格式只有 annex(並列註記)</strong>:模組結果自成一小節掛在報告尾,寫法比照二選一對照(標註式)與對境耗能 spec(場域需求 × 你的底色,並列呈現)。</li>
+<li>模組作答同樣只存 localStorage;是否併入分享碼是之後的戰略決定(預設不併,B 碼不變)。</li>
+</ul>
+<h2>5. 首批模組盤點(Phase 1 的料,全是現有存貨)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>模組</th>
+<th>來源</th>
+<th>現況 → 動作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>對境耗能·工作(8 題)</td>
+<td>2026-07-08 spec 全題幹草案</td>
+<td>擱置 → 復活為模組(卷面版與 bot 對話版並存,同源維護)</td>
+</tr>
+<tr>
+<td>對境耗能·愛情(8 題)</td>
+<td>同上</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>場景耗能(7 場景 80 題)</td>
+<td>v1 頁 CTX(前朝遺產)</td>
+<td>按 v2 寫作守則翻修 → 拆成 7 個小模組入池</td>
+</tr>
+<tr>
+<td>澄清微模組(每態 2-3 題)</td>
+<td>新寫</td>
+<td>兩可篤定時觸發;從 v3 池的同槽題挑,不必全新寫</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. 三階段路線圖</h2>
+<ul>
+<li><strong>Phase 0 · 伴讀轉介(現架構即可,幾乎零成本)</strong>
+  Worker 系統提示加一段轉介守則(聽到場域線索 → 溫和推薦模組連結);報告尾加「還想多懂哪一塊?」模組選單。對話還不嵌作答,點連結去答題。</li>
+<li><strong>Phase 1 · 首批模組上架</strong>
+  §5 的四類模組按模組槽規格入池、接上三種分流訊號;模組結果以 annex 掛回報告。</li>
+<li><strong>Phase 2 · 對話內嵌作答</strong>
+  聊天泡泡裡出現固定量尺的選項按鈕(結構化,非自由文字);Worker 協定擴充一種訊息型別(<code>module_item</code>),作答仍記在 localStorage。體驗上才真正「半題庫半對話」。</li>
+</ul>
+<h2>7. 憲法對應檢核</h2>
+<ul>
+<li><strong>AI=伴讀不是主筆</strong> → §0 紅線:對話零打分;報告與註記全由規則引擎組裝。</li>
+<li><strong>C1 並列不捏因果</strong> → 模組結果=annex 並列,不回灌、不解釋成因果。</li>
+<li><strong>誠實印章</strong> → 模組各自掛「v0.x 研究假設·待考」;推薦語不得誇大(「要不要看看」而非「你需要」)。</li>
+<li><strong>作答不上傳</strong> → 模組作答 localStorage;對話與選路走 Worker(頁面已揭露,不儲存對話,僅回饋摘要回傳)。</li>
+<li><strong>鏡子非算命</strong> → 分流訊號描述現況(「你常提到工作」),不預測(「你工作會出問題」)。</li>
+</ul>
+<h2>8. 待決事項</h2>
+<ol>
+<li>Phase 0 轉介守則的措辭(伴讀怎麼開口才不像推銷)——待潤。</li>
+<li>模組結果是否給獨立小碼(例:<code>M1</code> 前綴)供重測對照——傾向 Phase 1 末再決定。</li>
+<li>CTX 80 題翻修的優先順序(七個場景先修哪個)——建議照試測回饋的場域熱度。</li>
+<li>澄清微模組的觸發門檻(兩可篤定的定義沿用現行 conf==='mixed' 即可?)——Phase 1 定。</li>
+</ol>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-12-octenso-hybrid-assessment-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
