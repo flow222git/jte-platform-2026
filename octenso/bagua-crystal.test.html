@@ -73,7 +73,7 @@
     var st0=pf.axes[0].intensity==='single'?(pf.axes[0].lean==='left'?'leanL':'leanR'):'mid';
     var desc=V.SYSTEM_READ.build[st0].desc.slice(0,10);
     t('default reading = build desc', txt.indexOf(desc)>=0);
-    t('gate names', ['開局','推進','消化','收工'].every(function(s){return txt.indexOf(s)>=0;}));
+    t('gate names(功能系)', ['方向之門','動力之門','內外之門','開闔之門'].every(function(s){return txt.indexOf(s)>=0;}));
     t('honest line', txt.indexOf('不是算命')>=0);
 
     f.parentNode.removeChild(f);
