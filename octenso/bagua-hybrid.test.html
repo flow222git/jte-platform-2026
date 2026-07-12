@@ -14,6 +14,8 @@
   // ── 資料完整性 ──
   t('CHAT hello ×3 + 紅線句', H.CHAT.hello.length===3 && H.CHAT.hello[2].indexOf('分數永遠來自題目')>=0);
   t('CHAT 過場語', H.CHAT.breaks[8] && H.CHAT.breaks[16] && H.CHAT.fcIntro.length>10 && H.CHAT.costIntro.length>10);
+  t('衡鑑式欄位', H.CHAT.askIntro.length>10 && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
+  t('界線句(不是衡鑑或治療)', H.CHAT.hello[2].indexOf('不是心理衡鑑或治療')>=0);
   t('MODULES ×2(work/love)', H.MODULES.length===2 && H.MODULES[0].dom==='work' && H.MODULES[1].dom==='love');
   H.MODULES.forEach(function(m){
     t(m.id+' items ×8', m.items.length===8);
@@ -54,13 +56,16 @@
   function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
   function assertAll(doc,txt){
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
-    t('e2e 過場語出現', txt.indexOf('第一圈走完了')>=0);
+    t('e2e 過場語出現', txt.indexOf('走完第一圈了')>=0);
     t('e2e 二選一引言', txt.indexOf('二選一')>=0);
     t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
     t('e2e 完整報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+R.code+'"]'));
     t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
-    t('e2e 全首選→無校準路徑', txt.indexOf('直接看結果')>=0);
+    t('e2e 全首選→無校準路徑', txt.indexOf('直接來看結果')>=0);
     t('e2e 模組選單含整備中', txt.indexOf('整備中')>=0);
+    t('e2e 分段核對:峰名段已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 核對回話出現', txt.indexOf('收到,謝謝你的核對')>=0);
+    t('e2e 逐段揭示引言', txt.indexOf('先看此刻最亮的地方')>=0 && txt.indexOf('四道門')>=0);
     // 全「非常符合」(demand=100)+底色 67:六股順流、坎艮=場域不給
     t('e2e 主場段', txt.indexOf(H.CTXD_READ.flowLabel)>=0 && txt.indexOf('定方向')>=0);
     t('e2e deny 段', txt.indexOf('安靜沉澱')>=0 && txt.indexOf('喊停')>=0);
