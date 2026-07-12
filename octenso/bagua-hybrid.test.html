@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>hybrid tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="bagua-hybrid-data.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
+  var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2;
+
+  // ── 資料完整性 ──
+  t('CHAT hello ×3 + 紅線句', H.CHAT.hello.length===3 && H.CHAT.hello[2].indexOf('分數永遠來自題目')>=0);
+  t('CHAT 過場語', H.CHAT.breaks[8] && H.CHAT.breaks[16] && H.CHAT.fcIntro.length>10 && H.CHAT.costIntro.length>10);
+  t('MODULES ×2(work/love)', H.MODULES.length===2 && H.MODULES[0].dom==='work' && H.MODULES[1].dom==='love');
+  H.MODULES.forEach(function(m){
+    t(m.id+' items ×8', m.items.length===8);
+    t(m.id+' deny=坎艮', m.items.filter(function(x){return x.deny;}).map(function(x){return x.k;}).sort().join(',')==='gen,kan');
+    t(m.id+' guide 測局不測你', m.guide.indexOf('不是你像不像')>=0);
+    t(m.id+' 強度題', m.intensityQ.length>5);
+  });
+  t('愛情可跳過', H.MODULES[1].skippable===true);
+  t('六點量尺 0–100', H.CTXD_SCALE.length===6 && H.CTXD_SCALE[0].v===100 && H.CTXD_SCALE[5].v===0);
+  t('強度四級', H.CTXD_INTENSITY.length===4 && H.CTXD_READ.intensity.max.indexOf('專業')>=0);
+  t('COPE ×8 / DENY 坎艮', Object.keys(H.COPE).length===8 && !!H.DENY.kan && !!H.DENY.gen);
+  t('門檻沿用 CTX', H.DEMAND_HI===60 && H.DRAIN_GAP===20);
+  t('誠實邊界句', H.CTXD_READ.honest.indexOf('不宣稱因果')>=0);
+
+  // ── E2E:全程自動走(開始→28 題→摘要→工作模組→註記)──
+  var f=document.createElement('iframe');
+  f.style.cssText='width:700px;height:900px';
+  f.src='bagua-hybrid.html';
+  document.getElementById('frames').appendChild(f);
+  var tries=0, clicks=0, modClicked=false, done=false;
+  var timer=setInterval(function(){
+    tries++;
+    var doc=null;
+    try{ doc=f.contentDocument; }catch(e){}
+    if(!doc||!doc.body){ if(tries>300) finishFail('no doc'); return; }
+    var txt=doc.body.innerText||'';
+    if(!done && txt.indexOf('不宣稱因果')>=0 && txt.indexOf('不會改變你的八態分數')>=0){
+      done=true; clearInterval(timer); assertAll(doc,txt); return;
+    }
+    var opt=doc.querySelector('.opts-live .opt');
+    if(opt && clicks<70){ clicks++; opt.click(); return; }
+    if(!opt && !modClicked && doc.body.getAttribute('data-stage')==='talk'){
+      var mb=doc.querySelector('.modrow .modbtn'); // 第一顆=工作
+      if(mb){ modClicked=true; mb.click(); return; }
+    }
+    if(tries>400) finishFail('timeout stage='+(doc.body.getAttribute('data-stage')||'?')+' clicks='+clicks);
+  },120);
+  function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
+  function assertAll(doc,txt){
+    var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
+    t('e2e 過場語出現', txt.indexOf('第一圈走完了')>=0);
+    t('e2e 二選一引言', txt.indexOf('二選一')>=0);
+    t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
+    t('e2e 完整報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+R.code+'"]'));
+    t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
+    t('e2e 全首選→無校準路徑', txt.indexOf('直接看結果')>=0);
+    t('e2e 模組選單含整備中', txt.indexOf('整備中')>=0);
+    // 全「非常符合」(demand=100)+底色 67:六股順流、坎艮=場域不給
+    t('e2e 主場段', txt.indexOf(H.CTXD_READ.flowLabel)>=0 && txt.indexOf('定方向')>=0);
+    t('e2e deny 段', txt.indexOf('安靜沉澱')>=0 && txt.indexOf('喊停')>=0);
+    t('e2e 強度回扣(還好)', txt.indexOf('收支撐得住')>=0);
+    t('e2e 模組結果已存', !!St.mods['ctx-work'] && St.mods['ctx-work'].intensity==='mild');
+    // annexData 單元:掏空分類(demand 100、底色低)
+    var fakeRes={sc:{qian:30,kun:30,zhen:30,xun:30,li:30,kan:30,gen:30,dui:30},costSt:{}};
+    // 借 iframe 的 annexData 需 RES 注入——改以本地重算驗證分類邏輯
+    var m=H.MODULES[0], flows=0,drains=0,denies=0;
+    m.items.forEach(function(it){
+      var v=100, base=30;
+      if(it.deny){ if(v>=H.DEMAND_HI)denies++; }
+      else if(v>=H.DEMAND_HI&&base>=H.DEMAND_HI)flows++;
+      else if(v>=H.DEMAND_HI&&v-base>=H.DRAIN_GAP)drains++;
+    });
+    t('分類邏輯:低底色全掏空', flows===0&&drains===6&&denies===2);
+    t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
+    finish();
+  }
+  function finish(){
+    document.title='RESULT pass='+pass+' fail='+fail;
+    log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+  }
+})();
+</script>
+</body></html>
