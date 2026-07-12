@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>衡鑑式伴讀 · 像心理師一樣陪你</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>衡鑑式伴讀 · 像心理師一樣陪你</h1>
+  <div class="meta">THERAPEUTIC COMPANION · 2026-07-12 · TONE + PROCESS</div>
+</header>
+<article>
+<p>整理日期:2026-07-12 ｜ 狀態:<strong>方向定案、腳本草案待潤(建議心理師審閱)</strong>
+緣起:使用者提案——「像心理師幫個案做測驗、一起了解使用者的角度來進行整個過程,尤其是結果的說明,用專業同理溫潤的語氣、共同探討的角度出發」;目標=珍貴的使用者回饋+整套服務的可接受度。
+學理錨點:治療性衡鑑(Therapeutic Assessment, S. Finn)——把測驗從「對個案做的事」變成「與個案一起做的事」,衡鑑本身即是善意的介入;回饋依「與自我印象的一致度」分層呈現。
+上游:2026-07-12 半題庫半對話 spec(紅線照舊:題庫測量、對話選路、對話永不打分)、伴讀守則、學理/解讀憲法。</p>
+<hr />
+<h2>0. 一句話</h2>
+<blockquote>
+<p>分數還是規則引擎算的,但<strong>遞給你的方式,像一位溫潤的心理師</strong>:先聽你想了解什麼,一段一段陪你核對「像不像」,最後把今天一起看到的,整理成一封留給你的信。</p>
+</blockquote>
+<h2>1. 語氣憲章(六條,適用所有腳本與伴讀 LLM)</h2>
+<ol>
+<li><strong>暫定語</strong>:「測驗照出來的是……你聽起來覺得呢?」——不是「你是」,是「我看到的是,請你核對」。</li>
+<li><strong>使用者是自己生活的專家</strong>:分數是假設,他的經驗才是裁判;「不像」是珍貴訊息,回應永遠先謝謝、再好奇,不辯護。</li>
+<li><strong>先接住,再展開</strong>:沉重的段落(掏空、亢、場域不給)先一句同理,再給內容。</li>
+<li><strong>一次一件事</strong>:每段只談一個主題,以開放的邀請收尾,不轟炸。</li>
+<li><strong>不評價、不催促</strong>:選項沒有好壞;「先不想說」「先跳過」永遠是被尊重的選項。</li>
+<li><strong>借態度、不借身份</strong>:全程明示「這是自我探索工具,不是心理衡鑑、諮商或治療」;溫潤但不製造依附;危機協議永遠優先。</li>
+</ol>
+<h2>2. 流程對應(TA 三招 → 伴讀版三機制)</h2>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>TA 實務</th>
+<th>伴讀版機制</th>
+<th>落點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>衡鑑從「個案的問題」開始</td>
+<td><strong>開場收一句「你想多了解什麼?」</strong>(自由填,可跳過);摘要後第一句回應它、結尾回顧它</td>
+<td>開場+摘要+信</td>
+</tr>
+<tr>
+<td>回饋分層:先講與自我印象一致的,再講意外的</td>
+<td><strong>分段揭示</strong>:①峰名(最可能被認同)→②四道門主軸→③能量水平與能格→④二選一落差(若有,Level 2 素材)→ 連結與模組</td>
+<td>摘要階段</td>
+</tr>
+<tr>
+<td>每段與個案核對</td>
+<td><strong>逐段三鍵核對:很像/部分像/不太像</strong>——三種回應各有同理回話;核對紀錄=結構化共鳴資料(比自由回饋精準)</td>
+<td>摘要階段</td>
+</tr>
+<tr>
+<td>結尾寫給個案的信</td>
+<td><strong>「今天的整理」一封信</strong>:規則組裝(你的問題+峰名+你核對過的段落)+伴讀回饋摘要</td>
+<td>結束時</td>
+</tr>
+</tbody>
+</table></div>
+<p>紅線不變:核對按鈕<strong>不改分數</strong>——它是回饋資料與對話素材,不是計分輸入。</p>
+<h2>3. 資料設計(珍貴回饋的形狀)</h2>
+<ul>
+<li><code>ask</code>:使用者開場寫下的問題(原話)。</li>
+<li><code>echo</code>:{peak, gate, level, fcgap} → 很像/部分像/不太像——<strong>逐段共鳴資料</strong>,直接對回內容區塊,可跨使用者統計「哪一段最常不像」→ 修型錄的優先序。</li>
+<li>以上入 localStorage;伴讀聊天 grounding 附帶(LLM 知道你帶什麼問題來、哪段你搖頭);「結束伴讀」的回饋摘要一併帶回(Worker FEEDBACK KV 若綁定則落檔)。</li>
+<li>誠實邊界:開場明示核對紀錄的用途;作答與核對都只存本機,回傳的只有結束時的摘要(既有揭露)。</li>
+</ul>
+<h2>4. 界線條款</h2>
+<ul>
+<li>開場白第三句固定包含:「這是自我探索的鏡子,<strong>不是心理衡鑑或治療</strong>,也不是算命。」頁尾誠實印章同步。</li>
+<li>危機關鍵字攔截照舊(本機、不經 LLM、給 1925/1995/1980)。</li>
+<li>語氣升級後更要防「過度臨床感」:不用診斷詞彙、不用個案/晤談等術語對使用者說話。</li>
+<li><strong>心理師審閱迴圈</strong>:腳本定稿前送合作心理師潤稿;上線後掛「腳本經心理師審閱」——體驗與公信力資產(Route C 的自然協作)。</li>
+</ul>
+<h2>5. 實作對應(伴讀版 bagua-hybrid)</h2>
+<ul>
+<li><code>bagua-hybrid-data.js</code> CHAT 全面重寫為衡鑑語氣(草案待潤+心理師審);新增 askIntro/askSkip/askEcho、segXxx 分段引言、ack 三態回話、letter 模板。</li>
+<li><code>bagua-hybrid.html</code>:開場插入收問題(自由填/跳過);<code>toSummary</code> 改分段揭示+逐段核對;結束時先出「今天的整理」信、再接回饋摘要;grounding 附 ask+echo。</li>
+<li><code>ven-i/worker.js</code> OCTENSO_SYSTEM 增補語氣守則(§1 憲章的 LLM 版);push 即自動部署。</li>
+<li>v2 報告頁不動(靜態報告維持文件感);衡鑑式體驗以伴讀版為家。</li>
+</ul>
+<h2>6. 待決</h2>
+<ol>
+<li>腳本全文的心理師審閱(定稿前)。</li>
+<li>「今天的整理」信要不要提供下載/寄給自己(涉及資料流,預設只顯示+複製)。</li>
+<li>逐段共鳴資料的彙整管道(目前:結束摘要回傳;之後可考慮匿名統計 opt-in)。</li>
+<li>v2 報告頁是否也加輕量版逐段核對(傾向不加,保持雙軌:文件感 vs 陪伴感)。</li>
+</ol>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-12-octenso-therapeutic-companion-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
