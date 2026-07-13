@@ -270,7 +270,7 @@ function toSummary(){
     var plain=(ax.key==='drive'&&st==='bothHigh')?GT.tension
       :GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
     bot(CH.segGate);
-    bot(GT.name[ax.key]+'之門 · '+GT.q[ax.key]+'\n你這兩個特性的用法:'+plain+'\n('+V.SYSTEM_READ[ax.key][st].tag+'——'+V.SYSTEM_READ[ax.key][st].desc+')');
+    bot(GT.name[ax.key]+'系統 · '+GT.q[ax.key]+'\n此刻的運作:'+plain+'\n('+V.SYSTEM_READ[ax.key][st].tag+'——'+V.SYSTEM_READ[ax.key][st].desc+')');
     askEcho('gate',function(){
       // 段 3:整體水平+能格(若有)
       bot(CH.segLevel);
@@ -291,7 +291,7 @@ function toSummary(){
           if((st2==='leanL'&&side==='R')||(st2==='leanR'&&side==='L')){
             var pick=side==='L'?GT.pole[a.l]:GT.pole[a.r];
             var scale=side==='L'?GT.pole[a.r]:GT.pole[a.l];
-            gaps.push(GT.name[a.key]+'之門:量表推得偏「'+scale+'」,二選一時你卻選了「'+pick+'」——關鍵時刻,你會往這邊站。哪一個更貼近此刻的你?');
+            gaps.push(GT.name[a.key]+'系統:量表推得偏「'+scale+'」,二選一時你卻選了「'+pick+'」——關鍵時刻,你會往這邊站。哪一個更貼近此刻的你?');
           }
         });
         function finish(){revealEnd(pk);}
@@ -418,11 +418,11 @@ function ground(){
   RES.pf.ranked.forEach(function(o){
     L.push('・'+B.get(o.k).nm+'·'+B.get(o.k).fnShort+' '+o.v+' — '+RES.pf.bands[o.k].label);
   });
-  L.push('四道門:');
+  L.push('四大系統:');
   RES.pf.axes.forEach(function(ax){
     var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
       :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
-    L.push('・'+GT.name[ax.key]+'之門('+GT.pole[ax.l]+'⇄'+GT.pole[ax.r]+'):'+V.SYSTEM_READ[ax.key][st].tag);
+    L.push('・'+GT.name[ax.key]+'系統('+GT.pole[ax.l]+'⇄'+GT.pole[ax.r]+'):'+V.SYSTEM_READ[ax.key][st].tag);
   });
   Object.keys(RES.costSt).forEach(function(k){
     L.push('能格・'+B.get(k).nm+':'+RES.costSt[k]);
@@ -436,7 +436,7 @@ function ground(){
       +';整體感受:'+rec.intensity);
   });
   if(S.ask)L.push('【使用者帶來的問題】'+S.ask+'——請在對話中回應它。');
-  var names={peak:'峰名',gate:'四道門',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
+  var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'='+lbl[S.echo[k]];});
   if(es.length)L.push('【逐段核對】'+es.join('、')+'——「不太像」的段落請先謝謝並好奇地多問,不辯護。');
   return L.join('\n');
@@ -469,7 +469,7 @@ function letter(){
   var pk=peakName(),L=[CH.letterTitle];
   if(S.ask)L.push(CH.letterAsk.replace('{Q}',S.ask));
   L.push(CH.letterPeak.replace('{P}',pk.title+'('+pk.sub+')'));
-  var names={peak:'峰名',gate:'四道門',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
+  var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'—'+lbl[S.echo[k]];});
   if(es.length)L.push(CH.letterEcho.replace('{E}',es.join('、')));
   if(Object.keys(S.echo).some(function(k){return S.echo[k]==='unlike';}))L.push(CH.letterUnlike);
