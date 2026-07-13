@@ -57,11 +57,11 @@
     t('chips ×4', doc.getElementById('chips').children.length===4);
     t('peak line plain', txt.indexOf('開創者·乾')>=0 && txt.indexOf('擅長定方向')>=0 && txt.indexOf('帶著光圈')>=0);
     // 白話層:導讀三步 + 生活問句 + 白話動詞 + 「你此刻的樣子」
-    t('howto 3 steps', txt.indexOf('晶體的形狀就是你')>=0 && txt.indexOf('四道門')>=0 && txt.indexOf('可以同時亮')>=0);
-    t('gate def shown(綜合陳述)', txt.indexOf('總會同時牽動兩件事')>=0 && txt.indexOf('定方向(往哪去、怎麼定)')>=0);
+    t('howto 3 steps', txt.indexOf('晶體的形狀就是你')>=0 && txt.indexOf('四大系統')>=0 && txt.indexOf('可以同時亮')>=0);
+    t('gate def shown(系統雙分支)', txt.indexOf('兩個分支')>=0 && txt.indexOf('定方向(往哪去、怎麼定)')>=0);
     t('plain poles on chips', ['定方向','接住人','直接動手','先鋪路','收著想','說出來','關起門','找人聊']
       .every(function(s){return txt.indexOf(s)>=0;}));
-    t('plain state line', txt.indexOf('你此刻的樣子')>=0 && (txt.indexOf('慣用手')>=0||txt.indexOf('兩隻手')>=0||txt.indexOf('看場合')>=0));
+    t('plain state line', txt.indexOf('此刻的運作')>=0 && (txt.indexOf('優勢分支')>=0||txt.indexOf('雙分支')>=0||txt.indexOf('輪流上場')>=0));
     // 四對籤的 tag 全部來自 canonical SYSTEM_READ
     pf.axes.forEach(function(ax){
       var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
@@ -73,7 +73,7 @@
     var st0=pf.axes[0].intensity==='single'?(pf.axes[0].lean==='left'?'leanL':'leanR'):'mid';
     var desc=V.SYSTEM_READ.build[st0].desc.slice(0,10);
     t('default reading = build desc', txt.indexOf(desc)>=0);
-    t('gate names(功能系)', ['方向之門','動力之門','內外之門','開闔之門'].every(function(s){return txt.indexOf(s)>=0;}));
+    t('gate names(系統)', ['建構系統','推動系統','認知系統','調節系統'].every(function(s){return txt.indexOf(s)>=0;}));
     t('honest line', txt.indexOf('不是算命')>=0);
 
     f.parentNode.removeChild(f);

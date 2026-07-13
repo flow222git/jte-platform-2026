@@ -73,7 +73,7 @@
 
 <div class="eyebrow">Octenso · Energy Crystal · Prototype</div>
 <h1>能量晶體</h1>
-<div class="sub">把你的能量快照立體看一次——八個角是你的八股能量,四條軸是你內在的四道門(四個心理功能)</div>
+<div class="sub">把你的能量快照立體看一次——八個角是你的八股能量,四條軸是你內在的四大系統(建構/推動/認知/調節)</div>
 <span class="draft">探索原型 · 草案 · 未接導覽</span>
 
 <div id="scr-code" class="card">
@@ -93,15 +93,15 @@
   <p class="peak" id="peakline"></p>
   <div class="howto" id="howto">
     <div class="hrow"><span class="hn">1</span><b>這顆晶體的形狀就是你</b>——比的是你自己八股能量的相對強弱:峰的那角撐得最開(最亮、帶光圈),其他角依比例收放。縮著的角不是沒有,是此刻收著、還有空間長。</div>
-    <div class="hrow"><span class="hn">2</span>四條穿過中心的線=你的四道門:方向、動力、內外、開闔——整天都開著,不分先後。哪邊的臂伸得長,你就偏用那隻手。</div>
-    <div class="hrow"><span class="hn">3</span>每道門的兩端<b>可以同時亮</b>——都長=兩隻手都熟;一長一短=有慣用手;都短=此刻先收著,不是沒有。</div>
+    <div class="hrow"><span class="hn">2</span>四條穿過中心的線=四大系統:建構、推動、認知、調節——同時運作,不分先後。哪個分支的臂伸得長,那支就是你的優勢分支。</div>
+    <div class="hrow"><span class="hn">3</span>每個系統的兩端<b>可以同時亮</b>——都長=雙分支同強;一長一短=有優勢分支;都短=低載運轉,不是沒有。</div>
   </div>
   <canvas id="cv" width="560" height="560" aria-label="能量晶體立體圖"></canvas>
-  <p class="hint">拖一拖,轉動你的晶體 · 點一條線(或下面的門),讀那道門的你</p>
+  <p class="hint">拖一拖,轉動你的晶體 · 點一條線(或下面的系統),讀那個系統的你</p>
   <div class="chips" id="chips"></div>
   <div class="reading" id="reading"></div>
-  <p class="legend">線的讀法:實心亮線=兩端並重 · 往一端漸亮=偏用那隻手 · 虛線=此刻收著 ·
-  唯獨「動力之門」兩端同亮會變硃砂色——衝勁和鋪路都是往外的引擎,同時全開會互相搶方向盤,是唯一要留意輪流的一對。
+  <p class="legend">線的讀法:實心亮線=兩端並重 · 往一端漸亮=偏向優勢分支 · 虛線=此刻收著 ·
+  唯獨「推動系統」兩端同亮會變硃砂色——兩個分支都是往外的推力,同時全開會互相搶方向盤,是唯一需要刻意輪替的一對。
   (淡淡兩組三角形是八個角天生的家族分組,看個結構就好,不影響讀法。)</p>
   <p class="center" id="backrow" style="margin:20px 0 0"></p>
   <div class="honest" id="honest"></div>
@@ -284,7 +284,7 @@ function renderChips(){
   S.pf.axes.forEach(function(ax){
     var read=V.SYSTEM_READ[ax.key][axState(ax)];
     h+='<button class="chip'+(S.sel===ax.key?' sel':'')+'" data-k="'+ax.key+'">'
-      +'<span class="cx">'+GATE[ax.key]+'之門</span>'
+      +'<span class="cx">'+GATE[ax.key]+'系統</span>'
       +'<span class="ct">'+POLE[ax.l]+' ⇄ '+POLE[ax.r]+'</span>'
       +'<span class="cx">'+read.tag+'</span></button>';
   });
@@ -303,8 +303,8 @@ function renderReading(){
     :STATE_PLAIN[st].replace('{L}',POLE[ax.l]).replace('{R}',POLE[ax.r])
                     .replace('{L}',POLE[ax.l]).replace('{R}',POLE[ax.r]);
   $('reading').innerHTML=
-    '<div class="rq">'+GATE[ax.key]+'之門:'+GATE_Q[ax.key]+'</div>'
-    +'<div class="rs">你此刻的樣子:<b>'+plain+'</b></div>'
+    '<div class="rq">'+GATE[ax.key]+'系統:'+GATE_Q[ax.key]+'</div>'
+    +'<div class="rs">此刻的運作:<b>'+plain+'</b></div>'
     +'<div class="rt'+(tension?' tension':'')+'">'+read.tag+'</div>'
     +'<p>'+read.desc+'</p>'
     +'<div class="rnote">'+pr.xiang+'軸 · '+ax.ln+'者('+B.get(ax.l).nm+') '+S.sc[ax.l]
