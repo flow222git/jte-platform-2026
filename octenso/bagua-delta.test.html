@@ -1,0 +1,79 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>delta tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="vector.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
+  var P=window.OctensoProfile, X=window.OctensoVector;
+  function mk(o){ var sc={}; P.EKEYS.forEach(function(k){sc[k]=o[k]!=null?o[k]:(o.rest!=null?o.rest:50);}); return sc; }
+
+  // ── 單元:四大系統座標(換底)──
+  var gc=X.gateCoords(mk({qian:80,kun:40,rest:50}));
+  t('gateCoords tilt', gc.build.tilt===40);
+  t('gateCoords open', gc.build.open===60);
+  t('gateCoords 其餘系統中性', gc.aware.tilt===0 && gc.aware.open===50);
+
+  // ── 單元:重測差異 Δ ──
+  var a=mk({rest:50}), b=mk({qian:74,kan:38,rest:50});
+  var dl=X.delta(a,b);
+  t('delta 逐態差', dl.d.qian===24 && dl.d.kan===-12 && dl.d.dui===0);
+  t('delta RMS D', Math.abs(dl.D-9.5)<0.2);
+  t('delta band=flow', dl.band==='flow');
+  t('delta moved 按幅度排序+濾雜訊', dl.moved.length===2 && dl.moved[0].k==='qian' && dl.moved[1].k==='kan');
+  t('delta 門座標位移', dl.gates.build.dTilt===24 && dl.gates.aware.dTilt===-12);
+  var same=X.delta(a,mk({qian:55,rest:50})); // +5 在雜訊內
+  t('delta 雜訊地板', same.moved.length===0 && same.band==='steady');
+
+  // ── 單元:形狀相似 ──
+  var s1=X.similarity(mk({qian:80,kun:40,rest:50}), mk({qian:90,kun:50,rest:60}));
+  t('similarity 同形不同水平 → shape=1、levelDiff=10', Math.abs(s1.shape-1)<0.01 && Math.abs(s1.levelDiff-10)<0.01);
+  var s2=X.similarity(mk({qian:80,rest:40}), mk({kun:80,rest:40}));
+  t('similarity 對峰反形 → shape<0', s2.shape<0);
+  t('VREAD 齊備', ['steady','flow','shift','stateUp','gateTilt','honest','crossBank'].every(function(k){return X.VREAD[k]&&X.VREAD[k].length>3;}));
+
+  // ── iframe:渲染+跨題本拒算 ──
+  var PREV='B2'+'5050505050505050'+'9999';
+  var CURR='B2'+'7450505050385050'+'9999';
+  var f=document.createElement('iframe');
+  f.style.cssText='width:700px;height:900px';
+  f.src='bagua-delta.html#a='+PREV+'&b='+CURR;
+  document.getElementById('frames').appendChild(f);
+  var tries=0;
+  var timer=setInterval(function(){
+    tries++;
+    var doc=null,ready=false;
+    try{ doc=f.contentDocument; ready=doc.body.getAttribute('data-ready')==='1'; }catch(e){}
+    if(!ready && tries<=220) return;
+    clearInterval(timer);
+    if(!ready){ t('page ready', false); finish(); return; }
+    var txt=doc.body.innerText||'';
+    t('渲染:整體移動量', txt.indexOf('整體移動量 9.5')>=0);
+    t('渲染:有些流動', txt.indexOf('有些流動')>=0);
+    t('渲染:長了/收了(先者後卦)', txt.indexOf('開創者(乾) 長了 24')>=0 && txt.indexOf('沉澱者(坎) 收了 12')>=0);
+    t('渲染:系統位移行', txt.indexOf('建構系統')>=0 && txt.indexOf('往「定方向」移了 24')>=0);
+    t('渲染:認知系統往說出來', txt.indexOf('往「說出來」移了 12')>=0);
+    t('渲染:誠實邊界', txt.indexOf('不解釋原因')>=0 && txt.indexOf('測量誤差')>=0);
+    t('渲染:回報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+CURR+'"]'));
+    // 跨題本拒算
+    var d1=f.contentWindow.DELTA.decode('B15050505050505050');
+    t('decode B1', !!d1 && d1.bank==='v1');
+    f.contentDocument.getElementById('in-prev').value='B15050505050505050';
+    f.contentDocument.getElementById('in-curr').value=CURR;
+    f.contentDocument.getElementById('btn-go').click();
+    var txt2=f.contentDocument.body.innerText||'';
+    t('跨題本拒算', txt2.indexOf('不能直接相減')>=0);
+    f.parentNode.removeChild(f);
+    finish();
+  },150);
+  function finish(){
+    document.title='RESULT pass='+pass+' fail='+fail;
+    log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+  }
+})();
+</script>
+</body></html>
