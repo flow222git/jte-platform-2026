@@ -1,0 +1,163 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>Octenso 八態能格 · 月照鏡(兩次快照對照 · 體驗原型)</title>
+<!--
+  月照鏡 · 重測差異 Δ(向量函式層 函式一的體驗頁;未接導覽)
+  依 2026-07-13 向量函式層 spec:只描述位移(移了多少、往哪移),
+  不解釋原因、不評好壞;NOISE 以內屬測量誤差,不敘事。
+  鐵律:B1 與 B2 分數不可互比——跨題本一律拒算並說明。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:640px;margin:0 auto;padding:26px 20px 90px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:26px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.05em;margin-bottom:14px}
+  .draft{display:block;width:fit-content;margin:0 auto 22px;text-align:center;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .lbl{font-size:12.5px;color:var(--muted);letter-spacing:.08em;margin:12px 0 4px}
+  .input{width:100%;background:transparent;border:1px solid var(--hair);border-radius:10px;padding:11px 13px;
+    color:var(--ink);font-size:14px;font-family:"Jost",monospace;letter-spacing:.08em}
+  .input:focus{outline:none;border-color:var(--ink)}
+  .btn{display:inline-block;font-size:14px;font-weight:300;letter-spacing:.08em;padding:10px 26px;cursor:pointer;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);background:transparent;transition:.2s;text-decoration:none}
+  .btn:hover{background:var(--ink);color:var(--bg)}
+  .center{text-align:center}
+  .hide{display:none}
+  .err{color:var(--cinnabar);font-size:12.5px;text-align:center;margin-top:10px}
+  .rule{height:1px;background:var(--line);margin:30px 0}
+  .seclabel{font-size:13px;letter-spacing:.14em;color:var(--muted);margin-bottom:12px}
+  .dhead{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:19px;letter-spacing:.1em;
+    color:var(--ink);text-align:center;margin:6px 0 2px}
+  .dsub{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:14px}
+  .mv{padding:10px 0;border-bottom:1px solid var(--surface2);font-size:13.5px}
+  .mv b{font-weight:400;color:var(--ink)}
+  .mv .up{color:var(--pine)} .mv .down{color:var(--gold)}
+  .bar2{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:11.5px;color:var(--muted)}
+  .bar2 .tk{flex:1;position:relative;height:8px;background:var(--surface2);border-radius:4px}
+  .bar2 .tk i{position:absolute;top:0;bottom:0;border-radius:4px}
+  .bar2 .tk i.old{background:var(--hair);opacity:.7}
+  .bar2 .tk i.new{background:var(--pine);opacity:.7}
+  .gline{font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--surface2)}
+  .gline b{font-weight:400;color:var(--pine)}
+  .honest{font-size:12.5px;color:var(--muted);line-height:1.95;padding-left:15px;border-left:1px solid var(--hair);margin-top:26px}
+  a{color:var(--pine)}
+</style>
+</head><body>
+
+<div class="eyebrow">Octenso · Delta Mirror · Prototype</div>
+<h1>月照鏡</h1>
+<div class="sub">兩次快照之間,你的形狀移動了多少、往哪移——描述位移,不解釋原因</div>
+<span class="draft">體驗原型 · 向量函式層 v0.1 · 未接導覽</span>
+
+<div id="scr-in" class="card">
+  <p style="font-size:13.5px">把兩次測驗的分享碼貼進來(同一版題本:都是 B1、或都是 B2)。建議間隔至少幾週——快照會流動,這正是再測的意義。</p>
+  <div class="lbl">上一次(較早的那次)</div>
+  <input id="in-prev" class="input" placeholder="B2…(22 碼)或 B1…(18 碼)">
+  <div class="lbl">這一次(最近的)</div>
+  <input id="in-curr" class="input" placeholder="B2…(22 碼)或 B1…(18 碼)">
+  <p class="center" style="margin-top:16px"><button class="btn" id="btn-go">對照這兩次</button></p>
+  <p id="err" class="err hide"></p>
+</div>
+
+<div id="scr-out" class="hide">
+  <div class="rule"></div>
+  <div class="dhead" id="d-head"></div>
+  <div class="dsub" id="d-sub"></div>
+  <div class="seclabel">移動的能量(超過測量誤差的)</div>
+  <div id="d-moved"></div>
+  <div class="rule"></div>
+  <div class="seclabel">四大系統的位移</div>
+  <div id="d-gates"></div>
+  <p class="center" style="margin-top:22px">
+    <a class="btn" id="lnk-report" href="#">看這一次的完整報告 →</a>
+  </p>
+  <div class="honest" id="honest"></div>
+</div>
+
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="vector.js"></script>
+<script>
+(function(){
+'use strict';
+var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2, X=window.OctensoVector;
+var $=function(id){return document.getElementById(id);};
+var EKEYS=P.EKEYS, GT=V.GATES, R=X.VREAD;
+
+function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function decode(str){
+  str=(str||'').trim().toUpperCase().replace(/\s/g,'');
+  var sc={},i;
+  if(str.indexOf('B1')===0&&str.length===18&&/^[0-9]{16}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc,bank:'v1',code:str};
+  }
+  if(str.indexOf('B2')===0&&str.length===22&&/^[0-9]{20}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc,bank:'v2',code:str};
+  }
+  return null;
+}
+
+function run(){
+  var a=decode($('in-prev').value), b=decode($('in-curr').value), e=$('err');
+  e.classList.add('hide');
+  if(!a||!b){ e.textContent='有一串碼讀不出來——請確認是 B1(18 碼)或 B2(22 碼)。'; e.classList.remove('hide'); return; }
+  if(a.bank!==b.bank){ e.textContent=R.crossBank; e.classList.remove('hide'); return; }
+  var dl=X.delta(a.sc,b.sc);
+  $('d-head').textContent='整體移動量 '+dl.D;
+  $('d-sub').textContent=R[dl.band];
+  // 移動的能量
+  var h='';
+  if(!dl.moved.length){
+    h='<p style="font-size:13.5px;color:var(--muted)">'+esc(R.noneMoved.replace('{NOISE}',X.NOISE))+'</p>';
+  } else dl.moved.forEach(function(m){
+    var up=m.d>0, tpl=up?R.stateUp:R.stateDown;
+    var line=tpl.replace('{N}',pn(m.k)).replace('{D}',Math.abs(m.d));
+    var o=a.sc[m.k],n=b.sc[m.k];
+    h+='<div class="mv"><b class="'+(up?'up':'down')+'">'+esc(line)+'</b>'
+      +'<div class="bar2"><span>'+o+'</span><span class="tk">'
+      +'<i class="old" style="left:0;width:'+o+'%"></i>'
+      +'<i class="new" style="left:0;width:'+n+'%;opacity:.55"></i></span>'
+      +'<span>'+n+'</span></div></div>';
+  });
+  $('d-moved').innerHTML=h;
+  // 四大系統
+  var gh='';
+  P.PAIRS.forEach(function(p){
+    var gd=dl.gates[p.key], lines=[];
+    if(Math.abs(gd.dTilt)>=X.NOISE){
+      var toward=gd.dTilt>0?GT.pole[p.l]:GT.pole[p.r];
+      lines.push(R.gateTilt.replace('{G}',GT.name[p.key]).replace('{P}',toward).replace('{D}',Math.abs(gd.dTilt)));
+    }
+    if(Math.abs(gd.dOpen)>=X.NOISE){
+      lines.push((gd.dOpen>0?R.gateOpenUp:R.gateOpenDown).replace('{G}',GT.name[p.key]).replace('{D}',Math.abs(gd.dOpen)));
+    }
+    if(lines.length) gh+='<div class="gline"><b>'+GT.name[p.key]+'系統</b> '+esc(lines.join(' '))+'</div>';
+  });
+  if(!gh) gh='<p style="font-size:13.5px;color:var(--muted)">四大系統的座標都在測量誤差內——結構穩定。</p>';
+  $('d-gates').innerHTML=gh;
+  $('lnk-report').href=(b.bank==='v2'?'bagua-persona-v2.html#r=':'bagua-persona.html#r=')+b.code;
+  $('honest').textContent=B.HONEST+' '+R.honest.replace('{NOISE}',X.NOISE);
+  $('scr-out').classList.remove('hide');
+  document.body.setAttribute('data-ready','1');
+}
+$('btn-go').onclick=run;
+// #a=CODE&b=CODE 直接渲染
+var m=(location.hash||'').match(/#a=([A-Za-z0-9]+)&b=([A-Za-z0-9]+)/);
+if(m){ $('in-prev').value=m[1]; $('in-curr').value=m[2]; run(); }
+
+window.DELTA={decode:decode};
+})();
+</script>
+</body></html>
