@@ -140,7 +140,7 @@ function radarOverlay(o,n){
 // 系統位移平面:x=傾向(左分支↔右分支)、y=開度;空心點=上次、實心點=這次
 function planeSVG(p,gd){
   var W=270,Hh=120,pad=14;
-  function px(t){return pad+(t+100)/200*(W-2*pad);}
+  function px(t){return pad+((-t)+100)/200*(W-2*pad);} // 傾向正=左分支強→畫向左端
   function py(o){return Hh-pad-(o/100)*(Hh-2*pad);}
   var x1=px(gd.tilt1),y1=py(gd.open1),x2=px(gd.tilt2),y2=py(gd.open2);
   var moved=Math.abs(gd.dTilt)>=X.NOISE||Math.abs(gd.dOpen)>=X.NOISE;
