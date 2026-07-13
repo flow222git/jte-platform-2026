@@ -58,6 +58,9 @@
     t('渲染:系統位移行', txt.indexOf('建構系統')>=0 && txt.indexOf('往「定方向」移了 24')>=0);
     t('渲染:認知系統往說出來', txt.indexOf('往「說出來」移了 12')>=0);
     t('渲染:誠實邊界', txt.indexOf('不解釋原因')>=0 && txt.indexOf('測量誤差')>=0);
+    t('渲染:疊影雷達', !!doc.querySelector('#d-radar svg') && txt.indexOf('虛線=上一次')>=0);
+    t('渲染:四張位移平面', doc.querySelectorAll('.plane svg').length===4);
+    t('渲染:數學註腳', txt.indexOf('這一頁的數學')>=0);
     t('渲染:回報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+CURR+'"]'));
     // 跨題本拒算
     var d1=f.contentWindow.DELTA.decode('B15050505050505050');
