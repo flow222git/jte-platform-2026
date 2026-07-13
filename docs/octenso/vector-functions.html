@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>向量函式層 · 變化、相似、比對</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>向量函式層 · 變化、相似、比對</h1>
+  <div class="meta">VECTOR FUNCTIONS · 2026-07-13 · MATH LAYER</div>
+</header>
+<article>
+<p>整理日期:2026-07-13 ｜ 狀態:<strong>定義定案、參考值 v0.1 待試測校正</strong>——純數學層,不動測驗與報告
+緣起:使用者提問「把測出來的百分比變成數學函式,得出立體完整的你?」+「四個門一起加入」。
+定調:<strong>「立體完整的你」=八維向量本身</strong>(晶體渲染的就是它);函式層不做加權融合(壓扁+把排名雜訊當訊號),只做三件事:<strong>變化、相似、比對</strong>。
+上游:profile.js(EKEYS/PAIRS/TUNE)、能量晶體、bagua-records(歷史紀錄)、學理/解讀憲法。</p>
+<hr />
+<h2>0. 基本物件</h2>
+<ul>
+<li><strong>八態向量</strong> v = (乾, 離, 震, 兌, 坤, 坎, 艮, 巽) ∈ [0,100]⁸ ——完整的你,一分不丟。</li>
+<li><strong>四門座標</strong>(由 v 換底,免費取得;g 的兩極為 l, r):</li>
+<li>傾向 tilt_g = s_l − s_r ∈ <a href="正=偏左極;絕對值=偏多少">−100, 100</a></li>
+<li>開度 open_g = (s_l + s_r) / 2 ∈ <a href="這道門整體開多大">0, 100</a></li>
+<li>八態 ⇄ 四門×(傾向, 開度) 是<strong>可逆線性變換</strong>:同一份資訊、兩種讀法。門座標的價值=可讀性(對人說話用門,對機器算距離用態)。</li>
+</ul>
+<h2>1. 函式一:重測差異 Δ(月照鏡的引擎)——優先做</h2>
+<ul>
+<li>逐態差 δ_k = v₂ₖ − v₁ₖ;整體移動量 D = √( Σ δ_k² / 8 )(RMS,0–100 同尺)。</li>
+<li>門座標差:Δtilt_g、Δopen_g ——敘事主角。</li>
+<li><strong>雜訊地板 NOISE = 8</strong>(v0.1 假設;重測信度資料進來後校正):|δ| &lt; NOISE 一律說「大致穩定」,不敘事——把測量誤差當變化講,是另一種算命。</li>
+<li>敘事模板(草案):</li>
+<li>整體:D &lt; 6 「這個月你的形狀很穩」/ 6–14 「有些流動」/ &gt;14 「明顯的移動」</li>
+<li>逐門:「{門}之門:傾向從 {t₁} 移到 {t₂}(往「{極}」靠了 {Δ});開度{升/降/持平}。」</li>
+<li>憲法檢核:只描述位移,不解釋原因、不評好壞(「坎長了」≠「你進步了」)。</li>
+<li>落地:bagua-records 已存歷史紀錄——在紀錄頁加「這兩次之間」對照卡;或伴讀版重測時開場直接說。</li>
+</ul>
+<h2>2. 函式二:形狀相似(合盤/團隊)</h2>
+<ul>
+<li>兩人比形狀,先各自去水平(ipsative):v̂ = v − mean(v);相似度 = cos(v̂₁, v̂₂) ∈ [−1, 1]。</li>
+<li>水平差(整體高低)另外報,不混進形狀——「形狀像不像」與「電量高低」是兩件事。</li>
+<li>門座標版:逐門比 tilt——「你們在開闔之門一個偏關門、一個偏找人聊」——合盤的一句話素材。</li>
+<li>憲法:僅對照、不配對建議、不速配分數(那是算命的皮)。</li>
+</ul>
+<h2>3. 函式三:原型比對(roadmap,暫緩)</h2>
+<ul>
+<li>若日後建 64 重卦人格庫(主卦上、次卦下),正確做法=<strong>向量比對最近原型</strong>(距離最小的典型形狀),不是加權混合文案。</li>
+<li>前置:64 篇內容+理論檢核+試測頻率(先看哪些組合真實存在)。列 roadmap,不排期。</li>
+</ul>
+<h2>4. 明確不做(否決紀錄)</h2>
+<ul>
+<li><strong>加權求和成單一分數</strong>:把八維壓一維,兩個不同的人會同分——「立體」死於求和。</li>
+<li><strong>按排名連續配權</strong>:分數相近時排名劇烈翻轉(82:81),同人重測輸出大變,違反可重現;分佈中段的排序本是雜訊。</li>
+<li><strong>文案加權混合</strong>(40% 乾文+25% 離文):句子不是向量;且=引擎自動跨股融合,違反 C1。</li>
+</ul>
+<h2>5. 待決</h2>
+<ol>
+<li>NOISE 與 D 的分檔參考值——v2 試測含少量重測樣本後校正。</li>
+<li>重測對照卡放 bagua-records 還是伴讀版(或都放)——傾向先 records(已有歷史資料)。</li>
+<li>合盤的產品形態(雙碼輸入頁?)——與平台藍圖的合盤條目一起排。</li>
+</ol>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-13-octenso-vector-functions-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
