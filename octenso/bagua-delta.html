@@ -47,6 +47,10 @@
   .bar2 .tk i.new{background:var(--pine);opacity:.7}
   .gline{font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--surface2)}
   .gline b{font-weight:400;color:var(--pine)}
+  .plane-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 14px}
+  .plane{text-align:center}
+  .plane .pt{font-size:12px;color:var(--ink);letter-spacing:.06em;margin-bottom:2px}
+  .plane svg{display:block;margin:0 auto}
   .honest{font-size:12.5px;color:var(--muted);line-height:1.95;padding-left:15px;border-left:1px solid var(--hair);margin-top:26px}
   a{color:var(--pine)}
 </style>
@@ -71,6 +75,7 @@
   <div class="rule"></div>
   <div class="dhead" id="d-head"></div>
   <div class="dsub" id="d-sub"></div>
+  <div id="d-radar" class="center"></div>
   <div class="seclabel">移動的能量(超過測量誤差的)</div>
   <div id="d-moved"></div>
   <div class="rule"></div>
@@ -79,6 +84,13 @@
   <p class="center" style="margin-top:22px">
     <a class="btn" id="lnk-report" href="#">看這一次的完整報告 →</a>
   </p>
+  <details style="margin-top:26px;border-top:1px solid var(--line);padding-top:12px">
+    <summary style="cursor:pointer;font-size:12.5px;color:var(--muted);letter-spacing:.08em">這一頁的數學(可追溯)</summary>
+    <pre style="font-size:12px;line-height:2;color:var(--muted);margin-top:10px;white-space:pre-wrap">四系統座標:傾向 tilt = s左 − s右;開度 open = (s左+s右)/2
+逐態位移:δ = 這次 − 上次;整體移動量 D = √( Σδ²/8 )
+雜訊地板:|δ| &lt; 8 視為測量誤差,不敘事
+(參考值 v0.1,重測信度資料進來後校正)</pre>
+  </details>
   <div class="honest" id="honest"></div>
 </div>
 
@@ -109,6 +121,43 @@ function decode(str){
   return null;
 }
 
+// 疊影雷達:舊形狀(虛線)vs 新形狀(實色)——依 RING 圓周順序連線
+function radarOverlay(o,n){
+  var RING=['qian','li','zhen','dui','kun','kan','xun','gen'];
+  function pts(sc){return RING.map(function(k){var p=B.POLAR[k];var r=(sc[k]||0)/100;
+    return (200+(p.x-200)*r).toFixed(1)+','+(200+(p.y-200)*r).toFixed(1);}).join(' ');}
+  var frame=RING.map(function(k){var p=B.POLAR[k];return p.x+','+p.y;}).join(' ');
+  var labels=RING.map(function(k){var p=B.POLAR[k],g=B.get(k);
+    var lx=200+(p.x-200)*1.14, ly=200+(p.y-200)*1.14;
+    return '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+g.fnShort+'者</text>';}).join('');
+  return '<svg width="300" height="300" viewBox="60 60 280 280" aria-label="兩次快照疊影">'
+    +'<polygon points="'+frame+'" fill="none" stroke="var(--line)" stroke-width="1"/>'
+    +'<polygon points="'+pts(o)+'" fill="none" stroke="var(--hair)" stroke-width="1.5" stroke-dasharray="4 4"/>'
+    +'<polygon points="'+pts(n)+'" fill="rgba(53,97,79,.12)" stroke="var(--pine)" stroke-width="1.8"/>'
+    +labels
+    +'<text x="200" y="332" text-anchor="middle" font-size="10.5" fill="var(--muted)">虛線=上一次 · 實線=這一次</text></svg>';
+}
+// 系統位移平面:x=傾向(左分支↔右分支)、y=開度;空心點=上次、實心點=這次
+function planeSVG(p,gd){
+  var W=270,Hh=120,pad=14;
+  function px(t){return pad+(t+100)/200*(W-2*pad);}
+  function py(o){return Hh-pad-(o/100)*(Hh-2*pad);}
+  var x1=px(gd.tilt1),y1=py(gd.open1),x2=px(gd.tilt2),y2=py(gd.open2);
+  var moved=Math.abs(gd.dTilt)>=X.NOISE||Math.abs(gd.dOpen)>=X.NOISE;
+  var col=moved?'var(--pine)':'var(--hair)';
+  var arrow=moved?'<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+col+'" stroke-width="1.6" marker-end="url(#ah-'+p.key+')"/>':'';
+  return '<div class="plane"><div class="pt">'+GT.name[p.key]+'系統</div>'
+    +'<svg width="'+W+'" height="'+Hh+'" viewBox="0 0 '+W+' '+Hh+'">'
+    +'<defs><marker id="ah-'+p.key+'" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="'+col+'"/></marker></defs>'
+    +'<rect x="'+pad+'" y="'+pad+'" width="'+(W-2*pad)+'" height="'+(Hh-2*pad)+'" fill="none" stroke="var(--surface2)"/>'
+    +'<line x1="'+px(0)+'" y1="'+pad+'" x2="'+px(0)+'" y2="'+(Hh-pad)+'" stroke="var(--line)" stroke-dasharray="3 3"/>'
+    +arrow
+    +'<circle cx="'+x1+'" cy="'+y1+'" r="4.5" fill="var(--bg)" stroke="var(--hair)" stroke-width="1.5"/>'
+    +'<circle cx="'+x2+'" cy="'+y2+'" r="4.5" fill="'+col+'"/>'
+    +'<text x="'+pad+'" y="'+(Hh-2)+'" font-size="10" fill="var(--muted)">'+GT.pole[p.l]+'</text>'
+    +'<text x="'+(W-pad)+'" y="'+(Hh-2)+'" text-anchor="end" font-size="10" fill="var(--muted)">'+GT.pole[p.r]+'</text>'
+    +'</svg></div>';
+}
 function run(){
   var a=decode($('in-prev').value), b=decode($('in-curr').value), e=$('err');
   e.classList.add('hide');
@@ -117,6 +166,7 @@ function run(){
   var dl=X.delta(a.sc,b.sc);
   $('d-head').textContent='整體移動量 '+dl.D;
   $('d-sub').textContent=R[dl.band];
+  $('d-radar').innerHTML=radarOverlay(a.sc,b.sc);
   // 移動的能量
   var h='';
   if(!dl.moved.length){
@@ -133,7 +183,11 @@ function run(){
   });
   $('d-moved').innerHTML=h;
   // 四大系統
-  var gh='';
+  var gh='<div class="plane-grid">';
+  P.PAIRS.forEach(function(p){
+    gh+=planeSVG(p,dl.gates[p.key]);
+  });
+  gh+='</div>';
   P.PAIRS.forEach(function(p){
     var gd=dl.gates[p.key], lines=[];
     if(Math.abs(gd.dTilt)>=X.NOISE){
