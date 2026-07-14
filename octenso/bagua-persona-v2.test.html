@@ -41,6 +41,9 @@
   // 四道門白話層(canonical,報告+晶體共用)
   t('GATES structure', !!V.GATES && V.GATES.intro.length>20 && V.GATES.anchor.indexOf('{P}')>=0 && V.GATES.anchor.indexOf('{G}')>=0);
   t('GATES name+q ×4', ['build','drive','aware','regulate'].every(function(k){return V.GATES.name[k]&&V.GATES.q[k]&&V.GATES.q[k].length>10;}));
+  t('GATES mission ×4(核心命題問句)', ['build','drive','aware','regulate'].every(function(k){return V.GATES.mission[k]&&V.GATES.mission[k].indexOf('?')>=0;}));
+  t('GATES 調節命題無撞詞(不含「沉澱」)', V.GATES.mission.regulate.indexOf('沉澱')<0 && V.GATES.mission.regulate.indexOf('停下')>=0);
+  t('ELEGANT ×8(二字雅稱)', KEYS.every(function(k){return V.ELEGANT[k]&&V.ELEGANT[k].length===2;}));
   t('GATES pole ×8', KEYS.every(function(k){return V.GATES.pole[k]&&V.GATES.pole[k].length>=2;}));
   t('GATES state ×5 + tension', ['bothHigh','leanL','leanR','bothLow','mid'].every(function(k){return V.GATES.state[k]&&V.GATES.state[k].length>8;}) && V.GATES.tension.length>10);
   t('COMPANION_BOT crisis list+lines', Array.isArray(V.COMPANION_BOT.crisisKeys) && V.COMPANION_BOT.crisisKeys.length>=8
@@ -71,7 +74,7 @@
   // ── iframe 渲染(B1 相容 + B2 含二選一)──
   var CASES=[
     {code:'B19050505050505050', name:'B1-single-qian', expects:['開創者·乾','神韻','工作樣貌','愛情與親密','分享碼沒有能格資料']},
-    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者·乾','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊','能量晶體','四大系統','建構系統','定方向','從你的峰讀起','同強','低載','判讀的門檻'],
+    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者·乾','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊','能量晶體','四大系統','建構系統','定方向','從你的峰讀起','同強','低載','判讀的門檻','展行','開始,如何成為現實?'],
      dom:[{n:'四張狀態分區小平面', f:function(doc){return doc.querySelectorAll('svg.splane').length===4;}},
           {n:'分區多邊形 5×4', f:function(doc){return doc.querySelectorAll('svg.splane polygon').length===20;}}],
      click:'bot-start', expectsAfter:['我讀完你的報告了','結束伴讀 · 整理回饋']},

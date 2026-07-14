@@ -232,6 +232,13 @@
     noteBio: '※「系統雙分支」借自律神經(交感/副交感)的概念結構作比喻——雙分支、非互斥、動態平衡;不宣稱生理對應。',
     anchor: '從你的峰讀起:{P} 正是「{G}系統」的一個分支。',
     name: { build: '建構', drive: '推動', aware: '認知', regulate: '調節' },
+    // 核心命題(每系統一句引言問句;問句姿態=鏡子不是算命;2026-07-14 app 定案,「停下」解撞詞)
+    mission: {
+      build: '開始,如何成為現實?',
+      drive: '改變,如何深入系統?',
+      aware: '探索,如何形成理解?',
+      regulate: '停下,如何形成共好?'
+    },
     q: {
       build: '掌管「事情來了」——兩個分支:定方向(往哪去、怎麼定)與接住人(誰來穩、接得住)。',
       drive: '掌管「讓事情發生」——兩個分支:直接動手(衝出第一步)與先鋪路(牽人、牽資源)。',
@@ -250,16 +257,22 @@
     tension: '兩個分支都在催——「直接動手」和「先鋪路」都是往外的推力,同時全開會互相搶方向盤;推動系統是唯一需要刻意輪替的系統。'
   };
 
-  // ── 八態一句定義(六級列表用;草案待潤)──
+  // ── 八態二字雅稱(先者副標;2026-07-14 app A-4 定案)──
+  var ELEGANT = {
+    qian: '展行', kun: '承載', zhen: '啟動', xun: '滲透',
+    kan: '探索', li: '照見', gen: '定界', dui: '共鳴'
+  };
+
+  // ── 八態一句定義(六級列表用;A-4 底稿潤稿,過 speak-human-tw)──
   var BRIEF = {
-    qian: '定調、拍板、開局——把空白變成方向的能量。',
-    kun: '承接、涵容、穩住——把人和事接住的能量。',
-    zhen: '發動、起跑、往前衝——讓事情開始動的能量。',
-    xun: '牽線、鋪路、擴散——把人與資源串起來的能量。',
-    li: '表達、聚焦、被看見——把內在亮出來的能量。',
-    kan: '沉澱、內收、深想——把經驗收進心裡的能量。',
-    gen: '停下、設界、守住——踩得住剎車的能量。',
-    dui: '交流、對話、往來——在說與聽之間回血的能量。'
+    qian: '定調、開局——把還沒有的,拍板成一個方向。',
+    kun: '接住、穩住——讓剛起頭的事,長得下去。',
+    zhen: '發動、起跑——讓卡住的局,重新動起來。',
+    xun: '牽線、鋪路——讓改變順著關係慢慢長出來。',
+    li: '表達、聚焦——把看懂的,說到別人也看懂。',
+    kan: '內收、深想——往未知裡沉,找到真正的路。',
+    gen: '停下、守住——踩得住剎車,也劃得出邊界。',
+    dui: '對話、往來——在說與聽之間,把人接上。'
   };
 
   // ── 施測指導語(v2:錨定「最近一個月」)──
@@ -275,6 +288,6 @@
     COST: COST, COST_HI: COST_HI, COST_LO: COST_LO, COST_AGREE: COST_AGREE, COST_MAX_FLAGS: COST_MAX_FLAGS,
     SYSTEM_READ: SYSTEM_READ,
     DIRECTIONS: DIRECTIONS, COMPANION: COMPANION, COMPANION_BOT: COMPANION_BOT,
-    GATES: GATES, BRIEF: BRIEF, GUIDE: GUIDE
+    GATES: GATES, BRIEF: BRIEF, ELEGANT: ELEGANT, GUIDE: GUIDE
   };
 })(typeof window !== 'undefined' ? window : this);
