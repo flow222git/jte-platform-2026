@@ -523,7 +523,7 @@ function renderReport(sc,costSt,conf,fc){
     +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
     +radarSVG(sc)
     +'<p class="center" style="margin:12px 0 4px"><a class="btn ghost" href="bagua-crystal.html#r='+code+'">立體看這份快照 · 能量晶體 →</a></p>'
-    +'<div class="felt">'+esc(C.FELT)+' 照的是你「感受到」的自己,不是行為審計。</div></div>';
+    +'<div class="felt">'+esc(C.FELT)+' 照的是你「感受到」的自己,不是行為的成績單。</div></div>';
   h+='<div class="rule"></div><div class="seclabel">每態六級 · 與答題篤定性</div><div class="band-list">';
   pf.ranked.forEach(function(o){
     var g=B.get(o.k), bd=pf.bands[o.k];
@@ -535,7 +535,7 @@ function renderReport(sc,costSt,conf,fc){
   });
   h+='</div><p style="font-size:12px;color:var(--muted)">整體水平:'
     +(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(八態平均 '+pf.level.mean+')。'
-    +(conf?'「篤定」=該態三題答得很一致;「兩可」=分散,這一態的分數解讀請保留彈性。':'(以分享碼重建,無篤定性資料。)')+'</p>';
+    +(conf?'「篤定」表示那一態的三題你答得很一致;「兩可」表示答得分散——這一態的分數,解讀時請保留彈性。':'(以分享碼重建,無篤定性資料。)')+'</p>';
   h+='<div class="rule"></div><div class="seclabel">四大系統 · 你的能量怎麼運作'+(fc?'(含二選一對照)':'')+'</div>';
   var GT=V.GATES;
   h+='<p style="font-size:13px;color:var(--muted)">'+esc(GT.intro)+'</p>';
