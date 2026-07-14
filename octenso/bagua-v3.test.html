@@ -1,0 +1,83 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>v3 tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="bagua-hybrid-data.js"></script>
+<script src="bagua-v3-data.js"></script>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
+  var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2, X3=window.OCTENSO_V3;
+  var KEYS=['qian','kun','zhen','xun','kan','li','gen','dui'];
+
+  // ── 資料完整性 ──
+  t('INTRO 四卡齊備', X3.INTRO.length===4 && X3.INTRO.every(function(c){return c.kicker&&c.t&&c.s&&c.motif;}));
+  t('INTRO 安定/直覺卡都在', X3.INTRO[0].t.indexOf('深呼吸')>=0 && X3.INTRO[2].t.indexOf('直覺')>=0);
+  t('INTRO 末卡=伴讀版(有人陪)', X3.INTRO[3].t.indexOf('陪')>=0);
+  t('SPOKEN peakLead ×8', KEYS.every(function(k){return X3.SPOKEN.peakLead[k]&&X3.SPOKEN.peakLead[k].length>15;}));
+  t('SPOKEN peakKind ×3', ['dual','multi','pattern'].every(function(k){return X3.SPOKEN.peakKind[k]&&X3.SPOKEN.peakKind[k].length>10;}));
+  t('SPOKEN level ×3 帶平均佔位', ['high','mid','low'].every(function(k){return X3.SPOKEN.level[k].indexOf('{M}')>=0;}));
+  t('SPOKEN 低=季節不是故障', X3.SPOKEN.level.low.indexOf('季節')>=0);
+  t('CHAT_OVR 界線句仍在(不是衡鑑或治療+分數來自題目)',
+    X3.CHAT_OVR.hello[2].indexOf('不是心理衡鑑或治療')>=0 && X3.CHAT_OVR.hello[2].indexOf('分數永遠來自題目')>=0);
+  t('CHAT_OVR 不覆寫量尺/信件(只動過場語)', !X3.CHAT_OVR.segAsk && !X3.CHAT_OVR.letterSpirit && !X3.CHAT_OVR.letterClose);
+  t('v3 碼前綴仍為 B2(體驗版≠題本v3)', X3.codePrefix==='B2');
+
+  // ── E2E:開場四卡→開始→28 題→口語分段揭示→工作模組→註記 ──
+  var f=document.createElement('iframe');
+  f.style.cssText='width:700px;height:900px';
+  f.src='bagua-v3.html';
+  document.getElementById('frames').appendChild(f);
+  var tries=0, clicks=0, introClicks=0, modClicked=false, done=false, sawIntro=false;
+  var timer=setInterval(function(){
+    tries++;
+    var doc=null;
+    try{ doc=f.contentDocument; }catch(e){}
+    if(!doc||!doc.body){ if(tries>300) finishFail('no doc'); return; }
+    var txt=doc.body.innerText||'';
+    if(!done && txt.indexOf('不宣稱因果')>=0 && txt.indexOf('不會改變你的八態分數')>=0){
+      done=true; clearInterval(timer); assertAll(doc,txt); return;
+    }
+    // 開場四卡:逐卡按「下一步」直到進聊天
+    var inext=doc.getElementById('intro-next');
+    if(inext && !doc.getElementById('intro').classList.contains('hide')){
+      sawIntro=true; introClicks++; inext.click(); return;
+    }
+    var opt=doc.querySelector('.opts-live .opt');
+    if(opt && clicks<70){ clicks++; opt.click(); return; }
+    if(!opt && !modClicked && doc.body.getAttribute('data-stage')==='talk'){
+      var mb=doc.querySelector('.modrow .modbtn'); // 第一顆=工作
+      if(mb){ modClicked=true; mb.click(); return; }
+    }
+    if(tries>400) finishFail('timeout stage='+(doc.body.getAttribute('data-stage')||'?')+' clicks='+clicks+' intro='+introClicks);
+  },120);
+  function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
+  function assertAll(doc,txt){
+    var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
+    t('e2e 開場四卡有出現且點過 4 次', sawIntro && introClicks===4);
+    t('e2e 開場結束後聊天亮出', !doc.getElementById('chat').classList.contains('hide'));
+    t('e2e 口語峰語出現(單峰句或格局句)', txt.indexOf('先說你此刻最亮的一股')>=0
+      || txt.indexOf('兩股一起亮')>=0 || txt.indexOf('你亮的地方不只一處')>=0 || txt.indexOf('沒有特別突出的單一峰')>=0);
+    t('e2e 系統段口語(住在「…系統」)', txt.indexOf('住在「')>=0 && txt.indexOf('系統」裡')>=0);
+    t('e2e 系統段含核心命題問句', txt.indexOf('如何成為現實?')>=0 || txt.indexOf('如何深入系統?')>=0 || txt.indexOf('如何形成理解?')>=0 || txt.indexOf('如何形成共好?')>=0);
+    t('e2e 不再唸正式判讀全文(無 tag 括號)', txt.indexOf('(主導承接俱全——')<0 && txt.indexOf('(偏開創——')<0);
+    t('e2e 電量段口語(帶平均)', txt.indexOf('平均 '+R.pf.level.mean)>=0);
+    t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
+    t('e2e 完整報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+R.code+'"]'));
+    t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
+    t('e2e 分段核對已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 模組結果已存+小碼', !!St.mods['ctx-work'] && txt.indexOf('模組小碼')>=0 && txt.indexOf('MW000000000')>=0);
+    t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
+    f.parentNode.removeChild(f);
+    finish();
+  }
+  function finish(){
+    document.title='RESULT pass='+pass+' fail='+fail;
+    log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+  }
+})();
+</script>
+</body></html>
