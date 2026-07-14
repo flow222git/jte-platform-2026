@@ -482,6 +482,8 @@ function letter(){
   var es=Object.keys(S.echo).map(function(k){return names[k]+'—'+lbl[S.echo[k]];});
   if(es.length)L.push(CH.letterEcho.replace('{E}',es.join('、')));
   if(Object.keys(S.echo).some(function(k){return S.echo[k]==='unlike';}))L.push(CH.letterUnlike);
+  var lead=RES.pf.leads[0];
+  if(lead&&CH.letterSpirit&&CH.letterSpirit[lead])L.push(CH.letterSpirit[lead]);
   L.push(CH.letterClose);
   bot(L.join('\n'));
 }

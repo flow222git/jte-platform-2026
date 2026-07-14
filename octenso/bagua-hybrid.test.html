@@ -16,6 +16,8 @@
   t('CHAT 過場語', H.CHAT.breaks[8] && H.CHAT.breaks[16] && H.CHAT.fcIntro.length>10 && H.CHAT.costIntro.length>10);
   t('衡鑑式欄位', H.CHAT.askIntro.length>10 && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
   t('界線句(不是衡鑑或治療)', H.CHAT.hello[2].indexOf('不是心理衡鑑或治療')>=0);
+  t('信件收尾精神 ×8(A-7 依分支選句)', ['qian','kun','zhen','xun','kan','li','gen','dui'].every(function(k){return H.CHAT.letterSpirit[k]&&H.CHAT.letterSpirit[k].length>8;}));
+  t('收尾=恢復流動(A-2,非增強某能力)', H.CHAT.letterClose.indexOf('重新')>=0 && H.CHAT.letterClose.indexOf('衝到滿')>=0);
   t('MODULES ×2(work/love)', H.MODULES.length===2 && H.MODULES[0].dom==='work' && H.MODULES[1].dom==='love');
   H.MODULES.forEach(function(m){
     t(m.id+' items ×8', m.items.length===8);
