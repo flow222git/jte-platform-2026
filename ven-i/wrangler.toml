@@ -25,6 +25,7 @@ compatibility_date = "2024-11-01"
 # binding = "RATE_LIMIT"
 # id = "貼上 RATE_LIMIT 的 namespace id"
 #
-# [[kv_namespaces]]
-# binding = "FEEDBACK"
-# id = "貼上 FEEDBACK 的 namespace id"
+# FEEDBACK 已於 2026-07-14 由 setup-kv workflow 建立(calm-sunset-97f8-FEEDBACK)
+[[kv_namespaces]]
+binding = "FEEDBACK"
+id = "1c6661a5a3c449c091f4d2c7616748c0"
