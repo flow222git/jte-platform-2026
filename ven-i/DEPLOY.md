@@ -39,5 +39,12 @@ GitHub repo → **Settings** → **Secrets and variables** → **Actions** →
 - **KV 綁定會被覆寫**:若你有在 Dashboard 手綁 `RATE_LIMIT` / `FEEDBACK`,
   請到 `wrangler.toml` 填上它們的 id 並解除註解——否則部署會把綁定移除。
   (沒綁也能跑,只是沒有限流 / 不落檔回饋摘要。)
+
+## FEEDBACK KV(伴讀回饋落檔)三步設定
+
+1. repo **Actions** 分頁 → **setup-kv** → **Run workflow**(只需跑一次)。
+2. 跑完點進該次執行的 log,找到 `id = "………"` 那一行,複製 namespace id。
+3. 把 id 貼進 `ven-i/wrangler.toml` 的 `[[kv_namespaces]] FEEDBACK` 區塊並解除註解,
+   push 到 main 讓自動部署生效。(或把 id 貼給 Claude,由它改檔。)
 - **Worker 名字別改**:`wrangler.toml` 的 `name = "calm-sunset-97f8"` 對應線上網址,
   改名會變成部署到另一顆新 Worker。

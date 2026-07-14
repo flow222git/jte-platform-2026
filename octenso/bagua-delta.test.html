@@ -29,6 +29,28 @@
   var same=X.delta(a,mk({qian:55,rest:50})); // +5 在雜訊內
   t('delta 雜訊地板', same.moved.length===0 && same.band==='steady');
 
+  // ── 單元:狀態分區(與 profile.axes 同門檻同順序)──
+  t('stateRegion 雙高', X.stateRegion(40,80)==='bothHigh');
+  t('stateRegion 高開度但傾斜過大→非雙高', X.stateRegion(60,85)!=='bothHigh');
+  t('stateRegion 低載', X.stateRegion(0,30)==='bothLow' && X.stateRegion(-10,35)==='bothLow');
+  t('stateRegion 優勢分支', X.stateRegion(24,50)==='leanL' && X.stateRegion(-24,50)==='leanR');
+  t('stateRegion 門檻邊界 |tilt|=12', X.stateRegion(12,50)==='leanL');
+  t('stateRegion 輪流上場', X.stateRegion(5,50)==='mid');
+  t('stateRegion 與 profile.axes 一致', (function(){
+    var cases=[[80,80],[30,30],[70,40],[40,70],[55,50],[62,58]];
+    return cases.every(function(c){
+      var sc=mk({qian:c[0],kun:c[1],rest:50});
+      var ax=P.axes(sc).filter(function(a){return a.key==='build';})[0];
+      var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
+        :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
+      return X.stateRegion(c[0]-c[1],(c[0]+c[1])/2)===st;
+    });
+  })());
+  t('regionShapes 五區齊備', (function(){
+    var s=X.regionShapes();
+    return ['bothHigh','bothLow','leanL','leanR','mid'].every(function(k){return s[k]&&s[k].length>=3;});
+  })());
+
   // ── 單元:形狀相似 ──
   var s1=X.similarity(mk({qian:80,kun:40,rest:50}), mk({qian:90,kun:50,rest:60}));
   t('similarity 同形不同水平 → shape=1、levelDiff=10', Math.abs(s1.shape-1)<0.01 && Math.abs(s1.levelDiff-10)<0.01);
@@ -60,6 +82,8 @@
     t('渲染:誠實邊界', txt.indexOf('不解釋原因')>=0 && txt.indexOf('測量誤差')>=0);
     t('渲染:疊影雷達', !!doc.querySelector('#d-radar svg') && txt.indexOf('虛線=上一次')>=0);
     t('渲染:四張位移平面', doc.querySelectorAll('.plane svg').length===4);
+    t('渲染:分區底圖(每張平面 5 個分區多邊形)', doc.querySelectorAll('.plane svg polygon.rg').length===20);
+    t('渲染:分區標籤 同強/低載', txt.indexOf('同強')>=0 && txt.indexOf('低載')>=0);
     t('渲染:數學註腳', txt.indexOf('這一頁的數學')>=0);
     t('渲染:回報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+CURR+'"]'));
     // 跨題本拒算

@@ -1,0 +1,17 @@
+# 一次性:建立 FEEDBACK KV namespace(伴讀回饋落檔用)
+# 手動觸發(Actions → setup-kv → Run workflow),跑完在 log 裡找 namespace id,
+# 貼回 ven-i/wrangler.toml 的 [[kv_namespaces]] FEEDBACK 區塊(解除註解)。
+name: setup-kv
+on: workflow_dispatch
+jobs:
+  create-feedback-kv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create FEEDBACK KV namespace
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ven-i
+          command: kv namespace create FEEDBACK
