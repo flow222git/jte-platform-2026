@@ -71,6 +71,9 @@
     t('e2e deny 段', txt.indexOf('安靜沉澱')>=0 && txt.indexOf('喊停')>=0);
     t('e2e 強度回扣(還好)', txt.indexOf('收支撐得住')>=0);
     t('e2e 模組結果已存', !!St.mods['ctx-work'] && St.mods['ctx-work'].intensity==='mild');
+    // M 前綴小碼:全「非常符合」(索引0)×8+感受「還好」(索引0)→ MW000000000
+    t('e2e 模組小碼顯示', txt.indexOf('模組小碼')>=0 && txt.indexOf('MW000000000')>=0);
+    t('e2e moduleCode 格式', /^M[WL][0-5]{8}[0-3]$/.test(win.HYBRID.moduleCode(H.MODULES[0],St.mods['ctx-work'])));
     // annexData 單元:掏空分類(demand 100、底色低)
     var fakeRes={sc:{qian:30,kun:30,zhen:30,xun:30,li:30,kan:30,gen:30,dui:30},costSt:{}};
     // 借 iframe 的 annexData 需 RES 注入——改以本地重算驗證分類邏輯

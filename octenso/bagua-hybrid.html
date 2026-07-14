@@ -363,6 +363,14 @@ function stepModule(){
     });
   }
 }
+// 模組小碼(M 前綴,v0.1):M + 場域字母(W=工作/L=愛情) + 8 題量尺索引 + 感受索引。
+// 只編作答位置、不含任何文字;供同一模組重測時對照。
+function moduleCode(m,rec){
+  var vals=H.CTXD_SCALE.map(function(o){return o.v;});
+  var ints=H.CTXD_INTENSITY.map(function(o){return o.v;});
+  var idx=rec.ans.map(function(v){var i=vals.indexOf(v);return i<0?'0':String(i);}).join('');
+  return 'M'+(m.dom==='work'?'W':'L')+idx+String(Math.max(0,ints.indexOf(rec.intensity)));
+}
 function annexData(m,rec){
   var flows=[],drains=[],denies=[];
   m.items.forEach(function(it,i){
@@ -406,6 +414,7 @@ function renderAnnex(m,rec){
   }
   h+='<p style="font-size:13px;margin-top:10px">'+esc(R.intensity[rec.intensity]||'')+'</p>';
   h+='<div class="hn">'+esc(R.honest)+'</div>';
+  h+='<div class="hn">'+esc(R.mcode)+' <span style="font-family:\'Jost\',sans-serif;letter-spacing:.08em;color:var(--ink)">'+moduleCode(m,rec)+'</span></div>';
   botHtml(h,'cardmsg annex');
 }
 
@@ -541,7 +550,7 @@ if(saved&&saved.phase&&saved.phase!=='hello'&&saved.phase!=='talk'){
 document.body.setAttribute('data-ready','1');
 
 // 測試掛鉤
-window.HYBRID={state:function(){return S;},results:function(){return RES;},annexData:annexData};
+window.HYBRID={state:function(){return S;},results:function(){return RES;},annexData:annexData,moduleCode:moduleCode};
 })();
 </script>
 </body></html>

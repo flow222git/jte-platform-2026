@@ -25,6 +25,33 @@
     return out;
   }
 
+  // ── 狀態分區:五種判讀=(傾向×開度)平面上的幾何分區 ──
+  // 門檻同 profile.js TUNE(AXIS_HI/AXIS_LO/AXIS_EVEN),v0.1 待試測校正。
+  // 判定順序與 profile.axes() 一致:先雙高、再雙低、再優勢分支、其餘=輪流。
+  function tune() {
+    var T = (P && P.TUNE) || {};
+    return { HI: T.AXIS_HI || 60, LO: T.AXIS_LO || 40, EVEN: T.AXIS_EVEN || 12 };
+  }
+  function stateRegion(tilt, open) {
+    var T = tune(), at = Math.abs(tilt);
+    if (open >= T.HI + at / 2) return 'bothHigh';
+    if (open <= T.LO - at / 2) return 'bothLow';
+    if (at >= T.EVEN) return tilt > 0 ? 'leanL' : 'leanR';
+    return 'mid';
+  }
+  // 分區底圖多邊形(資料座標 [tilt, open];頁面自行投影成像素)
+  function regionShapes() {
+    var T = tune();
+    var tH = 2 * (100 - T.HI), tL = 2 * T.LO, E = T.EVEN;
+    return {
+      bothHigh: [[-tH, 100], [0, T.HI], [tH, 100]],
+      bothLow: [[-tL, 0], [0, T.LO], [tL, 0]],
+      leanL: [[E, T.HI + E / 2], [tH, 100], [100, 100], [100, 0], [tL, 0], [E, T.LO - E / 2]],
+      leanR: [[-E, T.HI + E / 2], [-tH, 100], [-100, 100], [-100, 0], [-tL, 0], [-E, T.LO - E / 2]],
+      mid: [[-E, T.HI + E / 2], [0, T.HI], [E, T.HI + E / 2], [E, T.LO - E / 2], [0, T.LO], [-E, T.LO - E / 2]]
+    };
+  }
+
   // ── 函式一:重測差異 Δ(prev → curr)──
   function delta(prev, curr) {
     var d = {}, sum2 = 0;
@@ -83,6 +110,7 @@
   g.OctensoVector = {
     NOISE: NOISE, D_FLOW: D_FLOW, D_SHIFT: D_SHIFT,
     gateCoords: gateCoords, delta: delta, similarity: similarity,
+    stateRegion: stateRegion, regionShapes: regionShapes,
     VREAD: VREAD
   };
 })(typeof window !== 'undefined' ? window : this);

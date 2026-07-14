@@ -95,6 +95,9 @@
   .pole-row .pbar i.on{background:var(--pine);opacity:.8}
   .pole-row .pbar i.on.tens{background:var(--cinnabar)}
   .pole-row .ps{flex:none;width:2em;text-align:right;font-family:"Jost",sans-serif;font-size:11.5px;color:var(--muted)}
+  .pair .duo{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center}
+  .pair .duo .bars{flex:1;min-width:230px}
+  .pair .splane{flex:none}
   .pair .plain{font-size:13.5px;color:var(--ink-soft);margin-top:8px}
   .pair .cnote{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
   .pair .fcnote{font-size:12.5px;margin-top:4px;padding-left:14px;border-left:1px solid var(--hair);color:var(--ink-soft)}
@@ -191,6 +194,7 @@
 
 <script src="bagua-data.js"></script>
 <script src="profile.js"></script>
+<script src="vector.js"></script>
 <script src="bagua-v2-data.js"></script>
 <script src="bagua-catalog-data.js"></script>
 <script src="bagua-catalog-t1.js"></script>
@@ -396,6 +400,31 @@ function signatureCard(pf){
 var BANDS_TXT={sure:'篤定',mixed:'兩可'};
 // 顯示層:先「者」後卦(2026-07-12 使用者回饋);canonical title 原樣不動
 function reTitle(s){return String(s).replace(/([乾坤震巽離坎艮兌])·([^×\s()]+)/g,'$2·$1');}
+// 狀態分區小平面(單次快照):底圖分區=判讀邊界(vector.stateRegion 同門檻),點=此刻位置
+function snapPlane(ax){
+  var XV=window.OctensoVector, GT=V.GATES;
+  var W=170,Hh=110,pad=12;
+  function px(t){return pad+((-t)+100)/200*(W-2*pad);} // 傾向正=左分支強→畫向左端
+  function py(o){return Hh-pad-(o/100)*(Hh-2*pad);}
+  function pts(a){return a.map(function(q){return (Math.round(px(q[0])*10)/10)+','+(Math.round(py(q[1])*10)/10);}).join(' ');}
+  var shp=XV.regionShapes();
+  var tilt=(ax.left||0)-(ax.right||0), open=((ax.left||0)+(ax.right||0))/2;
+  var tens=(ax.key==='drive'&&XV.stateRegion(tilt,open)==='bothHigh');
+  return '<svg class="splane" width="'+W+'" height="'+Hh+'" viewBox="0 0 '+W+' '+Hh+'" aria-label="'+GT.name[ax.key]+'系統 · 狀態分區平面">'
+    +'<rect x="'+pad+'" y="'+pad+'" width="'+(W-2*pad)+'" height="'+(Hh-2*pad)+'" fill="none" stroke="var(--surface2)"/>'
+    +'<polygon points="'+pts(shp.leanL)+'" fill="rgba(0,0,0,.025)" stroke="none"/>'
+    +'<polygon points="'+pts(shp.leanR)+'" fill="rgba(0,0,0,.025)" stroke="none"/>'
+    +'<polygon points="'+pts(shp.bothHigh)+'" fill="rgba(53,97,79,.08)" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3"/>'
+    +'<polygon points="'+pts(shp.bothLow)+'" fill="rgba(0,0,0,.05)" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3"/>'
+    +'<polygon points="'+pts(shp.mid)+'" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3"/>'
+    +'<text x="'+px(0)+'" y="'+(py(100)+9)+'" text-anchor="middle" font-size="8" fill="var(--muted)" opacity=".85">同強</text>'
+    +'<text x="'+px(0)+'" y="'+(py(0)-3)+'" text-anchor="middle" font-size="8" fill="var(--muted)" opacity=".85">低載</text>'
+    +'<line x1="'+px(0)+'" y1="'+pad+'" x2="'+px(0)+'" y2="'+(Hh-pad)+'" stroke="var(--line)" stroke-dasharray="3 3"/>'
+    +'<circle cx="'+px(tilt)+'" cy="'+py(open)+'" r="4" fill="'+(tens?'var(--cinnabar)':'var(--pine)')+'"/>'
+    +'<text x="'+pad+'" y="'+(Hh-1)+'" font-size="9" fill="var(--muted)">'+esc(V.GATES.pole[ax.l])+'</text>'
+    +'<text x="'+(W-pad)+'" y="'+(Hh-1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+esc(V.GATES.pole[ax.r])+'</text>'
+    +'</svg>';
+}
 function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
 function catalogSections(k,costSt){
   var over=costSt[k]==='over';
@@ -533,18 +562,21 @@ function renderReport(sc,costSt,conf,fc){
     var cls=tension?'tens':'';
     h+='<div class="pair">'
       +'<div class="gq"><b>'+GT.name[ax.key]+'系統</b> · '+esc(GT.q[ax.key])+'</div>'
+      +'<div class="duo"><div class="bars">'
       +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.l])+'</span>'
       +  '<div class="pbar"><i class="'+(onL?'on ':'')+cls+'" style="width:'+sc[ax.l]+'%"></i></div>'
       +  '<span class="ps">'+sc[ax.l]+'</span></div>'
       +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.r])+'</span>'
       +  '<div class="pbar"><i class="'+(onR?'on ':'')+cls+'" style="width:'+sc[ax.r]+'%"></i></div>'
       +  '<span class="ps">'+sc[ax.r]+'</span></div>'
+      +'</div>'+snapPlane(ax)+'</div>'
       +'<div class="plain"><b style="font-weight:400;color:var(--ink)">此刻的運作:</b>'+esc(plain)+'</div>'
       +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
       +'<div class="cnote">'+pn(ax.l)+' ⇄ '+pn(ax.r)+'</div>'
       +(fc?fcCompareNote(ax,fc[ai]):'')
       +'</div>';
   });
+  h+='<p style="font-size:11.5px;color:var(--muted)">小平面圖:底圖分區就是判讀的門檻(v0.1,待試測校正)——點落在哪一區,「此刻的運作」讀的就是哪一區。上=雙分支同強、下=低載、左右=優勢分支。</p>';
   h+='<p style="font-size:11.5px;color:var(--muted)">'+esc(GT.noteBio)+'</p>';
   h+='<div class="rule"></div><div class="seclabel">能格 · 用得剛不剛好</div>';
   var stKeys=Object.keys(costSt);
