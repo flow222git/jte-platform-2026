@@ -14,9 +14,9 @@
   var KEYS=['qian','kun','zhen','xun','kan','li','gen','dui'];
 
   // ── 資料完整性 ──
-  t('INTRO 四卡齊備', X3.INTRO.length===4 && X3.INTRO.every(function(c){return c.kicker&&c.t&&c.s&&c.motif;}));
-  t('INTRO 安定/直覺卡都在', X3.INTRO[0].t.indexOf('深呼吸')>=0 && X3.INTRO[2].t.indexOf('直覺')>=0);
-  t('INTRO 末卡=伴讀版(有人陪)', X3.INTRO[3].t.indexOf('陪')>=0);
+  t('INTRO 四卡齊備', H.INTRO.length===4 && H.INTRO.every(function(c){return c.kicker&&c.t&&c.s&&c.motif;}));
+  t('INTRO 安定/直覺卡都在', H.INTRO[0].t.indexOf('深呼吸')>=0 && H.INTRO[2].t.indexOf('直覺')>=0);
+  t('INTRO 末卡=伴讀版(有人陪)', H.INTRO[3].t.indexOf('陪')>=0);
   t('SPOKEN peakLead ×8', KEYS.every(function(k){return X3.SPOKEN.peakLead[k]&&X3.SPOKEN.peakLead[k].length>15;}));
   t('SPOKEN peakKind ×3', ['dual','multi','pattern'].every(function(k){return X3.SPOKEN.peakKind[k]&&X3.SPOKEN.peakKind[k].length>10;}));
   t('SPOKEN level ×3 帶平均佔位', ['high','mid','low'].every(function(k){return X3.SPOKEN.level[k].indexOf('{M}')>=0;}));

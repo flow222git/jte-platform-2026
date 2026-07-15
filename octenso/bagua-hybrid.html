@@ -22,6 +22,26 @@
   .sub{text-align:center;color:var(--muted);font-size:12.5px;letter-spacing:.05em;margin-bottom:12px}
   .draft{display:block;width:fit-content;margin:0 auto 18px;text-align:center;font-size:11.5px;color:var(--cinnabar);
     border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  /* ── 開場四卡(進場施測語;自 v3 移植)── */
+  #intro{max-width:440px;margin:14px auto 0;text-align:center}
+  .icard{display:none;animation:ifade .6s ease}
+  .icard.on{display:block}
+  @keyframes ifade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .imotif{height:96px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .ikicker{font-family:"Jost",ui-sans-serif,sans-serif;font-size:10.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
+  .it{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:22px;line-height:1.7;letter-spacing:.03em;color:var(--ink);white-space:pre-line}
+  .is{font-size:15px;color:var(--ink-soft);line-height:1.95;margin-top:13px;white-space:pre-line}
+  .idots{display:flex;gap:8px;justify-content:center;margin:30px 0 20px}
+  .idots i{width:7px;height:7px;border-radius:50%;background:var(--hair);transition:.3s}
+  .idots i.on{background:var(--gold);width:20px;border-radius:4px}
+  .inav{display:flex;align-items:center;justify-content:center;gap:16px}
+  .iback{font-family:"Jost",ui-sans-serif,sans-serif;font-size:12px;letter-spacing:.1em;color:var(--muted);background:none;border:none;cursor:pointer;opacity:.7}
+  .iback:hover{opacity:1}.iback.hide{visibility:hidden}
+  .iskip{display:block;margin:14px auto 0;font-size:11.5px;color:var(--muted);background:none;border:none;cursor:pointer;letter-spacing:.08em}
+  .iskip:hover{color:var(--ink)}
+  .ibreathe{transform-origin:center;animation:ibr 3.4s ease-in-out infinite}
+  @keyframes ibr{0%,100%{transform:scale(.82);opacity:.55}50%{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion:reduce){.ibreathe{animation:none}.icard{animation:none}}
   .prog{position:sticky;top:0;height:3px;background:var(--surface2);border-radius:2px;margin-bottom:16px;overflow:hidden;z-index:5}
   .prog i{display:block;height:100%;background:var(--pine);border-radius:2px;transition:width .25s;width:0}
   #chat{display:flex;flex-direction:column;gap:12px}
@@ -84,10 +104,11 @@
 <h1>八態能格 · 伴讀版</h1>
 <div class="sub">半題庫半對話——題目負責照,伴讀負責陪;答完想多懂哪塊,再加測那一關</div>
 <span class="draft">體驗原型 · 題本與 v2 同源(B2 碼) · 未接導覽</span>
-<div class="prog"><i id="prog-i"></i></div>
+<div id="intro"></div>
+<div class="prog hide" id="prog"><i id="prog-i"></i></div>
 
-<div id="chat"></div>
-<div class="honest" id="honest"></div>
+<div id="chat" class="hide"></div>
+<div class="honest hide" id="honest"></div>
 
 <div id="talkbar" class="hide">
   <div class="row">
@@ -509,6 +530,61 @@ $('talk-end').onclick=function(){
   }).catch(function(){w.textContent=CH.offline;}).then(function(){busy=false;});
 };
 
+// ── 開場四卡(進場施測語;呼吸動畫;自 v3 移植,資料=H.INTRO)──
+function motifSvg(kind){
+  var s='<svg width="96" height="96" viewBox="0 0 96 96">';
+  if(kind==='breathe'){
+    s+='<g class="ibreathe"><circle cx="48" cy="48" r="14" fill="none" stroke="var(--gold)" stroke-width="1.4"/>'
+      +'<circle cx="48" cy="48" r="26" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".5"/>'
+      +'<circle cx="48" cy="48" r="38" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".25"/></g>';
+  } else if(kind==='orbit'){
+    s+='<circle cx="48" cy="48" r="30" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-dasharray="160 26" stroke-linecap="round" transform="rotate(20 48 48)"/>'
+      +'<circle cx="48" cy="48" r="4" fill="var(--gold)"/>';
+  } else if(kind==='compass'){
+    s+='<circle cx="48" cy="48" r="6" fill="var(--gold)"/><g stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round" opacity=".7">'
+      +'<line x1="48" y1="25" x2="48" y2="15"/><line x1="48" y1="71" x2="48" y2="81"/>'
+      +'<line x1="25" y1="48" x2="15" y2="48"/><line x1="71" y1="48" x2="81" y2="48"/>'
+      +'<line x1="32" y1="32" x2="25" y2="25"/><line x1="64" y1="64" x2="71" y2="71"/>'
+      +'<line x1="64" y1="32" x2="71" y2="25"/><line x1="32" y1="64" x2="25" y2="71"/></g>';
+  } else { // ring8:八點成環
+    for(var i=0;i<8;i++){var a=(-90+i*45)*Math.PI/180,x=48+Math.cos(a)*34,y=48+Math.sin(a)*34;
+      s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.4" fill="var(--gold)" opacity="'+(0.35+0.08*i).toFixed(2)+'"/>';}
+  }
+  return s+'</svg>';
+}
+function buildIntro(done){
+  var wrap=$('intro'),idx=0,cards=H.INTRO;
+  var h='';
+  cards.forEach(function(c,i){
+    h+='<div class="icard'+(i===0?' on':'')+'"><div class="imotif">'+motifSvg(c.motif)+'</div>'
+      +'<div class="ikicker">'+esc(c.kicker)+'</div>'
+      +'<div class="it">'+esc(c.t)+'</div>'
+      +'<div class="is">'+esc(c.s)+'</div></div>';
+  });
+  h+='<div class="idots">'+cards.map(function(_,i){return '<i'+(i===0?' class="on"':'')+'></i>';}).join('')+'</div>'
+    +'<div class="inav"><button class="iback hide" id="intro-back">← 上一步</button>'
+    +'<button class="btn" id="intro-next">'+esc(H.INTRO_NEXT)+'</button></div>'
+    +'<button class="iskip" id="intro-skip">'+esc(H.INTRO_SKIP)+'</button>';
+  wrap.innerHTML=h;
+  var els=wrap.querySelectorAll('.icard'),dots=wrap.querySelectorAll('.idots i');
+  var next=$('intro-next'),back=$('intro-back');
+  function show(i){
+    els[idx].classList.remove('on');idx=i;els[idx].classList.add('on');
+    for(var j=0;j<els.length;j++)dots[j].className=(j===idx?'on':'');
+    back.className='iback'+(idx===0?' hide':'');
+    next.textContent=(idx===els.length-1)?H.INTRO_GO:H.INTRO_NEXT;
+  }
+  function finish(){wrap.classList.add('hide');done();}
+  next.onclick=function(){ if(idx<els.length-1)show(idx+1); else finish(); };
+  back.onclick=function(){ if(idx>0)show(idx-1); };
+  $('intro-skip').onclick=finish;
+}
+function reveal(){ // 開場結束→亮出聊天介面
+  $('prog').classList.remove('hide');
+  $('chat').classList.remove('hide');
+  $('honest').classList.remove('hide');
+}
+
 // ── 入口/續走 ──
 $('honest').textContent=B.HONEST+' 這是體驗原型(半題庫半對話):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話;只有你按「結束今天」時的整理摘要會回傳練息場,幫助我們改進。';
 function begin(){
@@ -520,6 +596,7 @@ function begin(){
 var saved=load();
 if(saved&&saved.phase&&saved.phase!=='hello'&&saved.phase!=='talk'){
   S=saved;
+  $('intro').classList.add('hide');reveal();
   bot(CH.resume);
   askOpts([{t:CH.resumeGo,v:'go',cls:'primary'},{t:CH.resumeReset,v:'reset'}],function(o){
     if(o.v==='reset'){
@@ -532,9 +609,9 @@ if(saved&&saved.phase&&saved.phase!=='hello'&&saved.phase!=='talk'){
     else{stage('summary');toSummary();}
   });
 } else if(saved&&saved.phase==='talk'){
-  S=saved;stage('summary');toSummary();
+  S=saved;$('intro').classList.add('hide');reveal();stage('summary');toSummary();
 } else {
-  begin();
+  buildIntro(function(){reveal();begin();});
 }
 document.body.setAttribute('data-ready','1');
 
