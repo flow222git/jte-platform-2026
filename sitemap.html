@@ -2,113 +2,167 @@
 <html lang="zh-Hant"><head>
 <meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>練息場 · Sitemap（2026-06-18）</title>
+<title>練息場 · Sitemap（2026-07-15）</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4efe4;--surface:#f8f4ec;--ink:#23241f;--muted:#6f6657;--line:#d2c7b4;--hair:#bcb09a;
-    --pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34;--blue:#4d6b86}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-weight:300;
-    line-height:1.7;padding:34px 16px 70px;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1100px;margin:0 auto}
-  h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:22px;letter-spacing:.04em;text-align:center;margin-bottom:4px}
-  .date{text-align:center;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:26px}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
-  @media(max-width:760px){.cols{grid-template-columns:1fr}}
-  .island{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 20px}
-  .island.octenso{border-color:var(--pine);border-width:1.5px}
-  .island.ext{grid-column:1/-1;background:transparent;border-style:dashed}
-  .ihead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:4px}
-  .ihead .nm{font-family:"Noto Serif TC",serif;font-weight:600;font-size:17px;letter-spacing:.03em}
-  .ihead .tag{font-family:"Jost",sans-serif;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-    padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-  .tag.pub{color:var(--pine);border-color:var(--pine)}
-  .tag.priv{color:var(--cinnabar);border-color:var(--cinnabar)}
-  .iurl{font-family:"Jost",sans-serif;font-size:11px;color:var(--muted);margin-bottom:14px}
-  .grp{margin-bottom:13px}
-  .grp .gl{font-size:11.5px;color:var(--muted);letter-spacing:.06em;margin:0 0 6px;padding-left:2px;border-left:2px solid var(--gold);padding-left:8px}
-  .node{display:flex;align-items:baseline;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
-    padding:8px 12px;margin-bottom:6px;text-decoration:none;color:inherit;cursor:pointer;transition:border-color .2s,transform .12s}
-  a.node:hover{border-color:var(--pine);transform:translateX(2px)}
-  .node .n{font-size:13.5px;color:var(--ink)}
-  .node .f{font-family:"Jost",sans-serif;font-size:10.5px;color:var(--hair);margin-left:auto;white-space:nowrap}
-  .node.ext-link{border-style:dashed}
-  .node.star{border-color:var(--pine);background:#eef3ee}
-  .node.star .n{font-weight:500}
-  .sub{font-size:11.5px;color:var(--muted);line-height:1.7;margin:2px 0 8px 14px}
-  .meta{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7}
-  .legend{grid-column:1/-1;margin-top:6px;font-size:11.5px;color:var(--muted);background:var(--surface);
-    border:1px solid var(--line);border-radius:12px;padding:13px 16px;line-height:1.9}
-  .legend b{color:var(--ink)}
-  .warn{color:var(--cinnabar)}
+:root{--bg:#f4efe4;--surface:#f8f4ec;--ink:#23241f;--muted:#6f6657;--line:#d2c7b4;--hair:#bcb09a;
+  --pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;font-weight:300;
+  line-height:1.7;padding:34px 16px 70px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:22px;letter-spacing:.04em;text-align:center;margin-bottom:4px}
+.date{text-align:center;font-family:"Jost",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.count{text-align:center;font-size:12px;color:var(--muted);margin-bottom:26px}
+.cols{columns:2;column-gap:20px}
+@media(max-width:760px){.cols{columns:1}}
+.island{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px 18px;
+  margin-bottom:20px;break-inside:avoid}
+.island.priv{border-color:var(--pine)}
+.island.unsorted{border-style:dashed;border-color:var(--cinnabar)}
+.ihead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.ihead .nm{font-family:"Noto Serif TC",serif;font-weight:600;font-size:16px;letter-spacing:.03em}
+.ihead .tag{font-family:"Jost",sans-serif;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tag.pub{color:var(--pine);border-color:var(--pine)}
+.tag.priv{color:var(--cinnabar);border-color:var(--cinnabar)}
+.node{display:flex;align-items:baseline;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:7px 12px;margin-bottom:6px;text-decoration:none;color:inherit;transition:border-color .2s,transform .12s}
+a.node:hover{border-color:var(--pine);transform:translateX(2px)}
+.node .n{font-size:13px;color:var(--ink)}
+.node .f{font-family:"Jost",sans-serif;font-size:10px;color:var(--hair);margin-left:auto;white-space:nowrap}
+.legend{margin-top:8px;font-size:11.5px;color:var(--muted);background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;padding:13px 16px;line-height:1.9}
+.legend b{color:var(--ink)}
+.warn{color:var(--cinnabar)}
 </style></head>
 <body>
+<!-- 此頁由 tools/gen-sitemap.py 自動產生,請勿手改;要調整分類改該腳本 -->
 <div class="wrap">
   <h1>練息場 · 平台 Sitemap</h1>
-  <div class="date">snapshot · 2026-06-18</div>
-
+  <div class="date">auto-generated · 2026-07-15</div>
+  <div class="count">全站 90 頁(不含 *.test.html)</div>
   <div class="cols">
-
-    <!-- 練息場 hub -->
-    <div class="island">
-      <div class="ihead"><span class="nm">練息場 Join to Enjoy</span><span class="tag pub">公開 · 首頁 hub</span></div>
-      <div class="iurl">index.html</div>
-
-      <div class="grp"><div class="gl">呼吸 · 回到當下</div>
-        <a class="node" href="BreatheAware/" target="_blank"><span class="n">呼吸覺察</span><span class="f">BreatheAware/</span></a>
-        <a class="node" href="xiaoqi/" target="_blank"><span class="n">小憩 · 練息</span><span class="f">xiaoqi/</span></a>
-        <a class="node" href="hrv/" target="_blank"><span class="n">心率變異 HRV</span><span class="f">hrv/</span></a>
-      </div>
-      <div class="grp"><div class="gl">內在 · 讀懂自己</div>
-        <a class="node" href="ven-i/" target="_blank"><span class="n">問易 · 卜卦</span><span class="f">ven-i/ +jingfang</span></a>
-        <a class="node ext-link" href="https://flow222git.github.io/writespace/" target="_blank"><span class="n">心理位移書寫 ↗</span><span class="f">writespace(外)</span></a>
-      </div>
-      <div class="grp"><div class="gl">認識自己</div>
-        <a class="node ext-link" href="https://flow222git.github.io/twct/" target="_blank"><span class="n">溝通類型測驗 ↗</span><span class="f">twct(外)</span></a>
-        <a class="node" href="bsrs/" target="_blank"><span class="n">心情溫度計</span><span class="f">bsrs/</span></a>
-      </div>
-      <div class="grp"><div class="gl">個人</div>
-        <a class="node" href="index.html" target="_blank"><span class="n">日曆 / 我的記錄 · 設定</span><span class="f">index#cal</span></a>
-        <a class="node" href="admin.html" target="_blank"><span class="n">整合後台</span><span class="f">admin.html</span></a>
-      </div>
-    </div>
-
-    <!-- octenso 島 -->
-    <div class="island octenso">
-      <div class="ihead"><span class="nm">八態能格 Octenso</span><span class="tag priv">私密 · 獨立島 · 未連入首頁</span></div>
-      <div class="iurl">octenso/ · noindex · 登入閘</div>
-
-      <a class="node" href="octenso/index.html" target="_blank"><span class="n">門面 hub</span><span class="f">octenso/index</span></a>
-      <a class="node star" href="octenso/bagua-persona.html" target="_blank"><span class="n">★ 八態能量人格（旗艦）</span><span class="f">bagua-persona</span></a>
-      <div class="sub">整體側寫 · 能格調校 · 場景耗能 v2 · 分享 #r= · 雙人合盤 · 想成為的你</div>
-
-      <div class="grp" style="margin-top:4px"><div class="gl">測驗 / 工具</div>
-        <a class="node" href="octenso/bagua-map.html" target="_blank"><span class="n">八態能量系統圖</span><span class="f">bagua-map</span></a>
-        <a class="node" href="octenso/bagua-field.html" target="_blank"><span class="n">測一個局</span><span class="f">bagua-field</span></a>
-        <a class="node" href="octenso/bagua-career.html" target="_blank"><span class="n">職業配對</span><span class="f">bagua-career</span></a>
-        <a class="node" href="octenso/bagua-team.html" target="_blank"><span class="n">團隊合盤</span><span class="f">bagua-team</span></a>
-        <a class="node" href="octenso/bagua-records.html" target="_blank"><span class="n">記錄中心</span><span class="f">bagua-records</span></a>
-      </div>
-      <div class="grp"><div class="gl">說明 / 內部</div>
-        <a class="node" href="octenso/bagua-guide.html" target="_blank"><span class="n">說明 · FAQ</span><span class="f">bagua-guide</span></a>
-        <a class="node" href="octenso/bagua-i18n.html" target="_blank"><span class="n">翻譯 · 給岩無需求書</span><span class="f">i18n · brief</span></a>
-        <a class="node" href="octenso/octenso-admin.html" target="_blank"><span class="n">內部：admin / journey / feedback / notes / ci / wheel</span><span class="f">octenso-*</span></a>
-      </div>
-    </div>
-
-    <!-- 外部 + 備註 -->
-    <div class="island ext">
-      <div class="ihead"><span class="nm">外部 repos（GitHub Pages）</span></div>
-      <a class="node ext-link" href="https://flow222git.github.io/writespace/" target="_blank" style="display:inline-flex;margin-right:8px"><span class="n">writespace · 心理位移</span></a>
-      <a class="node ext-link" href="https://flow222git.github.io/twct/" target="_blank" style="display:inline-flex;margin-right:8px"><span class="n">twct · 溝通類型</span></a>
-      <a class="node ext-link" href="https://github.com/flow222git/jte-assets" target="_blank" style="display:inline-flex"><span class="n">jte-assets · 素材</span></a>
-    </div>
-
-    <div class="legend">
-      <b>讀法</b>：實線框＝本 repo 內頁；虛線框＝外部 repo（↗）；綠框＝octenso 私密島（noindex、需登入、未從首頁連入）。<br>
-      <span class="warn">⚠️ 待收線頭</span>：<b>breathaware</b>(舊小寫) vs <b>BreatheAware</b>(新) 疑似重複版本；octenso 視覺自成一系（土色禪），跟首頁(藍)尚未收斂（見 backlog ⑦ 全站視覺）。
-    </div>
-
+<div class="island"><div class="ihead"><span class="nm">練息場 · 平台入口</span><span class="tag pub">公開</span><span class="tag">6</span></div>
+<a class="node" href="breathaware/index.html" target="_blank"><span class="n">Breeeeeathe~</span><span class="f">breathaware/index.html</span></a>
+<a class="node" href="home-2026-proposal.html" target="_blank"><span class="n">首頁提案 2026</span><span class="f">home-2026-proposal.html</span></a>
+<a class="node" href="house-style-demo.html" target="_blank"><span class="n">DEMO · 全站統一視覺（house style）感覺稿</span><span class="f">house-style-demo.html</span></a>
+<a class="node" href="hub-demo.html" target="_blank"><span class="n">DEMO · 練息場 hub（house style 重皮）</span><span class="f">hub-demo.html</span></a>
+<a class="node" href="index.html" target="_blank"><span class="n">| Join to Enjoy</span><span class="f">index.html</span></a>
+<a class="node" href="sitemap.html" target="_blank"><span class="n">Sitemap（2026-06-18）</span><span class="f">sitemap.html</span></a>
+</div>
+<div class="island"><div class="ihead"><span class="nm">呼吸 · 覺察</span><span class="tag pub">公開</span><span class="tag">4</span></div>
+<a class="node" href="BreatheAware/index.html" target="_blank"><span class="n">Breeeeeathe~</span><span class="f">BreatheAware/index.html</span></a>
+<a class="node" href="breath-awareness-xiaoqi.html" target="_blank"><span class="n">呼吸覺察 × 小憩 · 團隊白皮書</span><span class="f">breath-awareness-xiaoqi.html</span></a>
+<a class="node" href="energy-helper-demo.html" target="_blank"><span class="n">能量管理小幫手 · 感覺稿</span><span class="f">energy-helper-demo.html</span></a>
+<a class="node" href="xiaoqi/index.html" target="_blank"><span class="n">小憩。練息 — ONE PAUSE · ONE PEACE</span><span class="f">xiaoqi/index.html</span></a>
+</div>
+<div class="island"><div class="ihead"><span class="nm">心率變異 HRV</span><span class="tag pub">公開</span><span class="tag">4</span></div>
+<a class="node" href="activity_import.html" target="_blank"><span class="n">活動名單匯入工具</span><span class="f">activity_import.html</span></a>
+<a class="node" href="hrv-research.html" target="_blank"><span class="n">HRV 指標重新設計 · 研究簡報</span><span class="f">hrv-research.html</span></a>
+<a class="node" href="hrv/index.html" target="_blank"><span class="n">心率變異 HRV · 練息場</span><span class="f">hrv/index.html</span></a>
+<a class="node" href="hrv_import.html" target="_blank"><span class="n">HRV 歷史匯入工具</span><span class="f">hrv_import.html</span></a>
+</div>
+<div class="island"><div class="ihead"><span class="nm">心情溫度計 BSRS</span><span class="tag pub">公開</span><span class="tag">1</span></div>
+<a class="node" href="bsrs/index.html" target="_blank"><span class="n">心情溫度計 · 練息場</span><span class="f">bsrs/index.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">八態能格 · 主要體驗</span><span class="tag priv">私密 · 內部</span><span class="tag">12</span></div>
+<a class="node" href="octenso/bagua-career.html" target="_blank"><span class="n">職業能量配對 · 八卦能量盤</span><span class="f">octenso/bagua-career.html</span></a>
+<a class="node" href="octenso/bagua-crystal.html" target="_blank"><span class="n">能量晶體(探索原型)</span><span class="f">octenso/bagua-crystal.html</span></a>
+<a class="node" href="octenso/bagua-delta.html" target="_blank"><span class="n">月照鏡(兩次快照對照 · 體驗原型)</span><span class="f">octenso/bagua-delta.html</span></a>
+<a class="node" href="octenso/bagua-field.html" target="_blank"><span class="n">測一個局 · 八卦能量盤</span><span class="f">octenso/bagua-field.html</span></a>
+<a class="node" href="octenso/bagua-hybrid.html" target="_blank"><span class="n">伴讀版(半題庫半對話 · 體驗原型)</span><span class="f">octenso/bagua-hybrid.html</span></a>
+<a class="node" href="octenso/bagua-map.html" target="_blank"><span class="n">八態能量系統圖</span><span class="f">octenso/bagua-map.html</span></a>
+<a class="node" href="octenso/bagua-persona-v2.html" target="_blank"><span class="n">完整版體驗(題本 v2)</span><span class="f">octenso/bagua-persona-v2.html</span></a>
+<a class="node" href="octenso/bagua-persona.html" target="_blank"><span class="n">八態能量人格 · 測驗</span><span class="f">octenso/bagua-persona.html</span></a>
+<a class="node" href="octenso/bagua-records.html" target="_blank"><span class="n">我的八態記錄</span><span class="f">octenso/bagua-records.html</span></a>
+<a class="node" href="octenso/bagua-team.html" target="_blank"><span class="n">團隊合盤 · 八卦能量</span><span class="f">octenso/bagua-team.html</span></a>
+<a class="node" href="octenso/bagua-v3.html" target="_blank"><span class="n">v3 體驗版(開場+聊天式作答+口語解測)</span><span class="f">octenso/bagua-v3.html</span></a>
+<a class="node" href="octenso/index.html" target="_blank"><span class="n">看見你的能量，選擇你的流動</span><span class="f">octenso/index.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">八態能格 · 說明 / 型錄 / 學理</span><span class="tag priv">私密 · 內部</span><span class="tag">12</span></div>
+<a class="node" href="bagua-64-demand.html" target="_blank"><span class="n">64 卦能量需求表 v0.1 · 八態能格 Route B</span><span class="f">bagua-64-demand.html</span></a>
+<a class="node" href="batai-layers.html" target="_blank"><span class="n">三層對照（能格 / 三態 / 八轉換）</span><span class="f">batai-layers.html</span></a>
+<a class="node" href="batai-routeb.html" target="_blank"><span class="n">Route B · 八態能格 × 問易 → 客製建議</span><span class="f">batai-routeb.html</span></a>
+<a class="node" href="octenso-energy-positioning.html" target="_blank"><span class="n">能量定位｜從「能量管理」到「生命功能管理」</span><span class="f">octenso-energy-positioning.html</span></a>
+<a class="node" href="octenso-model-spec.html" target="_blank"><span class="n">學理憲法（spec 審閱）</span><span class="f">octenso-model-spec.html</span></a>
+<a class="node" href="octenso-overview.html" target="_blank"><span class="n">架構・引擎・決策歷程</span><span class="f">octenso-overview.html</span></a>
+<a class="node" href="octenso/bagua-brief.html" target="_blank"><span class="n">八卦能量小卡 · 合作需求書（給岩無）</span><span class="f">octenso/bagua-brief.html</span></a>
+<a class="node" href="octenso/bagua-catalog.html" target="_blank"><span class="n">型錄(草稿·未上線)</span><span class="f">octenso/bagua-catalog.html</span></a>
+<a class="node" href="octenso/bagua-concepts.html" target="_blank"><span class="n">概念釐清 已併入功能說明</span><span class="f">octenso/bagua-concepts.html</span></a>
+<a class="node" href="octenso/bagua-guide.html" target="_blank"><span class="n">八態能量系統 · 功能說明與範例</span><span class="f">octenso/bagua-guide.html</span></a>
+<a class="node" href="octenso/bagua-i18n.html" target="_blank"><span class="n">八態能量 · 多國語言討論頁</span><span class="f">octenso/bagua-i18n.html</span></a>
+<a class="node" href="octenso/octenso-八態-結構頁-v0.1.html" target="_blank"><span class="n">八態｜一套觀察運作的語言</span><span class="f">octenso/octenso-八態-結構頁-v0.1.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">八態能格 · 能量印記 / 藝術稿</span><span class="tag priv">私密 · 內部</span><span class="tag">15</span></div>
+<a class="node" href="octenso-art-demo.html" target="_blank"><span class="n">能量印記 · 藝術表達畫廊</span><span class="f">octenso-art-demo.html</span></a>
+<a class="node" href="octenso-card-demo.html" target="_blank"><span class="n">你的能量印記 · 個人頁 demo</span><span class="f">octenso-card-demo.html</span></a>
+<a class="node" href="octenso-claude-read-demo.html" target="_blank"><span class="n">我眼中的你 · 八態能格</span><span class="f">octenso-claude-read-demo.html</span></a>
+<a class="node" href="octenso-color-enso-demo.html" target="_blank"><span class="n">能量印記 · 形狀×顏色×光 concept</span><span class="f">octenso-color-enso-demo.html</span></a>
+<a class="node" href="octenso-destael-demo.html" target="_blank"><span class="n">能量印記 · de Staël 色塊</span><span class="f">octenso-destael-demo.html</span></a>
+<a class="node" href="octenso-enso-demo.html" target="_blank"><span class="n">你的能量圓 demo</span><span class="f">octenso-enso-demo.html</span></a>
+<a class="node" href="octenso-explainer-demo.html" target="_blank"><span class="n">動畫解說</span><span class="f">octenso-explainer-demo.html</span></a>
+<a class="node" href="octenso-ink-demo.html" target="_blank"><span class="n">能量印記 · 水墨全幅</span><span class="f">octenso-ink-demo.html</span></a>
+<a class="node" href="octenso-ink-oil-demo.html" target="_blank"><span class="n">能量印記 · 水墨 vs 油畫</span><span class="f">octenso-ink-oil-demo.html</span></a>
+<a class="node" href="octenso-intro-cards-demo.html" target="_blank"><span class="n">進場施測語 demo · 八態能格</span><span class="f">octenso-intro-cards-demo.html</span></a>
+<a class="node" href="octenso-oil-demo.html" target="_blank"><span class="n">能量印記 · 油畫</span><span class="f">octenso-oil-demo.html</span></a>
+<a class="node" href="octenso-reading-demo.html" target="_blank"><span class="n">圖文解讀 概念 · 八態能格</span><span class="f">octenso-reading-demo.html</span></a>
+<a class="node" href="octenso-rothko-demo.html" target="_blank"><span class="n">能量印記 · Rothko 色域</span><span class="f">octenso-rothko-demo.html</span></a>
+<a class="node" href="octenso-route4-demo.html" target="_blank"><span class="n">能量印記 · 漩渦 × 本性筆觸</span><span class="f">octenso-route4-demo.html</span></a>
+<a class="node" href="octenso-vangogh-demo.html" target="_blank"><span class="n">能量印記 · 梵谷漩渦</span><span class="f">octenso-vangogh-demo.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">八態能格 · 內部管理</span><span class="tag priv">私密 · 內部</span><span class="tag">6</span></div>
+<a class="node" href="octenso/octenso-admin.html" target="_blank"><span class="n">白名單管理</span><span class="f">octenso/octenso-admin.html</span></a>
+<a class="node" href="octenso/octenso-ci.html" target="_blank"><span class="n">品牌識別 CI</span><span class="f">octenso/octenso-ci.html</span></a>
+<a class="node" href="octenso/octenso-feedback.html" target="_blank"><span class="n">使用回饋</span><span class="f">octenso/octenso-feedback.html</span></a>
+<a class="node" href="octenso/octenso-journey.html" target="_blank"><span class="n">專案歷程 The Journey</span><span class="f">octenso/octenso-journey.html</span></a>
+<a class="node" href="octenso/octenso-notes.html" target="_blank"><span class="n">設計筆記 初衷與取捨</span><span class="f">octenso/octenso-notes.html</span></a>
+<a class="node" href="octenso/octenso-wheel-min.html" target="_blank"><span class="n">線條極簡 八角輪 preview</span><span class="f">octenso/octenso-wheel-min.html</span></a>
+</div>
+<div class="island"><div class="ihead"><span class="nm">問易 Ven-I · 卜卦</span><span class="tag pub">公開</span><span class="tag">3</span></div>
+<a class="node" href="jingfang-card-demo.html" target="_blank"><span class="n">京房一卦 · 局勢卡（示範）</span><span class="f">jingfang-card-demo.html</span></a>
+<a class="node" href="ven-i/index.html" target="_blank"><span class="n">問易 · 易經生命狀態</span><span class="f">ven-i/index.html</span></a>
+<a class="node" href="ven-i/jingfang/index.html" target="_blank"><span class="n">京房一卦</span><span class="f">ven-i/jingfang/index.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">平台文件 / 白皮書</span><span class="tag priv">私密 · 內部</span><span class="tag">10</span></div>
+<a class="node" href="docs/breath-awareness-xiaoqi.html" target="_blank"><span class="n">呼吸覺察 × 小憩 · 團隊白皮書</span><span class="f">docs/breath-awareness-xiaoqi.html</span></a>
+<a class="node" href="docs/index.html" target="_blank"><span class="n">內部交付文件</span><span class="f">docs/index.html</span></a>
+<a class="node" href="lianxichang-atlas.html" target="_blank"><span class="n">Atlas 全工具動線統籌圖</span><span class="f">lianxichang-atlas.html</span></a>
+<a class="node" href="lianxichang-hub.html" target="_blank"><span class="n">八態能格 工作索引 2026</span><span class="f">lianxichang-hub.html</span></a>
+<a class="node" href="lianxichang-mindmap.html" target="_blank"><span class="n">重整心智圖</span><span class="f">lianxichang-mindmap.html</span></a>
+<a class="node" href="lianxichang-tobc.html" target="_blank"><span class="n">To-C / To-B 目標與可能性</span><span class="f">lianxichang-tobc.html</span></a>
+<a class="node" href="platform-intro/index.html" target="_blank"><span class="n">平台白皮書｜總覽</span><span class="f">platform-intro/index.html</span></a>
+<a class="node" href="platform-intro/octenso.html" target="_blank"><span class="n">八態能格 Octenso｜練息場白皮書</span><span class="f">platform-intro/octenso.html</span></a>
+<a class="node" href="platform-intro/strategy.html" target="_blank"><span class="n">策略・產品化｜練息場白皮書</span><span class="f">platform-intro/strategy.html</span></a>
+<a class="node" href="platform-intro/wenyi.html" target="_blank"><span class="n">問易・卜易｜練息場白皮書</span><span class="f">platform-intro/wenyi.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">八態能格 · 交付文件 (docs)</span><span class="tag priv">私密 · 內部</span><span class="tag">14</span></div>
+<a class="node" href="docs/octenso/ai-companion.html" target="_blank"><span class="n">AI 伴讀設計</span><span class="f">docs/octenso/ai-companion.html</span></a>
+<a class="node" href="docs/octenso/catalog-discussion.html" target="_blank"><span class="n">型錄討論版</span><span class="f">docs/octenso/catalog-discussion.html</span></a>
+<a class="node" href="docs/octenso/compendium.html" target="_blank"><span class="n">全料總覽</span><span class="f">docs/octenso/compendium.html</span></a>
+<a class="node" href="docs/octenso/context-drain-love-work.html" target="_blank"><span class="n">對境耗能:愛情+工作</span><span class="f">docs/octenso/context-drain-love-work.html</span></a>
+<a class="node" href="docs/octenso/frameworks-comparison.html" target="_blank"><span class="n">八態能格 × 人格描述取徑</span><span class="f">docs/octenso/frameworks-comparison.html</span></a>
+<a class="node" href="docs/octenso/hybrid-assessment.html" target="_blank"><span class="n">半題庫半對話 · 自適應了解過程</span><span class="f">docs/octenso/hybrid-assessment.html</span></a>
+<a class="node" href="docs/octenso/index.html" target="_blank"><span class="n">文件入口</span><span class="f">docs/octenso/index.html</span></a>
+<a class="node" href="docs/octenso/integration-blueprint.html" target="_blank"><span class="n">平台整合藍圖</span><span class="f">docs/octenso/integration-blueprint.html</span></a>
+<a class="node" href="docs/octenso/item-bank-v2.html" target="_blank"><span class="n">題本 v2 設計</span><span class="f">docs/octenso/item-bank-v2.html</span></a>
+<a class="node" href="docs/octenso/item-pool.html" target="_blank"><span class="n">題庫池規格 + 題本 v3 候選題幹</span><span class="f">docs/octenso/item-pool.html</span></a>
+<a class="node" href="docs/octenso/material-pool.html" target="_blank"><span class="n">素材倉 · Material Pool</span><span class="f">docs/octenso/material-pool.html</span></a>
+<a class="node" href="docs/octenso/new-edition-guide.html" target="_blank"><span class="n">新版總說明</span><span class="f">docs/octenso/new-edition-guide.html</span></a>
+<a class="node" href="docs/octenso/therapeutic-companion.html" target="_blank"><span class="n">衡鑑式伴讀 · 像心理師一樣陪你</span><span class="f">docs/octenso/therapeutic-companion.html</span></a>
+<a class="node" href="docs/octenso/vector-functions.html" target="_blank"><span class="n">向量函式層 · 變化、相似、比對</span><span class="f">docs/octenso/vector-functions.html</span></a>
+</div>
+<div class="island priv"><div class="ihead"><span class="nm">管理後台 / 匯入工具</span><span class="tag priv">私密 · 內部</span><span class="tag">1</span></div>
+<a class="node" href="admin.html" target="_blank"><span class="n">管理後台</span><span class="f">admin.html</span></a>
+</div>
+<div class="island"><div class="ihead"><span class="nm">其他 / 客戶專案</span><span class="tag pub">公開</span><span class="tag">2</span></div>
+<a class="node" href="heavypower-rwd/index.html" target="_blank"><span class="n">HEAVY POWER : 專業製造商</span><span class="f">heavypower-rwd/index.html</span></a>
+<a class="node" href="heavypower-rwd/product.html" target="_blank"><span class="n">HEAVY POWER : 產品展示 : 彈簧螺式接線頭 Screw-On : 彈簧螺式接線頭</span><span class="f">heavypower-rwd/product.html</span></a>
+</div>
+  </div>
+  <div class="legend">
+    <b>讀法</b>:綠框＝八態/內部私密島(noindex、需登入);一般框＝公開;虛線紅框＝待歸位新頁。
+    右上小數字＝該區頁數。此頁每次由 <b>tools/gen-sitemap.py</b> 掃 git 重生,標題直接取自各頁 &lt;title&gt;。
   </div>
 </div>
 </body></html>
