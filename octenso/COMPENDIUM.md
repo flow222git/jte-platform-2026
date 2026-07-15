@@ -70,6 +70,7 @@
 ### 1.4 機器可讀定義(states-schema,Define 層)
 
 `octenso/octenso-states-schema-v0.1.yaml`(v0.1,2026-07-15 八態補完)——所有 AI 應用(伴讀/透鏡)的唯一判讀依據:G1–G8 護欄、逐態識別信號/缺席判定/混淆對照。真相來源在原檔;命名以素材倉術語對照表為準(沉澱者/明現者定案)。升 v0.2 門檻=真實素材雙 agent 收斂達標(乾跑僅除錯,見 specs/2026-07-15-octenso-schema-dryrun/)。
+0.1.1(同日):+素材脈絡宣告八型(context_declaration)、八態逐列輸出;判讀工具=octenso/bagua-lens.html(內部)。
 
 ---
 
@@ -290,6 +291,7 @@ COST_GIST(敘事用短語)另存 8 卦 × o/u,見 persona:1627-1636。
 | 07-06 | 答題傾向 2×2(標註式) |
 | 07-07 | 人格取徑全景比較+型錄深化 spec;**型錄層 T1–T5 草稿完成(本輪,未上線)** |
 | 07-15 | **states-schema v0.1 八態補完**(Define 層;命名回 canonical 沉澱者/明現者;合成素材乾跑除錯;v0.2 留給真實素材收斂) |
+| 07-15 | **八態鏡上線(內部)**:schema 0.1.1(脈絡宣告八型)+Worker /lens+bagua-lens 頁;語彙庫改拉式收割,不預建 |
 
 ## 10. 誠實邊界與缺口
 
