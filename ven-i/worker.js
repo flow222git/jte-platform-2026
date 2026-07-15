@@ -146,8 +146,8 @@ async function handleLens(request, env, corsHeaders) {
   try { payload = await request.json(); }
   catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
   const { material, schema, contextType, contextLabel } = payload;
-  if (typeof material !== 'string' || !material.trim() || material.length > 20000) {
-    return json({ error: '素材為空或超過 20000 字。' }, 400, corsHeaders);
+  if (typeof material !== 'string' || !material.trim() || material.length > 30000) {
+    return json({ error: '素材為空或超過 30000 字。' }, 400, corsHeaders);
   }
   if (typeof schema !== 'string' || schema.length < 1000 || schema.length > 20000) {
     return json({ error: 'schema 載入異常。' }, 400, corsHeaders);
