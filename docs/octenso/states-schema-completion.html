@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Define 層補完 · states-schema 八態量產</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
+.decide{border:1px solid var(--pine);border-radius:3px;padding:16px 20px;margin:18px 0;background:var(--surface)}
+.decide .dl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:6px}
+.no{color:var(--muted)}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Design Spec</div>
+  <h1>Define 層補完<br>states-schema 八態量產</h1>
+  <div class="meta">STATES-SCHEMA COMPLETION · 2026-07-15 · DEFINE LAYER</div>
+</header>
+<article>
+
+<h2>背景與目的</h2>
+<p>八態能格往 R/GA「Define → Encode → Deploy」三層發展。現況是 Define 層最單薄:
+<code>octenso-states-schema-v0.1.yaml</code> 只完整填了坎、離兩態,其餘六態是 stub;
+且 schema 的坎/離主稱呼與素材倉術語對照表不一致。</p>
+<p><strong>Define 沒立穩,Encode 層的透鏡 agent(判讀依據=本 schema)就跑不準。</strong>
+本輪把 schema 補成八態完整版,並用合成素材乾跑一次雙 agent 判讀,
+在實地測試(八態應用測試手冊 v0.1)之前先除錯。</p>
+
+<h2>定案決策</h2>
+
+<div class="decide"><div class="dl">Decision 1 · 命名以素材倉為準</div>
+坎主稱呼=<strong>沉澱者(坎)</strong>、離=<strong>明現者(離)</strong>。
+schema 現行的「探索者/照見者」是漂移,改回。雅稱不動(坎=探索、離=照見)。
+依據:material-pool 術語對照表+2026-07-14「沉澱」撞詞決策。</div>
+
+<div class="decide"><div class="dl">Decision 2 · 坎/離範本確認通過(驗收 step1 達標)</div>
+欄位=識別信號(語言/會議/BP/制度線索+正例引文形狀)、缺席判定、低載信號、
+失衡信號(待審閱)、成熟表現(待審閱)、混淆對照、禁止推論。照此範本量產六態。</div>
+
+<div class="decide"><div class="dl">Decision 3 · 範圍=量產+合成素材乾跑</div>
+目前無真實素材;正式收斂測試(驗收 step2–4)留待實地測試產生素材後另開一輪。</div>
+
+<h2>工作內容</h2>
+
+<h3>① 命名修正</h3>
+<p><code>kan.主稱呼: 探索者(坎) → 沉澱者(坎)</code><br>
+<code>li.主稱呼: 照見者(離) → 明現者(離)</code></p>
+
+<h3>② 六態量產(乾/坤/震/巽/艮/兌)</h3>
+<p>每態補成坎/離同款完整結構。內容來源三層,全部可追溯:</p>
+<div class="tblwrap"><table>
+<tr><th>schema 欄位</th><th>來源</th><th>狀態標記</th></tr>
+<tr><td>主稱呼/雅稱/英文候選/系統/分支動詞</td><td>素材倉術語對照表(照抄)</td><td>已定案</td></tr>
+<tr><td>一句話</td><td>素材倉 A-4(照抄)</td><td>原始</td></tr>
+<tr><td>核心提問</td><td>素材倉 A-9(照抄)</td><td>原始</td></tr>
+<tr><td>失衡信號/成熟表現</td><td>素材倉 A-11,過三道翻譯規則</td><td>待審閱</td></tr>
+<tr><td>分支角色/識別信號/缺席判定/低載信號</td><td>依 model-spec 卦德推導撰寫(新創作)</td><td>原始 · <em>Simon 重點審</em></td></tr>
+<tr><td>混淆對照</td><td>先推導易混對,乾跑分歧回填</td><td>原始</td></tr>
+<tr><td>禁止推論</td><td>依 G1/G5 逐態寫</td><td>原始</td></tr>
+</table></div>
+<p>混淆對照初步易混對(乾跑後修正):震vs乾(都「發動」)、巽vs兌(都「柔性影響」)、
+艮vs坤(都「守住」)、乾vs巽(都「推進改變」)、坤vs兌(都「接住人」)、
+震vs艮(一動一停,失衡時互為誤判);各態 vs 坎/離缺的補齊。</p>
+<blockquote>紅線:G1–G8 護欄一字不動;主詞永遠是「運作」;缺席≠弱;
+verdicts / output_spec / working_hypotheses / acceptance 區塊結構不動。</blockquote>
+
+<h3>③ 合成素材乾跑(除錯,不是正式驗收)</h3>
+<ul>
+<li><strong>素材</strong>:自寫仿真素材(創業 BP 節錄+產品會議紀錄,約一頁半),
+埋標準答案:三態有料、兩態薄、三態缺席、一組失衡疑似(含「離過載+坎缺席」高風險組合)。</li>
+<li><strong>判讀</strong>:兩個獨立 agent(互不知對方),各自只拿 schema+素材,依 output_spec 輸出。</li>
+<li><strong>對答案</strong>:presence 一致率、引文重疊度、失衡 flag 命中;分歧回填混淆對照。</li>
+<li><strong>產出</strong>:素材+兩份判讀+分歧分析,存 specs 附件,供實地測試前參考。</li>
+</ul>
+
+<h3>④ 版號與 meta</h3>
+<p>版號 <code>0.1-draft → 0.1</code>(拿掉 draft)。<strong>不升 v0.2</strong>——驗收計畫寫明
+v0.2 需真實素材收斂達標,誠實守住。<code>meta.filled</code> 八態全列、<code>meta.stub</code> 清空。</p>
+
+<h3>⑤ 驗證</h3>
+<p>最小 schema 檢查:python3 可 parse、八態欄位齊全、G1–G8 未被改動、
+主稱呼與素材倉術語對照表一致。沿工程慣例(無 node,python3 即可)。</p>
+
+<h2>不做的事</h2>
+<ul class="no">
+<li>舊頁命名回填(persona v1、overview 用語對齊)——另一筆債,另開輪。</li>
+<li>英文名定案(維持「未定案,不上線」)。</li>
+<li>伴讀 worker.js / 透鏡 agent 接上 schema——Encode 層的事。</li>
+<li>結構頁 v0.1 改版;material-pool 除回報錯誤外不改動。</li>
+</ul>
+
+<h2>完成的定義</h2>
+<ol>
+<li>schema 八態完整、命名與素材倉一致、護欄不動、驗證通過。</li>
+<li>乾跑產出三件套齊(素材/判讀×2/分歧分析),分歧已回填混淆對照。</li>
+<li>PR 進 main;COMPENDIUM 索引同步一行。</li>
+</ol>
+
+<div class="honest">
+與 Simon 對談定案於 2026-07-15。乾跑素材為合成,收斂數字僅供除錯,不構成正式驗收;
+schema 升 v0.2 仍以真實素材收斂達標為準。
+<div class="src">SOURCE · docs/superpowers/specs/2026-07-15-octenso-states-schema-completion-design.md</div>
+</div>
+
+</article>
+</div>
+</body></html>
