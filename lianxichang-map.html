@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>練息場 · 架構脈絡地圖（2026-07-15）</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Noto+Sans+TC:wght@200;300;400;500&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--gold:#a9823b;--cinnabar:#9d4b34;--water:#4d6b86}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",ui-sans-serif,sans-serif;
+    font-weight:300;line-height:1.85;padding:40px 18px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-family:"Noto Sans TC";font-weight:200;font-size:27px;letter-spacing:.1em;text-align:center;margin-bottom:6px}
+  .sub{text-align:center;font-family:"Jost";font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:22px}
+  .oneline{max-width:600px;margin:0 auto 30px;text-align:center;font-size:14.5px;color:var(--ink-soft);line-height:2}
+  .oneline b{font-weight:500}
+  /* 圖例 */
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin:0 auto 34px;
+    max-width:720px;font-size:12px;color:var(--muted);padding:14px 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:6px;vertical-align:middle}
+  .d-live{background:var(--pine)} .d-dev{background:var(--gold)}
+  .d-proto{background:var(--hair)} .d-merge{background:var(--cinnabar)}
+  /* 區塊 */
+  .band{margin:44px 0 14px;font-family:"Noto Sans TC";font-weight:400;font-size:13px;letter-spacing:.16em;
+    color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+  .band .en{font-family:"Jost";font-size:10px;letter-spacing:.24em;margin-left:10px}
+  /* 線卡 */
+  .thread{border-left:2px solid var(--hair);padding:2px 0 2px 16px;margin-bottom:20px}
+  .thread.live{border-color:var(--pine)} .thread.dev{border-color:var(--gold)}
+  .thread.proto{border-color:var(--hair)} .thread.merge{border-color:var(--cinnabar)}
+  .th-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .th-name{font-size:16px;font-weight:500;letter-spacing:.02em}
+  .th-stat{font-family:"Jost";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    border:1px solid var(--line);border-radius:99px;padding:1px 9px}
+  .th-def{font-size:13px;color:var(--ink-soft);margin:5px 0 8px;line-height:1.85}
+  .th-pages{display:flex;flex-wrap:wrap;gap:6px}
+  a.pg{font-family:"Jost";font-size:11px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);border-radius:8px;padding:3px 10px;background:var(--surface);transition:.16s}
+  a.pg:hover{border-color:var(--pine);color:var(--ink)}
+  a.pg .z{font-family:"Noto Sans TC";color:var(--ink);margin-right:5px}
+  a.pg.now{border-color:var(--pine)} a.pg.now .z{color:var(--pine);font-weight:500}
+  a.pg.old{color:var(--hair);border-style:dashed}
+  /* 版本表 */
+  table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:12.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:400;color:var(--muted);font-size:11.5px;letter-spacing:.06em}
+  td .g{font-family:"Jost";font-size:10.5px;color:var(--hair)}
+  tr.now td{background:rgba(53,97,79,.06)}
+  /* 收攏清單 */
+  .merge-box{border:1px solid var(--cinnabar);border-radius:14px;padding:18px 20px;background:var(--surface)}
+  .merge-box .mi{padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-soft);line-height:1.85}
+  .merge-box .mi:last-child{border-bottom:0}
+  .merge-box .mi b{color:var(--ink);font-weight:500}
+  .note{font-size:12px;color:var(--muted);line-height:1.9;padding-left:15px;border-left:1px solid var(--hair);margin:6px 0 0}
+  .foot{margin-top:40px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.9}
+</style></head>
+<body>
+<div class="wrap">
+
+  <h1>練息場 · 架構脈絡地圖</h1>
+  <div class="sub">snapshot · 2026-07-15 · 內部作戰用</div>
+
+  <div class="oneline">
+    平台是<b>同一個家</b>:鏡(看見)→ 橋(翻譯)→ 場(練)→ 再照鏡,一條迴圈。<br>
+    <b>整體感,不硬整合</b>——同一種語氣與誠實邊界、工具間轉介,但不做系統間量表對映。
+  </div>
+
+  <div class="legend">
+    <span><span class="dot d-live"></span>穩定現役</span>
+    <span><span class="dot d-dev"></span>發展中(方向定案)</span>
+    <span><span class="dot d-proto"></span>原型/草稿(未接導覽)</span>
+    <span><span class="dot d-merge"></span>待收攏/重複</span>
+  </div>
+
+  <!-- ================= 平台層 ================= -->
+  <div class="band">平台產品線 <span class="en">PLATFORM LINES · 鏡／場</span></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">呼吸覺察 BreatheAware</span><span class="th-stat">現役 · To-C</span></div>
+    <div class="th-def">即時看見呼吸狀態,回到當下。呼吸群落最後收束到小憩。</div>
+    <div class="th-pages"><a class="pg now" href="BreatheAware/"><span class="z">主</span>BreatheAware/</a><a class="pg old" href="breathaware/">breathaware/(舊重複)</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">小憩 · 練息 xiaoqi</span><span class="th-stat">現役 · To-C</span></div>
+    <div class="th-def">15 種呼吸法 × 5 情境。</div>
+    <div class="th-pages"><a class="pg now" href="xiaoqi/"><span class="z">主</span>xiaoqi/</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">心率變異 HRV</span><span class="th-stat">現役 · To-C / To-B 錨</span></div>
+    <div class="th-def">手指貼鏡頭一分鐘量身體——練前練後的生理裁判,也是 To-B 成效證據。</div>
+    <div class="th-pages"><a class="pg now" href="hrv/"><span class="z">主</span>hrv/</a><a class="pg" href="hrv-research.html">研究簡報</a><a class="pg" href="hrv_import.html">匯入</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">心情溫度計 BSRS-5</span><span class="th-stat">現役 · To-C</span></div>
+    <div class="th-def">一分鐘看最近情緒(鏡·情緒)。</div>
+    <div class="th-pages"><a class="pg now" href="bsrs/"><span class="z">主</span>bsrs/</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">問易 ven-i · 卜卦</span><span class="th-stat">現役 · To-C</span></div>
+    <div class="th-def">用 64 卦讀「此刻這件事在要求什麼」(鏡·處境/卦層)。與八態靠 Route B 橋接。</div>
+    <div class="th-pages"><a class="pg now" href="ven-i/"><span class="z">主</span>ven-i/</a><a class="pg proto" href="ven-i/jingfang/">京房一卦(draft)</a><a class="pg" href="jingfang-card-demo.html">局勢卡</a></div></div>
+
+  <div class="thread dev"><div class="th-head"><span class="th-name">八態能格 Octenso</span><span class="th-stat">旗艦 · To-C＋To-B · 下方展開 ↓</span></div>
+    <div class="th-def">25 題照出能量輪廓的「底色深鏡」。平台唯一同時觸及 To-B 企業健檢的產品線,半獨立島(noindex、登入閘)。<b>底下 12 條線並行,見下一段。</b></div>
+    <div class="th-pages"><a class="pg now" href="octenso/"><span class="z">門面</span>octenso/</a></div></div>
+
+  <div class="thread proto"><div class="th-head"><span class="th-name">能量管理小幫手</span><span class="th-stat">草稿 · 未接線</span></div>
+    <div class="th-def">場景→強度→空/滿/卡→交棒 的三態前門快篩(源自課程)。與八態、回流都還沒接上。</div>
+    <div class="th-pages"><a class="pg proto" href="energy-helper-demo.html">energy-helper-demo</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">外部 repo · 已上線</span><span class="th-stat">現役 · To-C</span></div>
+    <div class="th-def">並列呈現、雙向轉介,不做量表對映。</div>
+    <div class="th-pages"><a class="pg" href="https://flow222git.github.io/writespace/">心理位移書寫 ↗</a><a class="pg" href="https://flow222git.github.io/twct/">溝通類型測驗 ↗</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">To-B / 真人層</span><span class="th-stat">已實戰</span></div>
+    <div class="th-def">優勢幸福力(實證量表,企業健檢,504 樣本)× 工作坊+心理師(640 人/21 場)。與八態<b>並列不對映</b>。</div></div>
+
+  <!-- ================= 八態 12 線 ================= -->
+  <div class="band">八態能格底下的 12 條線 <span class="en">OCTENSO THREADS</span></div>
+  <p class="note" style="margin-bottom:22px">複雜的根源在這裡:同一套「八能量語言」被拉去做很多事。下面照「成熟度」排——先穩定的,再前沿的,最後探索債。</p>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">① 適配引擎(局／職／團)</span><span class="th-stat">穩定現役</span></div>
+    <div class="th-def">同一套語言量「兩者之間的契合與耗能」,不是人格散文。這條最成熟。</div>
+    <div class="th-pages"><a class="pg now" href="octenso/bagua-field.html">測一個局</a><a class="pg now" href="octenso/bagua-career.html">職業配對</a><a class="pg now" href="octenso/bagua-team.html">團隊合盤</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">② 核心測驗(經典人格測驗)</span><span class="th-stat">現役 · 架構待翻新</span></div>
+    <div class="th-def">25 題 → 八態分數 → 剖面 → L1–L5 解讀＋能格校準＋場景耗能＋合盤＋分享碼。<b>唯一掛在導覽、使用者現在真正點得到的測驗頁</b>——但內容寫死在頁內(未接 canonical),是最舊的資料架構。</div>
+    <div class="th-pages"><a class="pg now" href="octenso/bagua-persona.html"><span class="z">現役</span>bagua-persona(v1)</a></div></div>
+
+  <div class="thread proto"><div class="th-head"><span class="th-name">③ 新世代測驗(canonical 同源)</span><span class="th-stat">原型 · 未接導覽</span></div>
+    <div class="th-def">同引擎、改吃 canonical 資料檔(落實「meta A 同源」),各自試不同作答/報告介面。刻意<b>雙軌</b>:文件感 vs 陪伴感。</div>
+    <table>
+      <tr><th>世代</th><th>頁面</th><th>定位</th><th>現況</th></tr>
+      <tr><td>v2</td><td><a class="pg" href="octenso/bagua-persona-v2.html">bagua-persona-v2</a></td><td>靜態「文件感」報告(spec 定調不動)</td><td>原型</td></tr>
+      <tr><td>v3</td><td><a class="pg" href="octenso/bagua-v3.html">bagua-v3</a></td><td>聊天式作答+口語解測<span class="g">(緣起「v2 題太好答」)</span></td><td>實驗</td></tr>
+      <tr class="now"><td>hybrid</td><td><a class="pg now" href="octenso/bagua-hybrid.html">bagua-hybrid</a></td><td>半題庫半對話 → 見 ④</td><td>最新·投注最多</td></tr>
+    </table></div>
+
+  <div class="thread dev"><div class="th-head"><span class="th-name">④ 伴讀／衡鑑式對話(AI 陪讀)</span><span class="th-stat">發展中 · 方向定案</span></div>
+    <div class="th-def">題庫負責測量、對話負責選路,<b>對話永不打分</b>(紅線);再升級為「像心理師一樣陪你核對」的治療性衡鑑語氣。<b>這是目前最前沿、最被投注的方向。</b></div>
+    <div class="th-pages"><a class="pg now" href="octenso/bagua-hybrid.html"><span class="z">家</span>bagua-hybrid</a><a class="pg" href="docs/octenso/therapeutic-companion.html">衡鑑式伴讀 spec</a><a class="pg" href="docs/octenso/hybrid-assessment.html">半題庫半對話 spec</a></div></div>
+
+  <div class="thread dev"><div class="th-head"><span class="th-name">⑤ 透鏡層 · 觀察運作的語言(全新 B2B 線)</span><span class="th-stat">發展中 · 剛建 v0.1</span></div>
+    <div class="th-def"><b>不讀人、讀運作</b>——一場會議/一份 BP/一個團隊怎麼運作、哪一態缺席。主詞永遠是「運作」不是「人」;缺席≠弱;只診斷不預測。這是 7/15 剛上的三件套,跟「測驗」是兩種用法。</div>
+    <div class="th-pages"><a class="pg now" href="octenso/octenso-八態-結構頁-v0.1.html">結構頁(門面)</a><a class="pg now" href="octenso/octenso-states-schema-v0.1.yaml">states-schema(判讀依據)</a><a class="pg now" href="octenso/八態應用測試手冊-v0.1.md">應用測試手冊</a></div></div>
+
+  <div class="thread dev"><div class="th-head"><span class="th-name">⑥ 向量函式層(數學層)</span><span class="th-stat">定義定案 · 參考值待校正</span></div>
+    <div class="th-def">八維向量 ⇄ 四門座標(可逆);只做三件事——變化(Δ 重測)、相似(合盤 cos)、比對(原型)。明確<b>不做</b>加權求和/排名。</div>
+    <div class="th-pages"><a class="pg" href="octenso/bagua-crystal.html">能量晶體(向量本體)</a><a class="pg" href="octenso/bagua-delta.html">月照鏡(Δ 重測)</a><a class="pg" href="docs/octenso/vector-functions.html">spec</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">⑦ 記錄／重測</span><span class="th-stat">穩定現役</span></div>
+    <div class="th-def">localStorage 歷史快照;也是向量層 Δ 的落地宿主。</div>
+    <div class="th-pages"><a class="pg now" href="octenso/bagua-records.html">bagua-records</a></div></div>
+
+  <div class="thread proto"><div class="th-head"><span class="th-name">⑧ 內容層／型錄 catalog</span><span class="th-stat">草稿 · 未上線</span></div>
+    <div class="th-def">(態 × 能格 × 場域)索引的散文內容庫,補「我這型在工作/愛情長什麼樣」。上線五步尚未執行。</div>
+    <div class="th-pages"><a class="pg proto" href="octenso/bagua-catalog.html">bagua-catalog(草稿)</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">⑨ 學理／定義層</span><span class="th-stat">憲法穩定 · schema v0.1-draft</span></div>
+    <div class="th-def">四層別混:<b>學理憲法</b>=真相源;<b>COMPENDIUM</b>=索引+快照;<b>states-schema</b>=機器可讀 Define 層(只填坎/離,其餘六態 stub);<b>canonical 資料檔</b>=「meta A 同源」的內容載體。⚠ 命名雙軌並存(功能名 明現/沉澱 vs 雅稱 照見/探索),舊頁未回填。</div>
+    <div class="th-pages"><a class="pg now" href="octenso-model-spec.html">學理憲法</a><a class="pg" href="docs/octenso/material-pool.html">素材倉/命名</a><a class="pg" href="octenso/octenso-states-schema-v0.1.yaml">states-schema</a></div></div>
+
+  <div class="thread live"><div class="th-head"><span class="th-name">⑩ 對外敘事／導讀</span><span class="th-stat">穩定文件</span></div>
+    <div class="th-def">最完整的對外全景與定位敘事。</div>
+    <div class="th-pages"><a class="pg" href="octenso-overview.html">架構總覽</a><a class="pg" href="octenso-energy-positioning.html">能量定位</a><a class="pg" href="docs/octenso/frameworks-comparison.html">vs 九型/MBTI</a><a class="pg" href="octenso/octenso-journey.html">The Journey</a></div></div>
+
+  <div class="thread proto"><div class="th-head"><span class="th-name">⑪ 平台整合／Route B 橋接</span><span class="th-stat">藍圖 · 探索</span></div>
+    <div class="th-def">八態=平台 lingua franca;與優勢幸福力並列不融合。Route B=同一卦、不同人、不同建議。</div>
+    <div class="th-pages"><a class="pg" href="docs/octenso/integration-blueprint.html">整合藍圖</a><a class="pg" href="batai-routeb.html">Route B</a><a class="pg" href="bagua-64-demand.html">64 卦需求表</a></div></div>
+
+  <div class="thread merge"><div class="th-head"><span class="th-name">⑫ 藝術印記(能量印記感覺稿)</span><span class="th-stat">15 競稿 · 待收斂</span></div>
+    <div class="th-def">用真分數長成「能量圓/印記」當結果主視覺。目前是同一目標的多畫風競稿(水墨/油畫/Rothko/梵谷/de Staël…),<b>該選一個收斂了</b>。</div>
+    <div class="th-pages"><a class="pg old" href="octenso-enso-demo.html">enso</a><a class="pg old" href="octenso-ink-demo.html">水墨</a><a class="pg old" href="octenso-oil-demo.html">油畫</a><a class="pg old" href="octenso-rothko-demo.html">Rothko</a><a class="pg old" href="octenso-vangogh-demo.html">梵谷</a><a class="pg old" href="octenso-art-demo.html">…共 15 個</a></div></div>
+
+  <!-- ================= 待收攏 ================= -->
+  <div class="band">待收攏 · 誠實清單 <span class="en">TENSIONS TO RESOLVE</span></div>
+  <div class="merge-box">
+    <div class="mi"><b>1 · 現役出口 vs 主推方向脫節</b>——使用者現在只點得到 v1(老架構),但方向定案的是 hybrid 伴讀。需要一個「新世代晉升接手」計畫。</div>
+    <div class="mi"><b>2 · v3 與 hybrid 定位重疊</b>——「聊天式作答」與「半題庫半對話」高度重疊,v3 有被 hybrid 吸收的候選風險。</div>
+    <div class="mi"><b>3 · 15 個藝術印記競稿</b>——多畫風並陳未收斂,純探索債,該選一個現役實作。</div>
+    <div class="mi"><b>4 · 命名雙軌未落地</b>——功能名 vs 雅稱並存,新頁用新名、舊頁用舊名,需一次對齊掃描。</div>
+    <div class="mi"><b>5 · 八態島未從首頁連入</b>——旗艦只能靠網址進,index.html 沒入口(提案已補、尚未落地)。</div>
+    <div class="mi"><b>6 · breathaware 重複</b>——舊小寫版 vs 駝峰 BreatheAware,舊版該導轉/封存。</div>
+    <div class="mi"><b>7 · bagua-concepts 已空殼</b>——title 自述「已併入功能說明」,可刪/重導。</div>
+  </div>
+
+  <p class="foot">
+    此圖由讀取 lianxichang-atlas · COMPENDIUM · 各 spec · v0.1 定義層綜合而成,是<b>脈絡地圖</b>不是檔案清單。<br>
+    完整檔案索引另見 <a class="pg" href="sitemap.html" style="display:inline-block">sitemap.html(自動產生)</a>。
+  </p>
+
+</div>
+</body></html>
