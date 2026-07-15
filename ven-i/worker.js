@@ -115,7 +115,7 @@ const OCTENSO_FIRST_USER = '我把我的報告帶來了,請陪我讀。';
    素材與報告皆不落檔(北極星:作答不上傳;內部工具連摘要都不存)。
    ============================================================ */
 const LENS_MODEL = 'claude-sonnet-5';
-const LENS_MAX_TOKENS = 2500;
+const LENS_MAX_TOKENS = 12000; // sonnet-5 預設 adaptive thinking,max_tokens=思考+正文總限;2500 曾被思考吃光回空正文(2026-07-15 實測)
 const LENS_DAILY_LIMIT_PER_IP = 20;
 const LENS_CONTEXT_TYPES = ['brainstorm', 'decision', 'retro', 'routine', 'bp', 'policy', 'interview', 'observation'];
 
@@ -181,6 +181,11 @@ async function handleLens(request, env, corsHeaders) {
   }
   const data = await apiResponse.json();
   const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  if (!text.trim()) {
+    // 思考吃光 max_tokens 或其他截斷:誠實報錯,不回空字串讓前端猜
+    console.error('lens empty text, stop_reason:', data.stop_reason);
+    return json({ error: '判讀沒有產出正文(stop_reason: ' + (data.stop_reason || 'unknown') + ')——請再試一次;若重複發生,回報給 Simon。' }, 502, corsHeaders);
+  }
   return json({ reading: text }, 200, corsHeaders);
 }
 
