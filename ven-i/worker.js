@@ -109,6 +109,81 @@ const OCTENSO_FEEDBACK_SYSTEM = `你是「八態伴讀」的回饋整理員。�
 
 const OCTENSO_FIRST_USER = '我把我的報告帶來了,請陪我讀。';
 
+/* ============================================================
+   八態鏡(/lens):透鏡判讀——讀運作,不讀人。
+   schema 由前端隨請求送入(單一真相源=repo 的 YAML;Worker 不存副本)。
+   素材與報告皆不落檔(北極星:作答不上傳;內部工具連摘要都不存)。
+   ============================================================ */
+const LENS_MODEL = 'claude-sonnet-5';
+const LENS_MAX_TOKENS = 2500;
+const LENS_DAILY_LIMIT_PER_IP = 20;
+const LENS_CONTEXT_TYPES = ['brainstorm', 'decision', 'retro', 'routine', 'bp', 'policy', 'interview', 'observation'];
+
+const LENS_SYSTEM = `你是「八態鏡」透鏡判讀員,隸屬練息場(Join to Enjoy)。你讀的是「運作」——一場會議、一份文件如何運作——永遠不是「人」。
+你必須嚴格依照後附的 states-schema(機器可讀定義)判讀:guardrails G1–G8 為硬規則,不可覆寫;verdicts 值域、context_declaration 型態調整、output_spec 輸出結構照辦。
+鐵則摘要(違反任何一條=判讀無效):
+- 每一條判定必須附素材逐字引文(G5);引不出來=判「缺席(無資料)」。缺席≠弱。
+- 八態(乾坤震巽坎離艮兌)逐一列出 presence 判定(有料/薄/缺席),一態都不可省略。
+- 主詞永遠是「這場會議/這份文件/某分支的運作」;禁用「你是/他是/這種人」(G4)。
+- 不輸出總分、排名、建議錄取、投資建議、成敗預測、人格標籤(G1/G6)。
+- 使用者已宣告素材類型:依 schema 的 context_declaration 調整缺席分級(警示/本型態預期)與失衡段是否輸出;interview/observation 依 G7 降級。
+- 報告第一行:「素材類型(使用者宣告):{類型} · AI 判讀 · 引文可查」。
+- 語氣:平實、具體;繁體中文;半形標點;不用 emoji;禁罐頭同理心、說教深度腔、金句公式。
+輸出結構(照 output_spec):①缺席清單(分「警示」與「本型態預期」,含補問建議)→②失衡疑似(型態不適用則寫「本型態不適用」)→③強態圖景→④四系統各一句小結。`;
+
+async function handleLens(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lens:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日判讀次數已達上限,明天再來。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { material, schema, contextType, contextLabel } = payload;
+  if (typeof material !== 'string' || !material.trim() || material.length > 20000) {
+    return json({ error: '素材為空或超過 20000 字。' }, 400, corsHeaders);
+  }
+  if (typeof schema !== 'string' || schema.length < 1000 || schema.length > 20000) {
+    return json({ error: 'schema 載入異常。' }, 400, corsHeaders);
+  }
+  if (!LENS_CONTEXT_TYPES.includes(contextType)) {
+    return json({ error: '素材類型未宣告。' }, 400, corsHeaders);
+  }
+  const system = [
+    { type: 'text', text: LENS_SYSTEM, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: 'states-schema 全文如下:\n───\n' + schema + '\n───', cache_control: { type: 'ephemeral' } },
+  ];
+  const userPrompt = '素材類型(使用者宣告):' + contextType + '(' + String(contextLabel || '').slice(0, 40) + ')\n素材全文如下:\n───\n' + material + '\n───\n請依 schema 與宣告類型輸出判讀報告。';
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: LENS_MODEL,
+      max_tokens: LENS_MAX_TOKENS,
+      system,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (lens):', apiResponse.status, errText);
+    return json({ error: '八態鏡暫時無法判讀,請稍後再試。', detail: `${apiResponse.status}: ${errText.slice(0, 400)}` }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  return json({ reading: text }, 200, corsHeaders);
+}
+
 async function handleOctenso(request, env, corsHeaders) {
   // 獨立限流(與問易分開計)
   if (env.RATE_LIMIT) {
@@ -216,6 +291,10 @@ export default {
     // 八態伴讀(結果頁內嵌聊天)走 /octenso;問易解卦維持原路徑
     if (new URL(request.url).pathname === '/octenso') {
       return handleOctenso(request, env, corsHeaders);
+    }
+
+    if (new URL(request.url).pathname === '/lens') {
+      return handleLens(request, env, corsHeaders);
     }
 
     // --- 每 IP 每日限流(需綁定 KV namespace: RATE_LIMIT)---

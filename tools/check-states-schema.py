@@ -44,7 +44,7 @@ def main():
     with open(SCHEMA, encoding="utf-8") as fh:
         doc = yaml.safe_load(fh)
 
-    check("meta.version == 0.1", str(doc.get("meta", {}).get("version")) == "0.1",
+    check("meta.version == 0.1.1", str(doc.get("meta", {}).get("version")) == "0.1.1",
           f"got {doc.get('meta', {}).get('version')!r}")
     check("meta.filled 八態全列", sorted(doc.get("meta", {}).get("filled", [])) == sorted(STATES))
     check("meta.stub 已清空", doc.get("meta", {}).get("stub", ["x"]) == [])
@@ -52,6 +52,12 @@ def main():
     gr = {g.get("id"): g.get("rule") for g in doc.get("guardrails", [])}
     for gid, rule in GUARDRAILS.items():
         check(f"護欄 {gid} 未動", gr.get(gid) == rule, f"got {gr.get(gid)!r}")
+
+    cd = doc.get("context_declaration", {})
+    CTX_TYPES = ["brainstorm", "decision", "retro", "routine", "bp", "policy", "interview", "observation"]
+    check("context_declaration 八型齊全", isinstance(cd.get("types"), dict)
+          and all(t in cd["types"] for t in CTX_TYPES))
+    check("context_declaration 原則含使用者宣告", "使用者宣告" in str(cd.get("原則", "")))
 
     for s in STATES:
         st = doc.get(s)

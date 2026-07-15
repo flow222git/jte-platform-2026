@@ -1,0 +1,53 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>lens tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script>
+(function(){
+  var pass=0, fail=0, log=document.getElementById('log');
+  function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
+  var f=document.createElement('iframe');
+  f.style.cssText='width:760px;height:900px';
+  f.src='bagua-lens.html';
+  document.getElementById('frames').appendChild(f);
+  var tries=0;
+  var timer=setInterval(function(){
+    tries++;
+    var doc=null,win=null;
+    try{ doc=f.contentDocument; win=f.contentWindow; }catch(e){}
+    if(!doc||!doc.body||doc.body.getAttribute('data-ready')!=='1'){ if(tries>200){clearInterval(timer);t('page ready',false);finish();} return; }
+    clearInterval(timer);
+    var L=win.LENS;
+    t('LENS 介面外露', !!L && typeof L.buildPayload==='function');
+    t('八型下拉齊全', doc.querySelectorAll('#ctype option').length===8
+      && ['brainstorm','decision','retro','routine','bp','policy','interview','observation']
+         .every(function(v){return !!doc.querySelector('#ctype option[value="'+v+'"]');}));
+    var p=L.buildPayload('素材文字','schema文字','brainstorm');
+    t('payload 組裝', p.material==='素材文字' && p.schema==='schema文字'
+      && p.contextType==='brainstorm' && p.contextLabel.indexOf('動腦會')===0);
+    t('interview 標降級', doc.querySelector('#ctype option[value="interview"]').textContent.indexOf('降級')>=0);
+    // renderReport + 歷史/收割 localStorage 讀寫
+    L.renderReport('測試報告內容');
+    t('報告渲染', doc.getElementById('rbody').textContent==='測試報告內容'
+      && doc.getElementById('report').style.display==='block');
+    t('誠實印章', doc.getElementById('report').textContent.indexOf('AI 判讀 · 引文可查')>=0);
+    t('誠實區:不上傳/主詞是運作', doc.body.textContent.indexOf('不上傳不儲存')>=0
+      && doc.body.textContent.indexOf('主詞永遠是運作')>=0);
+    try{
+      win.localStorage.setItem(L.HARVEST_KEY,'[]');
+      doc.getElementById('harvest').value='測試收割句';
+      doc.getElementById('hsave').click();
+      var hv=JSON.parse(win.localStorage.getItem(L.HARVEST_KEY));
+      t('語彙收割寫入', hv.length===1 && hv[0].note==='測試收割句');
+    }catch(e){ t('語彙收割寫入', false); }
+    t('gate 腳本掛載', !!doc.querySelector('script[src="octenso-gate.js"]'));
+    t('無外部絕對網址 script', [].every.call(doc.querySelectorAll('script[src]'),
+      function(s){return s.getAttribute('src').indexOf('http')!==0;}));
+    finish();
+  },120);
+  function finish(){
+    document.title='RESULT pass='+pass+' fail='+fail;
+    log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+  }
+})();
+</script>
+</body></html>
