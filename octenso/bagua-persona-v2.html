@@ -392,8 +392,10 @@ function signatureCard(pf){
     return {sym:a.sym+' '+b.sym,title:a.nm+'×'+b.nm+' · '+a.fnShort+'與'+b.fnShort+'並重',
       sub:'兩個並重的主調,輪流主導',ess:''};}
   if(sig.kind==='multi'){
+    // 先者後卦(2026-07-15 使用者回饋:多主調也要跑出「者」)
     return {sym:k.map(function(x){return B.get(x).sym;}).join(' '),
-      title:k.map(function(x){return B.get(x).nm;}).join('×')+' · 多主調型',sub:k.length+' 個主調並重',ess:''};}
+      title:k.map(function(x){var g=B.get(x);return g.fnShort+'者·'+g.nm;}).join(' × '),
+      sub:'多主調型 · '+k.length+' 個主調並重',ess:''};}
   var lv=pf.level.band, nm=lv==='high'?'高能多面型':lv==='low'?'低調蓄能型':'均衡型';
   return {sym:B.get(pf.leads[0]).sym,title:nm,sub:'沒有單一主峰,以整體格局描述',ess:''};
 }
@@ -498,7 +500,7 @@ function renderReport(sc,costSt,conf,fc){
     +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
     +radarSVG(sc)
     +'<p class="center" style="margin:12px 0 4px"><a class="btn ghost" href="bagua-crystal.html#r='+code+'">立體看這份快照 · 能量晶體 →</a></p>'
-    +'<div class="felt">'+esc(C.FELT)+' 照的是你「感受到」的自己,不是行為的成績單。</div></div>';
+    +'<div class="felt">'+esc(C.FELT)+'<br>照的是你「感受到」的自己,不是行為的成績單。</div></div>';
   h+='<div class="rule"></div><div class="seclabel">每態六級 · 與答題篤定性</div><div class="band-list">';
   pf.ranked.forEach(function(o){
     var g=B.get(o.k), bd=pf.bands[o.k];
