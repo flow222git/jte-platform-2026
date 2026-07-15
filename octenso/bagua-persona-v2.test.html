@@ -74,9 +74,8 @@
   // ── iframe 渲染(B1 相容 + B2 含二選一)──
   var CASES=[
     {code:'B19050505050505050', name:'B1-single-qian', expects:['開創者·乾','神韻','工作樣貌','愛情與親密','分享碼沒有能格資料']},
-    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者·乾','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊','能量晶體','四大系統','建構系統','定方向','從你的峰讀起','同強','低載','判讀的門檻','展行','開始,如何成為現實?'],
-     dom:[{n:'四張狀態分區小平面', f:function(doc){return doc.querySelectorAll('svg.splane').length===4;}},
-          {n:'分區多邊形 5×4', f:function(doc){return doc.querySelectorAll('svg.splane polygon').length===20;}}],
+    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者·乾','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊','能量晶體','四大系統','建構系統','定方向','從你的峰讀起','展行','開始,如何成為現實?'],
+     dom:[{n:'狀態分區小平面已移除', f:function(doc){return doc.querySelectorAll('svg.splane').length===0;}}],
      click:'bot-start', expectsAfter:['我讀完你的報告了','結束伴讀 · 整理回饋']},
     {code:'B14582454545854545', name:'B1-dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重']}
   ];
