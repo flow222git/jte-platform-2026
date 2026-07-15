@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>八態｜一套觀察運作的語言</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F6F2; --card:#FFFFFF; --ink:#20241F; --sub:#5A625C;
+  --pine:#2E6B5C; --pine-deep:#14352D; --line:#E3E7E2; --wash:#EDF1EC;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Noto Sans TC",-apple-system,sans-serif;line-height:1.85;
+  font-size:16px}
+h1,h2,h3,.serif{font-family:"Noto Serif TC",serif}
+a{color:var(--pine)}
+.wrap{max-width:960px;margin:auto;padding:0 24px}
+
+/* ===== 爻(trigram bars):本頁的簽名元素 ===== */
+.trigram{display:inline-flex;flex-direction:column;gap:4px;width:34px}
+.trigram i{height:5px;border-radius:2px;background:var(--pine-deep);display:block}
+.trigram i.b{background:
+  linear-gradient(90deg,var(--pine-deep) 0 42%,transparent 42% 58%,var(--pine-deep) 58% 100%)}
+.trigram.lg{width:46px;gap:6px}.trigram.lg i{height:7px}
+
+/* ===== hero ===== */
+header{position:relative;padding:88px 0 64px;overflow:hidden;
+  background:
+    radial-gradient(1100px 500px at 78% -10%, #FFFFFF 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg,#F2F4EF 0%,var(--paper) 55%)}
+.tag{display:inline-block;font-size:12px;letter-spacing:.18em;color:var(--pine);
+  border:1px solid var(--pine);border-radius:999px;padding:3px 14px;margin-bottom:26px}
+header h1{font-size:clamp(44px,8vw,76px);font-weight:900;margin:0 0 6px;letter-spacing:.04em}
+header .en{font-size:13px;letter-spacing:.42em;color:var(--sub);margin-bottom:30px}
+.thesis{font-size:clamp(18px,2.6vw,23px);max-width:34em;font-weight:500;
+  font-family:"Noto Serif TC",serif;line-height:2}
+.thesis b{color:var(--pine-deep)}
+.footnote{font-size:13px;color:var(--sub);margin-top:14px;max-width:40em}
+.strip{display:flex;gap:clamp(14px,3vw,30px);margin-top:52px;flex-wrap:wrap}
+.strip .s{display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-size:13px;color:var(--sub)}
+.strip .s span{letter-spacing:.1em}
+
+/* ===== sections ===== */
+section{padding:64px 0}
+.eyebrow{font-size:12px;letter-spacing:.24em;color:var(--pine);margin-bottom:10px}
+h2{font-size:clamp(26px,4vw,34px);margin:0 0 22px;font-weight:700}
+.lede{max-width:38em;color:var(--ink)}
+.lede+.lede{margin-top:1em}
+.promise{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;margin-top:34px}
+.promise div{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:18px 20px;font-size:14.5px;
+  box-shadow:0 1px 2px rgba(20,53,45,.04),0 12px 28px -18px rgba(20,53,45,.18)}
+.promise b{display:block;font-family:"Noto Serif TC",serif;font-size:16px;
+  margin-bottom:6px;color:var(--pine-deep)}
+
+/* ===== 四系統 ===== */
+.sys{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:30px}
+.sys .g{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;
+  box-shadow:0 1px 2px rgba(20,53,45,.04),0 16px 34px -22px rgba(20,53,45,.2)}
+.sys h3{margin:0 0 4px;font-size:19px}
+.sys .q{color:var(--pine-deep);font-family:"Noto Serif TC",serif;margin:0 0 12px;font-size:15px}
+.sys .pair{display:flex;gap:26px}
+.sys .pair div{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--sub)}
+
+/* ===== 八態卡 ===== */
+.states{display:grid;gap:14px;margin-top:30px}
+details{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 1px 2px rgba(20,53,45,.04),0 14px 30px -22px rgba(20,53,45,.2);
+  overflow:hidden;transition:box-shadow .25s}
+details[open]{box-shadow:0 2px 4px rgba(20,53,45,.06),0 24px 48px -24px rgba(20,53,45,.3)}
+summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:18px;
+  padding:20px 24px}
+summary::-webkit-details-marker{display:none}
+summary .name{font-family:"Noto Serif TC",serif;font-size:21px;font-weight:700}
+summary .who{font-size:13px;color:var(--sub)}
+summary .one{margin-left:auto;font-size:14px;color:var(--sub);max-width:20em;text-align:right}
+summary .chev{color:var(--pine);transition:transform .25s;font-size:13px}
+details[open] .chev{transform:rotate(90deg)}
+.body{padding:0 24px 26px;border-top:1px dashed var(--line)}
+.ask{font-family:"Noto Serif TC",serif;color:var(--pine-deep);font-size:17px;
+  margin:18px 0 14px}
+.rows{display:grid;gap:10px;font-size:14.5px}
+.rows .r{display:grid;grid-template-columns:92px 1fr;gap:14px}
+.rows .k{color:var(--pine);font-weight:500;letter-spacing:.06em}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:14px}
+.duo div{background:var(--wash);border-radius:10px;padding:12px 16px;font-size:13.5px}
+.duo b{color:var(--pine-deep)}
+.mix{margin-top:14px;font-size:13.5px;color:var(--sub);border-left:3px solid var(--line);
+  padding-left:14px}
+
+/* ===== 應用 ===== */
+.apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:30px}
+.apps div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+  font-size:14.5px}
+.apps b{display:block;font-family:"Noto Serif TC",serif;font-size:16px;margin-bottom:6px}
+.rule{background:var(--pine-deep);color:#F3F6F3;border-radius:16px;padding:26px 28px;
+  margin-top:26px;font-size:15px}
+.rule b{color:#fff}
+
+/* ===== footer ===== */
+footer{padding:56px 0 72px;color:var(--sub);font-size:13px;border-top:1px solid var(--line);
+  margin-top:40px}
+footer li{margin-bottom:6px}
+@media (max-width:640px){
+  summary .one{display:none}
+  .rows .r{grid-template-columns:1fr}.rows .k{margin-bottom:-6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="tag">內部測試版 v0.1</span>
+    <h1>八態</h1>
+    <div class="en">OCTENSO · EIGHT STATES</div>
+    <p class="thesis">這不是人格分類系統,而是一套<b>觀察運作的語言</b>——描述一個人、一場會議、一份提案如何運作、如何流動、如何恢復平衡。</p>
+    <p class="footnote">概念原型取自《易經》八卦;本頁僅借其結構作為觀察框架,不涉及占卜,也不宣稱測量。</p>
+    <div class="strip">
+      <div class="s"><span class="trigram lg"><i></i><i></i><i></i></span><span>展行</span></div>
+      <div class="s"><span class="trigram lg"><i class="b"></i><i class="b"></i><i class="b"></i></span><span>承載</span></div>
+      <div class="s"><span class="trigram lg"><i class="b"></i><i class="b"></i><i></i></span><span>啟動</span></div>
+      <div class="s"><span class="trigram lg"><i></i><i></i><i class="b"></i></span><span>滲透</span></div>
+      <div class="s"><span class="trigram lg"><i class="b"></i><i></i><i class="b"></i></span><span>探索</span></div>
+      <div class="s"><span class="trigram lg"><i></i><i class="b"></i><i></i></span><span>照見</span></div>
+      <div class="s"><span class="trigram lg"><i></i><i class="b"></i><i class="b"></i></span><span>定界</span></div>
+      <div class="s"><span class="trigram lg"><i class="b"></i><i></i><i></i></span><span>共鳴</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">WHY IT WORKS</div>
+    <h2>為什麼什麼都能用八態看?</h2>
+    <p class="lede">因為這八個詞不是八種人,是八個<span class="serif" style="color:var(--pine-deep)">動作</span>:開始、承載、啟動、滲透、探索、照見、定界、共鳴。任何會運作的東西——一個人、一場會議、一份提案、一個團隊——都在做這八件事的某種組合。</p>
+    <p class="lede">所以八態套得上一切,不是因為神祕,是因為周延。它像一份完整的檢查表,保證你看的時候不漏格:同一場會,有人只看到吵架;八態會問——今天有人點名未知嗎?有人喊停嗎?回饋有被接住嗎?</p>
+    <p class="lede">它的價值不在「解釋為真」,在「看得完整」。</p>
+    <div class="promise">
+      <div><b>只診斷,不預測</b>八態描述能量現在的分佈,不預言成敗。運作齊全的提案可能失敗,嚴重失衡的團隊可能成功。</div>
+      <div><b>缺席不等於弱</b>某個態「沒看到」,只代表這次的素材裡沒有資料——先補問,不下結論。</div>
+      <div><b>主詞是運作,不是人</b>我們說「這場會議裡定界缺席」,不說「你是哪一型」。狀態會來會走,人不會被釘死。</div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--wash)">
+  <div class="wrap">
+    <div class="eyebrow">STRUCTURE</div>
+    <h2>四大系統,每個系統兩個分支</h2>
+    <p class="lede">八個態兩兩一組,組成四個系統。每個系統像一對互補的手:方向相反、缺一不可、輪流上場。這個雙分支結構借自自律神經(交感/副交感)的概念——僅借概念,不宣稱生理對應。</p>
+    <div class="sys">
+      <div class="g"><h3>建構系統</h3><p class="q">開始如何成為現實?</p>
+        <div class="pair">
+          <div><span class="trigram"><i></i><i></i><i></i></span>展行·開新局</div>
+          <div><span class="trigram"><i class="b"></i><i class="b"></i><i class="b"></i></span>承載·養大它</div>
+        </div></div>
+      <div class="g"><h3>推動系統</h3><p class="q">改變如何深入系統?</p>
+        <div class="pair">
+          <div><span class="trigram"><i class="b"></i><i class="b"></i><i></i></span>啟動·突破口</div>
+          <div><span class="trigram"><i></i><i></i><i class="b"></i></span>滲透·進日常</div>
+        </div></div>
+      <div class="g"><h3>認知系統</h3><p class="q">探索如何形成理解?</p>
+        <div class="pair">
+          <div><span class="trigram"><i class="b"></i><i></i><i class="b"></i></span>探索·往深處</div>
+          <div><span class="trigram"><i></i><i class="b"></i><i></i></span>照見·往明處</div>
+        </div></div>
+      <div class="g"><h3>調節系統</h3><p class="q">沉澱如何形成共好?</p>
+        <div class="pair">
+          <div><span class="trigram"><i></i><i class="b"></i><i class="b"></i></span>定界·守得住</div>
+          <div><span class="trigram"><i class="b"></i><i></i><i></i></span>共鳴·接得住</div>
+        </div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">THE EIGHT STATES</div>
+    <h2>八態逐一看</h2>
+    <p class="lede">每一態都附三種場景的對照:在會議裡長什麼樣、在文件裡長什麼樣、在制度裡長什麼樣——以及它太少和太多的時候。</p>
+
+    <div class="states">
+
+      <details>
+        <summary><span class="trigram"><i></i><i></i><i></i></span>
+          <div><div class="name">展行</div><div class="who">乾 · 開創者</div></div>
+          <div class="one">讓原本不存在的可能開始存在</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:未來可以成為什麼?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「我們可以做一個⋯」「如果往這邊走,三年後就是⋯」有人開新題、給方向,並願意承擔第一個決定。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>新方向被提出來,而且有人為它負責。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>說得出為什麼是現在、為什麼是我們;方向清楚,不是口號。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>新想法有立案的通道。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——所有議題都在被動回應,沒有人給方向。</div>
+            <div><b>太多時</b>——方向一直換,題開了沒人收。</div>
+          </div>
+          <p class="mix">容易和「啟動」混:展行決定往哪(方向),啟動負責動起來(推力)。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i class="b"></i><i class="b"></i><i class="b"></i></span>
+          <div><div class="name">承載</div><div class="who">坤 · 承接者</div></div>
+          <div class="one">讓開始真正長成</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:如何讓它真正落地?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「具體怎麼做?」「誰負責、什麼時候?」有人把想法翻成步驟。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>任務有人接住,資源被排出來。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>里程碑、人力、預算是實的,不是裝飾。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>交付與維運的機制健全,事情做完有人養。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——想法滿天飛,沒有一件事有主人。</div>
+            <div><b>太多時</b>——什麼都接、什麼都扛,執行者自己的聲音消失。</div>
+          </div>
+          <p class="mix">容易和「定界」混:承載把事養大(承接),定界把事圍好(守住)。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i class="b"></i><i class="b"></i><i></i></span>
+          <div><div class="name">啟動</div><div class="who">震</div></div>
+          <div class="one">打破平衡,使流動重新開始</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:第一步是什麼?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「先做再說」「今天就能開始」「我來」。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>討論被推向行動,第一步被定出來。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>有最小可行的啟動計畫,不是只有藍圖。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>從決定到動手的延遲短。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——議而不決,有共識也沒人動。</div>
+            <div><b>太多時</b>——還沒想清楚就衝,方向三天一換。</div>
+          </div>
+          <p class="mix">容易和「滲透」混:啟動是瞬間突破(像雷),滲透是持續深入(像風)。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i></i><i></i><i class="b"></i></span>
+          <div><div class="name">滲透</div><div class="who">巽</div></div>
+          <div class="one">真正的改變,靠持續滲透</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:如何讓改變自然發生?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「先跟大家聊聊」「讓他們自己發現」「信任還沒建立,先不硬推」。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>有人在意接受度,替改變鋪路。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>除了產品本身,還有讓人願意用的路徑。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>文化與習慣有養成機制,不靠命令推。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——好東西做出來沒人用,改變只剩公告。</div>
+            <div><b>太多時</b>——為了被接受一路退讓,立場慢慢消失。</div>
+          </div>
+          <p class="mix">容易和「共鳴」混:滲透是影響他人(單向滲入),共鳴是彼此共振(雙向交流)。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i class="b"></i><i></i><i class="b"></i></span>
+          <div><div class="name">探索</div><div class="who">坎</div></div>
+          <div class="one">深入未知,找到真正的路</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:真正的問題在哪裡?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「我們其實還不知道⋯」「先弄清楚再說」「這是假設,不是事實」。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>有人點名未知,把想當然的共識拆開來問。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>有驗證資料、失敗紀錄、迭代的痕跡。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>允許實驗,也允許實驗失敗。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——假設沒人檢驗,未知被當成已知寫進結論。</div>
+            <div><b>太多時</b>——分析停不下來,決定一直往後延。</div>
+          </div>
+          <p class="mix">容易和「定界」混:都像「停下來」——入未知而停是探索(還在往內走),設界而停是定界(定住、守住)。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i></i><i class="b"></i><i></i></span>
+          <div><div class="name">照見</div><div class="who">離</div></div>
+          <div class="one">讓事物真正被理解</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:真正看見了嗎?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「換句話說⋯」「大家講的其實是兩件事」——有人給模糊的現象一個準確的名字。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>有人即時綜整;散會時,結論說得出口。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>機制講得清楚,不利的資料也誠實攤開。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>覆盤、教學、文件化有固定位置。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——資訊很多沒人收攏,名詞從頭到尾沒被定義。</div>
+            <div><b>太多時</b>——表達多於理解:說得極清楚的東西,經不起第二層追問。</div>
+          </div>
+          <p class="mix">容易和「共鳴」混:為了被理解而說是照見,為了連結而說是共鳴。和「探索」是同系統的一對:探索供料,照見成像——雙強就是既深又亮。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i></i><i class="b"></i><i class="b"></i></span>
+          <div><div class="name">定界</div><div class="who">艮</div></div>
+          <div class="one">停止不是結束,而是形成新的邊界</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:什麼值得保留?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「這個先不做」「底線是⋯」「到這裡為止」。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>有人說不;範圍被收斂,原則被守住。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>有不做清單、停損條件、品質門檻。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>治理清楚,界線被尊重。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——範圍無限蔓延,沒有人喊停。</div>
+            <div><b>太多時</b>——守成變成理由,所有改變都進不來。</div>
+          </div>
+          <p class="mix">容易和「承載」混:承載把事養大,定界把事圍好。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="trigram"><i class="b"></i><i></i><i></i></span>
+          <div><div class="name">共鳴</div><div class="who">兌</div></div>
+          <div class="one">交流讓新的可能發生</div><span class="chev">▶</span></summary>
+        <div class="body">
+          <p class="ask">核心提問:如何一起變得更好?</p>
+          <div class="rows">
+            <div class="r"><span class="k">你會聽到</span><span>「聽聽大家怎麼看」「這對他們有什麼好處?」回饋被說出口,也被接住。</span></div>
+            <div class="r"><span class="k">在會議裡</span><span>不同的聲音有位置,交流是雙向的。</span></div>
+            <div class="r"><span class="k">在文件裡</span><span>使用者的真實聲音在場,回饋迴路有設計。</span></div>
+            <div class="r"><span class="k">在制度裡</span><span>回饋有通道,說真話是安全的。</span></div>
+          </div>
+          <div class="duo">
+            <div><b>太少時</b>——只有單向廣播,回饋沒有去處。</div>
+            <div><b>太多時</b>——和諧壓過真實,認同變成必需品。</div>
+          </div>
+          <p class="mix">容易和「滲透」混:滲透是影響,共鳴是共振。</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--wash)">
+  <div class="wrap">
+    <div class="eyebrow">HOW TO USE</div>
+    <h2>可以拿它看什麼</h2>
+    <div class="apps">
+      <div><b>會議閱讀</b>會後十分鐘,逐態找證據:今天哪些態上場了、哪些整場缺席?</div>
+      <div><b>提案檢查</b>用八個格子掃一份提案——先看哪一格是空的,再看哪一格最亮。</div>
+      <div><b>面試觀察筆記</b>只記錄「已收集到資料的態/還沒問到的態」,提醒自己補問,不做評價。</div>
+      <div><b>自我週記</b>這週哪個態最常上場?哪個一整週沒出現?</div>
+      <div><b>團隊回顧</b>各自標記團隊這一季的八態,差異本身就是最好的對話材料。</div>
+    </div>
+    <div class="rule"><b>一條鐵律:缺席優先。</b>看任何東西,先問哪一格沒有資料,再看哪一格最亮——最亮的格子會催眠人,空著的格子才藏著要問的問題。</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">LINEAGE</div>
+    <h2>它跟你認識的框架差在哪?</h2>
+    <div class="apps">
+      <div><b>跟 MBTI</b>同樣源自「八種運作」的想法,但 MBTI 把人切成十六型;八態保留連續與流動——你不是哪一型,你是一組會變化的音量。</div>
+      <div><b>跟六頂思考帽</b>同樣把「狀態」當工具,戴上、摘下;八態多了一層長期配置,以及預先定好的四對互補結構。</div>
+      <div><b>跟 PDCA</b>PDCA 給節奏(現在該做哪一步),八態給在場檢查(此刻誰缺席)。兩者相容——很多組織的 PDCA 轉不動,是因為照見與定界長期缺席。</div>
+      <div><b>跟五行</b>同樣是「過程」的語言;差別是八態不宣稱態與態之間有固定的因果推移——並列呈現,不捏因果。</div>
+    </div>
+    <p class="lede" style="margin-top:26px">老實說:八態沒有發明新零件——狀態而非類型、對偶平衡、完整性檢查表,各有各的出處與驗證史。新的是把這幾個被分別證明過的好設計,裝進同一台引擎。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <ul>
+      <li>八態是一套觀察語言,不是測驗,也不是診斷工具;所有閱讀結果都是對話的起點,不是結論。</li>
+      <li>「太少/太多」的描述為 v0.1 草稿,尚在專業審閱中。</li>
+      <li>雙分支結構借自自律神經(交感/副交感)的概念——僅借概念結構,不宣稱生理對應。</li>
+      <li>概念原型取自《易經》八卦;本頁借其結構作為觀察框架,不涉及占卜。</li>
+      <li>練息場 Octenso · 內部測試版 v0.1 · 2026</li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
