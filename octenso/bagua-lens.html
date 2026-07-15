@@ -134,7 +134,7 @@ $('run').onclick=function(){
   var mat=$('mat').value.trim(),ctype=$('ctype').value;
   if(!mat){$('status').textContent='先貼素材。';$('status').className='err';return;}
   if(!schemaText){$('status').textContent='schema 還在載入,等一下再按。';$('status').className='err';return;}
-  $('run').disabled=true;$('status').className='';$('status').textContent='照鏡子中……(約 30–60 秒)';
+  $('run').disabled=true;$('status').className='';$('status').textContent='照鏡子中……(認真判讀要一陣子,約 1–3 分鐘)';
   fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify(buildPayload(mat,schemaText,ctype))})
   .then(function(r){return r.json();})
