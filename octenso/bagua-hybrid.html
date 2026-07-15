@@ -114,7 +114,7 @@ var NB=V.ITEMS.length, NF=V.FC_ITEMS.length, NT=NB+NF, SMAX=5;
 var KEY='bagua_hybrid_exp';
 
 var S={phase:'hello',idx:0,answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),
-       flags:[],costQ:[],costAns:[],costIdx:0,mods:{},ask:null,echo:{}};
+       flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{}};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function load(){try{var d=JSON.parse(localStorage.getItem(KEY));
   if(d&&d.answers&&d.answers.length===NB) return d;}catch(e){} return null;}
@@ -302,7 +302,7 @@ function toSummary(){
   });
 }
 function revealEnd(pk){
-  bot(S.ask?CH.segEndAsk.replace('{Q}',S.ask):CH.segEndNoAsk);
+  bot(CH.segEndNoAsk);
   botHtml('<span class="code">'+RES.code+'</span>'
     +'<div class="cs">'+esc(CH.reportLinks)+'</div>'
     +'<div class="links"><a class="btn" href="bagua-persona-v2.html#r='+RES.code+'">'+esc(CH.fullReportBtn)+'</a>'
@@ -444,7 +444,6 @@ function ground(){
       +';場域不給空間:'+(a.denies.map(function(f){return GT.pole[f.k];}).join('、')||'無')
       +';整體感受:'+rec.intensity);
   });
-  if(S.ask)L.push('【使用者帶來的問題】'+S.ask+'——請在對話中回應它。');
   var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'='+lbl[S.echo[k]];});
   if(es.length)L.push('【逐段核對】'+es.join('、')+'——「不太像」的段落請先謝謝並好奇地多問,不辯護。');
@@ -476,7 +475,6 @@ $('talk-in').addEventListener('keydown',function(e){
 // 結束:先給「今天的整理」一封信(規則組裝),再接伴讀的回饋摘要
 function letter(){
   var pk=peakName(),L=[CH.letterTitle];
-  if(S.ask)L.push(CH.letterAsk.replace('{Q}',S.ask));
   L.push(CH.letterPeak.replace('{P}',pk.title+'('+pk.sub+')'));
   var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'—'+lbl[S.echo[k]];});
@@ -500,34 +498,10 @@ $('talk-end').onclick=function(){
 
 // ── 入口/續走 ──
 $('honest').textContent=B.HONEST+' 這是體驗原型(半題庫半對話):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話。';
-// 開場收「你的問題」(TA:衡鑑從個案的問題開始;自由填、可跳過、不入分)
-function askQuestion(){
-  bot(CH.askIntro);
-  clearLive();
-  var box=document.createElement('div');box.className='opts-live';
-  var inp=document.createElement('input');inp.className='input';inp.placeholder=CH.askPlaceholder;
-  inp.style.cssText='border-radius:999px;padding:10px 16px';
-  var b1=document.createElement('button');b1.className='opt primary';b1.textContent=CH.askSend;
-  var b2=document.createElement('button');b2.className='opt';b2.textContent=CH.askSkip;
-  function go(q){
-    box.parentNode.removeChild(box);
-    if(q){S.ask=q.slice(0,60);user(q);bot(CH.askEcho.replace('{Q}',S.ask));}
-    else user(CH.askSkip);
-    bot(CH.coreIntro);stage('core');stepCore();
-  }
-  b1.onclick=function(){go(inp.value.trim());};
-  inp.addEventListener('keydown',function(e){
-    if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;
-    e.preventDefault();go(inp.value.trim());
-  });
-  b2.onclick=function(){go('');};
-  box.appendChild(inp);box.appendChild(b1);box.appendChild(b2);
-  chat.appendChild(box);box.scrollIntoView({block:'nearest'});inp.focus();
-}
 function begin(){
   CH.hello.forEach(function(t){bot(t);});
   askOpts([{t:CH.startBtn,v:'go',cls:'primary'}],function(){
-    askQuestion();
+    bot(CH.coreIntro);stage('core');stepCore();
   });
 }
 var saved=load();
@@ -537,7 +511,7 @@ if(saved&&saved.phase&&saved.phase!=='hello'&&saved.phase!=='talk'){
   askOpts([{t:CH.resumeGo,v:'go',cls:'primary'},{t:CH.resumeReset,v:'reset'}],function(o){
     if(o.v==='reset'){
       S={phase:'hello',idx:0,answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),
-         flags:[],costQ:[],costAns:[],costIdx:0,mods:{},ask:null,echo:{}};
+         flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{}};
       save();begin();return;
     }
     if(S.phase==='core'){stage('core');stepCore();}
