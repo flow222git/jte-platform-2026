@@ -586,7 +586,7 @@ function reveal(){ // 開場結束→亮出聊天介面
 }
 
 // ── 入口/續走 ──
-$('honest').textContent=B.HONEST+' 這是體驗原型(半題庫半對話):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話。';
+$('honest').textContent=B.HONEST+' 這是體驗原型(半題庫半對話):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話;只有你按「結束今天」時的整理摘要會回傳練息場,幫助我們改進。';
 function begin(){
   CH.hello.forEach(function(t){bot(t);});
   askOpts([{t:CH.startBtn,v:'go',cls:'primary'}],function(){
