@@ -83,6 +83,25 @@
     backLink: '← 回上一題'
   };
 
+  // ── 開場四卡(進場施測語:安定→站位→怎麼答→接下來;2026-07-15 自 v3-data 搬入,單一真相源)──
+  var INTRO = [
+    { kicker: '安定', motif: 'breathe',
+      t: '先停一下,\n深呼吸。',
+      s: '這不是考試——\n沒有好答案,也沒有人在打分數。' },
+    { kicker: '這是在看誰', motif: 'orbit',
+      t: '是你最放鬆時\n自然的樣子。',
+      s: '沒人要求你的時候,你會怎麼反應——\n不是你想成為的樣子,\n也不是工作、家庭要你扮的角色。' },
+    { kicker: '怎麼答', motif: 'compass',
+      t: '憑第一個\n冒出來的直覺。',
+      s: '別想太多——\n直覺,往往比想出來的答案\n更接近真正的你。' },
+    { kicker: '接下來', motif: 'ring8',
+      t: '這一次,\n有人陪你一起看。',
+      s: '答完不會只丟給你一份報告——\n伴讀會一段一段陪你讀,\n你隨時可以說「不像我」。' }
+  ];
+  var INTRO_NEXT = '下一步';
+  var INTRO_GO = '開始對話 →';
+  var INTRO_SKIP = '直接開始';
+
   // ── 場域模組量尺(六點無中性,直接以 0–100 計 demand)──
   var CTXD_SCALE = [
     { t: '非常符合', v: 100 }, { t: '大致符合', v: 80 }, { t: '有點符合', v: 60 },
@@ -169,7 +188,7 @@
 
   g.OCTENSO_HYBRID = {
     version: '0.1-draft',
-    CHAT: CHAT, MODULES: MODULES,
+    CHAT: CHAT, INTRO: INTRO, INTRO_NEXT: INTRO_NEXT, INTRO_GO: INTRO_GO, INTRO_SKIP: INTRO_SKIP, MODULES: MODULES,
     CTXD_SCALE: CTXD_SCALE, CTXD_INTENSITY: CTXD_INTENSITY,
     COPE: COPE, DENY: DENY, CTXD_READ: CTXD_READ,
     DEMAND_HI: 60, DRAIN_GAP: 20
