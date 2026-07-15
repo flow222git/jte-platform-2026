@@ -39,6 +39,7 @@
       var hv=JSON.parse(win.localStorage.getItem(L.HARVEST_KEY));
       t('語彙收割寫入', hv.length===1 && hv[0].note==='測試收割句');
     }catch(e){ t('語彙收割寫入', false); }
+    t('網址抓取 UI', !!doc.getElementById('urlin') && !!doc.getElementById('urlgo'));
     t('gate 腳本掛載', !!doc.querySelector('script[src="octenso-gate.js"]'));
     t('無外部絕對網址 script', [].every.call(doc.querySelectorAll('script[src]'),
       function(s){return s.getAttribute('src').indexOf('http')!==0;}));

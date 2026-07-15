@@ -32,13 +32,16 @@
 - 沿用既有模式:path 路由(`/lens`)、獨立限流(`lens:` 每 IP 每日 20)、
   CORS 白名單不動、金鑰只在雲端。
 - payload:`{material, schema, contextType, contextLabel}`;
-  護欄:material ≤ 20000 字、schema ≤ 20000、contextType 白名單驗證。
+  護欄:material ≤ 30000 字(2026-07-15 由 20000 調升)、schema ≤ 20000、contextType 白名單驗證。
 - **meta A 同源**:schema 由前端 fetch 同站 YAML 原文隨請求送入,Worker 不存副本;
   system=[LENS_SYSTEM 守則 + schema 原文],皆掛 cache_control。
 - LENS_SYSTEM 鐵則:G5 逐字引文、八態逐列、主詞是運作、G1/G6 禁輸出、
   依 context_declaration 調級、G7 降級、開頭標「素材類型(使用者宣告)· AI 判讀 · 引文可查」、
   語氣負面清單(罐頭同理/說教腔/金句公式)。
 - model=claude-sonnet-5、max_tokens=2500;回 `{reading}`。
+- 另加 `/lens-fetch`(2026-07-15 追加,Simon 要求):代抓**公開網頁**轉純文字回填素材欄。
+  防護:僅 http(s)、拒 IP 直連/localhost/帶帳密網址、僅 text/html|plain、回應截 800KB、
+  輸出截 30000 字、獨立限流 30/日;抓回後由使用者確認內容再按判讀(人在迴圈)。
 
 ### ③ 頁面 octenso/bagua-lens.html
 - noindex + octenso-gate 白名單(內部工具等級,不接導覽)。

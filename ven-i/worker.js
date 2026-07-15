@@ -184,6 +184,63 @@ async function handleLens(request, env, corsHeaders) {
   return json({ reading: text }, 200, corsHeaders);
 }
 
+/* /lens-fetch:代抓「公開網頁」轉純文字,回填八態鏡素材欄(人在迴圈:抓回後由使用者確認再判讀)。
+   防護:僅 http(s)、拒帶帳密/IP 直連/localhost、僅 text/html|plain、回應截 800KB、輸出截 30000 字、獨立限流。 */
+const LENS_FETCH_DAILY_LIMIT_PER_IP = 30;
+
+async function handleLensFetch(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lensfetch:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_FETCH_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日抓取次數已達上限。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { url } = payload;
+  if (typeof url !== 'string' || url.length > 2000) {
+    return json({ error: '網址格式不對。' }, 400, corsHeaders);
+  }
+  let u;
+  try { u = new URL(url); } catch { return json({ error: '網址無法解析。' }, 400, corsHeaders); }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+    return json({ error: '只支援 http(s) 網址。' }, 400, corsHeaders);
+  }
+  if (u.username || u.password || u.hostname === 'localhost'
+    || /^\d+\.\d+\.\d+\.\d+$/.test(u.hostname) || u.hostname.startsWith('[')) {
+    return json({ error: '此類網址不支援(僅公開網域)。' }, 400, corsHeaders);
+  }
+  let resp;
+  try {
+    resp = await fetch(u.toString(), { redirect: 'follow', headers: { 'User-Agent': 'octenso-lens-fetch' } });
+  } catch {
+    return json({ error: '抓取失敗——對方網站沒有回應。' }, 502, corsHeaders);
+  }
+  if (!resp.ok) {
+    return json({ error: `抓取失敗(${resp.status})——請確認是公開頁面。` }, 502, corsHeaders);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if (!/text\/html|text\/plain/i.test(ct)) {
+    return json({ error: '只支援網頁或純文字(這個網址是 ' + ct.split(';')[0] + ')。' }, 400, corsHeaders);
+  }
+  let html = await resp.text();
+  if (html.length > 800000) html = html.slice(0, 800000);
+  let text = html
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+  text = text.split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+  if (text.length > 30000) text = text.slice(0, 30000);
+  if (!text.trim()) return json({ error: '這個頁面抓不到文字內容。' }, 400, corsHeaders);
+  return json({ text, chars: text.length }, 200, corsHeaders);
+}
+
 async function handleOctenso(request, env, corsHeaders) {
   // 獨立限流(與問易分開計)
   if (env.RATE_LIMIT) {
@@ -293,6 +350,9 @@ export default {
       return handleOctenso(request, env, corsHeaders);
     }
 
+    if (new URL(request.url).pathname === '/lens-fetch') {
+      return handleLensFetch(request, env, corsHeaders);
+    }
     if (new URL(request.url).pathname === '/lens') {
       return handleLens(request, env, corsHeaders);
     }

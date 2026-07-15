@@ -58,6 +58,12 @@
 <div class="lbl">素材(會議紀錄/BP/制度/觀察筆記;語音轉文字原稿可直接貼)</div>
 <textarea id="mat" placeholder="貼上素材全文…"></textarea>
 
+<div class="lbl">或貼公開網址,抓下來當素材(只支援公開頁面)</div>
+<div style="display:flex;gap:8px;align-items:stretch">
+  <input class="harvest" id="urlin" placeholder="https://…" style="flex:1">
+  <button class="btn ghost" id="urlgo" style="margin-top:0;white-space:nowrap">抓取</button>
+</div>
+
 <div class="lbl">這份素材是——(宣告類型,判讀的尺依此調整)</div>
 <select id="ctype">
   <option value="brainstorm">動腦會(發想/意見收集)</option>
@@ -94,6 +100,7 @@
 'use strict';
 var $=function(id){return document.getElementById(id);};
 var API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens';
+var FETCH_API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-fetch';
 var SCHEMA_URL='octenso-states-schema-v0.1.yaml';
 var HISTORY_KEY='lens_history', HARVEST_KEY='lens_harvest';
 var CTYPES={brainstorm:'動腦會(發想/意見收集)',decision:'決策會',retro:'覆盤會/檢討會',routine:'例行會',
@@ -141,6 +148,20 @@ $('run').onclick=function(){
   })
   .catch(function(e){$('status').textContent='判讀失敗:'+(e.message||'請稍後再試');$('status').className='err';})
   .then(function(){$('run').disabled=false;});
+};
+$('urlgo').onclick=function(){
+  var u=$('urlin').value.trim();
+  if(!/^https?:\/\//i.test(u)){$('status').textContent='要 http(s) 開頭的公開網址。';$('status').className='err';return;}
+  $('urlgo').disabled=true;$('status').className='';$('status').textContent='抓取中……';
+  fetch(FETCH_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.text)throw new Error(d.error||'empty');
+    $('mat').value=d.text;
+    $('status').textContent='抓到 '+d.chars+' 字——看一眼內容沒問題,再按「照一下」。';
+  })
+  .catch(function(e){$('status').textContent='抓取失敗:'+(e.message||'請確認是公開頁面');$('status').className='err';})
+  .then(function(){$('urlgo').disabled=false;});
 };
 $('copy').onclick=function(){
   try{navigator.clipboard.writeText($('rbody').textContent);$('status').textContent='已複製。';}catch(e){}
