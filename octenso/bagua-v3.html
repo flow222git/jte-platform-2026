@@ -548,7 +548,7 @@ function motifSvg(kind){
   return s+'</svg>';
 }
 function buildIntro(done){
-  var wrap=$('intro'),idx=0,cards=X3.INTRO;
+  var wrap=$('intro'),idx=0,cards=H.INTRO;
   var h='';
   cards.forEach(function(c,i){
     h+='<div class="icard'+(i===0?' on':'')+'"><div class="imotif">'+motifSvg(c.motif)+'</div>'
@@ -558,8 +558,8 @@ function buildIntro(done){
   });
   h+='<div class="idots">'+cards.map(function(_,i){return '<i'+(i===0?' class="on"':'')+'></i>';}).join('')+'</div>'
     +'<div class="inav"><button class="iback hide" id="intro-back">← 上一步</button>'
-    +'<button class="btn" id="intro-next">'+esc(X3.INTRO_NEXT)+'</button></div>'
-    +'<button class="iskip" id="intro-skip">'+esc(X3.INTRO_SKIP)+'</button>';
+    +'<button class="btn" id="intro-next">'+esc(H.INTRO_NEXT)+'</button></div>'
+    +'<button class="iskip" id="intro-skip">'+esc(H.INTRO_SKIP)+'</button>';
   wrap.innerHTML=h;
   var els=wrap.querySelectorAll('.icard'),dots=wrap.querySelectorAll('.idots i');
   var next=$('intro-next'),back=$('intro-back');
@@ -567,7 +567,7 @@ function buildIntro(done){
     els[idx].classList.remove('on');idx=i;els[idx].classList.add('on');
     for(var j=0;j<els.length;j++)dots[j].className=(j===idx?'on':'');
     back.className='iback'+(idx===0?' hide':'');
-    next.textContent=(idx===els.length-1)?X3.INTRO_GO:X3.INTRO_NEXT;
+    next.textContent=(idx===els.length-1)?H.INTRO_GO:H.INTRO_NEXT;
   }
   function finish(){wrap.classList.add('hide');done();}
   next.onclick=function(){ if(idx<els.length-1)show(idx+1); else finish(); };

@@ -12,6 +12,7 @@
   var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2;
 
   // ── 資料完整性 ──
+  t('開場四卡已搬入 hybrid-data', H.INTRO && H.INTRO.length===4 && H.INTRO[3].t.indexOf('陪')>=0 && H.INTRO_GO.length>2);
   t('CHAT hello ×3 + 紅線句', H.CHAT.hello.length===3 && H.CHAT.hello[2].indexOf('分數永遠來自題目')>=0);
   t('CHAT 過場語', H.CHAT.breaks[8] && H.CHAT.breaks[16] && H.CHAT.fcIntro.length>10 && H.CHAT.costIntro.length>10);
   t('衡鑑式欄位', H.CHAT.askIntro===undefined && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
@@ -63,6 +64,8 @@
       if(ctx){ctx.click();return;}
       opt.click();return;
     }
+    var inext=doc.getElementById('intro-next');
+    if(inext && !doc.getElementById('intro').classList.contains('hide')){ inext.click(); return; }
     if(!opt && !modClicked && doc.body.getAttribute('data-stage')==='talk'){
       var mb=doc.querySelector('.modrow .modbtn'); // 第一顆=工作
       if(mb){ modClicked=true; mb.click(); return; }
@@ -72,6 +75,8 @@
   function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
   function assertAll(doc,txt){
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
+    t('e2e 開場卡出現過', (doc.getElementById('intro').textContent||'').indexOf('深呼吸')>=0);
+    t('e2e 開場卡已收起', doc.getElementById('intro').classList.contains('hide'));
     t('e2e 無開場問句', txt.indexOf('最想多了解自己')<0);
     t('e2e 指導語直出', txt.indexOf('想著「最近一個月的日常」')>=0);
     t('e2e 過場語出現', txt.indexOf('第一圈走完了')>=0);
