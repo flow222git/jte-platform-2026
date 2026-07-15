@@ -75,7 +75,7 @@
   function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
   function assertAll(doc,txt){
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
-    t('e2e 開場卡出現過', txt.indexOf('深呼吸')>=0);
+    t('e2e 開場卡出現過', (doc.getElementById('intro').textContent||'').indexOf('深呼吸')>=0);
     t('e2e 開場卡已收起', doc.getElementById('intro').classList.contains('hide'));
     t('e2e 無開場問句', txt.indexOf('最想多了解自己')<0);
     t('e2e 指導語直出', txt.indexOf('想著「最近一個月的日常」')>=0);
