@@ -17,6 +17,8 @@
   t('衡鑑式欄位', H.CHAT.askIntro===undefined && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
   t('開場問句已移除', ['askIntro','askPlaceholder','askSend','askSkip','askEcho','segEndAsk','letterAsk'].every(function(k){return H.CHAT[k]===undefined;}));
   t('界線句(不是衡鑑或治療)', H.CHAT.hello[2].indexOf('不是心理衡鑑或治療')>=0);
+  t('轉介文案 ×8', ['unlikeProbe','unlikeCtx','unlikeBase','unlikeGo','unlikeCtxAck','unlikeBaseAck','ctxRemind','baseBtn'].every(function(k){return H.CHAT[k]&&H.CHAT[k].length>2;}));
+  t('轉介 probe 講最近一個月', H.CHAT.unlikeProbe.indexOf('最近一個月')>=0);
   t('信件收尾精神 ×8(A-7 依分支選句)', ['qian','kun','zhen','xun','kan','li','gen','dui'].every(function(k){return H.CHAT.letterSpirit[k]&&H.CHAT.letterSpirit[k].length>8;}));
   t('收尾=恢復流動(A-2,非增強某能力)', H.CHAT.letterClose.indexOf('重新')>=0 && H.CHAT.letterClose.indexOf('衝到滿')>=0);
   t('MODULES ×2(work/love)', H.MODULES.length===2 && H.MODULES[0].dom==='work' && H.MODULES[1].dom==='love');
@@ -38,7 +40,7 @@
   f.style.cssText='width:700px;height:900px';
   f.src='bagua-hybrid.html';
   document.getElementById('frames').appendChild(f);
-  var tries=0, clicks=0, modClicked=false, done=false;
+  var tries=0, clicks=0, modClicked=false, done=false, unlikeDone=false;
   var timer=setInterval(function(){
     tries++;
     var doc=null;
@@ -49,7 +51,18 @@
       done=true; clearInterval(timer); assertAll(doc,txt); return;
     }
     var opt=doc.querySelector('.opts-live .opt');
-    if(opt && clicks<70){ clicks++; opt.click(); return; }
+    if(opt && clicks<80){
+      clicks++;
+      var opts=[].slice.call(doc.querySelectorAll('.opts-live .opt'));
+      var unlike=null,ctx=null;
+      opts.forEach(function(b){
+        if(b.textContent==='不太像')unlike=b;
+        if(b.textContent===H.CHAT.unlikeCtx)ctx=b;
+      });
+      if(unlike && !unlikeDone){unlikeDone=true;unlike.click();return;}
+      if(ctx){ctx.click();return;}
+      opt.click();return;
+    }
     if(!opt && !modClicked && doc.body.getAttribute('data-stage')==='talk'){
       var mb=doc.querySelector('.modrow .modbtn'); // 第一顆=工作
       if(mb){ modClicked=true; mb.click(); return; }
@@ -68,7 +81,11 @@
     t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
     t('e2e 全首選→無校準路徑', txt.indexOf('直接來看結果')>=0);
     t('e2e 模組選單含整備中', txt.indexOf('整備中')>=0);
-    t('e2e 分段核對:峰名段已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 分段核對:峰名=不太像,其餘=很像', St.echo.peak==='unlike' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 轉介 probe 出現一次', txt.indexOf('會不會其實比較像某個情境裡的你')>=0);
+    t('e2e 選了情境→ack+結尾提醒', txt.indexOf('好,我記著')>=0 && txt.indexOf('對境耗能小關卡,測的就是')>=0);
+    t('e2e 結尾卡有底色版按鈕', !!doc.querySelector('a.btn.ghost[href="bagua-persona.html"]'));
+    t('e2e 狀態旗標', St.unlikeAsked===true && St.echoCtx===true);
     t('e2e 核對回話出現', txt.indexOf('收到,謝謝你')>=0);
     t('e2e 逐段揭示引言', txt.indexOf('先看此刻最亮的地方')>=0 && txt.indexOf('四大系統')>=0);
     // 全「非常符合」(demand=100)+底色 67:六股順流、坎艮=場域不給

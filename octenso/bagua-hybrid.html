@@ -114,7 +114,7 @@ var NB=V.ITEMS.length, NF=V.FC_ITEMS.length, NT=NB+NF, SMAX=5;
 var KEY='bagua_hybrid_exp';
 
 var S={phase:'hello',idx:0,answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),
-       flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{}};
+       flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{},unlikeAsked:false,echoCtx:false};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function load(){try{var d=JSON.parse(localStorage.getItem(KEY));
   if(d&&d.answers&&d.answers.length===NB) return d;}catch(e){} return null;}
@@ -248,6 +248,17 @@ function axState(ax){
 function askEcho(key,next){
   askOpts(CH.segAsk.map(function(t,i){return{t:t,v:['like','part','unlike'][i]};}),function(o){
     S.echo[key]=o.v;save();
+    if(o.v==='unlike'&&!S.unlikeAsked){
+      S.unlikeAsked=true;save();
+      bot(CH.ackUnlike);
+      bot(CH.unlikeProbe);
+      askOpts([{t:CH.unlikeCtx,v:'ctx'},{t:CH.unlikeBase,v:'base'},{t:CH.unlikeGo,v:'go'}],function(o2){
+        if(o2.v==='ctx'){S.echoCtx=true;save();bot(CH.unlikeCtxAck);}
+        else if(o2.v==='base'){try{window.open('bagua-persona.html','_blank');}catch(e){}bot(CH.unlikeBaseAck);}
+        next();
+      });
+      return;
+    }
     bot(o.v==='like'?CH.ackLike:o.v==='part'?CH.ackPart:CH.ackUnlike);
     next();
   });
@@ -306,7 +317,9 @@ function revealEnd(pk){
   botHtml('<span class="code">'+RES.code+'</span>'
     +'<div class="cs">'+esc(CH.reportLinks)+'</div>'
     +'<div class="links"><a class="btn" href="bagua-persona-v2.html#r='+RES.code+'">'+esc(CH.fullReportBtn)+'</a>'
-    +'<a class="btn ghost" href="bagua-crystal.html#r='+RES.code+'">'+esc(CH.crystalBtn)+'</a></div>','cardmsg');
+    +'<a class="btn ghost" href="bagua-crystal.html#r='+RES.code+'">'+esc(CH.crystalBtn)+'</a>'
+    +'<a class="btn ghost" href="bagua-persona.html">'+esc(CH.baseBtn)+'</a></div>','cardmsg');
+  if(S.echoCtx)bot(CH.ctxRemind);
   bot(CH.moduleAsk);
   renderModRow();
   $('talkbar').classList.remove('hide');
@@ -511,7 +524,7 @@ if(saved&&saved.phase&&saved.phase!=='hello'&&saved.phase!=='talk'){
   askOpts([{t:CH.resumeGo,v:'go',cls:'primary'},{t:CH.resumeReset,v:'reset'}],function(o){
     if(o.v==='reset'){
       S={phase:'hello',idx:0,answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),
-         flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{}};
+         flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{},unlikeAsked:false,echoCtx:false};
       save();begin();return;
     }
     if(S.phase==='core'){stage('core');stepCore();}
