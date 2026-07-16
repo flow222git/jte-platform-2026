@@ -139,6 +139,15 @@
   .ask .ah{font-family:"Songti TC","Noto Serif TC",serif;color:var(--pine);font-size:13.5px;letter-spacing:.12em;margin-bottom:6px}
   .ask ol{padding-left:1.3em;font-size:13px;line-height:2}
   a{color:var(--pine)}
+  /* 列印/存 PDF:只印報告本體;互動元件(按鈕/伴讀/回饋問卷)不進紙面 */
+  @media print{
+    body{background:#fff;padding:0 4mm 10mm;font-size:12pt;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .fontbtns,#scr-intro,#scr-quiz,#scr-interlude,.btn,.navlink,.noprint{display:none!important}
+    .card,.pair,.cost-row,h4.blk,details,.band-row{break-inside:avoid}
+    details{border-top-color:var(--line)}
+    a{color:inherit;text-decoration:none}
+  }
 </style>
 </head><body>
 
@@ -623,11 +632,15 @@ function renderReport(sc,costSt,conf,fc){
   h+='<div class="rule"></div><div class="seclabel">對照與分享</div>'
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
     +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'
-    +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">※ 兩版題本不同,分數請勿直接互比——比的是「報告像不像你」。</span></p>';
+    +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">※ 兩版題本不同,分數請勿直接互比——比的是「報告像不像你」。</span></p>'
+    +'<p class="noprint" style="font-size:13.5px;margin-top:14px">想留一份在手邊:'
+    +'<button class="btn ghost" id="btn-pdf" style="margin-left:8px">存成 PDF</button>'
+    +'<span style="display:block;font-size:12px;color:var(--muted);margin-top:6px">會跳出列印視窗,目的地選「儲存為 PDF」即可;折疊的章節會自動展開一起印,聊天和按鈕不會印進去。</span></p>';
   // 八態伴讀(結果頁內嵌聊天;url 為空則隱藏整段)
   if(V.COMPANION_BOT && V.COMPANION_BOT.url){
     var CB=V.COMPANION_BOT;
-    h+='<div class="rule"></div><div class="seclabel">'+esc(CB.title)+'</div>'
+    h+='<div class="noprint">'
+      +'<div class="rule"></div><div class="seclabel">'+esc(CB.title)+'</div>'
       +'<p style="font-size:13.5px">'+esc(CB.desc)+'</p>'
       +'<p style="font-size:12px;color:var(--muted)">'+esc(CB.privacy)+'</p>'
       +'<p class="center" id="bot-startrow" style="margin:14px 0 6px"><button class="btn" id="bot-start">'+esc(CB.startBtn)+'</button></p>'
@@ -637,9 +650,10 @@ function renderReport(sc,costSt,conf,fc){
       +  '<button class="btn" id="bot-send">'+esc(CB.sendBtn)+'</button></div>'
       +  '<p class="center" style="margin:12px 0 0"><button class="btn ghost" id="bot-end">'+esc(CB.endBtn)+'</button></p>'
       +'</div>'
-      +'<p class="center" style="font-size:12px;color:var(--muted);margin-top:8px">'+esc(CB.note)+'</p>';
+      +'<p class="center" style="font-size:12px;color:var(--muted);margin-top:8px">'+esc(CB.note)+'</p>'
+      +'</div>';
   }
-  h+='<div class="ask"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
+  h+='<div class="ask noprint"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
     +'<li>這次的題目好答嗎?「很不像/幾乎不曾」那端,你用到了嗎?</li>'
     +'<li>二選一的四題——有沒有哪題兩邊都像、很難選?</li>'
     +'<li>報告裡「二選一對照」的落差(如果有),你覺得哪邊更貼近你?</li>'
@@ -647,8 +661,21 @@ function renderReport(sc,costSt,conf,fc){
   h+='<div class="honest" style="margin-top:26px">'+esc(B.HONEST)+' 這是體驗版(題本 v2 試測):內容為草稿,你的作答只存在這台裝置上、不上傳。</div>';
   $('scr-report').innerHTML=h;
   wireBot(pf,sc,costSt,conf,fc);
+  var pb=$('btn-pdf'); if(pb) pb.onclick=function(){ window.print(); };
   show('scr-report');
 }
+
+// ── 存成 PDF:走瀏覽器原生列印(免外部程式庫);列印前把折疊章節全展開,印完還原 ──
+var _printOpened=[];
+window.addEventListener('beforeprint',function(){
+  _printOpened=[];
+  var ds=document.querySelectorAll('#scr-report details:not([open])');
+  for(var i=0;i<ds.length;i++){ ds[i].setAttribute('open',''); _printOpened.push(ds[i]); }
+});
+window.addEventListener('afterprint',function(){
+  for(var i=0;i<_printOpened.length;i++){ _printOpened[i].removeAttribute('open'); }
+  _printOpened=[];
+});
 
 // ── 八態伴讀:結果頁內嵌聊天(走與問易同一個 Cloudflare Worker 代理,金鑰不在前端)──
 // 報告在本機組好帶過去;開場白本機生成(零網路);對話歷史只留在頁面記憶體。
