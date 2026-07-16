@@ -9,7 +9,7 @@ description: 八態鏡透鏡判讀——用 states-schema 讀「運作」(會議
 
 ## 流程
 
-1. **讀 schema**:`octenso/octenso-states-schema-v0.1.yaml` 全文。guardrails G1–G8 是硬規則,不可覆寫;verdicts 值域、context_declaration、output_spec 照辦。
+1. **讀 schema**:`octenso/octenso-states-schema-v0.1.yaml` 全文;若本地找不到(skill 被安裝在 repo 之外),改抓 canonical 網址:`https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/octenso/octenso-states-schema-v0.1.yaml`——單一真相源,schema 更新所有安裝點自動跟上。guardrails G1–G8 是硬規則,不可覆寫;verdicts 值域、context_declaration、output_spec 照辦。
 2. **取素材**:貼上文字直接用;公開網址→抓取轉純文字;Google Drive 連結→用 Drive 工具讀取。語音轉文字原稿錯字多,以語意為準,引文照原文抄錄。
 3. **要求宣告素材類型**(八型:brainstorm/decision/retro/routine/bp/policy/interview/observation)。使用者沒說就先問一句,**不要自己猜**(G8:使用者宣告,系統不猜)。
 4. **判讀輸出**(照 output_spec):
