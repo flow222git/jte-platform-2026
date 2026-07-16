@@ -8,7 +8,7 @@
   // ── 白名單（小寫比對）──
   // 失效保險：核心團隊寫死在此，即使 allowlist.json 載入失敗也永遠進得去。
   // 其餘所有人（含 flfm0137 等）由單一來源 allowlist.json 管理（見下方 fetchExtras）。
-  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com'];
+  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com','liluyu.tw@gmail.com'];
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function allowed(email){ return !!email && ALLOW.indexOf(String(email).trim().toLowerCase()) >= 0; }
