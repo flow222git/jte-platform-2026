@@ -246,6 +246,45 @@ async function handleLensFetch(request, env, corsHeaders) {
   return json({ text, chars: text.length }, 200, corsHeaders);
 }
 
+/* /lens-feedback:八態鏡判讀的三值回饋(很像/部分像/不太像+留言)。
+   北極星:素材與報告不上傳——只收評價與使用者主動寫的留言,落 FEEDBACK KV(fblens: 前綴)。 */
+const LENS_FB_DAILY_LIMIT_PER_IP = 30;
+const LENS_FB_VERDICTS = ['like', 'part', 'unlike'];
+
+async function handleLensFeedback(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lensfb:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_FB_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日回饋次數已達上限。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { ctype, verdict, comment } = payload;
+  if (!LENS_FB_VERDICTS.includes(verdict)) {
+    return json({ error: '回饋格式不對。' }, 400, corsHeaders);
+  }
+  if (!LENS_CONTEXT_TYPES.includes(ctype)) {
+    return json({ error: '素材類型不明。' }, 400, corsHeaders);
+  }
+  if (comment !== undefined && (typeof comment !== 'string' || comment.length > 2000)) {
+    return json({ error: '留言過長。' }, 400, corsHeaders);
+  }
+  if (env.FEEDBACK) {
+    try {
+      await env.FEEDBACK.put(`fblens:${new Date().toISOString()}`, JSON.stringify({ ctype, verdict, comment: comment || '' }));
+    } catch (e) {
+      console.error('lens FEEDBACK KV put failed:', e);
+    }
+  }
+  return json({ ok: true }, 200, corsHeaders);
+}
+
 async function handleOctenso(request, env, corsHeaders) {
   // 獨立限流(與問易分開計)
   if (env.RATE_LIMIT) {
@@ -357,6 +396,9 @@ export default {
 
     if (new URL(request.url).pathname === '/lens-fetch') {
       return handleLensFetch(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/lens-feedback') {
+      return handleLensFeedback(request, env, corsHeaders);
     }
     if (new URL(request.url).pathname === '/lens') {
       return handleLens(request, env, corsHeaders);

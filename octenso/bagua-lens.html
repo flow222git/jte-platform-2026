@@ -47,6 +47,7 @@
   #histlist{list-style:none}
   #histlist li{padding:9px 2px;border-bottom:1px solid var(--surface2);font-size:13px;cursor:pointer}
   #histlist li:hover{color:var(--ink)}
+  .fbv.on{border-color:var(--pine);color:var(--pine)}
   #histlist .ht{font-family:"Jost",sans-serif;font-size:10.5px;color:var(--hair);margin-right:8px}
 </style></head>
 <body>
@@ -89,11 +90,22 @@
   <button class="btn ghost" id="hsave">存一句</button><span class="hint" id="hmsg"></span>
 </div>
 
+<div id="fbwrap" style="display:none">
+  <div class="lbl">這份判讀像不像?(按送出只回傳評價與留言,素材與報告不會上傳)</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn ghost fbv" data-v="like">很像</button>
+    <button class="btn ghost fbv" data-v="part">部分像</button>
+    <button class="btn ghost fbv" data-v="unlike">不太像</button>
+  </div>
+  <input class="harvest" id="fbcomment" placeholder="一句話也好:哪條判定最有感、哪條最不服?(選填)" style="margin-top:10px">
+  <button class="btn ghost" id="fbsend">送出回饋</button><span class="hint" id="fbmsg"></span>
+</div>
+
 <div class="rule"></div>
 <div class="lbl">最近判讀(只在這台裝置)</div>
 <ul id="histlist"></ul>
 
-<div class="honest">素材即時判讀、不上傳不儲存;報告只留在此裝置(最近 10 筆)。判讀是 AI 依 schema 產生,每條判定附素材原文引文,請自行核對。缺席=素材沒給,不等於弱;主詞永遠是運作,不是人。</div>
+<div class="honest">素材即時判讀、不上傳不儲存;報告只留在此裝置(最近 10 筆)。回饋按「送出」才會回傳練息場,且只含你的評價與留言。判讀是 AI 依 schema 產生,每條判定附素材原文引文,請自行核對。缺席=素材沒給,不等於弱;主詞永遠是運作,不是人。</div>
 
 <script>
 (function(){
@@ -101,6 +113,8 @@
 var $=function(id){return document.getElementById(id);};
 var API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens';
 var FETCH_API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-fetch';
+var FB_API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-feedback';
+var lastCtype='routine';
 var SCHEMA_URL='octenso-states-schema-v0.1.yaml';
 var HISTORY_KEY='lens_history', HARVEST_KEY='lens_harvest';
 var CTYPES={brainstorm:'動腦會(發想/意見收集)',decision:'決策會',retro:'覆盤會/檢討會',routine:'例行會',
@@ -118,6 +132,7 @@ function renderReport(text){
   $('rbody').textContent=text;
   $('report').style.display='block';
   $('harvestwrap').style.display='block';
+  $('fbwrap').style.display='block';
   $('report').scrollIntoView({block:'start',behavior:'smooth'});
 }
 function renderHist(){
@@ -126,12 +141,12 @@ function renderHist(){
     var li=document.createElement('li');
     li.innerHTML='<span class="ht">'+h.time.slice(5,16).replace('T',' ')+' · '+(CTYPES[h.ctype]||h.ctype)+'</span>'+
       h.head.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});
-    li.onclick=function(){renderReport(h.reading);};
+    li.onclick=function(){lastCtype=h.ctype;renderReport(h.reading);};
     ul.appendChild(li);
   });
 }
 $('run').onclick=function(){
-  var mat=$('mat').value.trim(),ctype=$('ctype').value;
+  var mat=$('mat').value.trim(),ctype=$('ctype').value;lastCtype=ctype;
   if(!mat){$('status').textContent='先貼素材。';$('status').className='err';return;}
   if(!schemaText){$('status').textContent='schema 還在載入,等一下再按。';$('status').className='err';return;}
   $('run').disabled=true;$('status').className='';$('status').textContent='照鏡子中……(認真判讀要一陣子,約 1–3 分鐘)';
@@ -166,6 +181,27 @@ $('urlgo').onclick=function(){
 $('copy').onclick=function(){
   try{navigator.clipboard.writeText($('rbody').textContent);$('status').textContent='已複製。';}catch(e){}
 };
+function buildFeedback(ctype,verdict,comment){
+  return {ctype:ctype,verdict:verdict,comment:(comment||'').slice(0,2000)};
+}
+var fbVerdict=null;
+[].forEach.call(document.querySelectorAll('.fbv'),function(b){
+  b.onclick=function(){
+    fbVerdict=b.getAttribute('data-v');
+    [].forEach.call(document.querySelectorAll('.fbv'),function(x){x.classList.remove('on');});
+    b.classList.add('on');
+  };
+});
+$('fbsend').onclick=function(){
+  if(!fbVerdict){$('fbmsg').textContent='先選一個:很像/部分像/不太像。';return;}
+  $('fbsend').disabled=true;
+  fetch(FB_API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(buildFeedback(lastCtype,fbVerdict,$('fbcomment').value.trim()))})
+  .then(function(r){return r.json();})
+  .then(function(d){ $('fbmsg').textContent=d.ok?'收到,謝謝!會進修訂清單。':'送出失敗,再試一次。'; })
+  .catch(function(){$('fbmsg').textContent='送出失敗,再試一次。';})
+  .then(function(){$('fbsend').disabled=false;});
+};
 $('hsave').onclick=function(){
   var v=$('harvest').value.trim();if(!v)return;
   var list=[];try{list=JSON.parse(localStorage.getItem(HARVEST_KEY))||[];}catch(e){}
@@ -174,7 +210,7 @@ $('hsave').onclick=function(){
   $('harvest').value='';$('hmsg').textContent='收了,謝謝。';
 };
 renderHist();
-window.LENS={buildPayload:buildPayload,renderReport:renderReport,HISTORY_KEY:HISTORY_KEY,HARVEST_KEY:HARVEST_KEY,CTYPES:CTYPES};
+window.LENS={buildPayload:buildPayload,buildFeedback:buildFeedback,renderReport:renderReport,HISTORY_KEY:HISTORY_KEY,HARVEST_KEY:HARVEST_KEY,CTYPES:CTYPES};
 document.body.setAttribute('data-ready','1');
 })();
 </script>

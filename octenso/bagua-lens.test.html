@@ -39,6 +39,10 @@
       var hv=JSON.parse(win.localStorage.getItem(L.HARVEST_KEY));
       t('語彙收割寫入', hv.length===1 && hv[0].note==='測試收割句');
     }catch(e){ t('語彙收割寫入', false); }
+    t('回饋 UI(三值+送出)', doc.querySelectorAll('.fbv').length===3 && !!doc.getElementById('fbsend'));
+    var fp=L.buildFeedback('bp','unlike','太嚴了');
+    t('回饋 payload 組裝', fp.ctype==='bp' && fp.verdict==='unlike' && fp.comment==='太嚴了');
+    t('誠實區:回饋僅評價與留言', doc.body.textContent.indexOf('只含你的評價與留言')>=0);
     t('網址抓取 UI', !!doc.getElementById('urlin') && !!doc.getElementById('urlgo'));
     t('gate 腳本掛載', !!doc.querySelector('script[src="octenso-gate.js"]'));
     t('無外部絕對網址 script', [].every.call(doc.querySelectorAll('script[src]'),
