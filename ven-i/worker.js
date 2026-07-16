@@ -285,6 +285,26 @@ async function handleLensFeedback(request, env, corsHeaders) {
   return json({ ok: true }, 200, corsHeaders);
 }
 
+/* /feedback-list:回饋後台(Simon 專用)。需 x-view-key 匹配 Worker Secret FEEDBACK_VIEW_KEY。
+   回傳 FEEDBACK KV 全部條目(fb:=伴讀摘要、fblens:=八態鏡三值),新到舊。 */
+async function handleFeedbackList(request, env, corsHeaders) {
+  const key = request.headers.get('x-view-key') || '';
+  if (!env.FEEDBACK_VIEW_KEY || key !== env.FEEDBACK_VIEW_KEY) {
+    return json({ error: '通行密語不對,或 Worker 尚未設定 FEEDBACK_VIEW_KEY。' }, 401, corsHeaders);
+  }
+  if (!env.FEEDBACK) return json({ items: [] }, 200, corsHeaders);
+  const list = await env.FEEDBACK.list({ limit: 200 });
+  const items = [];
+  for (const k of list.keys) {
+    const raw = await env.FEEDBACK.get(k.name);
+    let value = null;
+    try { value = JSON.parse(raw); } catch { value = { raw }; }
+    items.push({ key: k.name, value });
+  }
+  items.sort((a, b) => (a.key.slice(a.key.indexOf(':') + 1) < b.key.slice(b.key.indexOf(':') + 1) ? 1 : -1));
+  return json({ items }, 200, corsHeaders);
+}
+
 async function handleOctenso(request, env, corsHeaders) {
   // 獨立限流(與問易分開計)
   if (env.RATE_LIMIT) {
@@ -399,6 +419,9 @@ export default {
     }
     if (new URL(request.url).pathname === '/lens-feedback') {
       return handleLensFeedback(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/feedback-list') {
+      return handleFeedbackList(request, env, corsHeaders);
     }
     if (new URL(request.url).pathname === '/lens') {
       return handleLens(request, env, corsHeaders);
