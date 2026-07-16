@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態鏡 · 安裝與使用說明</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:56px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:30px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article a{color:var(--pine);word-break:break-all}
+article ol,article ul{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:6px}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:14px 16px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:14px 0}
+article pre code{background:none;padding:0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
+.spell{border:1px solid var(--pine);border-radius:3px;padding:14px 18px;margin:16px 0;background:var(--surface)}
+.spell .sl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:4px}
+.honest{margin-top:70px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Bagua-Lens · Install</div>
+  <h1>八態鏡 · 安裝與使用說明</h1>
+  <div class="meta">READ THE OPERATION, NOT THE PERSON · 2026-07-16</div>
+</header>
+<article>
+
+<p>八態鏡讀的是「運作」——一場會議、一份提案、一段紀錄如何運作——永遠不是「人」。
+它有兩種用法:<strong>網頁版</strong>(貼上就照,零安裝)與 <strong>skill 版</strong>(裝進你的
+Claude,支援檔案、可對話追問)。挑一條路即可。</p>
+
+<h2>路線一 · 網頁版(最簡單,推薦先用這個)</h2>
+
+<ol>
+<li>請 Simon 把你的 email 加進白名單</li>
+<li>打開:<a href="https://flow222git.github.io/jte-platform-2026/octenso/bagua-lens.html">https://flow222git.github.io/jte-platform-2026/octenso/bagua-lens.html</a></li>
+<li>貼上素材(或貼公開網址按「抓取」)→ 選素材類型 → 按「照一下」</li>
+<li>等 1–3 分鐘,報告出來後,<strong>記得按「很像/部分像/不太像」送出回饋</strong>——鏡子靠這個變準</li>
+</ol>
+
+<p>限制:只吃純文字與公開網址。Word/PDF 請開檔後全選複製、貼上即可。</p>
+
+<h2>路線二 · Claude Code(工程師路線)</h2>
+
+<p>skill 住在專案裡,clone 下來就自動載入:</p>
+
+<pre><code>git clone https://github.com/flow222git/jte-platform-2026.git
+cd jte-platform-2026
+claude</code></pre>
+
+<div class="spell"><div class="sl">觸發語</div>
+「用八態鏡讀這份會議紀錄」·「照一下這份 BP」·「透鏡判讀這個檔案」</div>
+
+<p>這條路支援檔案:PDF 直接讀,Word/Excel 會自動抽文字,Google Drive 連結也可以
+(需該對話環境已連接 Drive)。</p>
+
+<h2>路線三 · claude.ai(手機/網頁版 Claude)</h2>
+
+<ol>
+<li>下載 skill 檔:<a href="https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/.claude/skills/bagua-lens/SKILL.md">SKILL.md(點開後另存)</a></li>
+<li>在電腦上建一個資料夾,命名 <code>bagua-lens</code>,把 SKILL.md 放進去</li>
+<li>把整個資料夾壓縮成 zip</li>
+<li>claude.ai → 設定 → 功能(Capabilities)→ 上傳 skill → 選這個 zip</li>
+<li>之後在任何對話說「用八態鏡讀這份」即可</li>
+</ol>
+
+<h2>路線四 · 裝到自己電腦全域(所有專案可用)</h2>
+
+<pre><code>mkdir -p ~/.claude/skills/bagua-lens
+curl -o ~/.claude/skills/bagua-lens/SKILL.md \
+  https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/.claude/skills/bagua-lens/SKILL.md</code></pre>
+
+<h2>為什麼裝了不用更新</h2>
+
+<p>skill 本身不含任何判讀定義——它只指向唯一的判讀依據(states-schema)。
+在 repo 外執行時會自動抓 GitHub 上的最新版,所以 <strong>schema 進化一次,
+所有安裝點下次判讀自動用新版</strong>,不會出現各自為政的舊鏡子。</p>
+
+<h2>它能照什麼、不照什麼</h2>
+
+<div class="tblwrap"><table>
+<tr><th>照得動</th><th>照不動</th></tr>
+<tr><td>會議紀錄(逐字稿/語音轉文字)</td><td>量表分數、統計表(數字裡沒有話語)</td></tr>
+<tr><td>BP/提案、制度文件、對外文案</td><td>任何「評價一個人」的用途</td></tr>
+<tr><td>訪談逐字稿、開放題回覆、觀察筆記</td><td>排名、選才、錄取建議(直接婉拒)</td></tr>
+</table></div>
+
+<p>面試筆記可以照,但會自動降級為觀察模式:只列「已收集/尚無資料的態」與補問建議,不做評價。</p>
+
+<div class="honest">
+八態鏡是 AI 依 states-schema(v0.1,研究假設待考)產生的判讀,每條判定附素材原文引文,請自行核對。
+缺席=素材沒給,不等於弱;只診斷不預測;主詞永遠是運作,不是人。
+素材與報告不上傳;你按「送出回饋」時只回傳評價與留言。
+</div>
+
+</article>
+</div>
+</body></html>
