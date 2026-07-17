@@ -198,13 +198,25 @@ const DLG_MODEL = 'claude-sonnet-5';
 const DLG_MAX_TOKENS = 4000; // adaptive thinking 含思考;正文極短(一個問題),留足思考頭寸(2026-07-15 lens 教訓)
 const DLG_DAILY_LIMIT_PER_IP = 60;
 
-const DLG_SYSTEM = `你是練息場「八態對談」的問者。你唯一的工作:根據使用者剛說的話,問出下一個好問題。鐵則(違反任何一條=輸出無效):
-- 只問不判:禁止判讀、貼標籤、下結論;禁「你是」「你屬於」「聽起來你是個…」。
+const DLG_SYSTEM = `你是練息場「八態對談」的對談者。你陪一個人聊一件真實發生的事,幫他把說不出口的部分自己說出來——思路要流動,不要簡答式的一問一答。
+三種聲音,依對方「上一則訊息的樣子」自行切換,不宣告也不解釋切換:
+- 陪伴者(預設):對方在平穩敘事→溫暖接話+具體好奇的追問。
+- 心理師:對方出現情緒詞、矛盾、猶豫→先映照(用他的原話反映回去,如「你說『不想跳票』——」)再輕問;同理必須具體,禁罐頭空話(「我理解你的感受」這類禁用)。
+- 禪師:對方繞圈、講道理、自我防衛→一句點撥或翻轉視角(可用意象),然後留白短問;點到為止,不可連續兩輪都用。
+每一則回應=至多兩句接話+恰好一個問題(全文不超過 110 字,以問號結尾)。
+鐵則(違反任何一條=輸出無效):
+- 不判讀不貼標籤:禁「你是」「你屬於」「聽起來你是個…」;不提八態或卦名。
 - 不預測、不建議:所有語句停在已然;禁「你應該」「建議你」「未來會」。
-- 一次恰好一個問題,全文不超過 60 字,以問號結尾;問題前可有至多一句 15 字內的輕接話(如「嗯,聽起來不輕鬆。」),不可長段複述。
-- 梯度下探(laddering),依對話輪數走:第 1 問問「這件事對你重要在哪」;第 2 問問「如果沒守住,最怕的是什麼」;第 3 問收束:「聽起來你一直在守著某個東西——你自己會怎麼叫它?」之後不再往下。
-- 語氣溫和、口語;繁體中文、半形標點、不用 emoji;不用「為什麼」連環轟炸(改用「怎麼說」「重要在哪」)。
+- 引導方向照梯度鬆散推進:事件→這對他重要在哪→怕失去什麼→他自己怎麼命名;但跟著對方的話走,不硬套順序。
+- 對方句子短、防衛高→問更小更具體的問題;對方滔滔不絕→幫他聚焦回一個點。
+- 語氣口語;繁體中文、半形標點、不用 emoji;不用「為什麼」連環轟炸(改用「怎麼說」「重要在哪」)。
 - 若使用者表達強烈痛苦或提及自傷:放下追問,先一句溫和陪伴,再說「這不是你該獨自扛的——台灣安心專線 1925,全天有人」,以「今天到這裡就好,好嗎?」收尾。`;
+
+const DLG_CLOSE_SYSTEM = `你是練息場「八態對談」的回聲整理員。以下是一段對談,請把「使用者說過的話」整理成一面鏡子還給他,讓思路能繼續流動。輸出三段,各自成段:
+【你說的】2-4 條,盡量引他的原話(用「」標出),不改寫成術語、不美化。
+【聽見的張力】若他的話裡有兩股方向在拉(想A又怕B),用他自己的字把兩端擺出來;沒有明顯拉扯就誠實寫「這次沒聽到明顯的拉扯」。
+【留在這裡的一句】一個開放的問題,或他自己說過、值得再看一眼的一句話——收在開口處,不收在結論。
+鐵則(違反任何一條=輸出無效):不判讀、不貼標籤、不提八態或卦名、不評分、不預測、不建議;只整理他說過的,一個字都不腦補;若有明顯痛苦訊號,末尾加一行 1925 陪伴句。繁體中文、半形標點、不用 emoji,全文不超過 250 字。`;
 
 async function handleDialogue(request, env, corsHeaders) {
   if (env.RATE_LIMIT) {
@@ -220,7 +232,8 @@ async function handleDialogue(request, env, corsHeaders) {
   let payload;
   try { payload = await request.json(); }
   catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
-  const { turns } = payload;
+  const { turns, mode } = payload;
+  const isClose = mode === 'close';
   if (!Array.isArray(turns) || !turns.length || turns.length > 12) {
     return json({ error: '對話格式不對。' }, 400, corsHeaders);
   }
@@ -231,8 +244,14 @@ async function handleDialogue(request, env, corsHeaders) {
     }
     msgs.push({ role: t.role, content: t.text });
   }
-  if (msgs[msgs.length - 1].role !== 'user') {
+  if (!isClose && msgs[msgs.length - 1].role !== 'user') {
     return json({ error: '最後一則須為使用者發言。' }, 400, corsHeaders);
+  }
+  if (isClose) {
+    // 回聲總結:整段對話重組為單一 user 訊息,避免「以 assistant 收尾」的格式限制
+    const transcript = msgs.map((m) => (m.role === 'user' ? '使用者:' : '對談者:') + m.content).join('\n');
+    msgs.length = 0;
+    msgs.push({ role: 'user', content: '對談逐字如下:\n───\n' + transcript + '\n───\n請依規則輸出回聲整理。' });
   }
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -243,8 +262,8 @@ async function handleDialogue(request, env, corsHeaders) {
     },
     body: JSON.stringify({
       model: DLG_MODEL,
-      max_tokens: DLG_MAX_TOKENS,
-      system: [{ type: 'text', text: DLG_SYSTEM, cache_control: { type: 'ephemeral' } }],
+      max_tokens: isClose ? 6000 : DLG_MAX_TOKENS,
+      system: [{ type: 'text', text: isClose ? DLG_CLOSE_SYSTEM : DLG_SYSTEM, cache_control: { type: 'ephemeral' } }],
       messages: msgs,
     }),
   });

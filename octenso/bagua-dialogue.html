@@ -85,8 +85,9 @@
 <!-- 開場 -->
 <div id="scr-intro">
   <div class="card">
-    <p class="guide">十分鐘,四小段:先挑個天氣,說一件最近的事,我多問你兩三句,最後認八張卡、量個刻度。<br>
-    這裡<b style="font-weight:400;color:var(--ink)">只問不判</b>——今天不會有任何判讀或分數評語;你說出來的話,才是今天的收穫。</p>
+    <p class="guide">十來分鐘,四小段:先挑個天氣,說一件最近的事,我們聊個幾句,最後認八張卡、量個刻度。<br>
+    這裡<b style="font-weight:400;color:var(--ink)">不評分、不貼標籤</b>——會陪你想、偶爾接一句話,
+    結束時給你一面「回聲」:把你說過的話整理還給你,判定的事留給你自己。</p>
     <div class="center"><button class="btn" id="btn-start">開始對談</button></div>
     <div class="honest">追問的問題由 AI 產生:你打的字會送到練息場的服務,只為了生出下一個問題,伺服器不留存。
 整段對話只在這個頁面裡;結尾你可以選擇把「你自己說的話」收進本機素材倉(不上傳、可刪)。
@@ -115,14 +116,14 @@ var KEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
 function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
 
 var WEATHER=['久旱','雷陣雨','起霧','放晴','悶著','寒流','說不上來'];
-var LADDER_MAX=3;
+var LADDER_MAX=4;
 var LADDER_FALLBACK=[
   '這件事對你來說,重要在哪?',
   '如果它沒守住,你最怕的是什麼?',
   '聽起來你一直在守著某個東西——你自己會怎麼叫它?'
 ];
 
-var S={phase:'intro',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false};
+var S={phase:'intro',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false,echo:''};
 var FQ=V.ITEMS.filter(function(q){return q.kind==='fq';});
 
 /* ── 對話 UI ── */
@@ -139,7 +140,13 @@ function askDefault(turns){
     .then(function(r){return r.json();})
     .then(function(d){if(!d.question)throw new Error(d.error||'empty');return d.question;});
 }
-var DLG={S:S,ask:askDefault,ANCHOR_KEY:ANCHOR_KEY,WEATHER:WEATHER,FQ:FQ,pn:pn};
+function closeDefault(turns){
+  return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({turns:turns,mode:'close'})})
+    .then(function(r){return r.json();})
+    .then(function(d){if(!d.question)throw new Error(d.error||'empty');return d.question;});
+}
+var DLG={S:S,ask:askDefault,close:closeDefault,ANCHOR_KEY:ANCHOR_KEY,WEATHER:WEATHER,FQ:FQ,pn:pn};
 window.DLG=DLG;
 
 /* ── 流程 ── */
@@ -266,17 +273,19 @@ function corpusText(){
 }
 function corpusContext(){
   var L=S.qa.filter(function(x){return x.a;}).map(function(x){return '問:'+x.q;});
+  if(S.echo)L.push('回聲整理:\n'+S.echo);
   if(Object.keys(S.anchor).length)L.push('錨題已記錄('+Object.keys(S.anchor).length+' 題,存本機)');
   return L.join('\n');
 }
 function stepClose(){
   S.phase='close';
   var said=corpusText();
-  msg('bot','今天就到這裡。沒有判讀、沒有分數——你剛剛說的話,就是今天照見的東西。');
-  var io='<div class="recap"><div class="rt">今天你說的話</div><div class="body">'+esc(said||'(這次沒有留下文字)')+'</div></div>'
+  msg('bot','今天就到這裡。沒有分數、沒有標籤——先把你說過的話,整理成一面回聲還給你。');
+  var io='<div class="recap" id="echo" style="display:none"><div class="rt">對談回聲 · AI 整理,只整理你說過的</div><div class="body" id="echobody"></div></div>'
+    +'<div class="recap"><div class="rt">今天你說的話</div><div class="body">'+esc(said||'(這次沒有留下文字)')+'</div></div>'
     +'<div id="optin"></div>'
     +'<p class="center" style="margin-top:16px"><button class="btn ghost" id="again">再談一次</button></p>'
-    +'<div class="honest">'+esc(B.HONEST)+' 對話不上傳;素材要不要收,由你決定。</div>';
+    +'<div class="honest">'+esc(B.HONEST)+' 回聲是整理不是判讀——像不像,由你裁決。對話不上傳;素材要不要收,由你決定。</div>';
   setIO(io);
   if(window.OctensoCorpus&&said){
     OctensoCorpus.mountOptIn($('optin'),{
@@ -288,6 +297,14 @@ function stepClose(){
     });
   }
   $('again').onclick=function(){location.reload();};
+  // 回聲總結:有實際對話才叫;失敗靜靜略過(本地回顧仍完整)
+  if(S.episode&&S.qa.some(function(x){return x.a;})&&!S.crisis){
+    DLG.close(S.turns.slice()).then(function(sum){
+      S.echo=sum;
+      var eb=$('echobody'),ew=$('echo');
+      if(eb&&ew){eb.textContent=sum;ew.style.display='block';}
+    }).catch(function(){});
+  }
 }
 
 document.body.setAttribute('data-ready','1');
