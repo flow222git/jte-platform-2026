@@ -123,7 +123,7 @@ var LADDER_FALLBACK=[
   '聽起來你一直在守著某個東西——你自己會怎麼叫它?'
 ];
 
-var S={phase:'intro',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false,echo:''};
+var S={phase:'intro',ctx:'',depth:'',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false,echo:''};
 var FQ=V.ITEMS.filter(function(q){return q.kind==='fq';});
 
 /* ── 對話 UI ── */
@@ -153,20 +153,38 @@ window.DLG=DLG;
 $('btn-start').onclick=function(){
   $('scr-intro').classList.add('hide');
   $('scr-chat').classList.remove('hide');
-  stepWeather();
+  stepCheckIn();
 };
+
+/* check-in:當下宣告(G8:使用者宣告,系統不猜)——不收背景資料,只收今天的三件事 */
+var CTX=['工作','關係','家裡','自己','說不上來'];
+var DEPTH=['輕輕聊就好','幫我想清楚','問深一點沒關係'];
+function chips(list,cb){
+  setIO('<div class="chips">'+list.map(function(x,i){
+    return '<button class="chip" data-i="'+i+'">'+x+'</button>';}).join('')+'</div>');
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){
+    c.onclick=function(){cb(list[+c.getAttribute('data-i')]);};
+  });
+}
+function stepCheckIn(){
+  S.phase='checkin';
+  msg('bot','進來坐。先問兩件小事——今天想聊哪一塊?');
+  chips(CTX,function(v){
+    S.ctx=v;msg('me',v);
+    msg('bot','想要哪種陪法?(隨時可以改主意)');
+    chips(DEPTH,function(d){
+      S.depth=d;msg('me',d);
+      stepWeather();
+    });
+  });
+}
 
 function stepWeather(){
   S.phase='weather';
-  msg('bot','先不急著講事情——這一個月的你,比較像哪種天氣?');
-  setIO('<div class="chips">'+WEATHER.map(function(w,i){
-    return '<button class="chip" data-i="'+i+'">'+w+'</button>';}).join('')+'</div>');
-  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){
-    c.onclick=function(){
-      S.weather=WEATHER[+c.getAttribute('data-i')];
-      msg('me',S.weather);
-      stepEpisode();
-    };
+  msg('bot','好。最後一個暖身——這一個月的你,比較像哪種天氣?');
+  chips(WEATHER,function(w){
+    S.weather=w;msg('me',w);
+    stepEpisode();
   });
 }
 
@@ -180,7 +198,7 @@ function stepEpisode(){
     var t=$('ep').value.trim();
     if(!t){$('ep').focus();return;}
     S.episode=t; msg('me',t);
-    S.turns.push({role:'user',text:'(這個月的天氣感:'+S.weather+')\n'+t});
+    S.turns.push({role:'user',text:'(宣告——場域:'+(S.ctx||'未選')+';想要的陪法:'+(S.depth||'未選')+';這個月的天氣感:'+S.weather+')\n'+t});
     stepLadder();
   };
   $('stop1').onclick=function(){stepClose();};
@@ -263,7 +281,7 @@ function saveAnchor(){
 
 /* ── 收尾:回顧+收進素材(opt-in)── */
 function corpusText(){
-  var L=['天氣感:'+(S.weather||'(未選)')];
+  var L=['場域:'+(S.ctx||'(未選)')+';陪法:'+(S.depth||'(未選)')+';天氣感:'+(S.weather||'(未選)')];
   if(S.episode)L.push('情節:'+S.episode);
   S.qa.forEach(function(x){if(x.a)L.push('答:'+x.a);});
   var likes=KEYS.filter(function(k){return S.cards[k]==='like';}).map(pn);
@@ -290,7 +308,7 @@ function stepClose(){
   if(window.OctensoCorpus&&said){
     OctensoCorpus.mountOptIn($('optin'),{
       source:'bagua-dialogue',
-      label:'對談·'+(S.weather||''),
+      label:'對談·'+(S.ctx||'')+(S.weather?('·'+S.weather):''),
       viewerHref:'bagua-corpus.html',
       getText:function(){return corpusText();},
       getContext:function(){return corpusContext();}
