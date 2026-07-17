@@ -1,0 +1,296 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script defer src="octenso-gate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>八態對談 · 練息場(M2 試作)</title>
+<!--
+  八態對談 M2(2026-07-19)——問法庫前四式,固定順序(調度層=M3):
+  觀象玩辭(天氣暖身)→情節回放→梯度下探(AI 只問不判,/dialogue)→卡片認出+錨題收尾。
+  鐵則:AI 問·引擎判·本人裁——本頁不輸出任何判讀;認出時刻由使用者說出。
+  對話只存頁面記憶體;結尾 opt-in 把「使用者自己的話」收進本機素材倉(octenso-corpus.js);
+  錨題分數存本機(octenso_anchor_v1),做三層判別的時間序列(M4)。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:560px;margin:0 auto;padding:24px 18px 90px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:24px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:20px}
+  .draft{display:block;width:fit-content;margin:0 auto 22px;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 20px}
+  .guide{padding-left:15px;border-left:1px solid var(--hair);font-size:13.5px;line-height:2;margin:16px 0 22px;color:var(--ink-soft)}
+  .btn{display:inline-block;font-size:14.5px;font-weight:300;letter-spacing:.08em;padding:12px 30px;cursor:pointer;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);background:transparent;transition:.2s;font-family:inherit}
+  .btn:hover{background:var(--ink);color:var(--bg)}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.ghost{border-color:var(--hair);color:var(--muted)}
+  .center{text-align:center}
+  .honest{font-size:12px;color:var(--muted);line-height:1.95;padding-left:14px;border-left:1px solid var(--hair);margin-top:18px}
+  .hide{display:none}
+  /* 對話區 */
+  #msgs{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+  .m{font-size:14.5px;line-height:2;white-space:pre-line;max-width:92%;padding:10px 14px;border-radius:12px}
+  .m.bot{background:var(--surface);border:1px solid var(--line);align-self:flex-start;border-top-left-radius:3px}
+  .m.me{border:1px solid var(--hair);align-self:flex-end;border-top-right-radius:3px}
+  .m.sys{align-self:center;font-size:12px;color:var(--muted);background:none;border:none;padding:2px}
+  .m.crisis{border:1px solid var(--cinnabar)}
+  /* 輸入區 */
+  #io{margin-top:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .chip{font-family:inherit;font-weight:300;font-size:14px;letter-spacing:.05em;padding:9px 18px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--ink-soft);transition:.15s}
+  .chip:hover{border-color:var(--ink);color:var(--ink)}
+  textarea{width:100%;min-height:96px;background:var(--surface);border:1px solid var(--hair);border-radius:12px;
+    padding:12px 14px;color:var(--ink);font-size:14.5px;font-family:inherit;line-height:1.9}
+  textarea:focus{outline:none;border-color:var(--ink)}
+  .iorow{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .stoplink{font-size:12.5px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px}
+  /* 卡片認出 */
+  .bcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 18px;text-align:center}
+  .bcard .sym{font-family:"Songti TC","Noto Serif TC",serif;font-size:30px;color:var(--ink)}
+  .bcard .nm{font-family:"Songti TC","Noto Serif TC",serif;font-size:18px;color:var(--ink);letter-spacing:.1em;margin-top:4px}
+  .bcard .ele{font-size:12px;color:var(--pine);letter-spacing:.28em;padding-left:.28em;margin:2px 0 10px}
+  .bcard .brief{font-size:14px;line-height:2;color:var(--ink-soft);max-width:24em;margin:0 auto}
+  .bcard .prog{font-family:"Jost",sans-serif;font-size:11px;color:var(--hair);margin-top:8px}
+  .vrow{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  .vbtn{font-family:inherit;font-weight:300;font-size:14.5px;letter-spacing:.1em;padding:10px 30px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--ink-soft)}
+  .vbtn.like:hover{border-color:var(--pine);color:var(--pine)}
+  .vbtn.unlike:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .skip{display:block;margin:10px auto 0;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit}
+  /* 錨題 */
+  .aq{font-size:15px;color:var(--ink);text-align:center;line-height:1.95;margin-bottom:14px;text-wrap:balance}
+  .aopts{display:flex;flex-direction:column;gap:8px;max-width:300px;margin:0 auto}
+  .aopt{font-family:inherit;font-weight:300;font-size:14px;letter-spacing:.06em;padding:9px 14px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--ink-soft)}
+  .aopt:hover{border-color:var(--ink);color:var(--ink)}
+  /* 收尾 */
+  .recap{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px}
+  .recap .rt{font-size:12.5px;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+  .recap .body{white-space:pre-line;font-size:13.5px;line-height:2}
+  a{color:var(--pine)}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · Dialogue · M2</div>
+<h1>八態對談</h1>
+<div class="sub">聊一件最近真的發生的事——這裡只問,不評</div>
+<span class="draft">試作版 · 問法庫前四式 · 固定順序</span>
+
+<!-- 開場 -->
+<div id="scr-intro">
+  <div class="card">
+    <p class="guide">十分鐘,四小段:先挑個天氣,說一件最近的事,我多問你兩三句,最後認八張卡、量個刻度。<br>
+    這裡<b style="font-weight:400;color:var(--ink)">只問不判</b>——今天不會有任何判讀或分數評語;你說出來的話,才是今天的收穫。</p>
+    <div class="center"><button class="btn" id="btn-start">開始對談</button></div>
+    <div class="honest">追問的問題由 AI 產生:你打的字會送到練息場的服務,只為了生出下一個問題,伺服器不留存。
+整段對話只在這個頁面裡;結尾你可以選擇把「你自己說的話」收進本機素材倉(不上傳、可刪)。
+錨題刻度存在此裝置,做日後「天氣/底色」對照的尺。隨時可以停。</div>
+  </div>
+</div>
+
+<!-- 對談 -->
+<div id="scr-chat" class="hide">
+  <div id="msgs"></div>
+  <div id="io"></div>
+</div>
+
+<script src="bagua-data.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="octenso-corpus.js"></script>
+<script>
+(function(){
+'use strict';
+var B=window.OCTENSO_BAGUA, V=window.OCTENSO_V2;
+var $=function(id){return document.getElementById(id);};
+var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+var API='https://calm-sunset-97f8.simon-ec6.workers.dev/dialogue';
+var ANCHOR_KEY='octenso_anchor_v1';
+var KEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
+function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
+
+var WEATHER=['久旱','雷陣雨','起霧','放晴','悶著','寒流','說不上來'];
+var LADDER_MAX=3;
+var LADDER_FALLBACK=[
+  '這件事對你來說,重要在哪?',
+  '如果它沒守住,你最怕的是什麼?',
+  '聽起來你一直在守著某個東西——你自己會怎麼叫它?'
+];
+
+var S={phase:'intro',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false};
+var FQ=V.ITEMS.filter(function(q){return q.kind==='fq';});
+
+/* ── 對話 UI ── */
+function msg(cls,text){
+  var d=document.createElement('div');d.className='m '+cls;d.textContent=text;
+  $('msgs').appendChild(d);d.scrollIntoView({block:'end'});return d;
+}
+function setIO(html){$('io').innerHTML=html;}
+
+/* ── AI 問者(可替換;失敗走 fallback 腳本)── */
+function askDefault(turns){
+  return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({turns:turns})})
+    .then(function(r){return r.json();})
+    .then(function(d){if(!d.question)throw new Error(d.error||'empty');return d.question;});
+}
+var DLG={S:S,ask:askDefault,ANCHOR_KEY:ANCHOR_KEY,WEATHER:WEATHER,FQ:FQ,pn:pn};
+window.DLG=DLG;
+
+/* ── 流程 ── */
+$('btn-start').onclick=function(){
+  $('scr-intro').classList.add('hide');
+  $('scr-chat').classList.remove('hide');
+  stepWeather();
+};
+
+function stepWeather(){
+  S.phase='weather';
+  msg('bot','先不急著講事情——這一個月的你,比較像哪種天氣?');
+  setIO('<div class="chips">'+WEATHER.map(function(w,i){
+    return '<button class="chip" data-i="'+i+'">'+w+'</button>';}).join('')+'</div>');
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){
+    c.onclick=function(){
+      S.weather=WEATHER[+c.getAttribute('data-i')];
+      msg('me',S.weather);
+      stepEpisode();
+    };
+  });
+}
+
+function stepEpisode(){
+  S.phase='episode';
+  msg('bot','好。接著說一件「最近真的發生」的事——那天實際上是怎麼開始的?\n(工作的、家裡的都行;想到哪講到哪,不用整理。)');
+  setIO('<textarea id="ep" placeholder="那天…"></textarea>'
+    +'<div class="iorow"><button class="stoplink" id="stop1">今天先到這裡</button>'
+    +'<button class="btn" id="go1">說完了</button></div>');
+  $('go1').onclick=function(){
+    var t=$('ep').value.trim();
+    if(!t){$('ep').focus();return;}
+    S.episode=t; msg('me',t);
+    S.turns.push({role:'user',text:'(這個月的天氣感:'+S.weather+')\n'+t});
+    stepLadder();
+  };
+  $('stop1').onclick=function(){stepClose();};
+}
+
+function stepLadder(){
+  S.phase='ladder';
+  if(S.ladderN>=LADDER_MAX){stepCards();return;}
+  var thinking=msg('sys','…');
+  DLG.ask(S.turns.slice()).catch(function(){
+    return LADDER_FALLBACK[Math.min(S.ladderN,LADDER_FALLBACK.length-1)];
+  }).then(function(q){
+    thinking.remove();
+    S.crisis=q.indexOf('1925')>=0;
+    S.turns.push({role:'assistant',text:q});
+    S.qa.push({q:q,a:''});
+    msg(S.crisis?'bot crisis':'bot',q);
+    if(S.crisis){
+      setIO('<div class="center"><button class="btn" id="endc">今天到這裡就好</button></div>');
+      $('endc').onclick=function(){stepClose();};
+      return;
+    }
+    setIO('<textarea id="ans" placeholder="想到什麼說什麼…"></textarea>'
+      +'<div class="iorow"><button class="stoplink" id="stop2">到這裡就好,往下走</button>'
+      +'<button class="btn" id="go2">回好了</button></div>');
+    $('go2').onclick=function(){
+      var t=$('ans').value.trim();
+      if(!t){$('ans').focus();return;}
+      S.qa[S.qa.length-1].a=t;
+      S.turns.push({role:'user',text:t});
+      msg('me',t);
+      S.ladderN++;
+      stepLadder();
+    };
+    $('stop2').onclick=function(){stepCards();};
+  });
+}
+
+function stepCards(){
+  S.phase='cards';
+  if(S.cardIdx===0) msg('bot','謝謝你說這些。剩兩小步——先認卡:八張,一張一張來,手比腦誠實。');
+  if(S.cardIdx>=KEYS.length){stepAnchor();return;}
+  var k=KEYS[S.cardIdx], g=B.get(k);
+  setIO('<div class="bcard"><div class="sym">'+g.sym+'</div>'
+    +'<div class="nm">'+esc(pn(k))+'</div><div class="ele">'+esc(V.ELEGANT[k])+'</div>'
+    +'<div class="brief">'+esc(V.BRIEF[k])+'</div>'
+    +'<div class="prog">'+(S.cardIdx+1)+' / 8</div>'
+    +'<div class="vrow"><button class="vbtn like" id="vlike">像</button><button class="vbtn unlike" id="vunlike">不像</button></div>'
+    +'<button class="skip" id="vskip">說不準,跳過</button></div>');
+  function pick(v){S.cards[k]=v;S.cardIdx++;stepCards();}
+  $('vlike').onclick=function(){pick('like');};
+  $('vunlike').onclick=function(){pick('unlike');};
+  $('vskip').onclick=function(){pick('skip');};
+}
+
+function stepAnchor(){
+  S.phase='anchor';
+  if(S.anchorIdx===0) msg('bot','最後:照舊那幾題,量個刻度就好——固定的尺,之後每次都量得出變化。');
+  if(S.anchorIdx>=FQ.length){saveAnchor();stepClose();return;}
+  var q=FQ[S.anchorIdx];
+  setIO('<div class="aq">'+esc(q.t)+'</div><div class="aopts">'+V.FREQ_OPTS.map(function(o,i){
+    return '<button class="aopt" data-i="'+i+'">'+esc(o.t)+'</button>';}).join('')
+    +'</div><div class="prog" style="text-align:center;font-family:Jost,sans-serif;font-size:11px;color:var(--hair);margin-top:8px">'+(S.anchorIdx+1)+' / '+FQ.length+'</div>');
+  Array.prototype.forEach.call(document.querySelectorAll('.aopt'),function(b){
+    b.onclick=function(){
+      var o=V.FREQ_OPTS[+b.getAttribute('data-i')];
+      S.anchor[q.k]={v:o.v,t:o.t};
+      S.anchorIdx++;stepAnchor();
+    };
+  });
+}
+function saveAnchor(){
+  try{
+    var log=JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]');
+    if(!Array.isArray(log))log=[];
+    log.push({ts:new Date().toISOString(),bank:'v2-fq',scores:S.anchor});
+    localStorage.setItem(ANCHOR_KEY,JSON.stringify(log));
+  }catch(e){}
+}
+
+/* ── 收尾:回顧+收進素材(opt-in)── */
+function corpusText(){
+  var L=['天氣感:'+(S.weather||'(未選)')];
+  if(S.episode)L.push('情節:'+S.episode);
+  S.qa.forEach(function(x){if(x.a)L.push('答:'+x.a);});
+  var likes=KEYS.filter(function(k){return S.cards[k]==='like';}).map(pn);
+  var unlikes=KEYS.filter(function(k){return S.cards[k]==='unlike';}).map(pn);
+  if(likes.length||unlikes.length)L.push('卡片認出:像='+(likes.join('、')||'無')+';不像='+(unlikes.join('、')||'無'));
+  return L.join('\n');
+}
+function corpusContext(){
+  var L=S.qa.filter(function(x){return x.a;}).map(function(x){return '問:'+x.q;});
+  if(Object.keys(S.anchor).length)L.push('錨題已記錄('+Object.keys(S.anchor).length+' 題,存本機)');
+  return L.join('\n');
+}
+function stepClose(){
+  S.phase='close';
+  var said=corpusText();
+  msg('bot','今天就到這裡。沒有判讀、沒有分數——你剛剛說的話,就是今天照見的東西。');
+  var io='<div class="recap"><div class="rt">今天你說的話</div><div class="body">'+esc(said||'(這次沒有留下文字)')+'</div></div>'
+    +'<div id="optin"></div>'
+    +'<p class="center" style="margin-top:16px"><button class="btn ghost" id="again">再談一次</button></p>'
+    +'<div class="honest">'+esc(B.HONEST)+' 對話不上傳;素材要不要收,由你決定。</div>';
+  setIO(io);
+  if(window.OctensoCorpus&&said){
+    OctensoCorpus.mountOptIn($('optin'),{
+      source:'bagua-dialogue',
+      label:'對談·'+(S.weather||''),
+      viewerHref:'bagua-corpus.html',
+      getText:function(){return corpusText();},
+      getContext:function(){return corpusContext();}
+    });
+  }
+  $('again').onclick=function(){location.reload();};
+}
+
+document.body.setAttribute('data-ready','1');
+})();
+</script>
+</body></html>

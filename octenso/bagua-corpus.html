@@ -33,6 +33,12 @@
     text-decoration:underline;font-family:inherit;padding:2px}
   .del:hover{color:var(--cinnabar)}
   .body{white-space:pre-line;font-size:13.5px;line-height:1.95}
+  .card details{margin-top:8px;border-top:1px solid var(--surface2);padding-top:6px}
+  .card summary{cursor:pointer;font-size:12px;color:var(--muted);list-style:none}
+  .card summary::-webkit-details-marker{display:none}
+  .card summary::before{content:"＋ ";color:var(--hair)}
+  .card details[open] summary::before{content:"－ "}
+  .ctx{white-space:pre-line;font-size:12.5px;color:var(--muted);line-height:1.9;margin-top:6px}
   #empty{text-align:center;color:var(--muted);font-size:13.5px;margin-top:36px;line-height:2.1}
   .foot{text-align:center;margin-top:26px}
   .clear{font-size:12.5px;color:var(--muted);background:none;border:1px solid var(--hair);border-radius:999px;
@@ -73,7 +79,8 @@ function render(){
       +(e.label?'<span class="lab">'+esc(e.label)+'</span>':'')
       +'<span class="time">'+esc(fmtTime(e.ts))+'</span>'
       +'<button class="del" data-id="'+esc(e.id)+'">刪除</button></div>'
-      +'<div class="body">'+esc(e.text)+'</div>';
+      +'<div class="body">'+esc(e.text)+'</div>'
+      +(e.context?('<details><summary>卦象與解讀紀錄</summary><div class="ctx">'+esc(e.context)+'</div></details>'):'');
     d.querySelector('.del').onclick=function(){ OctensoCorpus.remove(e.id); render(); };
     box.appendChild(d);
   });

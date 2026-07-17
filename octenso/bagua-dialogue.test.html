@@ -1,0 +1,145 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>dialogue tests</title></head><body>
+<pre id="log"></pre>
+<div id="frames"></div>
+<script src="octenso-corpus.js"></script>
+<script>
+(function(){
+'use strict';
+var pass=0, fail=0, log=document.getElementById('log');
+function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n';} }
+function finish(){ document.title='RESULT pass='+pass+' fail='+fail;
+  log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent; }
+var ANCHOR_KEY='octenso_anchor_v1';
+localStorage.removeItem(ANCHOR_KEY);
+window.OctensoCorpus.clear();
+
+function openFrame(cb){
+  var f=document.createElement('iframe');
+  f.style.cssText='width:700px;height:800px';
+  f.src='bagua-dialogue.html';
+  document.getElementById('frames').appendChild(f);
+  var tries=0,timer=setInterval(function(){
+    tries++;var doc=null,ready=false;
+    try{doc=f.contentDocument;ready=doc&&doc.body&&doc.body.getAttribute('data-ready')==='1'&&f.contentWindow.DLG;}catch(e){}
+    if(ready||tries>100){clearInterval(timer);cb(f,doc,f.contentWindow);}
+  },100);
+}
+function until(fn,then,name){
+  var tries=0,timer=setInterval(function(){
+    var ok=false;try{ok=fn();}catch(e){}
+    if(ok||tries++>80){clearInterval(timer);
+      if(!ok)t(name+'(等待逾時)',false);
+      then(ok);}
+  },80);
+}
+
+/* ── 場景一:完整流程(mock 問者) ── */
+openFrame(function(f1,doc,win){
+  var asked=[];
+  win.DLG.ask=function(turns){asked.push(turns.slice());return Promise.resolve(asked.length===1?'這件事對你重要在哪?':'如果沒守住,最怕的是什麼?');};
+  var body=doc.body;
+  t('開場誠實文案', body.innerText.indexOf('只問不判')>=0 && body.innerText.indexOf('伺服器不留存')>=0
+    && body.innerText.indexOf('本機素材倉')>=0);
+  doc.getElementById('btn-start').click();
+  t('天氣選項 7 顆', doc.querySelectorAll('.chip').length===7);
+  doc.querySelectorAll('.chip')[1].click(); // 雷陣雨
+  until(function(){return !!doc.getElementById('ep');},function(){
+    doc.getElementById('ep').value='那天一早客戶臨時改需求,我把整個團隊叫回來重排。';
+    doc.getElementById('go1').click();
+    until(function(){return !!doc.getElementById('ans');},function(){
+      t('問者收到天氣+情節', asked.length===1 && asked[0][0].text.indexOf('雷陣雨')>=0 && asked[0][0].text.indexOf('改需求')>=0);
+      t('第一問上桌', body.innerText.indexOf('重要在哪')>=0);
+      doc.getElementById('ans').value='因為答應過的交期,我不想跳票。';
+      doc.getElementById('go2').click();
+      until(function(){return body.innerText.indexOf('最怕的是什麼')>=0 && !!doc.getElementById('ans');},function(){
+        doc.getElementById('stop2').click(); // 到這裡就好→卡片
+        until(function(){return doc.querySelectorAll('.bcard').length===1;},function(){
+          t('卡片一張一張出', body.innerText.indexOf('1 / 8')>=0 && body.innerText.indexOf('開創者(乾)')>=0);
+          // 第1張像、第2張不像、其餘跳過
+          doc.getElementById('vlike').click();
+          doc.getElementById('vunlike').click();
+          var n=0;(function skipRest(){
+            if(doc.getElementById('vskip')){doc.getElementById('vskip').click();if(++n<10)setTimeout(skipRest,10);}
+          })();
+          until(function(){return doc.querySelectorAll('.aopt').length>0;},function(){
+            t('錨題用 v2 固定題(6 選項)', doc.querySelectorAll('.aopt').length===6 && body.innerText.indexOf('1 / 8')>=0);
+            (function answerAll(){
+              var b=doc.querySelector('.aopt');
+              if(b){b.click();setTimeout(answerAll,10);}
+            })();
+            until(function(){return win.DLG.S.phase==='close';},function(){
+              t('收尾無判讀宣告', body.innerText.indexOf('沒有判讀、沒有分數')>=0);
+              t('回顧含使用者的話', body.innerText.indexOf('改需求')>=0 && body.innerText.indexOf('不想跳票')>=0);
+              t('卡片結果並列', body.innerText.indexOf('像=開創者(乾)')>=0 && body.innerText.indexOf('不像=明現者(離)')>=0 || body.innerText.indexOf('不像=')>=0);
+              var logA=JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]');
+              t('錨題存本機(8 題)', logA.length===1 && Object.keys(logA[0].scores).length===8 && logA[0].bank==='v2-fq');
+              var yes=doc.querySelector('.oc-yes');
+              t('素材 opt-in 出現', !!yes);
+              if(yes)yes.click();
+              var C=window.OctensoCorpus;
+              t('收進素材=本人的話', C.count()===1 && C.list()[0].text.indexOf('情節:')>=0 && C.list()[0].text.indexOf('卡片認出')>=0 && C.list()[0].source==='bagua-dialogue');
+              t('AI 問句只進脈絡不進正文', C.list()[0].text.indexOf('重要在哪')<0 && (C.list()[0].context||'').indexOf('問:')>=0);
+              f1.parentNode.removeChild(f1);
+              scene2();
+            },'收尾');
+          },'錨題');
+        },'卡片');
+      },'第二問');
+    },'追問輸入框');
+  },'情節輸入框');
+});
+
+/* ── 場景二:fallback(ask 失敗)+危機線 ── */
+function scene2(){
+  openFrame(function(f2,doc,win){
+    win.DLG.ask=function(){return Promise.reject(new Error('offline'));};
+    doc.getElementById('btn-start').click();
+    doc.querySelectorAll('.chip')[0].click();
+    until(function(){return !!doc.getElementById('ep');},function(){
+      doc.getElementById('ep').value='測 fallback';
+      doc.getElementById('go1').click();
+      until(function(){return doc.body.innerText.indexOf('重要在哪')>=0;},function(){
+        t('斷線走 fallback 腳本', true);
+        f2.parentNode.removeChild(f2);
+        scene3();
+      },'fallback 問句');
+    },'情節框(場景二)');
+  });
+}
+function scene3(){
+  openFrame(function(f3,doc,win){
+    win.DLG.ask=function(){return Promise.resolve('聽起來真的很沉。這不是你該獨自扛的——台灣安心專線 1925,全天有人。今天到這裡就好,好嗎?');};
+    doc.getElementById('btn-start').click();
+    doc.querySelectorAll('.chip')[5].click();
+    until(function(){return !!doc.getElementById('ep');},function(){
+      doc.getElementById('ep').value='最近真的撐不住了';
+      doc.getElementById('go1').click();
+      until(function(){return !!doc.getElementById('endc');},function(){
+        t('危機線:收起追問只留結束鍵', doc.body.innerText.indexOf('1925')>=0 && !doc.getElementById('ans'));
+        doc.getElementById('endc').click();
+        until(function(){return win.DLG.S.phase==='close';},function(){
+          t('危機後直接溫和收尾', doc.body.innerText.indexOf('今天就到這裡')>=0);
+          f3.parentNode.removeChild(f3);
+          scene4();
+        },'危機收尾');
+      },'危機結束鍵');
+    },'情節框(場景三)');
+  });
+}
+/* ── 場景四:worker 原始碼守則 ── */
+function scene4(){
+  fetch('../ven-i/worker.js').then(function(r){return r.text();}).then(function(src){
+    t('worker /dialogue 路由', src.indexOf("pathname === '/dialogue'")>=0);
+    t('worker 問者鐵則(只問不判/不預測)', src.indexOf('只問不判')>=0 && src.indexOf('不預測、不建議')>=0);
+    t('worker 獨立限流 dlg:', src.indexOf('`dlg:${ip}:${today}`')>=0);
+    t('worker 危機守則含 1925', src.indexOf('1925')>=0);
+    t('worker max_tokens 留思考頭寸', /DLG_MAX_TOKENS = 4000/.test(src));
+  }).catch(function(){t('worker 原始碼可讀',false);}).then(function(){
+    localStorage.removeItem(ANCHOR_KEY);
+    window.OctensoCorpus.clear();
+    finish();
+  });
+}
+})();
+</script>
+</body></html>
