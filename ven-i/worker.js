@@ -189,6 +189,79 @@ async function handleLens(request, env, corsHeaders) {
   return json({ reading: text }, 200, corsHeaders);
 }
 
+/* ============================================================
+   /dialogue:八態對談 M2——「問者」引擎。
+   鐵則:AI 問·引擎判·本人裁——這裡只產生下一個問題,永不判讀。
+   對話不落檔(伺服器不留存);素材收錄由前端 opt-in 存使用者本機。
+   ============================================================ */
+const DLG_MODEL = 'claude-sonnet-5';
+const DLG_MAX_TOKENS = 4000; // adaptive thinking 含思考;正文極短(一個問題),留足思考頭寸(2026-07-15 lens 教訓)
+const DLG_DAILY_LIMIT_PER_IP = 60;
+
+const DLG_SYSTEM = `你是練息場「八態對談」的問者。你唯一的工作:根據使用者剛說的話,問出下一個好問題。鐵則(違反任何一條=輸出無效):
+- 只問不判:禁止判讀、貼標籤、下結論;禁「你是」「你屬於」「聽起來你是個…」。
+- 不預測、不建議:所有語句停在已然;禁「你應該」「建議你」「未來會」。
+- 一次恰好一個問題,全文不超過 60 字,以問號結尾;問題前可有至多一句 15 字內的輕接話(如「嗯,聽起來不輕鬆。」),不可長段複述。
+- 梯度下探(laddering),依對話輪數走:第 1 問問「這件事對你重要在哪」;第 2 問問「如果沒守住,最怕的是什麼」;第 3 問收束:「聽起來你一直在守著某個東西——你自己會怎麼叫它?」之後不再往下。
+- 語氣溫和、口語;繁體中文、半形標點、不用 emoji;不用「為什麼」連環轟炸(改用「怎麼說」「重要在哪」)。
+- 若使用者表達強烈痛苦或提及自傷:放下追問,先一句溫和陪伴,再說「這不是你該獨自扛的——台灣安心專線 1925,全天有人」,以「今天到這裡就好,好嗎?」收尾。`;
+
+async function handleDialogue(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `dlg:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= DLG_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日對談次數已達上限,明天再聊。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { turns } = payload;
+  if (!Array.isArray(turns) || !turns.length || turns.length > 12) {
+    return json({ error: '對話格式不對。' }, 400, corsHeaders);
+  }
+  const msgs = [];
+  for (const t of turns) {
+    if (!t || (t.role !== 'user' && t.role !== 'assistant') || typeof t.text !== 'string' || !t.text.trim() || t.text.length > 4000) {
+      return json({ error: '對話內容格式不對(每則 4000 字內)。' }, 400, corsHeaders);
+    }
+    msgs.push({ role: t.role, content: t.text });
+  }
+  if (msgs[msgs.length - 1].role !== 'user') {
+    return json({ error: '最後一則須為使用者發言。' }, 400, corsHeaders);
+  }
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: DLG_MODEL,
+      max_tokens: DLG_MAX_TOKENS,
+      system: [{ type: 'text', text: DLG_SYSTEM, cache_control: { type: 'ephemeral' } }],
+      messages: msgs,
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (dialogue):', apiResponse.status, errText);
+    return json({ error: '對談引擎暫時無法回應。' }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+  if (!text) {
+    console.error('dialogue empty text, stop_reason:', data.stop_reason);
+    return json({ error: '問者沒有產出問題(stop_reason: ' + (data.stop_reason || 'unknown') + ')。' }, 502, corsHeaders);
+  }
+  return json({ question: text }, 200, corsHeaders);
+}
+
 /* /lens-fetch:代抓「公開網頁」轉純文字,回填八態鏡素材欄(人在迴圈:抓回後由使用者確認再判讀)。
    防護:僅 http(s)、拒帶帳密/IP 直連/localhost、僅 text/html|plain、回應截 800KB、輸出截 30000 字、獨立限流。 */
 const LENS_FETCH_DAILY_LIMIT_PER_IP = 30;
@@ -425,6 +498,9 @@ export default {
     }
     if (new URL(request.url).pathname === '/lens') {
       return handleLens(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/dialogue') {
+      return handleDialogue(request, env, corsHeaders);
     }
 
     // --- 每 IP 每日限流(需綁定 KV namespace: RATE_LIMIT)---
