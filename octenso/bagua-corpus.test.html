@@ -1,0 +1,94 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>corpus tests</title></head><body>
+<pre id="log"></pre>
+<div id="mount"></div>
+<div id="frames"></div>
+<script src="octenso-corpus.js"></script>
+<script>
+(function(){
+'use strict';
+var pass=0, fail=0, log=document.getElementById('log');
+function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n';} }
+function finish(){ document.title='RESULT pass='+pass+' fail='+fail;
+  log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent; }
+var C=window.OctensoCorpus;
+
+// ── 模組 API ──
+C.clear();
+t('clear→count 0', C.count()===0);
+t('add empty refused', C.add({text:'   '}).ok===false && C.add({text:''}).reason==='empty');
+var r1=C.add({source:'ven-i-WenYi',label:'工作·乾',text:'自由書寫:最近一直想開新案子\n感想:原來我在逃收尾'});
+t('add ok', r1.ok===true && r1.count===1);
+t('list entry fields', (function(){var e=C.list()[0];
+  return e.id===r1.id && e.source==='ven-i-WenYi' && e.label==='工作·乾' && e.text.indexOf('逃收尾')>0 && /^\d{4}-/.test(e.ts);})());
+var longText=new Array(9002).join('字'); // 9001 chars
+var r2=C.add({source:'ven-i-BuYi',label:'乾→坤',text:longText});
+t('overlong truncated with marker', (function(){var e=C.list()[1];
+  return r2.ok && e.text.length<=C.MAX_TEXT+10 && e.text.indexOf('…(超長截斷)')>0;})());
+t('totalChars>0', C.totalChars()>100);
+C.remove(r2.id);
+t('remove works', C.count()===1 && C.list()[0].id===r1.id);
+// 滿倉:直接灌到上限
+(function(){
+  var list=C.list();
+  for(var i=list.length;i<C.MAX_ENTRIES;i++) list.push({id:'x'+i,ts:'2026-07-18T00:00:00Z',source:'t',label:'',text:'x'});
+  localStorage.setItem(C.KEY,JSON.stringify(list));
+})();
+t('full refused', C.add({text:'再一段'}).reason==='full');
+C.clear();
+
+// ── mountOptIn ──
+var mount=document.getElementById('mount');
+var txt='';
+var box1=C.mountOptIn(mount,{source:'ven-i-WenYi',label:'測',getText:function(){return txt;},viewerHref:'bagua-corpus.html'});
+box1.querySelector('.oc-yes').click();
+t('optin empty→提示不收', box1.querySelector('.oc-done').textContent.indexOf('沒有寫下文字')>=0 && C.count()===0);
+txt='問題:要不要接這個案子\n感想:我其實已經想拒絕了';
+box1.querySelector('.oc-yes').click();
+t('optin add→已收進+連結', (function(){var d=box1.querySelector('.oc-done');
+  return d.textContent.indexOf('已收進素材倉')>=0 && d.innerHTML.indexOf('bagua-corpus.html')>=0 && C.count()===1;})());
+var box2=C.mountOptIn(mount,{source:'ven-i-BuYi',label:'x',getText:function(){return 'y';}});
+box2.querySelector('.oc-no').click();
+t('optin 先不用→不收', box2.querySelector('.oc-done').textContent.indexOf('這次不收')>=0 && C.count()===1);
+t('optin 文案含不上傳承諾', box1.textContent.indexOf('不上傳')>=0 && box1.textContent.indexOf('隨時可看、可刪')>=0);
+
+// ── ven-i 整合(原始碼檢查)──
+var done=0, DONE_N=2;
+function part(){ if(++done===DONE_N) finish(); }
+fetch('../ven-i/index.html').then(function(r){return r.text();}).then(function(src){
+  t('ven-i 載入 corpus 模組', src.indexOf('octenso/octenso-corpus.js')>=0);
+  t('ven-i 掛 mountOptIn', src.indexOf('OctensoCorpus.mountOptIn')>=0);
+  t('ven-i 兩模式皆傳 corpus 參數', src.split('getBaseText').length>=4); // 定義處+WenYi+BuYi
+  t('ven-i 收錄含感想欄', src.indexOf("'感想:'+note")>=0);
+}).catch(function(){ t('ven-i 原始碼可讀', false); }).then(part);
+
+// ── 檢視頁 iframe(閘門在 iframe 內自動跳過)──
+C.clear();
+C.add({source:'ven-i-WenYi',label:'工作·乾',text:'A段'});
+C.add({source:'ven-i-BuYi',label:'乾→坤',text:'B段'});
+var f=document.createElement('iframe');
+f.style.cssText='width:800px;height:600px';
+f.src='bagua-corpus.html';
+document.getElementById('frames').appendChild(f);
+var tries=0;
+var timer=setInterval(function(){
+  tries++;
+  var doc=null, ready=false;
+  try{ doc=f.contentDocument; ready=doc&&doc.body&&doc.body.getAttribute('data-ready')==='1'; }catch(e){}
+  if(ready||tries>100){
+    clearInterval(timer);
+    var txtAll=ready?doc.body.innerText:'';
+    t('檢視頁渲染 2 段', txtAll.indexOf('共 2 段')>=0);
+    t('檢視頁來源標籤', txtAll.indexOf('問易')>=0 && txtAll.indexOf('卜易')>=0 && txtAll.indexOf('乾→坤')>=0);
+    t('檢視頁誠實文案', txtAll.indexOf('不上傳')>=0 && txtAll.indexOf('localStorage')>=0);
+    try{
+      doc.querySelector('.del').click();
+      t('檢視頁刪除一段', window.OctensoCorpus.count()===1 && doc.body.innerText.indexOf('共 1 段')>=0);
+    }catch(e){ t('檢視頁刪除一段', false); }
+    C.clear();
+    f.parentNode.removeChild(f);
+    part();
+  }
+},150);
+})();
+</script>
+</body></html>
