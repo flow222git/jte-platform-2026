@@ -42,13 +42,18 @@ openFrame(function(f1,doc,win){
   t('開場誠實文案', body.innerText.indexOf('不評分、不貼標籤')>=0 && body.innerText.indexOf('伺服器不留存')>=0
     && body.innerText.indexOf('本機素材倉')>=0);
   doc.getElementById('btn-start').click();
+  t('check-in:場域 5 選', doc.querySelectorAll('.chip').length===5 && body.innerText.indexOf('想聊哪一塊')>=0);
+  doc.querySelectorAll('.chip')[0].click(); // 工作
+  t('check-in:陪法 3 選', doc.querySelectorAll('.chip').length===3 && body.innerText.indexOf('陪法')>=0);
+  doc.querySelectorAll('.chip')[1].click(); // 幫我想清楚
   t('天氣選項 7 顆', doc.querySelectorAll('.chip').length===7);
   doc.querySelectorAll('.chip')[1].click(); // 雷陣雨
   until(function(){return !!doc.getElementById('ep');},function(){
     doc.getElementById('ep').value='那天一早客戶臨時改需求,我把整個團隊叫回來重排。';
     doc.getElementById('go1').click();
     until(function(){return !!doc.getElementById('ans');},function(){
-      t('問者收到天氣+情節', asked.length===1 && asked[0][0].text.indexOf('雷陣雨')>=0 && asked[0][0].text.indexOf('改需求')>=0);
+      t('對談者收到宣告+情節', asked.length===1 && asked[0][0].text.indexOf('場域:工作')>=0
+        && asked[0][0].text.indexOf('陪法:幫我想清楚')>=0 && asked[0][0].text.indexOf('雷陣雨')>=0 && asked[0][0].text.indexOf('改需求')>=0);
       t('第一問上桌', body.innerText.indexOf('重要在哪')>=0);
       doc.getElementById('ans').value='因為答應過的交期,我不想跳票。';
       doc.getElementById('go2').click();
@@ -98,7 +103,9 @@ function scene2(){
   openFrame(function(f2,doc,win){
     win.DLG.ask=function(){return Promise.reject(new Error('offline'));};
     doc.getElementById('btn-start').click();
-    doc.querySelectorAll('.chip')[0].click();
+    doc.querySelectorAll('.chip')[0].click(); // 場域
+    doc.querySelectorAll('.chip')[0].click(); // 陪法
+    doc.querySelectorAll('.chip')[0].click(); // 天氣
     until(function(){return !!doc.getElementById('ep');},function(){
       doc.getElementById('ep').value='測 fallback';
       doc.getElementById('go1').click();
@@ -114,7 +121,9 @@ function scene3(){
   openFrame(function(f3,doc,win){
     win.DLG.ask=function(){return Promise.resolve('聽起來真的很沉。這不是你該獨自扛的——台灣安心專線 1925,全天有人。今天到這裡就好,好嗎?');};
     doc.getElementById('btn-start').click();
-    doc.querySelectorAll('.chip')[5].click();
+    doc.querySelectorAll('.chip')[3].click(); // 場域:自己
+    doc.querySelectorAll('.chip')[0].click(); // 陪法
+    doc.querySelectorAll('.chip')[5].click(); // 天氣:寒流
     until(function(){return !!doc.getElementById('ep');},function(){
       doc.getElementById('ep').value='最近真的撐不住了';
       doc.getElementById('go1').click();
@@ -136,7 +145,10 @@ function scene4(){
     t('worker /dialogue 路由', src.indexOf("pathname === '/dialogue'")>=0);
     t('worker 對談鐵則(不判讀/不預測)', src.indexOf('不判讀不貼標籤')>=0 && src.indexOf('不預測、不建議')>=0);
     t('worker 三聲音調度(陪伴者/心理師/禪師)', src.indexOf('陪伴者(預設)')>=0 && src.indexOf('心理師:')>=0 && src.indexOf('禪師:')>=0);
-    t('worker 回聲總結 prompt(三段+不腦補)', src.indexOf('【你說的】')>=0 && src.indexOf('【聽見的張力】')>=0 && src.indexOf('不腦補')>=0);
+    t('worker 陪法宣告調度', src.indexOf('「陪法」是調度的第一訊號')>=0 && src.indexOf('輕輕聊就好')>=0 && src.indexOf('表現與宣告衝突時,跟著表現走')>=0);
+    t('worker 大師級同理標準', src.indexOf('話語底下的在意')>=0);
+    t('worker 回聲總結 prompt(四段+不腦補)', src.indexOf('【你說的】')>=0 && src.indexOf('【聽見的張力】')>=0
+      && src.indexOf('【換個角度看】')>=0 && src.indexOf('素材太薄就整段省略')>=0 && src.indexOf('不腦補')>=0);
     t('worker close 模式接線', src.indexOf("mode === 'close'")>=0 && src.indexOf('DLG_CLOSE_SYSTEM')>=0);
     t('worker 獨立限流 dlg:', src.indexOf('`dlg:${ip}:${today}`')>=0);
     t('worker 危機守則含 1925', src.indexOf('1925')>=0);
