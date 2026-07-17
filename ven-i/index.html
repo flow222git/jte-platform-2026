@@ -1053,7 +1053,11 @@ function renderReport(){
    return {topic:state.topic||'',mainHex:mainHex,tone:tone,toneLabel:toneInfo[0],summary:(M.theme||'')+'｜'+(M.state[tone]||'')};
  },{
    label:(state.topic||'問易')+'·'+mainHex,
-   getBaseText:function(){return state.freeText?('自由書寫:'+state.freeText):'';}
+   getBaseText:function(){return state.freeText?('自由書寫:'+state.freeText):'';},
+   getContext:function(){
+     return '主題:'+(state.topic||'')+'\n主卦:'+mainHex+'\n狀態:'+(toneInfo[0]||'')
+       +'\n摘要:'+((M.theme||'')+'|'+(M.state[tone]||''));
+   }
  });
 
  // 免責聲明：用 appendChild，不可用 innerHTML+=（會清掉前面所有按鈕的點擊事件）
@@ -1683,7 +1687,17 @@ function buyiResult(){
      changingLabel:changingPos.length?(changingPos.map(function(p){return '第'+p+'爻';}).join('、')+'變'):'六爻不變'};
  },{
    label:ben+(bian?('→'+bian):''),
-   getBaseText:function(){var q=state.question.trim();return q?('問題:'+q):'';}
+   getBaseText:function(){var q=state.question.trim();return q?('問題:'+q):'';},
+   getContext:function(){
+     var lines=['本卦:'+natureName(state.lines)+'卦·'+ben+'——'+(GUA_MEAN[ben]||'')];
+     if(bian) lines.push('變卦:'+bian+'——'+(GUA_MEAN[bian]||''));
+     lines.push('動爻:'+(changingPos.length?changingPos.map(function(p){return '第'+p+'爻';}).join('、'):'無(六爻不變)'));
+     var sumEl=document.querySelector('.summary-list');
+     if(sumEl) lines.push('重點:\n'+sumEl.innerText.trim());
+     var ai=document.getElementById('ai-interpretation');
+     if(ai&&!ai.hidden&&ai.innerText.trim()) lines.push('AI 解讀:\n'+ai.innerText.trim());
+     return lines.join('\n');
+   }
  });
 
  const dis=document.createElement("p");dis.className="disclaimer";
