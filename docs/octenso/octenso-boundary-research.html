@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態的邊界 · 深度研究 v0.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:56px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:30px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article a{color:var(--pine);word-break:break-all}
+article ol,article ul{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:6px}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
+.key{border:1px solid var(--pine);border-radius:3px;padding:14px 18px;margin:16px 0;background:var(--surface)}
+.key .kl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:4px}
+.warn{border-left:2px solid var(--cinnabar);padding:2px 0 2px 16px;margin:16px 0;font-size:13.5px}
+.route{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px;margin:14px 0}
+.route .rh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.route .rn{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:15.5px;letter-spacing:.06em}
+.route .rev{font-family:var(--latin);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.route .rev.hi{color:var(--pine)}
+.route p{font-size:13.5px;margin:0 0 8px}
+.route p:last-child{margin:0}
+.honest{margin-top:70px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.srcs{font-size:12px;color:var(--muted);line-height:2.1}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Deep Research · Boundaries</div>
+  <h1>八態的邊界:潛意識如何誠實地被看見</h1>
+  <div class="meta">v0.1 · 2026-07-18 · 四路文獻與產品調查之綜合</div>
+</header>
+<article>
+
+<p>本研究回應一個北極星級的問題:<strong>八態能格想把使用者的潛意識拉到意識層面
+——這件事的邊界在哪裡?怎麼達到,甚至突破?</strong>
+方法是四路並查:西方深度心理學(榮格、投射測驗、內隱測量、身體經驗、盲點回饋)、
+東方觀照傳統(易經義理、內觀、省察功過格、自然意象語言)、
+測量科學的硬邊界(自陳天花板、行為痕跡、他評)、
+以及市面上所有主打「照見你看不見的自己」的產品。</p>
+
+<h2>一 · 先把詞說對:「意識化」不是「測到潛意識」</h2>
+
+<p>整個深度心理學傳統——從榮格到當代——做的都不是「測量潛意識」,
+而是<strong>創造條件,讓本人說出以前說不出的自己</strong>。
+這個區分是全部研究裡最重要的一條:</p>
+
+<div class="key"><div class="kl">Working Definition</div>
+<strong>意識化=使用者能說出以前說不出的自己,而且說出來的東西可以核對。</strong><br>
+發生的地點永遠在使用者身上,不在系統的報告裡。系統能做的,是給出「自我報告以外的訊號」
+與「幫助表述的結構」——說出來的那一步,只能由本人完成。</div>
+
+<p>反面證據也很硬:過去三十年,凡是由<strong>系統代替使用者下結論</strong>的潛意識測量,
+效度幾乎全數陣亡——IAT 的個人分數(重測信度低、預測力弱,連創始人 Greenwald 都已放棄個人診斷用途)、
+繪畫投射測驗的專家解讀、夢境符號字典。存活下來的機制只有兩類:
+<strong>提供自陳以外的訊號源</strong>(語言痕跡、他人之眼、當下記錄、曖昧刺激),
+以及<strong>把裁決權留給本人</strong>(符號與經驗「對上」的那一刻,由使用者宣告)。</p>
+
+<h2>二 · 東西方的收斂:意識化四要素</h2>
+
+<p>四路調查最漂亮的發現,是東方修身傳統與西方實證文獻各自獨立收斂到同一個結構。
+易經義理派(程頤、王弼)把卦讀成「處境類型學」而非預言;榮格為衛禮賢譯本作序時說破了機制
+——卦象是<strong>有結構的模糊意象,迫使提問者把說不出口的處境感投射上去、再用卦辭語言說出來</strong>。
+內觀給的是當下捕捉自動反應的後設覺察;功過格是早了量化自我八百年的行為記帳;
+而「乾天坤地坎水離火」這套自然意象語言,內建了心理學上的 self-distancing
+——說「我在坎」比說「我很焦慮」容易出口,而且天生帶著「狀態會變」的語法。</p>
+
+<p>合併兩邊,誠實的意識化需要四個要素:</p>
+
+<div class="tblwrap"><table>
+<tr><th>要素</th><th>東方版本</th><th>西方版本</th><th>八態現況</th></tr>
+<tr><td>結構化的形式</td><td>八卦/六十四卦(有限集合的意象)</td><td>投射屏、曖昧刺激、Johari 四象限</td><td>已有:八態詞彙</td></tr>
+<tr><td>自陳以外的訊號源</td><td>師友之眼、行為記帳</td><td>語言痕跡、他評、經驗取樣</td><td>部分:八態鏡讀素材</td></tr>
+<tr><td>本人裁決「對上」</td><td>觀其象而玩其辭(玩=非索答的沉思)</td><td>felt shift、否決權、命中自查</td><td>部分:三值回饋</td></tr>
+<tr><td>固定節律的對照</td><td>三省吾身、日課</td><td>ESM、週鏡(weekly mirror)</td><td>尚無</td></tr>
+</table></div>
+
+<h2>三 · 八態的三重邊界</h2>
+
+<h3>邊界一(硬):自陳的天花板</h3>
+<p>題本——不管怎麼改良——測到的都是「自我概念」:本人對自己的看法。
+它與實際行為的相關通常只有 r≈.2–.4;它照不到自動化習慣、照不到盲點,
+而人對自己行為原因的解釋常是事後編的理論(Nisbett &amp; Wilson 的經典結論)。
+<strong>這面牆不能靠改題目突破,只能靠換訊號源繞過。</strong>
+先前討論過的信念題/習慣題分層(2026-07-17 決議暫緩)依然撞在這面牆上:
+問信念,拿到的還是本人「以為的信念」。</p>
+
+<h3>邊界二(硬):系統不能代替使用者下結論</h3>
+<p>這條邊界不是我們的謙虛,是文獻的判決。突破它的方法很反直覺:
+<strong>不是把判讀做得更準,而是把「宣告準不準的權力」交出去</strong>——
+判讀附引文讓人可查、附反例條件讓人可推翻、留否決按鈕讓人說「不像」、
+誠實顯示命中率。占卜鄰接產品裡活得最健康的(Labyrinthos、Visionary I Ching)
+都做了同一個動作:把成功標準從「準不準」改成「有沒有帶來一個跳框的視角」。
+這與「鏡子非算命」完全同構。</p>
+
+<h3>邊界三(軟):八個態的解析度</h3>
+<p>八態是投射屏,不是光譜儀——它的解析度是設計出來的,也是可以擴展的。
+有限集合(8)是優點:夠少才能學會、才能成為共用語言(360 回饋最大的痛點就是雙方語言不通,
+八態剛好解掉它)。要更細的解析度,不必加第九態,而是<strong>組合與切片</strong>:
+態×態的組合(雙峰已在做;64 卦本身就是 8×8 的組合語法,老祖宗留好了擴展路徑)、
+態×場域(工作中的你/關係裡的你——hybrid 的轉介動線已經踩在這條路上)、
+態×時間(軌跡與變化,而非單點)。這正是你說的「八卦轉譯八態的觀點無限組合的可能性」
+——無限來自組合,不來自增加基本元素。</p>
+
+<h2>四 · 突破的五條路(按證據強度排序)</h2>
+
+<p>每條路都標了機制、證據強度、與現有工具的距離。共同紅線:
+輸出永遠是「行為痕跡的規律」,不是「潛意識的真相」;不含未來式斷言。</p>
+
+<div class="route">
+  <div class="rh"><span class="rn">路線一 · 語言痕跡加深(八態鏡個人版)</span><span class="rev hi">證據最強 · 距離最近</span></div>
+  <p>機制:AI 讀本人自備的素材(日記、訊息、會議發言),以八態逐列呈現「你的語言裡浮現的規律」,每條附原文引文。
+  文獻位置:LLM 讀足量個人文本推人格,與自陳相關 r≈.30–.45,約等於親近熟人的判斷力——這是目前唯一有實證支撐的「非自陳」AI 路線。</p>
+  <p>關鍵:<strong>我們最接近潛意識的工具已經在手上</strong>。八態鏡現在讀「運作」(會議/BP),
+  把同一顆引擎轉向讀「個人的語言痕跡」,G5 引文守則原封不動,就是正宗的意識化工具。
+  素材不足時必須降級誠實度(這是夢境 app 全滅的原因)。</p>
+</div>
+
+<div class="route">
+  <div class="rh"><span class="rn">路線二 · 他見對照(借別人的眼睛照鏡)</span><span class="rev hi">盲點的正宗來源</span></div>
+  <p>機制:邀 2–3 位熟人用同一套八態詞彙描述你,「自見/他見」兩欄並列,分歧處標「盲點候選」,不判誰對。
+  文獻位置:SOKA 模型——高可觀察的特質(魅力、創造力、討人厭程度)別人看得比自己準;他評預測工作表現優於自評。
+  Johari 窗的框架先行(盲點=人人都有的正常象限,且包含「別人看得到你沒發現的強項」)可大幅降低防禦。</p>
+  <p>設計約束:至少兩位他評才顯示(匿名聚合)、正負向並陳、與 C1 並列不捏因果同構。</p>
+</div>
+
+<div class="route">
+  <div class="rh"><span class="rn">路線三 · 當下快照(此刻你在哪一態)</span><span class="rev">證據扎實 · 純前端可做</span></div>
+  <p>機制:十秒的輕量打卡,累積一至兩週後照出「你以為的平常 vs 記錄下來的當下」的落差。
+  文獻位置:經驗取樣(ESM)是「回顧性自陳系統性失真」最成熟的證據來源(高估負面、峰終效應)。
+  內觀傳統的數位對應物:價值在覺察動作的重複發生,不在單次準確。localStorage 就能做,完全合站規。</p>
+</div>
+
+<div class="route">
+  <div class="rh"><span class="rn">路線四 · 落差鏡(層與層之間的縫隙)</span><span class="rev">組合現有件 · 落差即資訊</span></div>
+  <p>機制:不宣稱任何單層是「真我」,而是把 <strong>題本自見/素材痕跡/他見/當下記錄</strong> 並列,
+  縫隙本身就是最有感的鏡子——「你相信自己是開創者,但三份會議紀錄裡你的語言都在承接」。
+  這是先前信念層討論的正確歸宿:信念層照的是自我理想,單獨不可信,放進落差對照就變成資訊。
+  一週鏡(weekly mirror)是它的節律形式:AI 日記產品實測最有感的機制,間隔式回照+原文佐證。</p>
+</div>
+
+<div class="route">
+  <div class="rh"><span class="rn">路線五 · 與態對話(投射與表述的完成)</span><span class="rev">機制古老 · 實證最軟</span></div>
+  <p>機制:卦象作為結構化曖昧刺激,使用者自由書寫完成表述——「這面鏡子照出了什麼你本來說不出的?」
+  伴讀可升級成榮格式的「與態對話」(此刻哪個態在說話?它要什麼?)。
+  文獻位置:積極想像無 RCT 證據,但「使用者說出的那句話才是投射的價值所在」這條機制,
+  與易經「觀其象而玩其辭」兩千年的用法同構。定位為體驗模組,不做判定宣稱。</p>
+</div>
+
+<h2>五 · 反 Barnum 五守則(建議入 schema)</h2>
+
+<p>「啊哈」與「算命感」的分水嶺,文獻給得非常具體。建議直接寫進守則,
+所有面向使用者的判讀輸出一體適用:</p>
+
+<ol>
+<li><strong>可證偽</strong>:每條判讀附「如果你其實是……,這條就不成立」的反例條件。</li>
+<li><strong>引文證據</strong>:結論點得回使用者的原句原資料(八態鏡 G5 已內建,推廣到全平台)。</li>
+<li><strong>敢排除</strong>:明說「你不是哪型」——對每個人都成立的句子沒有資訊量。</li>
+<li><strong>否決權</strong>:使用者可標「不像我」,系統誠實顯示命中率,不辯解。</li>
+<li><strong>雙面性</strong>:包含不討喜的觀察——只講好話是 Barnum 的紅旗。</li>
+</ol>
+
+<div class="warn"><strong>措辭的硬邊界</strong>:可以說「你的語言裡有一個你沒說出口的規律」、
+「三份素材都出現同一個形狀」;不可以說「你的潛意識是X」「你其實是X型的人」。
+前者可核對,後者不可反駁——不可反駁的陳述,就是算命。</div>
+
+<h2>六 · 結語:疆界怎麼破</h2>
+
+<p>研究的總答案一句話:<strong>突破疆界不是把一面鏡子磨得更神,
+而是架起幾面角度不同的鏡子(語言痕跡、他人之眼、當下記錄),
+讓照鏡的人自己說出「原來如此」</strong>。
+潛意識到意識的那一步,兩千年來只有一條誠實的路:本人親口說出來。
+我們能做的,是讓那一刻更容易發生——而八態能格現有的守則
+(鏡子非算命、並列不捏因果、引文可查、AI 伴讀不主筆),
+不是這條路上的束縛,恰恰是文獻證明唯一走得通的那條窄門。</p>
+
+<h2>附 · 主要來源</h2>
+<p class="srcs">
+西方:Mihura et al. 2013(Rorschach 統合分析)· Lilienfeld et al.(投射測驗科學地位)·
+Schimmack 2021 與 Replicability-Index 2025(IAT 效度批判)· IFS scoping review 2025 ·
+Ecker et al.(記憶再固化與 coherence therapy)· Vazire 2010(SOKA)· Connelly &amp; Ones 2010(他評統合分析)·
+Kluger &amp; DeNisi(回饋介入理論)。<br>
+東方:榮格〈易經英譯本前言〉1949 · 王弼《周易略例》· 程頤《伊川易傳》· Brokaw《功過格》(Princeton UP)·
+正念與內感受 RCT(PMC 9451078)· Kross &amp; Ayduk(self-distancing)。<br>
+測量:Nisbett &amp; Wilson 1977 · Park et al. 2015 · Peters &amp; Matz 2024(PNAS Nexus)·
+Marengo 2025(LLM×社群文本)· JMIR 2025(數位表型系統性回顧)。<br>
+產品:Rosebud/Mindsera/Stoic(AI 週鏡)· Labyrinthos/Visionary I Ching(非預測框架)·
+PrinciplesYou(分數透明)· Getfeedback 360(Johari 落差閾值)· TraitLab(Barnum 效應)。
+</p>
+
+<div class="honest">
+本頁為 v0.1 研究綜合:四路調查由 AI 檢索與整理,關鍵效度數字皆有出處但未逐篇人工複核;
+路線排序是證據強度判斷,不是產品決策——動哪條路、何時動,由 Simon 定。
+研究假設待考的印章,對這份研究本身同樣適用。
+</div>
+
+</article>
+</div>
+</body></html>
