@@ -1051,6 +1051,9 @@ function renderReport(){
  // 保存區：筆記＋存這次（每次由使用者決定）
  appendSaveBlock(d,'WenYi',function(){
    return {topic:state.topic||'',mainHex:mainHex,tone:tone,toneLabel:toneInfo[0],summary:(M.theme||'')+'｜'+(M.state[tone]||'')};
+ },{
+   label:(state.topic||'問易')+'·'+mainHex,
+   getBaseText:function(){return state.freeText?('自由書寫:'+state.freeText):'';}
  });
 
  // 免責聲明：用 appendChild，不可用 innerHTML+=（會清掉前面所有按鈕的點擊事件）
@@ -1678,6 +1681,9 @@ function buyiResult(){
    return {question:state.question.trim(),ben:ben,bian:bian||'',
      changing:changingPos.slice(),
      changingLabel:changingPos.length?(changingPos.map(function(p){return '第'+p+'爻';}).join('、')+'變'):'六爻不變'};
+ },{
+   label:ben+(bian?('→'+bian):''),
+   getBaseText:function(){var q=state.question.trim();return q?('問題:'+q):'';}
  });
 
  const dis=document.createElement("p");dis.className="disclaimer";
@@ -1844,8 +1850,10 @@ function jteCloseLogin(){var m=document.getElementById('jte-login-modal');if(m)m
 window.jteLogin=function(){jteCheckLoginThenSave(function(){location.reload();});};
 window.jteLogout=function(){localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');if(window.google&&google.accounts)try{google.accounts.id.disableAutoSelect();}catch(e){}location.reload();};
 
-/* —— 結果頁「保存區」：問易/卜易共用。buildRec(note) 回傳該模式的記錄欄位 —— */
-function appendSaveBlock(container,source,buildRec){
+/* —— 結果頁「保存區」：問易/卜易共用。buildRec(note) 回傳該模式的記錄欄位。
+     corpus(選填)={label,getBaseText}：對境迴圈 M1——把使用者自己寫的字
+     opt-in 收進八態素材倉（octenso-corpus.js，本機 localStorage，不上傳）。 —— */
+function appendSaveBlock(container,source,buildRec,corpus){
  const wrap=document.createElement("div");wrap.className="save-block";
  wrap.innerHTML=`<div class="save-title">想留下這次嗎？寫點心得，存進你的記錄。</div>
    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6B7A8D;margin-bottom:8px"><span>🔒</span><span>只有你看得到，連我們也解不開</span></div>
@@ -1872,6 +1880,18 @@ function appendSaveBlock(container,source,buildRec){
  };
  wrap.querySelector(".save-view").onclick=function(){state.mode="history";renderHistory();};
  container.appendChild(wrap);
+ if(window.OctensoCorpus&&corpus){
+   OctensoCorpus.mountOptIn(container,{
+     source:'ven-i-'+source,
+     label:corpus.label||'',
+     viewerHref:'https://flow222git.github.io/jte-platform-2026/octenso/bagua-corpus.html',
+     getText:function(){
+       var base=(corpus.getBaseText&&corpus.getBaseText())||'';
+       var note=ta.value.trim();
+       return base+(note?((base?'\n':'')+'感想:'+note):'');
+     }
+   });
+ }
 }
 
 /* —— 我的占問歷史 —— */
@@ -2016,6 +2036,7 @@ console.log("%c[dev] 輸入 testTriChange() 直達三爻變結果頁","color:#3a
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-crypto.js"></script>
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-privacy.js"></script>
 <script defer src="ven-i-privacy.js"></script>
+<script defer src="https://flow222git.github.io/jte-platform-2026/octenso/octenso-corpus.js"></script>
 
 <!-- 練息場全平台使用者列（回首頁＋登入資訊） -->
 <script defer src="https://flow222git.github.io/jte-platform-2026/jte-userbar.js"></script>
