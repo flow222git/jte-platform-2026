@@ -35,10 +35,11 @@ function until(fn,then,name){
 
 /* ── 場景一:完整流程(mock 問者) ── */
 openFrame(function(f1,doc,win){
-  var asked=[];
+  var asked=[],closed=[];
   win.DLG.ask=function(turns){asked.push(turns.slice());return Promise.resolve(asked.length===1?'這件事對你重要在哪?':'如果沒守住,最怕的是什麼?');};
+  win.DLG.close=function(turns){closed.push(turns.slice());return Promise.resolve('【你說的】「不想跳票」。\n【聽見的張力】想扛下,又怕答應太多。\n【留在這裡的一句】那個交期,是誰跟誰的約定?');};
   var body=doc.body;
-  t('開場誠實文案', body.innerText.indexOf('只問不判')>=0 && body.innerText.indexOf('伺服器不留存')>=0
+  t('開場誠實文案', body.innerText.indexOf('不評分、不貼標籤')>=0 && body.innerText.indexOf('伺服器不留存')>=0
     && body.innerText.indexOf('本機素材倉')>=0);
   doc.getElementById('btn-start').click();
   t('天氣選項 7 顆', doc.querySelectorAll('.chip').length===7);
@@ -67,10 +68,12 @@ openFrame(function(f1,doc,win){
               var b=doc.querySelector('.aopt');
               if(b){b.click();setTimeout(answerAll,10);}
             })();
-            until(function(){return win.DLG.S.phase==='close';},function(){
-              t('收尾無判讀宣告', body.innerText.indexOf('沒有判讀、沒有分數')>=0);
+            until(function(){return win.DLG.S.phase==='close' && doc.getElementById('echo') && doc.getElementById('echo').style.display==='block';},function(){
+              t('收尾無評分標籤宣告', body.innerText.indexOf('沒有分數、沒有標籤')>=0);
+              t('回聲總結上桌(三段式)', closed.length===1 && body.innerText.indexOf('【你說的】')>=0 && body.innerText.indexOf('【聽見的張力】')>=0);
+              t('回聲誠實註記', body.innerText.indexOf('只整理你說過的')>=0 && body.innerText.indexOf('像不像,由你裁決')>=0);
               t('回顧含使用者的話', body.innerText.indexOf('改需求')>=0 && body.innerText.indexOf('不想跳票')>=0);
-              t('卡片結果並列', body.innerText.indexOf('像=開創者(乾)')>=0 && body.innerText.indexOf('不像=明現者(離)')>=0 || body.innerText.indexOf('不像=')>=0);
+              t('卡片結果並列', body.innerText.indexOf('像=開創者(乾)')>=0 && body.innerText.indexOf('不像=')>=0);
               var logA=JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]');
               t('錨題存本機(8 題)', logA.length===1 && Object.keys(logA[0].scores).length===8 && logA[0].bank==='v2-fq');
               var yes=doc.querySelector('.oc-yes');
@@ -78,10 +81,11 @@ openFrame(function(f1,doc,win){
               if(yes)yes.click();
               var C=window.OctensoCorpus;
               t('收進素材=本人的話', C.count()===1 && C.list()[0].text.indexOf('情節:')>=0 && C.list()[0].text.indexOf('卡片認出')>=0 && C.list()[0].source==='bagua-dialogue');
-              t('AI 問句只進脈絡不進正文', C.list()[0].text.indexOf('重要在哪')<0 && (C.list()[0].context||'').indexOf('問:')>=0);
+              t('AI 問句與回聲只進脈絡不進正文', C.list()[0].text.indexOf('重要在哪')<0
+                && (C.list()[0].context||'').indexOf('問:')>=0 && (C.list()[0].context||'').indexOf('回聲整理')>=0);
               f1.parentNode.removeChild(f1);
               scene2();
-            },'收尾');
+            },'收尾+回聲');
           },'錨題');
         },'卡片');
       },'第二問');
@@ -130,10 +134,13 @@ function scene3(){
 function scene4(){
   fetch('../ven-i/worker.js').then(function(r){return r.text();}).then(function(src){
     t('worker /dialogue 路由', src.indexOf("pathname === '/dialogue'")>=0);
-    t('worker 問者鐵則(只問不判/不預測)', src.indexOf('只問不判')>=0 && src.indexOf('不預測、不建議')>=0);
+    t('worker 對談鐵則(不判讀/不預測)', src.indexOf('不判讀不貼標籤')>=0 && src.indexOf('不預測、不建議')>=0);
+    t('worker 三聲音調度(陪伴者/心理師/禪師)', src.indexOf('陪伴者(預設)')>=0 && src.indexOf('心理師:')>=0 && src.indexOf('禪師:')>=0);
+    t('worker 回聲總結 prompt(三段+不腦補)', src.indexOf('【你說的】')>=0 && src.indexOf('【聽見的張力】')>=0 && src.indexOf('不腦補')>=0);
+    t('worker close 模式接線', src.indexOf("mode === 'close'")>=0 && src.indexOf('DLG_CLOSE_SYSTEM')>=0);
     t('worker 獨立限流 dlg:', src.indexOf('`dlg:${ip}:${today}`')>=0);
     t('worker 危機守則含 1925', src.indexOf('1925')>=0);
-    t('worker max_tokens 留思考頭寸', /DLG_MAX_TOKENS = 4000/.test(src));
+    t('worker max_tokens 留思考頭寸', /DLG_MAX_TOKENS = 4000/.test(src) && src.indexOf('isClose ? 6000')>=0);
   }).catch(function(){t('worker 原始碼可讀',false);}).then(function(){
     localStorage.removeItem(ANCHOR_KEY);
     window.OctensoCorpus.clear();
