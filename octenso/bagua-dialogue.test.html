@@ -208,6 +208,7 @@ function scene4(){
     t('worker 獨立限流 dlg:', src.indexOf('`dlg:${ip}:${today}`')>=0);
     t('worker 危機守則含 1925', src.indexOf('1925')>=0);
     t('worker max_tokens 留思考頭寸', /DLG_MAX_TOKENS = 4000/.test(src) && src.indexOf('isClose ? 6000')>=0);
+    t('worker 對話上限容納問深八輪', src.indexOf('turns.length > 20')>=0);
   }).catch(function(){t('worker 原始碼可讀',false);}).then(function(){
     localStorage.removeItem(ANCHOR_KEY);
     window.OctensoCorpus.clear();

@@ -242,6 +242,7 @@ function stepLadder(){
     return LADDER_FALLBACK[Math.min(S.ladderN,LADDER_FALLBACK.length-1)];
   }).then(function(q){
     thinking.remove();
+    if(S.qa.length&&S.qa[S.qa.length-1].q===q){stepCards();return;} // 同題重複=梯度到底,不重問(2026-07-18 實測:收束句連問兩次)
     S.crisis=q.indexOf('1925')>=0;
     S.turns.push({role:'assistant',text:q});
     S.qa.push({q:q,a:''});
