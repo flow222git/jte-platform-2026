@@ -66,12 +66,23 @@ fetch('../ven-i/index.html').then(function(r){return r.text();}).then(function(s
   t('ven-i 收錄含感想欄', src.indexOf("'感想:'+note")>=0);
   t('ven-i 完整儲存(兩模式皆有 getContext)', src.split('getContext:function').length>=3);
   t('ven-i 脈絡含 AI 解讀', src.indexOf("'AI 解讀:\\n'+ai.innerText.trim()")>=0);
+}).catch(function(){ t('ven-i 原始碼可讀', false); }).then(function(){
+  return fetch('../ven-i/worker.js').then(function(r){return r.text();}).then(function(src){
+    t('worker /lens-me 路由', src.indexOf("pathname === '/lens-me'")>=0);
+    t('worker 個人照鏡鐵則(主詞/誠實分級/引文)', src.indexOf('禁說「你是開創型的人」')>=0
+      && src.indexOf('素材誠實分級')>=0 && src.indexOf('錨題自評(若有)只做並列')>=0);
+    t('worker lensme 獨立限流', src.indexOf('`lensme:${ip}:${today}`')>=0);
+    t('worker 回饋收 personal', src.indexOf("ctype !== 'personal'")>=0);
+  });
 }).catch(function(){ t('ven-i 原始碼可讀', false); }).then(part);
 
 // ── 檢視頁 iframe(閘門在 iframe 內自動跳過)──
 C.clear();
+localStorage.removeItem('octenso_anchor_v1');
 C.add({source:'ven-i-WenYi',label:'工作·乾',text:'A段'});
-C.add({source:'ven-i-BuYi',label:'乾→坤',text:'B段',context:'本卦:乾\n重點:\n測試脈絡'});
+C.add({source:'ven-i-BuYi',label:'乾→坤',text:'B段',context:'本卦:乾\n重點:\n測試脈絡\nAI 解讀:\n這段不可入鏡'});
+C.add({source:'bagua-dialogue',label:'對談·工作',text:'C段:我不想跳票'});
+localStorage.setItem('octenso_anchor_v1',JSON.stringify([{ts:'2026-07-19T01:00:00Z',bank:'v2-fq',scores:{qian:{v:1,t:'經常'}}}]));
 var f=document.createElement('iframe');
 f.style.cssText='width:800px;height:600px';
 f.src='bagua-corpus.html';
@@ -84,17 +95,47 @@ var timer=setInterval(function(){
   if(ready||tries>100){
     clearInterval(timer);
     var txtAll=ready?doc.body.innerText:'';
-    t('檢視頁渲染 2 段', txtAll.indexOf('共 2 段')>=0);
+    var CV=ready?f.contentWindow.CORPUS_VIEW:null;
+    t('檢視頁渲染 3 段', txtAll.indexOf('共 3 段')>=0);
     t('檢視頁來源標籤', txtAll.indexOf('問易')>=0 && txtAll.indexOf('卜易')>=0 && txtAll.indexOf('乾→坤')>=0);
-    t('檢視頁誠實文案', txtAll.indexOf('不上傳')>=0 && txtAll.indexOf('localStorage')>=0);
+    t('檢視頁誠實文案', txtAll.indexOf('不上傳')>=0 && txtAll.indexOf('localStorage')>=0 && txtAll.indexOf('由你裁決')>=0);
     t('檢視頁脈絡點開區', ready&&!!doc.querySelector('.card details .ctx') && doc.body.innerHTML.indexOf('卦象與解讀紀錄')>=0);
-    try{
-      doc.querySelector('.del').click();
-      t('檢視頁刪除一段', window.OctensoCorpus.count()===1 && doc.body.innerText.indexOf('共 1 段')>=0);
-    }catch(e){ t('檢視頁刪除一段', false); }
-    C.clear();
-    f.parentNode.removeChild(f);
-    part();
+    // 照一下:素材組裝與 gating
+    var bm=CV?CV.buildMaterial():{material:''};
+    t('照鏡素材=只收本人的字', bm.material.indexOf('不想跳票')>=0 && bm.material.indexOf('這段不可入鏡')<0);
+    t('照鏡素材含錨題紀錄', bm.material.indexOf('錨題自評紀錄')>=0 && bm.material.indexOf('經常')>=0);
+    t('滿 3 段照鏡解鎖', ready && !doc.getElementById('mirror').disabled);
+    // 備份:匯出/匯入
+    var bk=CV?CV.buildBackup():null;
+    t('備份含素材+錨題', !!bk && bk.kind==='octenso-corpus-backup' && bk.corpus.length===3 && bk.anchor.length===1);
+    var imp=CV?CV.importData({kind:'octenso-corpus-backup',version:1,
+      corpus:[bk.corpus[0],{id:'newX',ts:'2026-07-18T00:00:00Z',source:'ven-i-BuYi',label:'新',text:'D段'}],
+      anchor:[{ts:'2026-07-19T01:00:00Z'},{ts:'2026-07-20T02:00:00Z',scores:{}}]}):null;
+    t('匯入去重合併', !!imp && imp.ok && imp.added===1 && imp.anchorAdded===1 && window.OctensoCorpus.count()===4);
+    t('匯入不是備份檔會拒絕', CV && CV.importData({foo:1}).ok===false);
+    // 照一下:mock 解讀 API 走完整鏈
+    CV.setReadApi(function(material,schema){
+      t('照鏡帶 schema(YAML 單一真相源)', typeof schema==='string' && schema.indexOf('guardrails')>=0);
+      return Promise.resolve('①素材概況:4 段\n②八態逐列:乾 有料「不想跳票」\n個人照鏡 v0.1');
+    });
+    doc.getElementById('mirror').click();
+    var tries2=0,t2=setInterval(function(){
+      tries2++;
+      var shown=doc.getElementById('mirwrap').style.display==='block';
+      if(shown||tries2>80){
+        clearInterval(t2);
+        t('照鏡報告渲染', shown && doc.getElementById('mirreport').textContent.indexOf('八態逐列')>=0);
+        t('照鏡三值回饋在場', shown && doc.querySelectorAll('#mirfb .fbv').length===3);
+        try{
+          doc.querySelector('.del').click();
+          t('檢視頁刪除一段', window.OctensoCorpus.count()===3);
+        }catch(e){ t('檢視頁刪除一段', false); }
+        C.clear();
+        localStorage.removeItem('octenso_anchor_v1');
+        f.parentNode.removeChild(f);
+        part();
+      }
+    },100);
   }
 },150);
 })();
