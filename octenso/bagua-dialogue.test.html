@@ -11,6 +11,7 @@ function finish(){ document.title='RESULT pass='+pass+' fail='+fail;
   log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent; }
 var ANCHOR_KEY='octenso_anchor_v1';
 localStorage.removeItem(ANCHOR_KEY);
+localStorage.removeItem('octenso_cards_done_v1');
 window.OctensoCorpus.clear();
 
 function openFrame(cb){
@@ -89,7 +90,7 @@ openFrame(function(f1,doc,win){
               t('AI 問句與回聲只進脈絡不進正文', C.list()[0].text.indexOf('重要在哪')<0
                 && (C.list()[0].context||'').indexOf('問:')>=0 && (C.list()[0].context||'').indexOf('回聲整理')>=0);
               f1.parentNode.removeChild(f1);
-              scene2();
+              scene1b();
             },'收尾+回聲');
           },'錨題');
         },'卡片');
@@ -98,21 +99,65 @@ openFrame(function(f1,doc,win){
   },'情節輸入框');
 });
 
-/* ── 場景二:fallback(ask 失敗)+危機線 ── */
+/* ── 場景一b:帶記憶+問深放寬+卡片跳過+錨題一天一次 ── */
+function scene1b(){
+  openFrame(function(fb,doc,win){
+    var asked=[];
+    win.DLG.ask=function(turns){asked.push(turns.slice());return Promise.resolve('上次你說「不想跳票」——今天這件事跟它有關嗎?');};
+    doc.getElementById('btn-start').click();
+    t('有素材時出現記憶選項', doc.querySelectorAll('.chip').length===2 && doc.body.innerText.indexOf('接著上次聊')>=0);
+    doc.querySelectorAll('.chip')[0].click(); // 帶記憶
+    doc.querySelectorAll('.chip')[0].click(); // 場域:工作
+    doc.querySelectorAll('.chip')[2].click(); // 陪法:問深一點沒關係
+    t('問深→深度上限放寬到 8', win.DLG.ladderCap()===8);
+    doc.querySelectorAll('.chip')[0].click(); // 天氣
+    until(function(){return !!doc.getElementById('ep');},function(){
+      doc.getElementById('ep').value='延續上次的案子';
+      doc.getElementById('go1').click();
+      until(function(){return !!doc.getElementById('ans');},function(){
+        t('記憶摘錄入首則(含上次的話)', asked.length===1
+          && asked[0][0].text.indexOf('過往素材摘錄')>=0 && asked[0][0].text.indexOf('改需求')>=0);
+        doc.getElementById('stop2').click(); // 直接往下
+        until(function(){return doc.body.innerText.indexOf('卡片你認過了')>=0;},function(){
+          t('認過卡→提供跳過', true);
+          doc.querySelectorAll('.chip')[0].click(); // 直接量刻度
+          until(function(){return win.DLG.S.phase==='close';},function(){
+            t('錨題一天只記一次(今天量過→跳過)', doc.body.innerText.indexOf('今天量過刻度了')>=0
+              && JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]').length===1);
+            fb.parentNode.removeChild(fb);
+            scene2();
+          },'場景一b收尾');
+        },'卡片跳過選項');
+      },'追問框(場景一b)');
+    },'情節框(場景一b)');
+  });
+}
+
+/* ── 場景二:fallback(ask 失敗)+連兩短答提早收 ── */
 function scene2(){
   openFrame(function(f2,doc,win){
     win.DLG.ask=function(){return Promise.reject(new Error('offline'));};
     doc.getElementById('btn-start').click();
+    doc.querySelectorAll('.chip')[1].click(); // 記憶:從新的開始
     doc.querySelectorAll('.chip')[0].click(); // 場域
     doc.querySelectorAll('.chip')[0].click(); // 陪法
     doc.querySelectorAll('.chip')[0].click(); // 天氣
     until(function(){return !!doc.getElementById('ep');},function(){
       doc.getElementById('ep').value='測 fallback';
       doc.getElementById('go1').click();
-      until(function(){return doc.body.innerText.indexOf('回到那個時刻')>=0;},function(){
+      until(function(){return doc.body.innerText.indexOf('回到那個時刻')>=0 && !!doc.getElementById('ans');},function(){
         t('斷線走 fallback 腳本(情境化第一問)', true);
-        f2.parentNode.removeChild(f2);
-        scene3();
+        doc.getElementById('ans').value='短';
+        doc.getElementById('go2').click();
+        until(function(){return !!doc.getElementById('ans') && doc.body.innerText.indexOf('重要在哪')>=0;},function(){
+          doc.getElementById('ans').value='嗯';
+          doc.getElementById('go2').click();
+          until(function(){return doc.body.innerText.indexOf('卡片你認過了')>=0;},function(){
+            t('連兩短答→提早離開追問', true);
+            f2.parentNode.removeChild(f2);
+            scene3();
+          },'提早收斂');
+        },'第二 fallback 問');
       },'fallback 問句');
     },'情節框(場景二)');
   });
@@ -121,6 +166,7 @@ function scene3(){
   openFrame(function(f3,doc,win){
     win.DLG.ask=function(){return Promise.resolve('聽起來真的很沉。這不是你該獨自扛的——台灣安心專線 1925,全天有人。今天到這裡就好,好嗎?');};
     doc.getElementById('btn-start').click();
+    doc.querySelectorAll('.chip')[1].click(); // 記憶:從新的開始
     doc.querySelectorAll('.chip')[3].click(); // 場域:自己
     doc.querySelectorAll('.chip')[0].click(); // 陪法
     doc.querySelectorAll('.chip')[5].click(); // 天氣:寒流
@@ -150,6 +196,12 @@ function scene4(){
     t('worker 情境化工具箱(五式+禁通用模板)', src.indexOf('情境化原則')>=0 && src.indexOf('回到現場')>=0
       && src.indexOf('假如情境')>=0 && src.indexOf('部分對話')>=0 && src.indexOf('禁用通用模板場景')>=0);
     t('worker 小疏理(原話擺一起)', src.indexOf('把他說過的兩三句原話擺在一起')>=0);
+    t('worker 記憶映照守則(只引摘錄有的字)', src.indexOf('過往素材摘錄')>=0 && src.indexOf('只能引用摘錄裡真的有的字')>=0);
+    t('worker 亞隆層(此時此地/終極關懷/旅伴)', src.indexOf('此時此地')>=0 && src.indexOf('終極關懷')>=0
+      && src.indexOf('我聽岔了')>=0 && src.indexOf('死亡課題只跟隨、不主動挖')>=0);
+    t('worker 岔題兩型(靠近/迴避+還他選擇權)', src.indexOf('靠近型')>=0 && src.indexOf('迴避型')>=0
+      && src.indexOf('硬拉回主線永遠是錯的')>=0);
+    t('worker 故事版回聲+岔路點名', src.indexOf('【這一段的故事】')>=0 && src.indexOf('沒走完的岔路')>=0);
     t('worker 回聲總結 prompt(四段+不腦補)', src.indexOf('【你說的】')>=0 && src.indexOf('【聽見的張力】')>=0
       && src.indexOf('【換個角度看】')>=0 && src.indexOf('素材太薄就整段省略')>=0 && src.indexOf('不腦補')>=0);
     t('worker close 模式接線', src.indexOf("mode === 'close'")>=0 && src.indexOf('DLG_CLOSE_SYSTEM')>=0);
