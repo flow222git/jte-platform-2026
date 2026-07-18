@@ -50,9 +50,18 @@
     return host;
   }
 
+  // JWT payload 是 base64url（含 - _、無 padding），atob 只認標準 base64，
+  // 直接 atob 遇到含 - 或 _ 的 token 會丟例外 → 登入卡住。故先轉回標準 base64、補 padding，
+  // 再以 UTF-8 解碼（中文名字才不會亂碼）。
+  function decodeJwt(token){
+    var s=String(token).split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length%4) s+='=';
+    var bin=atob(s), bytes=Uint8Array.from(bin,function(c){return c.charCodeAt(0);});
+    return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+  }
   function onCred(resp){
     try{
-      var p=JSON.parse(atob(resp.credential.split('.')[1]));
+      var p=decodeJwt(resp.credential);
       localStorage.setItem('jte_user_email', p.email);
       if(p.name) localStorage.setItem('jte_user_name', p.name);
       if(p.picture) localStorage.setItem('jte_user_picture', p.picture);
