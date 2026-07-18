@@ -116,7 +116,8 @@ var KEYS=['qian','li','zhen','dui','kun','kan','gen','xun'];
 function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
 
 var WEATHER=['久旱','雷陣雨','起霧','放晴','悶著','寒流','說不上來'];
-var LADDER_MAX=4;
+var LADDER_BASE=4, LADDER_DEEP=8; // 動態深度:宣告問深+回答有料→放寬;連兩答很短→提早收
+var CARDS_FLAG='octenso_cards_done_v1';
 var LADDER_FALLBACK=[
   '先回到那個時刻——事情發生的當下,你心裡第一句冒出來的話是什麼?',
   '這件事對你來說,重要在哪?',
@@ -124,8 +125,21 @@ var LADDER_FALLBACK=[
   '聽起來你一直在守著某個東西——你自己會怎麼叫它?'
 ];
 
-var S={phase:'intro',ctx:'',depth:'',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false,echo:''};
+var S={phase:'intro',ctx:'',depth:'',weather:'',episode:'',qa:[],turns:[],cards:{},cardIdx:0,anchor:{},anchorIdx:0,ladderN:0,crisis:false,echo:'',memory:false};
 var FQ=V.ITEMS.filter(function(q){return q.kind==='fq';});
+function ladderCap(){ return S.depth==='問深一點沒關係'?LADDER_DEEP:LADDER_BASE; }
+function shouldEndEarly(){
+  var as=S.qa.filter(function(x){return x.a;});
+  if(as.length<2) return false;
+  return as[as.length-1].a.length<15 && as[as.length-2].a.length<15;
+}
+/* 過往素材摘錄(A:帶記憶對談)——只帶本人的字,按下「接著上次聊」才進請求 */
+function memoryBlock(){
+  var list=(window.OctensoCorpus?OctensoCorpus.list():[]).slice(-5);
+  var s=list.map(function(e){return '['+String(e.ts).slice(0,10)+' '+(e.label||e.source)+']\n'+e.text;}).join('\n\n');
+  if(s.length>3000) s=s.slice(-3000);
+  return s;
+}
 
 /* ── 對話 UI ── */
 function msg(cls,text){
@@ -147,7 +161,8 @@ function closeDefault(turns){
     .then(function(r){return r.json();})
     .then(function(d){if(!d.question)throw new Error(d.error||'empty');return d.question;});
 }
-var DLG={S:S,ask:askDefault,close:closeDefault,ANCHOR_KEY:ANCHOR_KEY,WEATHER:WEATHER,FQ:FQ,pn:pn};
+var DLG={S:S,ask:askDefault,close:closeDefault,ANCHOR_KEY:ANCHOR_KEY,WEATHER:WEATHER,FQ:FQ,pn:pn,
+  ladderCap:ladderCap,shouldEndEarly:shouldEndEarly,memoryBlock:memoryBlock,CARDS_FLAG:CARDS_FLAG};
 window.DLG=DLG;
 
 /* ── 流程 ── */
@@ -169,15 +184,24 @@ function chips(list,cb){
 }
 function stepCheckIn(){
   S.phase='checkin';
-  msg('bot','進來坐。先問兩件小事——今天想聊哪一塊?');
-  chips(CTX,function(v){
-    S.ctx=v;msg('me',v);
-    msg('bot','想要哪種陪法?(隨時可以改主意)');
-    chips(DEPTH,function(d){
-      S.depth=d;msg('me',d);
-      stepWeather();
+  if(window.OctensoCorpus&&OctensoCorpus.count()>0){
+    msg('bot','進來坐。素材倉裡有你之前留下的話——要接著聊,還是從新的開始?');
+    chips(['接著上次聊(帶記憶)','從新的開始'],function(m){
+      S.memory=(m.indexOf('接著')===0);msg('me',m);
+      askCtx();
     });
-  });
+  } else askCtx();
+  function askCtx(){
+    msg('bot','今天想聊哪一塊?');
+    chips(CTX,function(v){
+      S.ctx=v;msg('me',v);
+      msg('bot','想要哪種陪法?(隨時可以改主意)');
+      chips(DEPTH,function(d){
+        S.depth=d;msg('me',d);
+        stepWeather();
+      });
+    });
+  }
 }
 
 function stepWeather(){
@@ -199,7 +223,12 @@ function stepEpisode(){
     var t=$('ep').value.trim();
     if(!t){$('ep').focus();return;}
     S.episode=t; msg('me',t);
-    S.turns.push({role:'user',text:'(宣告——場域:'+(S.ctx||'未選')+';想要的陪法:'+(S.depth||'未選')+';這個月的天氣感:'+S.weather+')\n'+t});
+    var head='(宣告——場域:'+(S.ctx||'未選')+';想要的陪法:'+(S.depth||'未選')+';這個月的天氣感:'+S.weather+')';
+    if(S.memory){
+      var mb=memoryBlock();
+      if(mb) head='(過往素材摘錄——以下皆是我過去自己寫下的話,供你跨次映照:\n'+mb+')\n'+head;
+    }
+    S.turns.push({role:'user',text:head+'\n'+t});
     stepLadder();
   };
   $('stop1').onclick=function(){stepClose();};
@@ -207,7 +236,7 @@ function stepEpisode(){
 
 function stepLadder(){
   S.phase='ladder';
-  if(S.ladderN>=LADDER_MAX){stepCards();return;}
+  if(S.ladderN>=ladderCap()||shouldEndEarly()){stepCards();return;}
   var thinking=msg('sys','…');
   DLG.ask(S.turns.slice()).catch(function(){
     return LADDER_FALLBACK[Math.min(S.ladderN,LADDER_FALLBACK.length-1)];
@@ -242,8 +271,23 @@ function stepLadder(){
 
 function stepCards(){
   S.phase='cards';
-  if(S.cardIdx===0) msg('bot','謝謝你說這些。剩兩小步——先認卡:八張,一張一張來,手比腦誠實。');
-  if(S.cardIdx>=KEYS.length){stepAnchor();return;}
+  if(S.cardIdx===0&&!S.cardsOffered){
+    S.cardsOffered=true;
+    var done=false; try{done=localStorage.getItem(CARDS_FLAG)==='1';}catch(e){}
+    if(done){ // 認過卡的人不必每場重認(內容自評會飽和),想認再認
+      msg('bot','謝謝你說這些。卡片你認過了——這次要再認一次,還是直接量刻度?');
+      chips(['直接量刻度','再認一次卡'],function(c){
+        msg('me',c);
+        if(c==='直接量刻度'){stepAnchor();}else{msg('bot','好,八張,手比腦誠實。');stepCards();}
+      });
+      return;
+    }
+    msg('bot','謝謝你說這些。剩兩小步——先認卡:八張,一張一張來,手比腦誠實。');
+  }
+  if(S.cardIdx>=KEYS.length){
+    try{localStorage.setItem(CARDS_FLAG,'1');}catch(e){}
+    stepAnchor();return;
+  }
   var k=KEYS[S.cardIdx], g=B.get(k);
   setIO('<div class="bcard"><div class="sym">'+g.sym+'</div>'
     +'<div class="nm">'+esc(pn(k))+'</div><div class="ele">'+esc(V.ELEGANT[k])+'</div>'
@@ -259,7 +303,15 @@ function stepCards(){
 
 function stepAnchor(){
   S.phase='anchor';
-  if(S.anchorIdx===0) msg('bot','最後:照舊那幾題,量個刻度就好——固定的尺,之後每次都量得出變化。');
+  if(S.anchorIdx===0){
+    // 錨題一天只記一次:當天分數不會動,重複量只是折磨(2026-07-18 Simon 四連測實證)
+    var last=null; try{var lg=JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]');last=lg.length?lg[lg.length-1]:null;}catch(e){}
+    if(last&&new Date(last.ts).toDateString()===new Date().toDateString()){
+      msg('sys','今天量過刻度了,跳過。');
+      stepClose();return;
+    }
+    msg('bot','最後:照舊那幾題,量個刻度就好——固定的尺,之後每次都量得出變化。');
+  }
   if(S.anchorIdx>=FQ.length){saveAnchor();stepClose();return;}
   var q=FQ[S.anchorIdx];
   setIO('<div class="aq">'+esc(q.t)+'</div><div class="aopts">'+V.FREQ_OPTS.map(function(o,i){
