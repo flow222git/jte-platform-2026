@@ -255,7 +255,7 @@ async function handleDialogue(request, env, corsHeaders) {
   catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
   const { turns, mode } = payload;
   const isClose = mode === 'close';
-  if (!Array.isArray(turns) || !turns.length || turns.length > 12) {
+  if (!Array.isArray(turns) || !turns.length || turns.length > 20) { // 問深模式 8 輪+記憶摘錄=最多 17 則(12 曾在第 7 輪打爆,2026-07-18 實測)
     return json({ error: '對話格式不對。' }, 400, corsHeaders);
   }
   const msgs = [];
