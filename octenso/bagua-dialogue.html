@@ -225,10 +225,12 @@ function stepLadder(){
     setIO('<textarea id="ans" placeholder="想到什麼說什麼…"></textarea>'
       +'<div class="iorow"><button class="stoplink" id="stop2">到這裡就好,往下走</button>'
       +'<button class="btn" id="go2">回好了</button></div>');
+    var shownAt=Date.now(); // 節奏紀錄:形式層素材(思考+作答秒數),行為自己說話
     $('go2').onclick=function(){
       var t=$('ans').value.trim();
       if(!t){$('ans').focus();return;}
       S.qa[S.qa.length-1].a=t;
+      S.qa[S.qa.length-1].sec=Math.round((Date.now()-shownAt)/1000);
       S.turns.push({role:'user',text:t});
       msg('me',t);
       S.ladderN++;
@@ -292,6 +294,9 @@ function corpusText(){
 }
 function corpusContext(){
   var L=S.qa.filter(function(x){return x.a;}).map(function(x){return '問:'+x.q;});
+  var pace=S.qa.filter(function(x){return x.a&&x.sec!=null;})
+    .map(function(x,i){return '第'+(i+1)+'答 '+x.sec+'秒/'+x.a.length+'字';});
+  if(pace.length)L.push('節奏紀錄(思考+作答):'+pace.join(';'));
   if(S.echo)L.push('回聲整理:\n'+S.echo);
   if(Object.keys(S.anchor).length)L.push('錨題已記錄('+Object.keys(S.anchor).length+' 題,存本機)');
   return L.join('\n');
