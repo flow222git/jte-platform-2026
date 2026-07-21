@@ -80,6 +80,7 @@
 - **爻層**:初=理(地)、二=用(人)、三=道(天);陽=剛健、陰=柔順;三爻陰陽 → 八模式(各含特徵/最佳應用/死角/防範)。
 - **心法**:以用為歸宿;用必須反於道;三隅箴(道勿空談、理勿僵化、用勿盲目功利)。
 - **透鏡端已接立體檢視(2026-07-21)**:八態鏡輸出加⑤三角形體檢+⑥道理用參考;三層判準=`daoliyong-lens-schema-v0.1.yaml`(v0.1 研究假設),見 specs/2026-07-21-daoliyong-lens-integration-design.md。
+- **判卦引擎(2026-07-21,v0.2-draft·工作假說)**:⑥升級為本卦→變爻→之卦(剛=陽柔=陰,反查 `daoliyong-data.js` 之 guaOf/bianOf;一律一爻變;三角形量形圖);宣告體系加目標+TA(可選)。
 - 真相來源:`daoliyong-data.js`(canonical)+ specs/2026-07-21-daoliyong-bagua-matrix-design.md(憲法增修)。
 
 ---
@@ -304,6 +305,7 @@ COST_GIST(敘事用短語)另存 8 卦 × o/u,見 persona:1627-1636。
 | 07-15 | **八態鏡上線(內部)**:schema 0.1.1(脈絡宣告八型)+Worker /lens+bagua-lens 頁;語彙庫改拉式收割,不預建 |
 | 07-21 | **道理用矩陣·憲法增修**(三角形×八態=八態鏡引擎核心;雙軌場景定體;新 canonical `daoliyong-data.js`) |
 | 07-21 | **八態鏡 v2·立體檢視**(透鏡接道理用:⑤三角形體檢+⑥腳本參考;新 canonical `daoliyong-lens-schema-v0.1.yaml`) |
+| 07-21 | **八態鏡 v3·判卦引擎**(本卦→變爻→之卦;剛柔判準+變爻判定律三源;lens-schema 升 v0.2-draft·工作假說) |
 
 ## 10. 誠實邊界與缺口
 
