@@ -1,5 +1,5 @@
 /* octenso/daoliyong-data.js — 道理用八卦矩陣 · 八態鏡解讀引擎 canonical
- * v1.0 · 2026-07-21
+ * v1.1 · 2026-07-21(加判卦 helpers)
  *
  * 學理源頭:吳怡「整體生命哲學三角形(道、理、用)」(參考件 Integral_Philosophy_Triangle.pdf,本機)。
  * 用法:載入順序必須在 bagua-data.js 之後;之後以 window.OCTENSO_DAOLIYONG 取用。
@@ -113,8 +113,27 @@
     }
   };
 
+  // 判卦引擎 helpers(v1.1)——剛=陽、柔=陰;純查表、不產文案(機械推導律)
+  function guaOf(li, yong, dao) {
+    var k;
+    for (k in MODES) {
+      if (MODES[k].yao.li === li && MODES[k].yao.yong === yong && MODES[k].yao.dao === dao) {
+        return MODES[k];
+      }
+    }
+    return null;
+  }
+  function bianOf(k, yao) {
+    var m = MODES[k];
+    if (!m || !(yao === 'li' || yao === 'yong' || yao === 'dao')) return null;
+    var flip = { yang: 'yin', yin: 'yang' };
+    var y = { li: m.yao.li, yong: m.yao.yong, dao: m.yao.dao };
+    y[yao] = flip[y[yao]];
+    return guaOf(y.li, y.yong, y.dao);
+  }
+
   g.OCTENSO_DAOLIYONG = {
-    version: '1.0',
+    version: '1.1',
     SOURCE: '吳怡「整體生命哲學三角形(道、理、用)」;參考件 Integral_Philosophy_Triangle.pdf(本機)。',
     MOTTO: '化知識為德行,通萬變於大道。',
     SCENE_RULE: '同一卦,兩端讀法:八態能格測驗(讀人/底色)以正向心理學角度讀——先看見力量;八態鏡解讀引擎(讀運作/局面)以吳怡道理用矩陣為主——直言對策與死角。對「人」呈現時,永遠先正面(能格)、後對策(引擎),不可倒置。兩讀法同出卦德、只取義側重不同,不互相翻譯。鏡子非算命——策略腳本是參考,不是預測或指令。',
@@ -123,6 +142,8 @@
     MODES: MODES,
     // 便利存取
     get: function (k) { return MODES[k]; },
-    baguaOf: function (k) { return g.OCTENSO_BAGUA.BAGUA[k]; }
+    baguaOf: function (k) { return g.OCTENSO_BAGUA.BAGUA[k]; },
+    guaOf: guaOf,     // (li, yong, dao) 各 'yang'|'yin' → 本卦 MODES 條目
+    bianOf: bianOf    // (卦 key, 'li'|'yong'|'dao') → 一爻變之卦 MODES 條目
   };
 })(typeof window !== 'undefined' ? window : this);

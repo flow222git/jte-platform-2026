@@ -19,7 +19,7 @@ window.addEventListener('error', function (e) {
 
   // 0) namespace 與依賴宣告
   t('dep throw without bagua-data', window.__depErr === true);
-  t('namespace', !!D && D.version === '1.0');
+  t('namespace', !!D && D.version === '1.1');
 
   // 1) 爻參數結構驗證(最關鍵):真值表由下而上 [理(初), 用(二), 道(三)]
   var TRI = {
@@ -71,6 +71,25 @@ window.addEventListener('error', function (e) {
   // 5) helpers
   t('get()', D.get('kan') === D.MODES.kan && !D.get('nope'));
   t('baguaOf()', D.baguaOf('kan') === B.BAGUA.kan);
+
+  // 6) 判卦 helpers(v1.1):8 組合全枚舉 + 24 條一爻變全枚舉(期望值由 TRI 真值表獨立推導)
+  var FLIP = { yang: 'yin', yin: 'yang' };
+  KEYS.forEach(function (k) {
+    var y = TRI[k]; // [理(初), 用(二), 道(三)]
+    var m = D.guaOf(y[0], y[1], y[2]);
+    t('guaOf ' + k, !!m && m.k === k);
+    ['li', 'yong', 'dao'].forEach(function (yao, i) {
+      var e = y.slice(); e[i] = FLIP[e[i]];
+      var expect = null, kk;
+      for (kk in TRI) {
+        if (TRI[kk][0] === e[0] && TRI[kk][1] === e[1] && TRI[kk][2] === e[2]) expect = kk;
+      }
+      var b = D.bianOf(k, yao);
+      t('bianOf ' + k + '.' + yao + '→' + expect, !!b && b.k === expect);
+    });
+  });
+  t('guaOf 無效值回 null', D.guaOf('yang', 'yang', 'x') === null);
+  t('bianOf 無效參數回 null', D.bianOf('nope', 'li') === null && D.bianOf('kan', 'x') === null);
 
   document.title = 'RESULT pass=' + pass + ' fail=' + fail;
   log.textContent = 'RESULT pass=' + pass + ' fail=' + fail + '\n' + log.textContent;
