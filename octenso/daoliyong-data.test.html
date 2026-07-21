@@ -1,0 +1,79 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>daoliyong tests</title></head><body>
+<pre id="log"></pre>
+<script>
+// 依賴宣告測試:先在「未載入 bagua-data.js」下載入 daoliyong-data.js,應 throw
+window.__depErr = false;
+window.addEventListener('error', function (e) {
+  if (/bagua-data/.test(e.message || '')) window.__depErr = true;
+}, true);
+</script>
+<script src="daoliyong-data.js"></script><!-- 第一次載入:無依賴,應 throw -->
+<script src="bagua-data.js"></script>
+<script src="daoliyong-data.js"></script><!-- 第二次載入:依賴齊,正常定義 -->
+<script>
+(function () {
+  var pass = 0, fail = 0, log = document.getElementById('log');
+  function t(name, ok) { if (ok) { pass++; } else { fail++; log.textContent += 'FAIL: ' + name + '\n'; } }
+  var B = window.OCTENSO_BAGUA, D = window.OCTENSO_DAOLIYONG;
+  var KEYS = ['qian', 'dui', 'li', 'zhen', 'xun', 'kan', 'gen', 'kun'];
+
+  // 0) namespace 與依賴宣告
+  t('dep throw without bagua-data', window.__depErr === true);
+  t('namespace', !!D && D.version === '1.0');
+
+  // 1) 爻參數結構驗證(最關鍵):真值表由下而上 [理(初), 用(二), 道(三)]
+  var TRI = {
+    qian: ['yang', 'yang', 'yang'], dui: ['yang', 'yang', 'yin'],
+    li:   ['yang', 'yin',  'yang'], zhen: ['yang', 'yin',  'yin'],
+    xun:  ['yin',  'yang', 'yang'], kan: ['yin',  'yang', 'yin'],
+    gen:  ['yin',  'yin',  'yang'], kun: ['yin',  'yin',  'yin']
+  };
+  KEYS.forEach(function (k) {
+    var m = D.MODES[k];
+    t('yao ' + k + ' 理(初)', !!m && m.yao.li === TRI[k][0]);
+    t('yao ' + k + ' 用(二)', !!m && m.yao.yong === TRI[k][1]);
+    t('yao ' + k + ' 道(三)', !!m && m.yao.dao === TRI[k][2]);
+  });
+
+  // 2) key 與 OCTENSO_BAGUA 完全一致、無多無少
+  var mk = Object.keys(D.MODES);
+  t('MODES count 8', mk.length === 8);
+  t('MODES keys = BAGUA keys', KEYS.every(function (k) { return !!D.MODES[k] && !!B.BAGUA[k]; }) &&
+    mk.every(function (k) { return KEYS.indexOf(k) >= 0; }));
+
+  // 3) 每模式全欄位非空;必有 blindspot+guard(條文三);vsOcten 八卦皆有
+  KEYS.forEach(function (k) {
+    var m = D.MODES[k];
+    t(k + ' k', !!m && m.k === k);
+    t(k + ' mode', !!m && typeof m.mode === 'string' && m.mode.length >= 3);
+    t(k + ' epithet', !!m && typeof m.epithet === 'string' && m.epithet.length >= 6);
+    t(k + ' trait', !!m && typeof m.trait === 'string' && m.trait.length >= 20);
+    t(k + ' bestUse', !!m && typeof m.bestUse === 'string' && m.bestUse.length >= 8);
+    t(k + ' blindspot', !!m && typeof m.blindspot === 'string' && m.blindspot.length >= 4);
+    t(k + ' guard', !!m && typeof m.guard === 'string' && m.guard.length >= 8);
+    t(k + ' vsOcten', !!m && typeof m.vsOcten === 'string' && m.vsOcten.length >= 10);
+  });
+
+  // 4) TRIANGLE 三隅齊備;canonical 字串關鍵語
+  ['dao', 'li', 'yong'].forEach(function (c) {
+    var o = D.TRIANGLE[c];
+    t('TRIANGLE ' + c, !!o && ['nm', 'pos', 'essence', 'value', 'virtue', 'jian'].every(function (f) {
+      return typeof o[f] === 'string' && o[f].length > 0;
+    }));
+  });
+  t('SCENE_RULE 先正面', D.SCENE_RULE.indexOf('先正面') >= 0);
+  t('SCENE_RULE 非算命', D.SCENE_RULE.indexOf('非算命') >= 0);
+  t('PRINCIPLE 反於道', D.PRINCIPLE.indexOf('反於道') >= 0);
+  t('PRINCIPLE 留有餘地', D.PRINCIPLE.indexOf('留有餘地') >= 0);
+  t('SOURCE 吳怡', D.SOURCE.indexOf('吳怡') >= 0);
+  t('MOTTO', typeof D.MOTTO === 'string' && D.MOTTO.length >= 8);
+
+  // 5) helpers
+  t('get()', D.get('kan') === D.MODES.kan && !D.get('nope'));
+  t('baguaOf()', D.baguaOf('kan') === B.BAGUA.kan);
+
+  document.title = 'RESULT pass=' + pass + ' fail=' + fail;
+  log.textContent = 'RESULT pass=' + pass + ' fail=' + fail + '\n' + log.textContent;
+})();
+</script>
+</body></html>
