@@ -4,9 +4,9 @@ import { readFileSync } from 'fs';
 
 let t;
 try {
-  t = readFileSync(new URL('../octenso/daoliyong-lens-schema-v0.1.yaml', import.meta.url), 'utf8');
+  t = readFileSync(new URL('../octenso/daoliyong-lens-schema-v0.2.yaml', import.meta.url), 'utf8');
 } catch (e) {
-  console.log('FAIL schema 檔不存在');
+  console.log('FAIL schema 檔不存在(v0.2)');
   console.log('RESULT pass=0 fail=1');
   process.exit(1);
 }
@@ -17,7 +17,7 @@ const has = (s) => t.includes(s);
 const count = (s) => t.split(s).length - 1;
 
 // meta 與誠實標記
-ck('meta.version 0.1', /version:\s*"0\.1"/.test(t));
+ck('meta.version 0.2-draft', /version:\s*"0\.2-draft"/.test(t));
 ck('研究假設標記', has('研究假設'));
 ck('guardrails_ref 參照 G1–G8', has('guardrails_ref') && has('G1'));
 ck('canonical_ref 指向 data.js', has('canonical_ref') && has('daoliyong-data.js'));
@@ -47,6 +47,19 @@ ck('G7 適用範圍', has('interview') && has('observation'));
 
 // 驗收
 ck('acceptance 存在', has('acceptance:') && has('三值回饋'));
+
+// 判卦區塊(v0.2)
+ck('guapan 區塊', has('guapan:'));
+ck('工作假說標記', has('工作假說·待收斂'));
+ck('canonical 聲明', has('此卦由素材判讀推導,非起卦占斷;變爻是處方,不是預言。'));
+ck('四律齊', has('非占卜律') && has('機械推導律') && has('主詞律') && has('不預測律'));
+ck('成卦門檻', has('成卦門檻') && has('不成卦'));
+ck('剛柔判準三爻', has('剛柔判準:') && count('剛:') >= 3 && count('柔:') >= 3 && count('亢:') >= 3 && count('溺:') >= 3);
+ck('變爻判定律三源', has('第一源_脈絡優先') && has('第二源_宣告校正') && has('第三源_菜單兜底'));
+ck('一爻變', has('一爻變'));
+ck('量形圖', has('量形圖') && has('趨韓非形') && has('非分數'));
+ck('宣告體系', has('宣告體系') && has('目標') && has('TA'));
+ck('反查引用 helpers', has('guaOf') || has('MODES[].yao'));
 
 // 防複寫(八態專屬欄位與模式副題不得出現)
 for (const bad of ['主稱呼', '雅稱', '分支角色', '低載信號', '成熟表現',

@@ -7,7 +7,7 @@
 import sys, os, yaml
 
 SCHEMA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                      "octenso", "daoliyong-lens-schema-v0.1.yaml")
+                      "octenso", "daoliyong-lens-schema-v0.2.yaml")
 
 LAYERS = ["li", "yong", "dao"]
 ANCHORS = {  # 名/爻位/價值/四德(萬物對應圖,一字不差)
@@ -34,7 +34,7 @@ def main():
     doc = yaml.safe_load(raw)
 
     meta = doc.get("meta", {})
-    check("meta.version == 0.1", str(meta.get("version")) == "0.1", f"got {meta.get('version')!r}")
+    check("meta.version == 0.2-draft", str(meta.get("version")) == "0.2-draft", f"got {meta.get('version')!r}")
     check("meta.status 掛研究假設", "研究假設" in str(meta.get("status", "")))
     check("guardrails_ref 指向 states-schema", "states-schema" in str(meta.get("guardrails_ref", "")))
     check("canonical_ref 指向 data.js", "daoliyong-data.js" in str(meta.get("canonical_ref", "")))
@@ -73,6 +73,28 @@ def main():
     check("G7 適用範圍", "interview" in str(spec.get("適用範圍", "")))
 
     check("acceptance >= 3 步", isinstance(doc.get("acceptance"), list) and len(doc["acceptance"]) >= 3)
+
+    gp = doc.get("guapan", {})
+    check("guapan 區塊在位", bool(gp))
+    check("工作假說標記", "工作假說" in str(gp.get("status", "")))
+    check("canonical 聲明", "非起卦占斷" in str(gp.get("聲明", "")))
+    check("四律齊全", all(x in gp.get("四律", {}) for x in ["非占卜律", "機械推導律", "主詞律", "不預測律"]))
+    check("成卦門檻", "不成卦" in str(gp.get("成卦門檻", "")))
+    gr = gp.get("剛柔判準", {})
+    check("剛柔判準三爻", sorted(gr.keys()) == sorted(["li", "yong", "dao"]), f"got {sorted(gr.keys())}")
+    for yk in ["li", "yong", "dao"]:
+        yy = gr.get(yk, {})
+        check(f"剛柔 {yk} 四態", all(x in yy for x in ["剛", "柔", "亢", "溺"]))
+        for st in ["剛", "柔", "亢", "溺"]:
+            e = yy.get(st, {})
+            check(f"剛柔 {yk}.{st} 樣態+信號", bool(e.get("樣態")) and isinstance(e.get("信號"), list) and len(e["信號"]) >= 2)
+    by = gp.get("變爻判定律", {})
+    check("變爻三源+一爻變", all(x in by for x in ["第一源_脈絡優先", "第二源_宣告校正", "第三源_菜單兜底", "一爻變"]))
+    qx = gp.get("量形圖", {})
+    check("量形圖齊", "非分數" in str(qx.get("頂點", "")) and "趨韓非形" in str(qx.get("形態", {}).get("道頂縮", "")) and bool(qx.get("輸出")))
+    sd = gp.get("宣告體系", {})
+    check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 2
+          and isinstance(sd.get("可選宣告"), list) and len(sd["可選宣告"]) == 2)
 
     for bad_s in FORBIDDEN:
         check(f"防複寫:無「{bad_s}」", bad_s not in raw)
