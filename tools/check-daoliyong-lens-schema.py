@@ -34,7 +34,7 @@ def main():
     doc = yaml.safe_load(raw)
 
     meta = doc.get("meta", {})
-    check("meta.version == 0.2-draft", str(meta.get("version")) == "0.2-draft", f"got {meta.get('version')!r}")
+    check("meta.version == 0.3-draft", str(meta.get("version")) == "0.3-draft", f"got {meta.get('version')!r}")
     check("meta.status 掛研究假設", "研究假設" in str(meta.get("status", "")))
     check("guardrails_ref 指向 states-schema", "states-schema" in str(meta.get("guardrails_ref", "")))
     check("canonical_ref 指向 data.js", "daoliyong-data.js" in str(meta.get("canonical_ref", "")))
@@ -95,6 +95,22 @@ def main():
     sd = gp.get("宣告體系", {})
     check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 2
           and isinstance(sd.get("可選宣告"), list) and len(sd["可選宣告"]) == 2)
+
+    zh = gp.get("剛柔判準註", {})
+    check("剛柔判準註兩條", "非相對比較" in str(zh.get("絕對質性", "")) and "動力來源" in str(zh.get("亢溺判別", "")))
+    ly = gp.get("liuyao", {})
+    check("liuyao 子區塊在位", bool(ly))
+    check("雙假說印章", "雙印章" in str(ly.get("status", "")))
+    check("排法 B", "下卦=內在運作的理用道" in str(ly.get("排法", "")))
+    check("排法 A 學理註", "排法 A" in str(ly.get("學理註", "")))
+    check("64 表真相源", "2026-06-30-bagua-64-energy-demand-table.md" in str(ly.get("真相源", "")))
+    fc = ly.get("分池", {})
+    check("分池兩定義", bool(fc.get("內池")) and bool(fc.get("外池")))
+    check("歸池三原則", isinstance(fc.get("歸池三原則"), list) and len(fc["歸池三原則"]) == 3)
+    check("升級門檻", "六爻不成" in str(ly.get("升級門檻", "")))
+    check("動爻規則四條", isinstance(ly.get("動爻規則"), list) and len(ly["動爻規則"]) == 4)
+    check("召喚對照", "首要功課" in str(ly.get("召喚對照", "")))
+    check("輸出關係", "三爻版省略" in str(ly.get("輸出關係", "")))
 
     for bad_s in FORBIDDEN:
         check(f"防複寫:無「{bad_s}」", bad_s not in raw)

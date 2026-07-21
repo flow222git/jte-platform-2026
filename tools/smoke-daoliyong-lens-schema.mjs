@@ -17,7 +17,7 @@ const has = (s) => t.includes(s);
 const count = (s) => t.split(s).length - 1;
 
 // meta 與誠實標記
-ck('meta.version 0.2-draft', /version:\s*"0\.2-draft"/.test(t));
+ck('meta.version 0.3-draft', /version:\s*"0\.3-draft"/.test(t));
 ck('研究假設標記', has('研究假設'));
 ck('guardrails_ref 參照 G1–G8', has('guardrails_ref') && has('G1'));
 ck('canonical_ref 指向 data.js', has('canonical_ref') && has('daoliyong-data.js'));
@@ -60,6 +60,22 @@ ck('一爻變', has('一爻變'));
 ck('量形圖', has('量形圖') && has('趨韓非形') && has('非分數'));
 ck('宣告體系', has('宣告體系') && has('目標') && has('TA'));
 ck('反查引用 helpers', has('guaOf') || has('MODES[].yao'));
+
+// 六爻子區塊(v0.3)
+ck('liuyao 子區塊', has('liuyao:'));
+ck('雙假說印章', has('工作假說·待收斂(與 64 表 v0.1 待終審雙印章)'));
+ck('排法 B 寫死', has('下卦=內在運作的理用道') && has('上卦=對外運作的理用道'));
+ck('排法 A 學理註', has('排法 A') && has('萬物對應圖'));
+ck('64 表真相源', has('docs/superpowers/specs/2026-06-30-bagua-64-energy-demand-table.md'));
+ck('分池兩定義', has('內池:') && has('外池:'));
+ck('歸池三原則', has('歸池三原則') && has('界隨對象移動') && has('行為的受向'));
+ck('升級門檻', has('升級門檻') && has('六爻不成'));
+ck('動爻規則四條', has('動爻規則') && has('照實全列') && has('宣告裁決優先') && has('靜卦'));
+ck('動爻>=4 加註', has('菜單失焦'));
+ck('召喚對照', has('召喚對照') && has('召喚而缺席=首要功課'));
+ck('輸出關係', has('輸出關係') && has('三爻版省略'));
+ck('剛柔判準註:絕對質性', has('絕對質性') && has('非相對比較'));
+ck('剛柔判準註:亢溺判別', has('自驅過極=亢') && has('被外牽走=溺'));
 
 // 防複寫(八態專屬欄位與模式副題不得出現)
 for (const bad of ['主稱呼', '雅稱', '分支角色', '低載信號', '成熟表現',
