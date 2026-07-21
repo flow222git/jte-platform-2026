@@ -3,7 +3,7 @@
 整理日期：2026-06-19 ｜ 對象：`octenso/profile.js`（資料/引擎層）、`octenso/bagua-persona.html`（表層解釋）
 定位：把八態能格的**學理基礎**定錨，避免輸出「**似是而非**」（聽來有理、實則站不住）。
 本文為「憲法」——日後所有解讀文案、能格判定、四軸詮釋皆須回溯對得上本文。
-增修條文(2026-07-21):見 `2026-07-21-daoliyong-bagua-matrix-design.md`——道理用八卦矩陣·八態鏡解讀引擎核心(雙軌場景:測驗端維持正向心理學讀法、引擎端以吳怡版道理用矩陣為主;canonical:`octenso/daoliyong-data.js`)。
+增修條文（2026-07-21）：見 `2026-07-21-daoliyong-bagua-matrix-design.md`——道理用八卦矩陣·八態鏡解讀引擎核心（雙軌場景：測驗端維持正向心理學讀法、引擎端以吳怡版道理用矩陣為主；canonical：`octenso/daoliyong-data.js`）。
 
 ---
 
