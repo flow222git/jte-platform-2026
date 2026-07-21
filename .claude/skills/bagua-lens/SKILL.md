@@ -9,15 +9,17 @@ description: 八態鏡透鏡判讀——用 states-schema 讀「運作」(會議
 
 ## 流程
 
-1. **讀真相源(三份,各檔全文)**:
+1. **讀真相源(四份,各檔全文)**:
    - 八態判準:`octenso/octenso-states-schema-v0.1.yaml`
    - 三層判準:`octenso/daoliyong-lens-schema-v0.2.yaml`(⑤⑥段唯一依據)
    - 腳本與三角形文本:`octenso/daoliyong-data.js`(TRIANGLE/MODES,只引用不複寫)
+   - 局卦層(六爻成卦時讀):`docs/superpowers/specs/2026-06-30-bagua-64-energy-demand-table.md`(64 卦需求表,v0.1 待終審)
 
    若本地找不到(skill 被安裝在 repo 之外),改抓 canonical 網址(單一真相源,更新所有安裝點自動跟上):
    - `https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/octenso/octenso-states-schema-v0.1.yaml`
    - `https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/octenso/daoliyong-lens-schema-v0.2.yaml`
    - `https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/octenso/daoliyong-data.js`
+   - `https://raw.githubusercontent.com/flow222git/jte-platform-2026/main/docs/superpowers/specs/2026-06-30-bagua-64-energy-demand-table.md`
 
    guardrails G1–G8 是硬規則,不可覆寫(對⑤⑥段同樣適用);verdicts 值域、context_declaration、output_spec 照辦。
 2. **取素材**:貼上文字直接用;公開網址→抓取轉純文字;Google Drive 連結→用 Drive 工具讀取。語音轉文字原稿錯字多,以語意為準,引文照原文抄錄。
@@ -25,7 +27,7 @@ description: 八態鏡透鏡判讀——用 states-schema 讀「運作」(會議
 4. **判讀輸出**(照 output_spec):
    - 第一行:「素材類型(使用者宣告):X · AI 判讀 · 引文可查」
    - 八態逐一列 presence(有料/薄/缺席),一態不可省略;每條判定附**逐字引文**(G5),引不出來=缺席(無資料)
-   - ①缺席清單(依 context_declaration 分「警示/本型態預期」,含補問建議)→②失衡疑似(型態不適用則註明)→③強態圖景→④四系統各一句小結→⑤三角形體檢(理/用/道逐層 presence+逐字引文,一層不可省略;後接三隅箴警示,⑤段附量形描述一句)→⑥判卦與轉化參考(工作假說·待收斂,依 schema guapan 區塊):剛柔判定表(三爻各判剛/柔+安/動,每格附逐字引文)→本卦(以 guaOf 反查:卦名+副題+此局死角)→變爻(三源合流:脈絡動爻→宣告校正→菜單兜底)→之卦(以 bianOf 反查:轉化腳本+新死角);必附聲明「此卦由素材判讀推導,非起卦占斷;變爻是處方,不是預言。」;不成卦時明文聲明+缺哪爻+補問,⑥退回 bestUse 對照引用(至多 2 個、必附死角、寧缺勿濫)
+   - ①缺席清單(依 context_declaration 分「警示/本型態預期」,含補問建議)→②失衡疑似(型態不適用則註明)→③強態圖景→④四系統各一句小結→⑤三角形體檢(理/用/道逐層 presence+逐字引文,一層不可省略;後接三隅箴警示,⑤段附量形描述一句)→⑥判卦與轉化參考(工作假說·待收斂,依 schema guapan 區塊):剛柔判定表(三爻各判剛/柔+安/動,每格附逐字引文)→本卦(以 guaOf 反查:卦名+副題+此局死角)→變爻(三源合流:脈絡動爻→宣告校正→菜單兜底)→之卦(以 bianOf 反查:轉化腳本+新死角);必附聲明「此卦由素材判讀推導,非起卦占斷;變爻是處方,不是預言。」;不成卦時明文聲明+缺哪爻+補問,⑥退回 bestUse 對照引用(至多 2 個、必附死角、寧缺勿濫)。素材厚時(內外兩池各撐三爻,依 schema guapan.liuyao 分池規則與升級門檻)自動升六爻版:分池剛柔判定表(6 格,每格剛柔+安動+引文+歸池依據)→本卦(內卦×外卦,查 64 需求表:卦旨/時勢基調/召喚節制/經典依據;內外卦各自的 MODES 腳本可引)→召喚對照(64 表召喚/節制×①–④presence:召喚而缺席=首要功課)→動爻+轉化菜單(依 liuyao 動爻規則)→之卦(64 表反查+新死角);掛雙假說印章;六爻成卦時三爻版省略;六爻不成退回三爻版並註明缺哪池
    - 主詞永遠是「這場會議/這份文件的運作」;禁「你是/他是/這種人」(G4);禁總分/排名/建議錄取/投資建議/預測(G1/G6);interview/observation 依 G7 降級;interview/observation 型不輸出⑤⑥(依 G7 不適用,報告中明文註記)
 5. **正式收斂測試**(使用者要求時):派兩個獨立 subagent 盲判(prompt 一字不差、互不知對方、只准讀 schema+素材),對答案算 presence 一致率與引文重疊,分歧回填 schema 混淆對照。
 6. **語彙收割**:判讀後使用者改過的措辭、順手的好句,提議收進 `docs/octenso/material-pool.md`(狀態標`原始`,走既有出貨動線)。
@@ -38,8 +40,8 @@ description: 八態鏡透鏡判讀——用 states-schema 讀「運作」(會議
    - **語彙**:使用者的改寫(候選:material-pool)
    - **schema 缺口**:判讀時自己卡住或引文找不到判準的地方
    - **三層判定分歧**:⑤⑥段的判定或腳本引用被不服(候選:三層混淆對照/三隅箴門檻/引用規則)
-   - **判卦分歧**:本卦不服/變爻不服/之卦不服分開記(三個部位校準訊號不同;候選:剛柔判準/變爻判定律)
-9. **進化觸發**:使用者說「進化一下八態鏡」(或同義)時——把累積待辦整理成 schema 修訂提案給使用者過目,核准後修訂、跑 `python3 tools/check-states-schema.py` 與相關迴歸、開分支 PR。紅線:G1–G8 凍結;八態定義本體動之前必須逐條經 Simon 核准;三層定義與三隅箴同等待遇(daoliyong-lens-schema 修訂同走本流程,檢查器:python3 tools/check-daoliyong-lens-schema.py,本機無 python 用 node tools/smoke-daoliyong-lens-schema.mjs);剛柔判準三表與變爻判定律亦同(動之前逐條經 Simon 核准);混淆對照只增不減;版號=內容修訂走 0.1.x,**升 0.2 唯一途徑是真實素材雙盲收斂達標**(schema acceptance)。
+   - **判卦分歧**:本卦不服/變爻不服/之卦不服分開記(三個部位校準訊號不同;候選:剛柔判準/變爻判定律);六爻:分池歸屬不服也記(候選:歸池三原則)
+9. **進化觸發**:使用者說「進化一下八態鏡」(或同義)時——把累積待辦整理成 schema 修訂提案給使用者過目,核准後修訂、跑 `python3 tools/check-states-schema.py` 與相關迴歸、開分支 PR。紅線:G1–G8 凍結;八態定義本體動之前必須逐條經 Simon 核准;三層定義與三隅箴同等待遇(daoliyong-lens-schema 修訂同走本流程,檢查器:python3 tools/check-daoliyong-lens-schema.py,本機無 python 用 node tools/smoke-daoliyong-lens-schema.mjs);剛柔判準三表與變爻判定律亦同(動之前逐條經 Simon 核准);分池規則與六爻規則亦同;混淆對照只增不減;版號=內容修訂走 0.1.x,**升 0.2 唯一途徑是真實素材雙盲收斂達標**(schema acceptance)。
 
 ## 誠實邊界
 
