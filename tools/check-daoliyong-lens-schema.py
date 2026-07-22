@@ -34,7 +34,7 @@ def main():
     doc = yaml.safe_load(raw)
 
     meta = doc.get("meta", {})
-    check("meta.version == 0.3-draft", str(meta.get("version")) == "0.3-draft", f"got {meta.get('version')!r}")
+    check("meta.version == 0.3.1-draft", str(meta.get("version")) == "0.3.1-draft", f"got {meta.get('version')!r}")
     check("meta.status 掛研究假設", "研究假設" in str(meta.get("status", "")))
     check("guardrails_ref 指向 states-schema", "states-schema" in str(meta.get("guardrails_ref", "")))
     check("canonical_ref 指向 data.js", "daoliyong-data.js" in str(meta.get("canonical_ref", "")))
@@ -98,6 +98,14 @@ def main():
 
     zh = gp.get("剛柔判準註", {})
     check("剛柔判準註兩條", "非相對比較" in str(zh.get("絕對質性", "")) and "動力來源" in str(zh.get("亢溺判別", "")))
+    jl = gp.get("判讀紀律", {})
+    check("判讀紀律四鍵+次型原則", all(x in jl for x in ["證據純化律", "同爻雙訊號裁決", "成爻門檻", "素材次型註記", "次型原則"]))
+    check("爻疑在位", "爻疑" in str(jl.get("同爻雙訊號裁決", "")))
+    check("孤證不成爻", "孤證" in str(jl.get("成爻門檻", "")))
+    check("次型四型", isinstance(jl.get("素材次型註記"), list) and len(jl["素材次型註記"]) == 4)
+    gk = gp.get("歸格例句庫", [])
+    check("歸格例句庫六條", isinstance(gk, list) and len(gk) >= 6)
+    check("以小觀大階梯", "以小觀大" in str(ly.get("升級門檻", "")) and "半象" in str(ly.get("升級門檻", "")) and "爻象深讀" in str(ly.get("升級門檻", "")))
     ly = gp.get("liuyao", {})
     check("liuyao 子區塊在位", bool(ly))
     check("雙假說印章", "雙印章" in str(ly.get("status", "")))
