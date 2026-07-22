@@ -719,13 +719,14 @@ function renderResult(samples){
   d.appendChild(card);
   app.appendChild(d);
 
-  // 量測底部列（看趨勢／再量一次）先放上，渲染不卡在讀記錄
+  // 量測底部列（看趨勢／回開始）先放上，渲染不卡在讀記錄
+  // 量完＋標記完的出口是回 HRV 首頁，不重啟量測（要再量從首頁「開始量測」進）
   const inner=document.createElement('div');inner.className='bar-inner';
   const trend=document.createElement('button');trend.className='btn-ghost';trend.textContent=jteT('btn.trend','看趨勢');
   trend.onclick=function(){ renderTrend(); };
-  const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.again','再量一次');
-  again.onclick=function(){ renderMeasure(); };
-  inner.appendChild(trend);inner.appendChild(again);
+  const home=document.createElement('button');home.className='btn btn-primary';home.textContent=jteT('btn.home','回開始');
+  home.onclick=function(){ renderIntro(); };
+  inner.appendChild(trend);inner.appendChild(home);
   bar.appendChild(inner);
 
   // 取「過去」HRV 記錄（不含本次）→ baseline → 身體能量分數，再渲染 hero
