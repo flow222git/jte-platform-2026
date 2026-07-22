@@ -17,7 +17,7 @@ const has = (s) => t.includes(s);
 const count = (s) => t.split(s).length - 1;
 
 // meta 與誠實標記
-ck('meta.version 0.3-draft', /version:\s*"0\.3-draft"/.test(t));
+ck('meta.version 0.3.1-draft', /version:\s*"0\.3\.1-draft"/.test(t));
 ck('研究假設標記', has('研究假設'));
 ck('guardrails_ref 參照 G1–G8', has('guardrails_ref') && has('G1'));
 ck('canonical_ref 指向 data.js', has('canonical_ref') && has('daoliyong-data.js'));
@@ -76,6 +76,15 @@ ck('召喚對照', has('召喚對照') && has('召喚而缺席=首要功課'));
 ck('輸出關係', has('輸出關係') && has('三爻版省略'));
 ck('剛柔判準註:絕對質性', has('絕對質性') && has('非相對比較'));
 ck('剛柔判準註:亢溺判別', has('自驅過極=亢') && has('被外牽走=溺'));
+
+// 判讀紀律六律(v0.3.1)
+ck('判讀紀律區塊', has('判讀紀律:'));
+ck('證據純化律', has('證據純化律') && has('這是誰的行為'));
+ck('雙訊號裁決+爻疑', has('同爻雙訊號裁決') && has('爻疑'));
+ck('成爻門檻:孤證', has('成爻門檻') && has('孤證'));
+ck('素材次型四型', has('宣言型') && has('調查型') && has('內部報告型') && has('成功敘事型'));
+ck('歸格例句庫', has('歸格例句庫:') && has('不敢休') && has('意義真空') && has('怎麼做都不夠好'));
+ck('以小觀大四階', has('以小觀大') && has('半象') && has('爻象深讀') && has('局部深探'));
 
 // 防複寫(八態專屬欄位與模式副題不得出現)
 for (const bad of ['主稱呼', '雅稱', '分支角色', '低載信號', '成熟表現',
