@@ -17,7 +17,9 @@ const has = (s) => t.includes(s);
 const count = (s) => t.split(s).length - 1;
 
 // meta 與誠實標記
-ck('meta.version 0.3.1-draft', /version:\s*"0\.3\.1-draft"/.test(t));
+ck('meta.version 0.3.2-draft', /version:\s*"0\.3\.2-draft"/.test(t));
+ck('例句庫裁定二條(0.3.2)', has('無對沖的極化語言') && has('建制描述'));
+ck('道理用總綰', has('道理用總綰') && has('素材不及,待補'));
 ck('研究假設標記', has('研究假設'));
 ck('guardrails_ref 參照 G1–G8', has('guardrails_ref') && has('G1'));
 ck('canonical_ref 指向 data.js', has('canonical_ref') && has('daoliyong-data.js'));
