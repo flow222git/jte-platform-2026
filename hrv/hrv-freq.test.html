@@ -85,12 +85,15 @@ async function run(){
   // === 端到端：相機 PPG → RR → 頻域 → 四指數（誠實把關邊界）===
   // 合成乾淨 PPG（沿用 analyze 測試的形狀：{t,v}，含 RR 微抖以產生 HRV）
   function synthPpgRr(bpm, durSec, fs){
-    fs=fs||30; var s=[], n=Math.round(durSec*fs), t=0, nextBeat=0, beatI=0;
+    fs=fs||30; var s=[], n=Math.round(durSec*fs), ph=0;
     for(var i=0;i<n;i++){
-      t=i*1000/fs;
+      var t=i*1000/fs;
       // 以正弦近似脈搏；瞬時頻率隨呼吸（0.25Hz）微調 → 產生 RR 變異
+      // 頻率調變必須用相位累加（ph += 2π·f·dt）；寫成 sin(2π·inst·t) 的瞬時頻率
+      // 會多出 t·(d inst/dt) 項、隨 t 無限放大成 chirp，後段完全不像脈搏
       var inst=bpm/60*(1+0.06*Math.sin(2*Math.PI*0.25*t/1000));
-      var v=Math.sin(2*Math.PI*inst*t/1000) + (Math.random()-0.5)*0.05;
+      ph+=2*Math.PI*inst/fs;
+      var v=Math.sin(ph) + (Math.random()-0.5)*0.05;
       s.push({t:t, v:50+v});
     }
     return s;
