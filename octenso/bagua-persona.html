@@ -1076,7 +1076,7 @@ function renderSharedReport(sc,name){
   document.getElementById('compat').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey,null));
-  bindRadar(pf,null);
+  bindRadar(pf,null,topKey);
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
 }
@@ -1889,9 +1889,10 @@ function radarSelect(k,pf,conf){
   for(var i=0;i<gs.length;i++){ gs[i].style.opacity=(gs[i].getAttribute('data-k')===k)?'1':'0.75'; }
 }
 // 雷達互動膠水：預設選中最鮮明的一態＋綁定點角切換（showResult／renderSharedReport 共用）
-function bindRadar(pf,conf){
+// fbK：pf 建置失敗（OctensoProfile 未載入）時的後備態 key，讓解釋卡仍能初始化
+function bindRadar(pf,conf,fbK){
   var wrap=document.getElementById('radar-wrap'); if(!wrap) return;
-  if(pf) radarSelect(pf.ranked[0].k,pf,conf);
+  radarSelect(pf?pf.ranked[0].k:fbK,pf,conf);
   wrap.classList.add('rint');
   var gs=wrap.querySelectorAll('g.rgrp');
   for(var gi=0;gi<gs.length;gi++){ (function(g){ g.addEventListener('click',function(){ radarSelect(g.getAttribute('data-k'),pf,conf); }); })(gs[gi]); }
@@ -2036,7 +2037,7 @@ function showResult(viewScores){
   document.getElementById('cover').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
-  bindRadar(pf,conf);
+  bindRadar(pf,conf,topKey);
   renderFacetMenu();
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);

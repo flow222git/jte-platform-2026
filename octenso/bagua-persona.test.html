@@ -667,6 +667,14 @@ document.getElementById('f').onload=function(){
     // 分享檢視 full 內容:無舊版速寫圓(ensoSVG),命名沿用 signatureTitle(pn 格式)
     ok(String(w.renderSharedReport).indexOf('ensoSVG(')===-1,'分享檢視組裝不呼叫 ensoSVG(舊版速寫圓)');
     ok(d.querySelector('.tc-title').textContent.indexOf('(')>0,'分享檢視峰名沿用 者名(卦) 格式');
+    // 55b. bindRadar pf 空後備:OctensoProfile 未載入(pf=null)時,解釋卡仍以 topKey 後備初始化(不留白)
+    var savedOP=w.OctensoProfile;
+    try{
+      w.OctensoProfile=undefined;
+      w.renderSharedReport(rsc0,'阿明');
+      var fbd=d.getElementById('radar-detail');
+      ok(!!fbd && fbd.style.display==='block' && fbd.textContent.trim().length>0,'pf 空時解釋卡仍以 topKey 後備初始化(非空白)');
+    }finally{ w.OctensoProfile=savedOP; }
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
