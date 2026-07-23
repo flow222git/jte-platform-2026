@@ -1054,7 +1054,7 @@ function renderSharedReport(sc,name){
   var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
   var who=name?escH(name):'某人', code=encodeCode(sc), port=buildPortrait(sc,sorted);
   var kws=sorted.slice(0,3).map(function(k){ return '#'+fn1(k); }).join('　');
-  var full=portraitNarrative(pf,null)
+  var full=portraitNarrative(pf,null,null,null)
     +outlineBlock(sc,pf,null,null)
     +systemsSection(sc)
     +'<div class="block"><h3>'+((pf&&pf.signature.kind==='pattern')?'TA 的整體能量':'TA 最鮮明的能量')+'</h3>'+(pf?strengthsHtml(pf):'')+'</div>';
@@ -1271,7 +1271,7 @@ function ensoSVG(pf){
     +'<path d="'+d+'" fill="none" stroke="#a9823b" stroke-width="1.4" opacity=".5"/>'+dots+'</svg>';
 }
 // 解讀文字引擎（依 2026-06-21 解讀規則 spec）：三拍各守一個能格層、並存不捏因果、價值中性
-function portraitNarrative(pf, costItems, neutral){
+function portraitNarrative(pf, costItems, neutral, conf){
   if(!pf) return '';
   function q(k){return '「'+fn1(k)+'」';}
   // 能格分類（單股自己的事）
@@ -1306,11 +1306,28 @@ function portraitNarrative(pf, costItems, neutral){
   // ── 拍3 缺口（不足空間·只它自己的價值，spec 拍3/C1）──
   var gapK=(unders.length?unders[0]:(pf.gaps[0]||pf.ranked[pf.ranked.length-1].k));
   var b3='你最少動用的是'+q(gapK)+'——它能帶來'+READ_LEX[gapK].gap+'。這是你最有空間的地方，刻意給它一點練習，會讓你更完整。';
-  return '<div class="block"><h3>能量速寫</h3>'
-    +ensoSVG(pf)
-    +'<div class="portrait">'+b1+'</div>'
+  // ── v3.2 開場總述(零術語;地形→策略:jagged→contrast,峰型→peak,其餘→level)──
+  var R=window.REPORT_V32, open=null;
+  if(R){
+    var shape=pShapeKey(pf), lead=pf.ranked[0].k, low=pf.ranked[pf.ranked.length-1].k;
+    if(shape==='jagged') open=R.OPEN.contrast(R.PLAIN[lead],R.PLAIN[low]);
+    else if(shape==='single'||shape==='dual'||shape==='multi') open=R.OPEN.peak(pf.leads.slice(0,2).map(function(k){return R.PLAIN[k];}));
+    else open=R.OPEN.level(pf.level.band);
+  }
+  // 場景段:峰型用最高態場景,否則 pattern
+  var sceneK=(pf.signature.kind==='pattern')?'pattern':pf.leads[0];
+  var scene=(R&&R.SCENE[sceneK])||'';
+  // 整體可信度一句(逐態細節在雷達解釋卡)
+  var mixedN=0; if(conf){ EKEYS.forEach(function(k){ if(conf[k]==='mixed') mixedN++; }); }
+  var trust=mixedN?('大部分的題目你答得乾脆，輪廓可以放心讀；有 '+mixedN+' 個態你答得比較猶豫（雷達上點開標「兩可」的那幾角），那些分數請當作大概的位置。')
+                  :'這次的題目你都答得乾脆，這份輪廓可以放心讀。';
+  return '<div class="block" id="narrative-block"><h3>整體的你</h3>'
+    +(open?'<div id="narrative-open">'+open.story+'<span class="punch" style="display:block;margin-top:10px;color:var(--ink);font-weight:600">'+open.punch+'</span></div>':'')
+    +'<div class="portrait" style="margin-top:12px">'+b1+'</div>'
     +'<div class="portrait" style="margin-top:11px">'+b2+'</div>'
     +'<div class="portrait" style="margin-top:11px">'+b3+'</div>'
+    +(scene?'<div class="portrait" style="margin-top:11px">'+scene+'</div>':'')
+    +'<div class="pair-foot" style="margin-top:10px">'+trust+'</div>'
   +'</div>';
 }
 
@@ -1938,8 +1955,8 @@ function showResult(viewScores){
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
    +radarCard(now)
+   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})(), conf)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
-   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})())
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
    +calibBlock(sc)

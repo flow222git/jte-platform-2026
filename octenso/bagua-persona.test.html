@@ -113,6 +113,22 @@ document.getElementById('f').onload=function(){
     w.answers=new Array(24).fill(2); w.showResult();
     ok(d.querySelectorAll('.rlabel').length===8,'8 radar labels, got '+d.querySelectorAll('.rlabel').length);
 
+    // 52. v3.2 敘事:總述先行、零術語開場、無速寫圓、含場景段
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
+    w.showResult();
+    var nb=d.getElementById('narrative-open');
+    ok(nb,'總述區存在');
+    ok(!/[乾坤震巽坎離艮兌]/.test(nb.textContent),'總述零術語(不含卦名)');
+    ok(d.querySelector('.punch'),'punch 句存在');
+    var blk=d.getElementById('result').innerHTML;
+    ok(blk.indexOf('整體的你')>=0,'敘事區標題=整體的你');
+    ok(blk.indexOf('如果這是你')>=0,'含場景段');
+    ok(!d.querySelector('#narrative-block svg'),'敘事區無圓相圖');
+    ok(typeof w.ensoSVG==='function','ensoSVG 函式保留(能量印記)');
+    // 順序:雷達 < 敘事 < 四個系統
+    ok(blk.indexOf('radar-wrap')<blk.indexOf('整體的你'),'雷達在敘事前');
+
     // 7. 底色 vs 此刻 — no snapshot → fallback CTA
     w.localStorage.removeItem('bagua_now_v1');
     ok(w.readNow()===null,'readNow null when no snapshot');
@@ -473,9 +489,10 @@ document.getElementById('f').onload=function(){
     ok(w.leadSentence(pfLead,{li:'mixed'}).indexOf('兩可')>=0,'L4 主調兩可→加脈絡');
     ok(w.leadSentence(pfLead,null).indexOf('兩可')<0,'L4 無 conf→不加脈絡');
     // 能量速寫 render（取代整合/人物速寫）
+    // v3.2: 標題「能量速寫」改為「整體的你」(task-4 敘事總述先行) — 保留本測試改斷言新標題
     w.answers=new Array(w.QUESTIONS.length).fill(2); w.currentFacet=null; w.showResult();
     var rhtml=d.getElementById('result').innerHTML;
-    ok(rhtml.indexOf('能量速寫')>=0,'能量速寫 render in result');
+    ok(rhtml.indexOf('整體的你')>=0,'整體的你 render in result');
     ok(rhtml.indexOf('整合 · 立體的你')<0 && rhtml.indexOf('人物速寫')<0,'舊整合/人物速寫已移除');
     // portraitNarrative 單元（解讀規則 spec）：三拍、缺口收尾、能格織入與退回
     var pfM=P.build({zhen:88,qian:78,li:78,dui:75,kun:74,xun:72,gen:72,kan:70});
@@ -493,8 +510,9 @@ document.getElementById('f').onload=function(){
     // 能量印記 canvas 產出
     var ec=w.buildEnsoCanvas({qian:72,li:62,zhen:82,dui:45,kun:55,kan:78,gen:38,xun:60},'行動沉澱者',['zhen','kan'],'gen');
     ok(ec&&ec.tagName==='CANVAS'&&ec.width===640,'能量印記 canvas 產出');
-    // 能量速寫含 ensō 圓（svg path）
-    ok(w.portraitNarrative(pfM,null).indexOf('<svg')>=0,'能量速寫含能量圓 svg');
+    // v3.2: 敘事區不再含 ensō 圓(圓相圖移除;ensoSVG 函式仍保留給能量印記分享用) — 斷言改為「不含」
+    ok(w.portraitNarrative(pfM,null).indexOf('<svg')<0,'v3.2 敘事區已移除能量圓 svg');
+    ok(typeof w.ensoSVG==='function','ensoSVG 函式仍保留(能量印記分享用)');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
     // 38. selectFlagged：高→over、低→under、上限4、全中→無
