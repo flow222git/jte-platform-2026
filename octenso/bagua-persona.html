@@ -1901,14 +1901,37 @@ function outlineBlock(sc,pf,now,conf){
     +'<div class="trait-row"><b style="color:var(--pine)">少用</b><span>'+(gap?('比較少動用 <b>'+gap+'</b>，是還有空間的部分'):'沒有明顯空白，每種能量你多少都在用')+'</span></div>'
   +'</div>';
 }
-// 四個系統（折疊）：每系統＝說明（淡）＋你的結果（pine 面板）
+// 四個系統（主線）：每系統＝音量條(者名(卦)+數字)＋結論 tag＋詳細白話＋小練習
 function systemsSection(sc){
-  return '<details class="rsec" open>'
-    +'<summary><span>四個系統 · 你怎麼運作<span class="rsum-hint">八態兩兩成一系統：建構 → 推動 → 認知 → 調節</span></span><span class="rchev">▾</span></summary>'
-    +'<div class="rbody">'+fourXiangHtml(sc)
-      +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；看的是系統怎麼運作，不是好壞。</div>'
-    +'</div>'
-  +'</details>';
+  var R=window.REPORT_V32; if(!R) return '';
+  function shapeOf(L,Rv){
+    if(L>=60&&Rv>=60) return 'bothHigh';
+    if(L<=40&&Rv<=40) return 'bothLow';
+    if(Math.abs(L-Rv)<PAIR_EVEN_GAP) return 'even';
+    return L>Rv?'left':'right';
+  }
+  function bar(k,v,on){
+    return '<div class="pole-row" style="display:flex;align-items:center;gap:10px;margin:6px 0">'
+      +'<span style="flex:none;width:6.8em;font-size:13px;color:var(--ink)">'+pn(k)+'</span>'
+      +'<div style="flex:1;height:9px;background:var(--surface2);border-radius:5px;overflow:hidden"><i style="display:block;height:100%;border-radius:5px;width:'+v+'%;background:'+(on?'var(--pine)':'var(--line)')+';opacity:.8"></i></div>'
+      +'<span style="flex:none;width:2em;text-align:right;font-family:ui-sans-serif,sans-serif;font-size:11.5px;color:var(--muted)">'+v+'</span></div>';
+  }
+  var TAG={left:'偏',right:'偏',bothHigh:'雙高',bothLow:'雙低',even:'均衡'};
+  var html=Object.keys(R.SYS_DETAIL).map(function(s){
+    var dta=R.SYS_DETAIL[s], L=sc[dta.l]||0, Rv=sc[dta.r]||0, sh=shapeOf(L,Rv), item=dta.shapes[sh];
+    var tag=(sh==='left')?('偏'+fn1(dta.l)):(sh==='right')?('偏'+fn1(dta.r)):TAG[sh];
+    var tens=(s==='drive'&&sh==='bothHigh');
+    return '<div style="padding:18px 0;border-top:1px solid var(--surface2)">'
+      +'<h4 style="font-size:15.5px;color:var(--ink);margin-bottom:8px">'+dta.nm+' · <b style="color:'+(tens?'var(--cinnabar)':'var(--pine)')+'">'+tag+(tens?'（張力）':'')+'</b></h4>'
+      +bar(dta.l,L,sh==='left'||sh==='bothHigh')+bar(dta.r,Rv,sh==='right'||sh==='bothHigh')
+      +'<div style="font-size:13px;color:var(--muted);margin-top:8px">'+dta.pull+'</div>'
+      +'<div style="margin-top:8px">'+item.read+'</div>'
+      +'<div style="margin-top:8px;padding-left:12px;border-left:2px solid var(--surface2);font-size:13.5px"><b style="color:var(--pine)">小練習</b>：'+item.prac+'</div>'
+    +'</div>';
+  }).join('');
+  return '<div class="block" id="sys-detail"><h3>四個系統 · 你怎麼運作</h3>'+html
+    +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；四對之中只有「推動（雷風）」雙高會互相較勁，其餘皆相成。</div>'
+  +'</div>';
 }
 // A／A⁺ 字級切換
 function setFs(big){

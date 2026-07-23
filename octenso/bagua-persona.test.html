@@ -59,7 +59,9 @@ document.getElementById('f').onload=function(){
     w.showResult();
     var rc=d.getElementById('result').innerHTML;
     ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
-    ok(rc.indexOf('完整的格局')>=0,'建構(乾坤)雙高 → 完整的格局(天地定位·非張力)');
+    // v3.2 Task5:systemsSection 改為 SYS_DETAIL 詳解,原 fourXiangHtml「完整的格局」文字不再進主線；
+    // C1 意圖(乾坤雙高=完整格局非張力)改由 SYS_DETAIL build.bothHigh.read「完整的建構格局」承接
+    ok(rc.indexOf('完整的建構格局')>=0,'建構(乾坤)雙高 → 完整的建構格局(天地定位·非張力)');
 
     // 4e. 確信度：qian 三題都 5（一致＋極端→篤定）；kan 三題 0/5/2（分散→兩可）
     w.answers=new Array(24).fill(2);
@@ -128,6 +130,24 @@ document.getElementById('f').onload=function(){
     ok(typeof w.ensoSVG==='function','ensoSVG 函式保留(能量印記)');
     // 順序:雷達 < 敘事 < 四個系統
     ok(blk.indexOf('radar-wrap')<blk.indexOf('整體的你'),'雷達在敘事前');
+
+    // 53. v3.2 四系統加詳
+    var sysB=d.getElementById('sys-detail');
+    ok(sysB,'四系統詳解區存在');
+    ok(sysB.textContent.indexOf('建構')>=0 && sysB.textContent.indexOf('調節')>=0,'含 canonical 系統名');
+    ok(sysB.textContent.indexOf('小練習')>=0,'含小練習');
+    ok(sysB.querySelectorAll('.pole-row').length===8,'8 條音量條');
+    ok(sysB.textContent.indexOf('協作者(巽)')>=0,'音量條用 者名(卦)');
+    // C1:乾坤雙高=完整格局非張力;震巽雙高=張力
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='zhen'||q.k==='xun') w.answers[i]=5; });
+    w.showResult();
+    ok(d.getElementById('sys-detail').textContent.indexOf('張力')>=0,'震巽雙高 → 張力');
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian'||q.k==='kun') w.answers[i]=5; });
+    w.showResult();
+    var sdt=d.getElementById('sys-detail').textContent;
+    ok(sdt.indexOf('張力')<0,'乾坤雙高 → 不標張力');
 
     // 7. 底色 vs 此刻 — no snapshot → fallback CTA
     w.localStorage.removeItem('bagua_now_v1');
@@ -462,7 +482,9 @@ document.getElementById('f').onload=function(){
     ok(pblk,'pair block rendered in result');
     ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
     ok(d.querySelector('#result').textContent.indexOf('四個系統')>=0,'四個系統 section present');
-    ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四對 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
+    // v3.2 Task5:systemsSection 改用 SYS_DETAIL 音量條(.pole-row),原 fourXiangHtml 的 .pair-bar
+    // 暫時不進主線(留給 Task 6 收納進深讀折疊區)；改斷言新結構的 8 條 .pole-row
+    ok(d.querySelectorAll('#result .pole-row').length===8,'結果頁四系統 8 條音量條, got '+d.querySelectorAll('#result .pole-row').length);
     ok(d.querySelector('#result').textContent.indexOf('不是非此即彼')>=0,'systems honest line present');
 
     // ── L1–L5 整合解讀 ──────────────────────────────────────
