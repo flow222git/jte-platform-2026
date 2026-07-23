@@ -286,8 +286,10 @@
       b2 = '你這幾股用得很<b>平均</b>——而你也確認了，這是真的<b>平衡、有彈性</b>：面對不同場面，你都換得了檔、接得住。';
     } else if (ctx.neutral === 'undev') {
       b2 = '你這幾股用得很<b>平均</b>——你說還在摸索；那也好，表示你<b>最有可塑性</b>，正適合多方嘗試，慢慢長出自己最鮮明的那幾股。';
-    } else {
+    } else if (!ctx.hasCost) {
       b2 = '你這幾股用得挺<b>平均</b>——可能是平衡、有彈性，也可能是還在摸索、還沒長開。';
+    } else {
+      b2 = '整體看，你這幾股用得大致剛好，沒有明顯過頭的一股。';
     }
     // ── 拍3 缺口（不足空間·只它自己的價值，spec 拍3/C1）──
     var gapK = (unders.length ? unders[0] : (pf.gaps[0] || pf.ranked[pf.ranked.length - 1].k));
@@ -355,7 +357,9 @@
   }
   function systemsHtml(ctx) { return systemsCore(ctx.scores || {}); }
 
-  // ── build(input)→ctx：input={scores,conf,overs,unders,neutral,now}；ctx=input+{pf,topKey} ──
+  // ── build(input)→ctx：input={scores,conf,overs,unders,neutral,now,hasCost}；ctx=input+{pf,topKey} ──
+  // hasCost：本輪是否有校準(cost)資料——對齊 persona.html portraitNarrative 原本的 `!costItems||!costItems.length`
+  // 判斷，決定 narrativeCore b2 末兩分支走「還沒長開」或「大致剛好」；未提供時預設 false。
   function build(input) {
     input = input || {};
     var scores = input.scores || {};
@@ -366,6 +370,7 @@
     for (var key in input) { if (Object.prototype.hasOwnProperty.call(input, key)) ctx[key] = input[key]; }
     ctx.pf = pf;
     ctx.topKey = topKey;
+    ctx.hasCost = !!input.hasCost; // 校準資料是否存在(見 narrativeCore b2 末兩分支)；未給預設 false
     return ctx;
   }
 

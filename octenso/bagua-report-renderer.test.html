@@ -26,6 +26,10 @@ try{
   ok(nar.indexOf('比較猶豫')>=0||nar.indexOf('答得乾脆')>=0,'conf 有值 → 可信度句');
   var nar2=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null}));
   ok(nar2.indexOf('答得乾脆')<0 && nar2.indexOf('比較猶豫')<0,'conf=null → 不虛稱');
+  var narCostTrue=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null,hasCost:true}));
+  ok(narCostTrue.indexOf('大致剛好')>=0,'hasCost=true 且無過用 → 大致剛好句');
+  var narCostFalse=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null,hasCost:false}));
+  ok(narCostFalse.indexOf('還沒長開')>=0 && narCostFalse.indexOf('大致剛好')<0,'hasCost=false(預設) → 摸索/還沒長開句');
   var sys=RP.systemsHtml(ctx);
   ok(sys.indexOf('sys-detail')>=0 && sys.indexOf('建構')>=0 && sys.indexOf('小練習')>=0,'systemsHtml');
   ok(sys.indexOf('協作者(巽)')>=0,'系統列 者名(卦)');
