@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title>
+<script src="bagua-report-v32-data.js"></script></head><body><pre id="out">running...</pre>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+try{
+  var R=window.REPORT_V32, EK=['qian','kun','zhen','xun','kan','li','gen','dui'];
+  ok(!!R,'REPORT_V32 存在');
+  // PLAIN:八態零術語短語,不得含卦名字元(零術語紀律)
+  EK.forEach(function(k){
+    ok(R.PLAIN[k] && R.PLAIN[k].lamp && R.PLAIN[k].short, 'PLAIN.'+k+' 完整');
+    ok(!/[乾坤震巽坎離艮兌]/.test(R.PLAIN[k].lamp+R.PLAIN[k].short), 'PLAIN.'+k+' 零術語');
+  });
+  // SCENE:8+pattern
+  EK.forEach(function(k){ ok(typeof R.SCENE[k]==='string' && R.SCENE[k].length>20, 'SCENE.'+k); });
+  ok(typeof R.SCENE.pattern==='string','SCENE.pattern');
+  // OPEN:三策略,回 {story,punch},story 零術語
+  var o1=R.OPEN.contrast(R.PLAIN.qian,R.PLAIN.gen);
+  ok(o1.story && o1.punch && !/[乾坤震巽坎離艮兌]/.test(o1.story+o1.punch),'OPEN.contrast 零術語');
+  ok(o1.punch.indexOf(R.PLAIN.qian.short)>=0 && o1.punch.indexOf(R.PLAIN.gen.short)>=0,'contrast punch 含兩端短語');
+  var o2=R.OPEN.peak([R.PLAIN.qian]); ok(o2.story && o2.punch,'OPEN.peak 單峰');
+  var o2b=R.OPEN.peak([R.PLAIN.qian,R.PLAIN.li]); ok(o2b.story.indexOf(R.PLAIN.li.lamp)>=0,'OPEN.peak 雙峰含第二盞燈');
+  ['high','low','mid'].forEach(function(b){ var o3=R.OPEN.level(b); ok(o3.story && o3.punch,'OPEN.level '+b); });
+  // SYS_DETAIL:四系統 × 五形,名用 canonical
+  var SYS={build:'建構',drive:'推動',aware:'認知',regulate:'調節'};
+  Object.keys(SYS).forEach(function(s){
+    var d=R.SYS_DETAIL[s];
+    ok(d && d.nm===SYS[s], s+' 系統名='+SYS[s]);
+    ok(d.pull && d.pull.length>10, s+'.pull');
+    ['left','right','bothHigh','bothLow','even'].forEach(function(sh){
+      ok(d.shapes[sh] && d.shapes[sh].read.length>30 && d.shapes[sh].prac.length>10, s+'.'+sh+' read+prac');
+    });
+  });
+  // C1:僅推動(雷風)雙高文案可含「張力」;建構雙高不可
+  ok(R.SYS_DETAIL.drive.shapes.bothHigh.read.indexOf('張力')>=0,'推動雙高=張力');
+  ok(R.SYS_DETAIL.build.shapes.bothHigh.read.indexOf('張力')<0,'建構雙高非張力');
+}catch(e){ fail++; log.push('EXC: '+e.message); }
+document.title='RESULT pass='+pass+' fail='+fail;
+document.getElementById('out').textContent=document.title+'\n'+log.join('\n');
+</script></body></html>
