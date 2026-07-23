@@ -94,6 +94,8 @@ document.getElementById('f').onload=function(){
     ok(d.querySelectorAll('#radar-wrap g.rgrp').length===8,'雷達 8 個可點群組');
     var rd=d.getElementById('radar-detail');
     ok(rd && rd.textContent.indexOf('開創者(乾)')>=0,'解釋卡預設最高態(乾) 者名(卦)');
+    ok(rd && rd.style.display==='block','主結果頁 radar-detail 應為 display:block');
+    ok(w.radarCard(null).indexOf('display:none')>=0,'非互動 radarCard 預設 radar-detail 隱藏');
     // 點擊換態
     var giLi=d.querySelector('#radar-wrap g.rgrp[data-k="li"]');
     giLi.dispatchEvent(new w.Event('click',{bubbles:true}));
@@ -102,12 +104,12 @@ document.getElementById('f').onload=function(){
     var labels=Array.prototype.map.call(d.querySelectorAll('#radar-wrap text.rlabel'),function(t){return t.textContent;});
     ok(labels.indexOf('開創者')>=0 && labels.indexOf('守界者')>=0,'雷達角標=者名');
 
-    // 5. all-null doesn't throw
+    // 50. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();
     ok(sc2.qian===0,'null answers → 0');
 
-    // 6. radar has 8 score dots + 8 labels
+    // 51. radar has 8 score dots + 8 labels
     w.answers=new Array(24).fill(2); w.showResult();
     ok(d.querySelectorAll('.rlabel').length===8,'8 radar labels, got '+d.querySelectorAll('.rlabel').length);
 

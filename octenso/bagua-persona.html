@@ -127,6 +127,7 @@
 
   .radar-wrap{max-width:380px;margin:6px auto 4px}
   .radar-wrap svg{width:100%;height:auto;display:block}
+  .radar-wrap.rint g.rgrp{cursor:pointer}
   .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
   .rlabel.top{fill:var(--pine);font-weight:700}
   .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
@@ -1170,7 +1171,7 @@ function buildRadar(sc,topKey,nowNorm){
     var r=rOf(sc[k]);
     var px=cx+ux*r, py=cy+uy*r;
     var g=document.createElementNS(NS,'g');
-    g.setAttribute('class','rgrp'); g.setAttribute('data-k',k); g.style.cursor='pointer';
+    g.setAttribute('class','rgrp'); g.setAttribute('data-k',k);
     var dot=document.createElementNS(NS,'circle');
     dot.setAttribute('cx',px);dot.setAttribute('cy',py);
     dot.setAttribute('r',k===topKey?7:5);
@@ -1851,7 +1852,7 @@ function strengthsHtml(pf){
 function radarCard(now){
   return '<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div>'
     +'<div class="share-hint" style="margin-top:6px">'+(now?'松綠實線＝你的底色　·　金色虛線＝此刻。':'越往外越強。')+'點任一個角，看那一態代表什麼。</div>'
-    +'<div class="block" id="radar-detail" style="margin-top:10px;text-align:left"></div>'
+    +'<div class="block" id="radar-detail" style="margin-top:10px;text-align:left;display:none"></div>'
   +'</div>';
 }
 // 雷達解釋卡：點角切換
@@ -1865,6 +1866,7 @@ function radarSelect(k,pf,conf){
     +(b?'<span style="color:'+(b.like?'var(--gold)':'var(--muted)')+';font-size:12px">'+b.label+(b.like?'你':'')+'</span>':'')+'</div>'
     +'<div style="margin-top:6px">'+plain+'。</div>'
     +(cf?'<div style="font-size:12px;color:var(--muted);margin-top:5px">作答篤定度：'+cf+(cf==='兩可'?'——這一態解讀時請保留彈性。':'')+'</div>':'');
+  box.style.display='block';
   var gs=document.querySelectorAll('#radar-wrap g.rgrp');
   for(var i=0;i<gs.length;i++){ gs[i].style.opacity=(gs[i].getAttribute('data-k')===k)?'1':'0.75'; }
 }
@@ -1987,6 +1989,7 @@ function showResult(viewScores){
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
   var top0=pf?pf.ranked[0].k:topKey;
   radarSelect(top0,pf,conf);
+  document.getElementById('radar-wrap').classList.add('rint');
   var gs=document.querySelectorAll('#radar-wrap g.rgrp');
   for(var gi=0;gi<gs.length;gi++){ (function(g){ g.addEventListener('click',function(){ radarSelect(g.getAttribute('data-k'),pf,conf); }); })(gs[gi]); }
   renderFacetMenu();
