@@ -1,6 +1,6 @@
 # 結果頁共用 Renderer 設計 — v3.2 核心四塊抽共用+v2 系命名統一
 
-日期:2026-07-23 ｜ 狀態:設計定案,待實作 ｜ 前置:結果頁 v3.2 已上 `bagua-persona.html`(spec 2026-07-23-report-v32-demo-design.md)
+日期:2026-07-23 ｜ 狀態:已實作完成(2026-07-24,見 §5) ｜ 前置:結果頁 v3.2 已上 `bagua-persona.html`(spec 2026-07-23-report-v32-demo-design.md)
 發起:Simon——「hybrid 版本也是用這樣的結果頁嗎?」→ 同意抽共用 renderer 套到 v2 系
 
 ---
