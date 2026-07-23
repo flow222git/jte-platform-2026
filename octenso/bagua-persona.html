@@ -1980,16 +1980,16 @@ function showResult(viewScores){
    +radarCard(now)
    +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})(), conf)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
-   +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
-   +calibBlock(sc)
+   +'<details class="rsec"><summary><span>深讀 · 八態輪廓<span class="rsum-hint">每態評價 · 高低與平衡 · 主調</span></span><span class="rchev">▾</span></summary><div class="rbody">'+outlineBlock(sc,pf,now,conf)+'</div></details>'
+   +'<details class="rsec"><summary><span>深讀 · 剛剛好嗎<span class="rsum-hint">校準：亢/潛/中正</span></span><span class="rchev">▾</span></summary><div class="rbody">'+calibBlock(sc)+'</div></details>'
+   +'<details class="rsec"><summary><span>深讀 · 四向度與提醒<span class="rsum-hint">四對細節 · 能量提醒</span></span><span class="rchev">▾</span></summary><div class="rbody">'+fourXiangHtml(sc)+memoBlockHtml(sc)+'</div></details>'
    +'<div class="block">'
      +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
      +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你最鮮明的不只一股——下面分別說，它們會在你身上輪流主導。</div>':'')
      +(pf?strengthsHtml(pf)
          :'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div><div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div><div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>')
    +'</div>'
-   +memoBlockHtml(sc)
    +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'
    +ctaBlock(sc,now)
    +'<div class="block"><h3>場景耗能</h3>'

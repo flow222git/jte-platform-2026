@@ -641,6 +641,15 @@ document.getElementById('f').onload=function(){
     ok(d.getElementById('mindset').style.display==='none','最後一卡 msNext 收掉進場卡');
     ok(d.getElementById('quiz').style.display==='block','msNext → 進測驗');
 
+    // 54. v3.2 順序與折疊
+    w.answers=new Array(24).fill(3); w.showResult();
+    var H=d.getElementById('result').innerHTML;
+    var iRadar=H.indexOf('radar-wrap'), iNarr=H.indexOf('整體的你'), iSys=H.indexOf('sys-detail'), iOutline=H.indexOf('八態輪廓');
+    ok(iRadar>0 && iRadar<iNarr && iNarr<iSys,'順序:雷達<敘事<四系統');
+    ok(iSys<iOutline,'八態輪廓在四系統後(深讀)');
+    var outlineEl=Array.prototype.find.call(d.querySelectorAll('details'),function(x){return x.textContent.indexOf('八態輪廓')>=0;});
+    ok(!!outlineEl,'八態輪廓已收進折疊');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
