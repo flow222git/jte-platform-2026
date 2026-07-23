@@ -1250,27 +1250,6 @@ var PAIR_BOTHHIGH={
  'kan|li':'——既深又亮：能向內沉澱、也能向外明現，相成而不相礙。',
  'dui|gen':'——進退有節：守得住界線，也開得了口。'
 };
-// 能量圓（ensō）：真分數長出的有機形狀＝整體畫面；主導股金點、缺口淡點。靜態 SVG（可放進 innerHTML）
-function ensoSVG(pf){
-  var sc={}; pf.ranked.forEach(function(r){ sc[r.k]=r.v; });
-  var EK=['qian','li','zhen','dui','kun','kan','gen','xun'], cx=140,cy=140,minR=46,maxR=108;
-  var P=EK.map(function(k,i){ var a=(-90+i*45)*Math.PI/180, r=minR+(Math.max(0,Math.min(100,sc[k]||0))/100)*(maxR-minR);
-    return {x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}; });
-  var n=P.length,d='';
-  for(var i=0;i<n;i++){ var p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
-    if(i===0)d+='M'+p1.x.toFixed(1)+','+p1.y.toFixed(1);
-    d+='C'+(p1.x+(p2.x-p0.x)/6).toFixed(1)+','+(p1.y+(p2.y-p0.y)/6).toFixed(1)+' '+(p2.x-(p3.x-p1.x)/6).toFixed(1)+','+(p2.y-(p3.y-p1.y)/6).toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1); }
-  d+='Z';
-  var leadKs=(pf.leads||[]).slice(0,2), gapK=(pf.gaps&&pf.gaps[0])||pf.ranked[pf.ranked.length-1].k, dots='';
-  EK.forEach(function(k,i){
-    if(leadKs.indexOf(k)>=0) dots+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="5.5" fill="#a9823b" stroke="#fff" stroke-width="2"/>';
-    else if(k===gapK) dots+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="4" fill="none" stroke="#c9bfa6" stroke-width="1.5"/>';
-  });
-  return '<svg width="236" height="236" viewBox="0 0 280 280" style="display:block;margin:0 auto 6px" aria-hidden="true">'
-    +'<path d="'+d+'" fill="rgba(169,130,59,.09)" stroke="none"/>'
-    +'<path d="'+d+'" fill="none" stroke="#2c2a22" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>'
-    +'<path d="'+d+'" fill="none" stroke="#a9823b" stroke-width="1.4" opacity=".5"/>'+dots+'</svg>';
-}
 // 解讀文字引擎（依 2026-06-21 解讀規則 spec）：三拍各守一個能格層、並存不捏因果、價值中性
 function portraitNarrative(pf, costItems, neutral, conf){
   if(!pf) return '';
@@ -1319,16 +1298,19 @@ function portraitNarrative(pf, costItems, neutral, conf){
   var sceneK=(pf.signature.kind==='pattern')?'pattern':pf.leads[0];
   var scene=(R&&R.SCENE[sceneK])||'';
   // 整體可信度一句(逐態細節在雷達解釋卡)
-  var mixedN=0; if(conf){ EKEYS.forEach(function(k){ if(conf[k]==='mixed') mixedN++; }); }
-  var trust=mixedN?('大部分的題目你答得乾脆，輪廓可以放心讀；有 '+mixedN+' 個態你答得比較猶豫（雷達上點開標「兩可」的那幾角），那些分數請當作大概的位置。')
-                  :'這次的題目你都答得乾脆，這份輪廓可以放心讀。';
+  var trust='';
+  if(conf){
+    var mixedN=0; EKEYS.forEach(function(k){ if(conf[k]==='mixed') mixedN++; });
+    trust=mixedN?('大部分的題目你答得乾脆，輪廓可以放心讀；有 '+mixedN+' 個態你答得比較猶豫（雷達上點開標「兩可」的那幾角），那些分數請當作大概的位置。')
+                :'這次的題目你都答得乾脆，這份輪廓可以放心讀。';
+  }
   return '<div class="block" id="narrative-block"><h3>整體的你</h3>'
     +(open?'<div id="narrative-open">'+open.story+'<span class="punch" style="display:block;margin-top:10px;color:var(--ink);font-weight:600">'+open.punch+'</span></div>':'')
     +'<div class="portrait" style="margin-top:12px">'+b1+'</div>'
     +'<div class="portrait" style="margin-top:11px">'+b2+'</div>'
     +'<div class="portrait" style="margin-top:11px">'+b3+'</div>'
     +(scene?'<div class="portrait" style="margin-top:11px">'+scene+'</div>':'')
-    +'<div class="pair-foot" style="margin-top:10px">'+trust+'</div>'
+    +(trust?'<div class="pair-foot" style="margin-top:10px">'+trust+'</div>':'')
   +'</div>';
 }
 

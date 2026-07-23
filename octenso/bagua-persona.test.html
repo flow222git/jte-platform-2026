@@ -127,7 +127,7 @@ document.getElementById('f').onload=function(){
     ok(blk.indexOf('整體的你')>=0,'敘事區標題=整體的你');
     ok(blk.indexOf('如果這是你')>=0,'含場景段');
     ok(!d.querySelector('#narrative-block svg'),'敘事區無圓相圖');
-    ok(typeof w.ensoSVG==='function','ensoSVG 函式保留(能量印記)');
+    ok(typeof w.ensoSVG==='undefined','死碼已移除(能量印記走 buildEnsoCanvas)');
     // 順序:雷達 < 敘事 < 四個系統
     ok(blk.indexOf('radar-wrap')<blk.indexOf('整體的你'),'雷達在敘事前');
 
@@ -532,9 +532,9 @@ document.getElementById('f').onload=function(){
     // 能量印記 canvas 產出
     var ec=w.buildEnsoCanvas({qian:72,li:62,zhen:82,dui:45,kun:55,kan:78,gen:38,xun:60},'行動沉澱者',['zhen','kan'],'gen');
     ok(ec&&ec.tagName==='CANVAS'&&ec.width===640,'能量印記 canvas 產出');
-    // v3.2: 敘事區不再含 ensō 圓(圓相圖移除;ensoSVG 函式仍保留給能量印記分享用) — 斷言改為「不含」
+    // v3.2: 敘事區不再含 ensō 圓(圓相圖移除;ensoSVG 死碼已移除,能量印記走 buildEnsoCanvas) — 斷言改為「不含」
     ok(w.portraitNarrative(pfM,null).indexOf('<svg')<0,'v3.2 敘事區已移除能量圓 svg');
-    ok(typeof w.ensoSVG==='function','ensoSVG 函式仍保留(能量印記分享用)');
+    ok(typeof w.ensoSVG==='undefined','死碼已移除(能量印記走 buildEnsoCanvas)');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
     // 38. selectFlagged：高→over、低→under、上限4、全中→無
@@ -595,6 +595,11 @@ document.getElementById('f').onload=function(){
     ok(st.indexOf('完整解讀')>=0,'分享報告含可展開完整');
     w.renderSharedReport(rsc0,'');
     ok(d.querySelector('#result').textContent.indexOf('某人')>=0,'分享報告匿名→某人');
+    // 45b. 無 conf(分享檢視)→敘事不虛稱篤定;有 conf(正常 showResult)→敘事含信任句
+    ok(d.querySelector('#result').textContent.indexOf('答得乾脆')<0,'分享檢視(無conf)→敘事不含答得乾脆(不虛稱篤定)');
+    w.answers=new Array(w.QUESTIONS.length).fill(3); w.currentFacet=null; w.showResult();
+    var confTxt=d.querySelector('#result').textContent;
+    ok(confTxt.indexOf('答得乾脆')>=0||confTxt.indexOf('比較猶豫')>=0,'正常 showResult(有conf)→敘事含信任句(答得乾脆/比較猶豫)');
 
     // ── Feature 4 對境耗能 ──────────────────────────────────
     // 46. ctxAnalyze(demand,deny,cap)：需求×容量→耗能/順流；被剝奪×底色高→提醒；低需求→無
