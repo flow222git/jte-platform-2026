@@ -88,6 +88,20 @@ document.getElementById('f').onload=function(){
     w.showResult();
     ok(d.querySelector('.tc-title').textContent.indexOf('開創者(乾)')>=0,'單峰峰名卡=開創者(乾)');
 
+    // 6. v3.2 雷達:主線(不在 details 裡)、可點、解釋卡預設最高態
+    var rw=d.getElementById('radar-wrap');
+    ok(rw && !rw.closest('details'),'雷達在主線,不在折疊區');
+    ok(d.querySelectorAll('#radar-wrap g.rgrp').length===8,'雷達 8 個可點群組');
+    var rd=d.getElementById('radar-detail');
+    ok(rd && rd.textContent.indexOf('開創者(乾)')>=0,'解釋卡預設最高態(乾) 者名(卦)');
+    // 點擊換態
+    var giLi=d.querySelector('#radar-wrap g.rgrp[data-k="li"]');
+    giLi.dispatchEvent(new w.Event('click',{bubbles:true}));
+    ok(rd.textContent.indexOf('洞見者(離)')>=0,'點離角 → 解釋卡換洞見者(離)');
+    // 標籤=者名
+    var labels=Array.prototype.map.call(d.querySelectorAll('#radar-wrap text.rlabel'),function(t){return t.textContent;});
+    ok(labels.indexOf('開創者')>=0 && labels.indexOf('守界者')>=0,'雷達角標=者名');
+
     // 5. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();

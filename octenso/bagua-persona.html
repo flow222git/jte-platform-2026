@@ -1169,12 +1169,14 @@ function buildRadar(sc,topKey,nowNorm){
     var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
     var r=rOf(sc[k]);
     var px=cx+ux*r, py=cy+uy*r;
+    var g=document.createElementNS(NS,'g');
+    g.setAttribute('class','rgrp'); g.setAttribute('data-k',k); g.style.cursor='pointer';
     var dot=document.createElementNS(NS,'circle');
     dot.setAttribute('cx',px);dot.setAttribute('cy',py);
     dot.setAttribute('r',k===topKey?7:5);
     dot.setAttribute('fill',W[b.wx]);
     dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
-    svg.appendChild(dot);
+    g.appendChild(dot);
     // label outside
     var lr=baseR+22;
     var lx=cx+ux*lr, ly=cy+uy*lr;
@@ -1184,13 +1186,14 @@ function buildRadar(sc,topKey,nowNorm){
     var tx=document.createElementNS(NS,'text');
     tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
     tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
-    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
-    svg.appendChild(tx);
+    tx.textContent=pn(k).split('(')[0];          // 角標=者名
+    g.appendChild(tx);
     var ts=document.createElementNS(NS,'text');
     ts.setAttribute('class','rscore');
     ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
     ts.textContent=sc[k];
-    svg.appendChild(ts);
+    g.appendChild(ts);
+    svg.appendChild(g);
   });
   return svg;
 }
@@ -1847,8 +1850,23 @@ function strengthsHtml(pf){
 // 雷達獨立卡
 function radarCard(now){
   return '<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div>'
-    +(now?'<div class="share-hint" style="margin-top:6px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'<div class="share-hint" style="margin-top:6px">越往外越強</div>')
+    +'<div class="share-hint" style="margin-top:6px">'+(now?'松綠實線＝你的底色　·　金色虛線＝此刻。':'越往外越強。')+'點任一個角，看那一態代表什麼。</div>'
+    +'<div class="block" id="radar-detail" style="margin-top:10px;text-align:left"></div>'
   +'</div>';
+}
+// 雷達解釋卡：點角切換
+function radarSelect(k,pf,conf){
+  var box=document.getElementById('radar-detail'); if(!box) return;
+  var v=(pf&&pf.scores[k])||0, b=pf&&pf.bands[k];
+  var plain=(window.REPORT_V32&&REPORT_V32.PLAIN[k])?REPORT_V32.PLAIN[k].lamp:'';
+  var cf=conf?(conf[k]==='firm'?'篤定':conf[k]==='mixed'?'兩可':''):'';
+  box.innerHTML='<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">'
+    +'<b style="color:var(--ink)">'+pn(k)+'</b><span style="color:var(--pine)">'+v+'</span>'
+    +(b?'<span style="color:'+(b.like?'var(--gold)':'var(--muted)')+';font-size:12px">'+b.label+(b.like?'你':'')+'</span>':'')+'</div>'
+    +'<div style="margin-top:6px">'+plain+'。</div>'
+    +(cf?'<div style="font-size:12px;color:var(--muted);margin-top:5px">作答篤定度：'+cf+(cf==='兩可'?'——這一態解讀時請保留彈性。':'')+'</div>':'');
+  var gs=document.querySelectorAll('#radar-wrap g.rgrp');
+  for(var i=0;i<gs.length;i++){ gs[i].style.opacity=(gs[i].getAttribute('data-k')===k)?'1':'0.75'; }
 }
 // 八態輪廓（剖面：高低與平衡的文字；雷達與四對已獨立）
 function outlineBlock(sc,pf,now,conf){
@@ -1917,9 +1935,9 @@ function showResult(viewScores){
      +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
      +'<div class="tc-essence">'+sig.essence+'</div>'
    +'</div>'
+   +radarCard(now)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
    +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})())
-   +'<details class="rsec"><summary>看雷達 · 數值對照版<span class="rchev">⌄</span></summary>'+radarCard(now)+'</details>'
    +outlineBlock(sc,pf,now,conf)
    +systemsSection(sc)
    +calibBlock(sc)
@@ -1967,6 +1985,10 @@ function showResult(viewScores){
   document.getElementById('cover').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
+  var top0=pf?pf.ranked[0].k:topKey;
+  radarSelect(top0,pf,conf);
+  var gs=document.querySelectorAll('#radar-wrap g.rgrp');
+  for(var gi=0;gi<gs.length;gi++){ (function(g){ g.addEventListener('click',function(){ radarSelect(g.getAttribute('data-k'),pf,conf); }); })(gs[gi]); }
   renderFacetMenu();
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
