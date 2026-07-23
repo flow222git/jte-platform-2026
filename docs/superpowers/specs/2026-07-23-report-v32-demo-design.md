@@ -60,8 +60,8 @@ AI 伴讀(引用 punch 句開場)、留存分享、誠實聲明(v0.1 研究假�
 
 ## 4. 遞延事項(下一輪動正式頁時做)
 
-- `bagua-persona.html` 能量速寫區的圓相圖(`ensoSVG`)移除,文字保留。
-- v3.2 示意定稿後,正式頁改版時所有文案照 meta A 同源原則進 canonical 資料檔(`bagua-data.js` 等);demo 階段假資料可頁內寫,但需註明。
+- `bagua-persona.html` 能量速寫區的圓相圖(`ensoSVG`)移除,文字保留。✅ 2026-07-23 完成(octenso-report-v32):圓相圖自能量速寫區塊移除,`ensoSVG` 函式保留供能量印記分享用。
+- v3.2 示意定稿後,正式頁改版時所有文案照 meta A 同源原則進 canonical 資料檔(`bagua-data.js` 等);demo 階段假資料可頁內寫,但需註明。✅ 2026-07-23 完成(octenso-report-v32):正式頁文案進 `bagua-report-v32-data.js`。
 
 ## 5. 誠實邊界
 
