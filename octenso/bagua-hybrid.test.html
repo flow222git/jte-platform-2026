@@ -113,6 +113,11 @@
     });
     t('分類邏輯:低底色全掏空', flows===0&&drains===6&&denies===2);
     t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
+    // 命名統一(2026-07-24):峰名/能格列一律用 canonical B.pn(k)「者名(卦)」,不得是 fnShort+'者' 漂移組字
+    var Bt=window.OCTENSO_BAGUA;
+    t('e2e 峰名為 canonical 者名(卦)', R.pf.leads.slice(0,2).every(function(k){return txt.indexOf(Bt.pn(k))>=0;}));
+    var driftNames=['明現者','交流者','拓展者','沉澱者','喊停者','承接者'];
+    t('e2e 無漂移 fnShort+者 命名', driftNames.every(function(d){return txt.indexOf(d)<0;}));
     finish();
   }
   function finish(){
