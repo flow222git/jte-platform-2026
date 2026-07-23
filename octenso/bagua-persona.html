@@ -467,6 +467,7 @@
 <!-- QR 編碼/解碼（本機庫，相對路徑，同源；iframe onload 會等載完） -->
 <script src="lib/qrcode.js"></script>
 <script src="lib/jsQR.js"></script>
+<script src="bagua-report-v32-data.js"></script>
 
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'}; // 八態雷達配色（內部色盤，非五行語意）
@@ -1462,6 +1463,7 @@ function leadSentence(pf,conf){
 }
 function fnList(keys){ return keys.map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、'); }
 function fn1(k){ return E[k].fn.split('／')[0]; } // 取功能名第一段（顯現／覺察 → 顯現）
+function pn(k){ var t=E[k].title.split('·'); return t[t.length-1].trim()+'('+E[k].nm+')'; } // 者名(卦):開創者(乾)
 // 確信度摘要：列出最篤定／最兩可的態（資料來自存檔 conf；沒有就不顯示）
 function confLine(conf){
   if(!conf) return '';
@@ -1476,9 +1478,9 @@ function confLine(conf){
 // persona 標題自適應形狀：身分＝格局，卦只是峰名（依 MODEL.md）
 function signatureTitle(pf){
   var sig=pf.signature, k=sig.keys, lv=pf.level.band;
-  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym, title:e.title, sub:'', essence:e.essence}; }
+  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym, title:pn(k[0]), sub:'', essence:e.essence}; }
   if(sig.kind==='dual'){ var a=E[k[0]],b=E[k[1]];
-    return {sym:a.sym+b.sym, title:a.nm+'×'+b.nm+' · '+fn1(k[0])+'與'+fn1(k[1])+'並重', sub:'兩個並重的主調，會交替出現',
+    return {sym:a.sym+b.sym, title:pn(k[0])+'×'+pn(k[1]), sub:'兩個並重的主調，會交替出現',
       essence:a.essence+'　同時，「'+fn1(k[1])+'」也同樣鮮明——你不是單一性格，而是這兩種能量輪流主導。'}; }
   if(sig.kind==='multi'){
     return {sym:k.map(function(x){return E[x].sym;}).join(''), title:k.map(function(x){return E[x].nm;}).join('×')+' · 多主調型', sub:k.length+' 個主調並重',

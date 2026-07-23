@@ -79,6 +79,15 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('.tc-title').textContent.indexOf('洞見者')>=0,'看完整解盤：用帶入分數渲染(離·洞見者)');
     ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).ts==='KEEP-TS','viewScores 不覆寫存檔 ts');
 
+    // 5. v3.2 命名:pn() 者名(卦)
+    ok(typeof w.pn==='function' && w.pn('qian')==='開創者(乾)','pn(qian)=開創者(乾), got '+(w.pn&&w.pn('qian')));
+    ok(w.pn('li')==='洞見者(離)' && w.pn('gen')==='守界者(艮)' && w.pn('dui')==='共鳴者(兌)','pn canonical 名');
+    // 峰名卡:單峰標題用 者名(卦)
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
+    w.showResult();
+    ok(d.querySelector('.tc-title').textContent.indexOf('開創者(乾)')>=0,'單峰峰名卡=開創者(乾)');
+
     // 5. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();
