@@ -1,0 +1,312 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script defer src="octenso-gate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>結果頁 v3.2 · 示意（假資料）</title>
+<!--
+  結果頁 v3.2 示意頁（2026-07-23;內部提案,假資料,點了給回饋用）
+  依據:specs/2026-07-23-report-v32-demo-design.md——Simon 看 v3.1 後五點回饋:
+    ①命名全頁統一「者名(卦)」:開創者(乾);雅稱退到深讀區
+    ②雷達圖升上主線,緊接峰名卡;八角直接標數字;點角出解釋卡
+    ③圓相圖移除(正式頁事項,本頁本來就無)
+    ④persona 敘事(總述+四幕併入)放雷達圖下方
+    ⑤四個系統擴成一小段更詳細的白話+小練習
+  假資料地形:八態 82/74/66/63/58/47/41/30 → 水位中(均 58)、落差 52(>50)→ 斷崖型 → 對比開場
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.95;font-size:15.5px;max-width:620px;margin:0 auto;padding:26px 20px 90px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:23px;letter-spacing:.12em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:8px}
+  .draft{display:block;width:fit-content;margin:0 auto 26px;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .rule{height:1px;background:var(--line);margin:36px 0}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px 22px}
+  .why{font-size:12px;color:var(--gold);line-height:1.9;margin:6px 0 14px;padding-left:12px;border-left:1px solid var(--gold)}
+  .seclabel{font-size:13px;letter-spacing:.14em;color:var(--muted);font-weight:400;margin:0 0 4px}
+  /* 峰名卡 */
+  .hero{text-align:center}
+  .hero .sym{font-family:"Songti TC","Noto Serif TC",serif;font-size:40px;color:var(--ink);line-height:1.1}
+  .hero .ttl{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:24px;letter-spacing:.14em;
+    color:var(--ink);padding-left:.14em;margin-top:8px}
+  .hero .poem{font-family:"Songti TC","Noto Serif TC",serif;font-size:16px;color:var(--ink);line-height:2.2;
+    margin-top:18px}
+  .hero .snap{font-size:12.5px;color:var(--muted);margin-top:16px}
+  /* 雷達 */
+  .radar-wrap{text-align:center}
+  svg.radar{display:block;margin:2px auto 0;touch-action:manipulation;max-width:100%}
+  .rp{cursor:pointer}
+  .rp circle{fill:var(--surface);stroke:var(--hair);stroke-width:1.2;transition:.15s}
+  .rp.on circle{fill:var(--pine);stroke:var(--pine)}
+  .rp text.rn{font-size:12.5px;fill:var(--ink-soft);letter-spacing:.04em}
+  .rp text.rs{font-family:"Jost",sans-serif;font-size:11px;fill:var(--muted)}
+  .rp.on text.rn{fill:var(--pine);font-weight:400}
+  .rp.on text.rs{fill:var(--pine)}
+  .hint{font-size:12px;color:var(--muted);margin-top:2px}
+  .detail{border:1px solid var(--line);border-radius:12px;background:var(--surface);
+    padding:16px 18px;margin-top:14px;text-align:left}
+  .detail .dh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .detail .dn{font-family:"Songti TC","Noto Serif TC",serif;font-size:17px;color:var(--ink);letter-spacing:.08em}
+  .detail .ds{font-family:"Jost",sans-serif;font-size:15px;color:var(--pine)}
+  .detail .db{font-size:12px;color:var(--gold);letter-spacing:.08em}
+  .detail .db.lo{color:var(--muted)}
+  .detail p{font-size:14px;margin-top:8px}
+  .detail .cf{font-size:12px;color:var(--muted);margin-top:6px}
+  /* persona 敘事 */
+  .story{font-size:16px;line-height:2.15;color:var(--ink-soft)}
+  .story .punch{display:block;margin:14px 0 4px;font-family:"Songti TC","Noto Serif TC",serif;
+    font-size:16.5px;color:var(--ink);text-wrap:balance}
+  .story-more{border-top:1px solid var(--surface2);margin-top:18px;padding-top:16px}
+  .story-more p{font-size:14.5px;margin-top:10px}
+  .story-more p:first-child{margin-top:0}
+  .name{color:var(--pine)}
+  .trust{font-size:13px;color:var(--muted);border-top:1px solid var(--surface2);margin-top:18px;padding-top:14px}
+  /* 四個系統 */
+  .sys{padding:20px 0;border-top:1px solid var(--surface2)}
+  .sys:first-of-type{border-top:none;padding-top:4px}
+  .sys h4{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:16px;color:var(--ink);
+    letter-spacing:.06em;margin-bottom:10px}
+  .sys h4 b{font-weight:500;color:var(--pine)}
+  .sys h4 b.tens{color:var(--cinnabar)}
+  .pole-row{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .pole-row .pl{flex:none;width:6.6em;font-size:13px;color:var(--ink)}
+  .pole-row .pbar{flex:1;height:9px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .pole-row .pbar i{display:block;height:100%;border-radius:5px;background:var(--hair);opacity:.75}
+  .pole-row .pbar i.on{background:var(--pine);opacity:.8}
+  .pole-row .ps{flex:none;width:2em;text-align:right;font-family:"Jost",sans-serif;font-size:11.5px;color:var(--muted)}
+  .sys p{font-size:14px;margin-top:9px}
+  .sys .prac{font-size:13.5px;color:var(--ink-soft);margin-top:9px;padding-left:12px;border-left:2px solid var(--surface2)}
+  .sys .prac b{font-weight:400;color:var(--pine)}
+  /* 伴讀 */
+  .companion .c-quote{font-family:"Songti TC","Noto Serif TC",serif;font-size:15.5px;color:var(--ink);
+    padding-left:14px;border-left:2px solid var(--pine);margin:12px 0}
+  .companion p{font-size:14px}
+  .btn{display:inline-block;font-size:14px;font-weight:300;letter-spacing:.08em;padding:11px 28px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:999px;color:var(--muted);background:transparent;margin-top:14px}
+  /* 深讀折疊 */
+  details{border-top:1px solid var(--line);padding:12px 0}
+  details.last{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;line-height:1.9}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"點開";flex:none;margin-left:auto;font-size:11px;color:var(--hair);letter-spacing:.1em}
+  details[open] summary::after{content:"收合"}
+  .sys-n{flex:none;font-family:"Songti TC","Noto Serif TC",serif;font-size:15px;color:var(--ink);letter-spacing:.06em}
+  .sys-v{font-size:13.5px;color:var(--ink-soft)}
+  .sys-body{margin-top:10px;font-size:13.5px}
+  .fit-row{padding:13px 0;border-bottom:1px solid var(--surface2)}
+  .fit-row:last-child{border-bottom:none}
+  .fit-row .fh{font-size:14px;margin-bottom:2px}
+  .st{font-weight:400}
+  .st.over{color:var(--cinnabar)} .st.under{color:var(--gold)} .st.ok{color:var(--pine)}
+  .fit-row .tag{font-size:11px;color:var(--muted);margin-left:6px}
+  .fit-row p{font-size:13.5px;color:var(--ink-soft)}
+  .honest{font-size:12.5px;color:var(--muted);line-height:1.95;padding-left:15px;border-left:1px solid var(--hair);margin-top:30px}
+</style>
+</head><body>
+
+<div class="eyebrow">Octenso · Report v3.2</div>
+<h1>結果頁 v3.2 · 示意</h1>
+<div class="sub">假資料。金色小字＝這一版改了什麼、為什麼。雷達圖和折疊區都可以點。</div>
+<span class="draft">內部提案 · 非正式頁面</span>
+
+<!-- ═ 一:峰名卡 ═ -->
+<div class="seclabel">一 · 峰名卡</div>
+<div class="why">命名新規則:者名在前、括弧放卦名——「開創者(乾)」。原「乾 · 展行」副標行退場,雅稱(展行)退到深讀區。</div>
+<div class="card hero">
+  <div class="sym">☰</div>
+  <div class="ttl">開創者(乾)</div>
+  <p class="poem">還沒有的東西,<br>在你眼裡先亮了起來。<br>方向未明的房間,<br>你常是伸手開燈的那個人。</p>
+  <div class="snap">這是你「最近一個月」的能量快照——照的是狀態,不是你這個人的永久標籤。</div>
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 二:雷達圖 ═ -->
+<div class="seclabel">二 · 八態雷達（升上主線）</div>
+<div class="why">v3.2:雷達從折疊區升到峰名卡正下方。八個角直接標「者名＋數字」;點任一角,下方出現那一態的解釋卡（含作答篤定度）。預設選最高的開創者(乾)。</div>
+<div class="card radar-wrap">
+  <svg class="radar" id="radar" width="330" height="308" viewBox="0 0 330 308"></svg>
+  <div class="hint">點雷達圖的任一個角,看那一態代表什麼。</div>
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 三:persona 敘事 ═ -->
+<div class="seclabel">三 · 整個 persona 的描述（總述＋四幕併入）</div>
+<div class="why">v3.1 的「總述」和「四幕」在這裡合成一段連續敘事:先零術語總述＋punch 句（斷崖型→對比開場）,再接展開段（人話先行、命名跟上,格式統一「我們叫它開創者(乾)」）。原幕二的逐態篤定度已被上面雷達的解釋卡吸收,這裡只留一段整體可信度的話。</div>
+<div class="card">
+  <p class="story">這一個月,你身上最亮的一盞燈,是「讓事情開始」——看見還沒有的,就想讓它有;而最安靜的角落,是「讓事情停下」——喊停、收尾、說到此為止的力氣,幾乎沒有出場。一邊常常發車,一邊很少踩煞車,亮處與空處之間,像一道斷崖。
+  <span class="punch">所以這份快照想先說的,只有一句:你不缺開始,你缺的可能是結束。</span></p>
+  <div class="story-more">
+    <p>你最亮的力氣,是把「還沒有」變成「開始有」——我們叫它<span class="name">開創者(乾)</span>。這個月它幾乎天天上場:方向未明時,你先指方向;大家還在猶豫時,你已經把第一步踩下去了。</p>
+    <p>而幾乎沒上場的,是說「到此為止」的力氣——我們叫它<span class="name">喊停者(艮)</span>。它安靜,不代表你沒有它;比較像這個月的日子,沒有留戲份給它。開很多頭、很少收尾的那種累,通常就是它缺席的帳單。</p>
+    <p>如果這是你:會議結束前十分鐘,你又提了一個新方向,大家眼睛一亮——而上週開的三個頭,還各自躺在半路上。你熟悉這個時刻,不是嗎?說一句不太討喜的觀察:你遞出去的,常常是開始,很少是完成。對你來說,準時說「今天到這裡」,也許比開一個新局更難。下一次,你願意讓哪件事,好好結束?</p>
+    <p>把八股力氣兩兩相對,還會得到下面四個系統。它們這個月說的,其實是同一個故事:一台開得很好的車,正在學習怎麼停。</p>
+  </div>
+  <div class="trust">這份快照有多可信:大部分的題目你答得乾脆,輪廓可以放心讀。少數態你答得比較猶豫(雷達解釋卡上標「兩可」的那幾個),那些分數請當作大概的位置——我們寧可告訴你哪裡模糊,也不想假裝每個數字都很準。</div>
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 四:四個系統 ═ -->
+<div class="seclabel">四 · 四個系統（更詳細、更白話）</div>
+<div class="why">v3.2:每個系統從一行結論擴成一小段——音量條→一行結論→三四句白話（這一對在拉什麼、你現在的形狀、日常長什麼樣子）→一個小練習。C1 照舊:僅四對待可講關係,僅雷風(震巽)＝張力。</div>
+<div class="card">
+
+  <div class="sys">
+    <h4>建構 · <b>偏開創</b></h4>
+    <div class="pole-row"><span class="pl">開創者(乾)</span><div class="pbar"><i class="on" style="width:82%"></i></div><span class="ps">82</span></div>
+    <div class="pole-row"><span class="pl">承接者(坤)</span><div class="pbar"><i style="width:47%"></i></div><span class="ps">47</span></div>
+    <p>這一對管的是「事情怎麼從無到有、再從有到完」:一邊是起頭開路,一邊是接住做完。你的形狀明顯偏起頭——「開始新的」比「把手上的做完」更常出現在你的日子裡。日常大概長這樣:點子與新局你來,但收尾與維運常常需要別人接手;找得到接手的人,你的開創才會真的落地。</p>
+    <p class="prac"><b>小練習</b>:這週挑一件已經開了頭的事,親手把它做到「完成」而不是「交出去」,感受一下收尾的重量。</p>
+  </div>
+
+  <div class="sys">
+    <h4>驅動 · <b class="tens">雙高張力</b></h4>
+    <div class="pole-row"><span class="pl">行動者(震)</span><div class="pbar"><i class="on" style="width:66%"></i></div><span class="ps">66</span></div>
+    <div class="pole-row"><span class="pl">拓展者(巽)</span><div class="pbar"><i class="on" style="width:63%"></i></div><span class="ps">63</span></div>
+    <p>這一對管的是「事情用什麼速度往前」:一邊是說動就動、先跑再修,一邊是不硬碰硬、讓影響慢慢滲進去。這是八態裡唯一會標「張力」的一對——你的兩邊同時偏高,代表「想立刻衝」和「想慢慢佈局」常在同一件事上互相拉扯,有時候會覺得自己又急又繞。這不是缺點,是兩種好用的前進方式擠在同一個油門上。</p>
+    <p class="prac"><b>小練習</b>:把手上的事分兩堆——挑一件「就是要快」的用衝的,挑一件「急不得」的刻意放慢;比全部一起快,省力很多。</p>
+  </div>
+
+  <div class="sys">
+    <h4>覺察 · <b>偏照見</b></h4>
+    <div class="pole-row"><span class="pl">明現者(離)</span><div class="pbar"><i class="on" style="width:74%"></i></div><span class="ps">74</span></div>
+    <div class="pole-row"><span class="pl">沉澱者(坎)</span><div class="pbar"><i style="width:41%"></i></div><span class="ps">41</span></div>
+    <p>這一對管的是「你怎麼把事情弄懂」:一邊是攤在光下、看清楚也說清楚,一邊是沉下去慢想、不急著給答案。你的形狀偏亮處——事情到你手上,很快就被攤開、被講明白;比較少出現的,是關起門來慢慢泡著想的時間。日常大概長這樣:你是把混亂講清楚的那個人,但需要「想久一點才有的答案」時,可能會覺得自己太快就開口了。</p>
+    <p class="prac"><b>小練習</b>:下次遇到重要的問題,先不說出第一個想法,讓它在心裡過一夜,隔天再講——看看答案有沒有變。</p>
+  </div>
+
+  <div class="sys">
+    <h4>調節 · <b>偏共鳴</b></h4>
+    <div class="pole-row"><span class="pl">交流者(兌)</span><div class="pbar"><i class="on" style="width:58%"></i></div><span class="ps">58</span></div>
+    <div class="pole-row"><span class="pl">喊停者(艮)</span><div class="pbar"><i style="width:30%"></i></div><span class="ps">30</span></div>
+    <p>這一對管的是「你和世界的開關」:一邊是跟人有來有往、能量從交流裡長出來,一邊是關上門、劃界線、說到此為止。你的形狀偏交流——跟人互動是你的充電方式;但「停下來」這個開關,這個月幾乎沒被按過。日常大概長這樣:訊息都回、邀約都接、會議都到,行事曆越來越滿,而「不要」這個字很少出場——這也是整份快照裡,最需要被看見的一角。</p>
+    <p class="prac"><b>小練習</b>:這週練習說一次完整的「不」——不解釋太多、不補償、不改口。從最小的邀約開始就好。</p>
+  </div>
+
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 五:AI 伴讀 ═ -->
+<div class="seclabel">五 · AI 伴讀</div>
+<div class="why">位置照 v3.1:讀完敘事與四系統,情緒還在場,正是想聊的時刻。伴讀開場引用總述的 punch 句;守伴讀守則:陪你想,不替你斷。</div>
+<div class="card companion">
+  <p>讀完上面這段,心裡若有話——伴讀在這裡。它讀過你的快照。可以從這句開始:</p>
+  <div class="c-quote">「你不缺開始,你缺的可能是結束。」</div>
+  <p>這句,你覺得中嗎?還是哪一段最不像你?</p>
+  <button class="btn">和伴讀聊聊（示意）</button>
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 六:深讀折疊 ═ -->
+<div class="seclabel">六 · 深讀（想深讀才進,可折疊）</div>
+<div class="why">雷達和四系統升上主線後,折疊區瘦身,剩「剛剛好嗎」和「你的章節」。態的雅稱(展行/照見…)在這一層才出現。</div>
+<div class="card">
+  <details id="d-fit">
+    <summary><span class="sys-n">剛剛好嗎</span><span class="sys-v">只列有訊號的態</span></summary>
+    <div class="sys-body">
+      <div class="fit-row">
+        <div class="fh"><span style="color:var(--ink)">開創者(乾)</span> <span class="st over">用過頭了</span><span class="tag">亢</span></div>
+        <p>什麼都想自己起頭,連不需要新開的局也開了。這週試著把一件「還不錯的舊做法」用完,不換新的。</p>
+      </div>
+      <div class="fit-row">
+        <div class="fh"><span style="color:var(--ink)">喊停者(艮)</span> <span class="st under">還沒用開</span><span class="tag">潛</span></div>
+        <p>該說「先到這裡」的時刻,你常讓它過去。下次會議超時十分鐘時,練習當那個喊停的人。</p>
+      </div>
+      <div class="fit-row">
+        <div class="fh"><span style="color:var(--ink)">明現者(離)</span> <span class="st ok">剛剛好</span><span class="tag">中正</span></div>
+        <p>看得清楚、也說得清楚,而且沒有把「說清楚」變成壓力。保持這個火候。</p>
+      </div>
+    </div>
+  </details>
+  <details id="d-chapter" class="last">
+    <summary><span class="sys-n">你的章節</span><span class="sys-v">開創者的完整型錄＋場域速查（約三分鐘）</span></summary>
+    <div class="sys-body"><p>（示意——實作時放章節全文與場域速查。完整名銜「開創者 · 乾 · 展行」與八態雅稱在這一層出現。）</p></div>
+  </details>
+</div>
+
+<div class="rule"></div>
+
+<!-- ═ 七:留存與分享 ═ -->
+<div class="seclabel">七 · 留存與分享</div>
+<div class="card">
+  <button class="btn">分享碼（示意）</button>
+  <button class="btn">存成 PDF（示意）</button>
+  <button class="btn">正式版對照（示意）</button>
+</div>
+
+<div class="honest">這是七月的水位,不是你的名字。八態能格 v0.1 研究假設 · 待考;你的作答只存在這台裝置的瀏覽器,不上傳。本頁為 v3.2 示意（假資料）,標點採全形＝提案的一部分。</div>
+
+<script>
+(function(){
+'use strict';
+// 假資料:八態(順時針從正上方起;命名=者名(卦))
+var STATES=[
+  {k:'qian',nm:'開創者',gua:'乾',sc:82,band:'很像你',hi:true,cf:'篤定',brief:'把「還沒有」變成「開始有」的那股勁。方向未明時先指方向。'},
+  {k:'li',nm:'明現者',gua:'離',sc:74,band:'偏像你',hi:true,cf:'兩可',brief:'把事情看清楚,也讓大家看清楚。這一態的題目你答得比較分散,分數保留彈性。'},
+  {k:'zhen',nm:'行動者',gua:'震',sc:66,band:'偏像你',hi:true,cf:'篤定',brief:'說動就動,先跑第一步再修。'},
+  {k:'dui',nm:'交流者',gua:'兌',sc:58,band:'中間',hi:false,cf:'篤定',brief:'跟人有來有往,能量從交流裡長出來。'},
+  {k:'kun',nm:'承接者',gua:'坤',sc:47,band:'中間',hi:false,cf:'篤定',brief:'接住事情,穩穩把它做完。'},
+  {k:'kan',nm:'沉澱者',gua:'坎',sc:41,band:'不太像你',hi:false,cf:'兩可',brief:'沉下去想,不急著給答案。'},
+  {k:'xun',nm:'拓展者',gua:'巽',sc:63,band:'偏像你',hi:true,cf:'篤定',brief:'不硬碰硬,讓影響慢慢擴散進去。'},
+  {k:'gen',nm:'喊停者',gua:'艮',sc:30,band:'不太像你',hi:false,cf:'篤定',brief:'知道何時該停、何時說不。'}
+];
+var ORDER=[0,1,2,3,4,5,6,7];
+var CX=165,CY=150,R=96,LR=120;
+var svg=document.getElementById('radar');
+function pt(i,r){var a=-Math.PI/2+i*Math.PI/4;return [CX+r*Math.cos(a),CY+r*Math.sin(a)];}
+var h='';
+[25,50,75,100].forEach(function(g){
+  var ps=ORDER.map(function(i){return pt(i,R*g/100).join(',');}).join(' ');
+  h+='<polygon points="'+ps+'" fill="none" stroke="#d2c7b4" stroke-width="'+(g===100?1:0.5)+'" opacity="'+(g===100?0.9:0.5)+'"/>';
+});
+ORDER.forEach(function(i){var p=pt(i,R);h+='<line x1="'+CX+'" y1="'+CY+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#d2c7b4" stroke-width="0.5" opacity="0.5"/>';});
+var dp=ORDER.map(function(i){return pt(i,R*STATES[i].sc/100).join(',');}).join(' ');
+h+='<polygon points="'+dp+'" fill="#35614f" opacity="0.14" stroke="#35614f" stroke-width="1.4"/>';
+ORDER.forEach(function(i){
+  var p=pt(i,R*STATES[i].sc/100), lp=pt(i,LR);
+  var anchor=Math.abs(lp[0]-CX)<8?'middle':(lp[0]>CX?'start':'end');
+  // 標籤=者名+數字:上下用兩行,左右並排一行
+  var lbl;
+  if(anchor==='middle'){
+    var above=lp[1]<CY;
+    lbl='<text class="rn" x="'+lp[0]+'" y="'+(above?lp[1]-10:lp[1]+6)+'" text-anchor="middle">'+STATES[i].nm+'</text>'
+       +'<text class="rs" x="'+lp[0]+'" y="'+(above?lp[1]+4:lp[1]+20)+'" text-anchor="middle">'+STATES[i].sc+'</text>';
+  }else{
+    lbl='<text class="rn" x="'+lp[0]+'" y="'+(lp[1]+4)+'" text-anchor="'+anchor+'">'+STATES[i].nm+'&#8202;<tspan class="rs">'+STATES[i].sc+'</tspan></text>';
+  }
+  h+='<g class="rp" id="rp'+i+'" data-i="'+i+'">'
+    +'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="7"/>'
+    +lbl
+    +'<rect x="'+(lp[0]-34)+'" y="'+(lp[1]-18)+'" width="68" height="38" fill="transparent"/>'
+    +'</g>';
+});
+svg.innerHTML=h;
+var detail=document.getElementById('detail');
+function sel(i){
+  var s=STATES[i];
+  for(var j=0;j<8;j++){var g=document.getElementById('rp'+j);if(g)g.classList.toggle('on',j===i);}
+  detail.innerHTML='<div class="dh"><span class="dn">'+s.nm+'('+s.gua+')</span>'
+    +'<span class="ds">'+s.sc+'</span>'
+    +'<span class="db'+(s.hi?'':' lo')+'">'+s.band+'</span></div>'
+    +'<p>'+s.brief+'</p>'
+    +'<div class="cf">作答篤定度:'+s.cf+(s.cf==='兩可'?'——這一態解讀時請保留彈性。':'')+'</div>';
+}
+for(var i=0;i<8;i++){(function(i){
+  document.getElementById('rp'+i).addEventListener('click',function(){sel(i);});
+})(i);}
+sel(0);
+document.body.setAttribute('data-ready','1');
+})();
+</script>
+</body></html>
