@@ -56,10 +56,10 @@ renderer 對外只有一個入口(名稱實作計畫定,形如 `ReportV32.render
 
 | 頁 | 改動 |
 |---|---|
-| bagua-persona.html | 四塊組裝函式搬出至 renderer;補載 bagua-data.js;行為不變(271 條測試=搬移驗收) |
-| bagua-persona-v2.html | renderReport 改呼叫 renderer;特色段退場:二選一對照、每態六級+雅稱列表、能量晶體連結、錨定式四系統敘事 |
-| bagua-hybrid.html | 對話分段揭示的命名改 canonical;連結不動(完整報告仍→persona-v2) |
-| bagua-crystal.html | 命名兩處改 canonical;其餘不動 |
+| bagua-persona.html | 四塊組裝函式搬出至 renderer;補載 bagua-data.js;行為不變(271 條測試=搬移驗收) ✅ 2026-07-24 完成 |
+| bagua-persona-v2.html | renderReport 改呼叫 renderer;特色段退場:二選一對照、每態六級+雅稱列表、能量晶體連結、錨定式四系統敘事 ✅ 2026-07-24 完成 |
+| bagua-hybrid.html | 對話分段揭示的命名改 canonical;連結不動(完整報告仍→persona-v2) ✅ 2026-07-24 完成 |
+| bagua-crystal.html | 命名兩處改 canonical;其餘不動 ✅ 2026-07-24 完成 |
 
 ## 6. 測試
 
