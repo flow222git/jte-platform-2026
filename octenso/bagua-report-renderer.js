@@ -383,6 +383,9 @@
     radarHtml: radarHtml,
     narrativeHtml: narrativeHtml,
     systemsHtml: systemsHtml,
-    bindRadar: bindRadar
+    bindRadar: bindRadar,
+    // task-3 binding：persona.html renderCtxResult(場景耗能)與雙人合盤等非 ctx 路徑
+    // 仍需直接餵 (scores,topKey,nowNorm) 組出雷達 svg——buildRadar 本已在檔內，補一條匯出即可。
+    buildRadar: buildRadar
   };
 })();
