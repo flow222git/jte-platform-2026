@@ -1076,6 +1076,7 @@ function renderSharedReport(sc,name){
   document.getElementById('compat').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey,null));
+  bindRadar(pf,null);
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
 }
@@ -1887,6 +1888,14 @@ function radarSelect(k,pf,conf){
   var gs=document.querySelectorAll('#radar-wrap g.rgrp');
   for(var i=0;i<gs.length;i++){ gs[i].style.opacity=(gs[i].getAttribute('data-k')===k)?'1':'0.75'; }
 }
+// 雷達互動膠水：預設選中最鮮明的一態＋綁定點角切換（showResult／renderSharedReport 共用）
+function bindRadar(pf,conf){
+  var wrap=document.getElementById('radar-wrap'); if(!wrap) return;
+  if(pf) radarSelect(pf.ranked[0].k,pf,conf);
+  wrap.classList.add('rint');
+  var gs=wrap.querySelectorAll('g.rgrp');
+  for(var gi=0;gi<gs.length;gi++){ (function(g){ g.addEventListener('click',function(){ radarSelect(g.getAttribute('data-k'),pf,conf); }); })(gs[gi]); }
+}
 // 八態輪廓（剖面：高低與平衡的文字；雷達與四對已獨立）
 function outlineBlock(sc,pf,now,conf){
   if(!pf) return '';
@@ -2027,11 +2036,7 @@ function showResult(viewScores){
   document.getElementById('cover').style.display='none';
   r.style.display='block';
   document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
-  var top0=pf?pf.ranked[0].k:topKey;
-  radarSelect(top0,pf,conf);
-  document.getElementById('radar-wrap').classList.add('rint');
-  var gs=document.querySelectorAll('#radar-wrap g.rgrp');
-  for(var gi=0;gi<gs.length;gi++){ (function(g){ g.addEventListener('click',function(){ radarSelect(g.getAttribute('data-k'),pf,conf); }); })(gs[gi]); }
+  bindRadar(pf,conf);
   renderFacetMenu();
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);

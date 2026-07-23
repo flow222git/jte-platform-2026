@@ -650,6 +650,24 @@ document.getElementById('f').onload=function(){
     var outlineEl=Array.prototype.find.call(d.querySelectorAll('details'),function(x){return x.textContent.indexOf('八態輪廓')>=0;});
     ok(!!outlineEl,'八態輪廓已收進折疊');
 
+    // 55. 分享檢視頁同步:雷達互動抽成共用 bindRadar(showResult／renderSharedReport 同款膠水)
+    ok(typeof w.bindRadar==='function','bindRadar 已抽成共用函式');
+    ok(String(w.showResult).indexOf('bindRadar(')>=0,'showResult 呼叫 bindRadar');
+    ok(String(w.renderSharedReport).indexOf('bindRadar(')>=0,'renderSharedReport 呼叫 bindRadar');
+    w.renderSharedReport(rsc0,'阿明');
+    var srw=d.getElementById('radar-wrap');
+    ok(srw.classList.contains('rint'),'分享檢視雷達已加互動 class(rint)');
+    ok(d.querySelectorAll('#radar-wrap g.rgrp').length===8,'分享檢視雷達 8 個可點群組');
+    var srd=d.getElementById('radar-detail');
+    ok(srd && srd.style.display==='block','分享檢視解釋卡預設已展開');
+    var srTopTxt=srd.textContent;
+    var sGiLi=d.querySelector('#radar-wrap g.rgrp[data-k="li"]');
+    sGiLi.dispatchEvent(new w.Event('click',{bubbles:true}));
+    ok(srd.textContent!==srTopTxt && srd.textContent.indexOf('洞見者(離)')>=0,'分享檢視點角可切換解釋卡');
+    // 分享檢視 full 內容:無舊版速寫圓(ensoSVG),命名沿用 signatureTitle(pn 格式)
+    ok(String(w.renderSharedReport).indexOf('ensoSVG(')===-1,'分享檢視組裝不呼叫 ensoSVG(舊版速寫圓)');
+    ok(d.querySelector('.tc-title').textContent.indexOf('(')>0,'分享檢視峰名沿用 者名(卦) 格式');
+
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
   var msg='RESULT pass='+pass+' fail='+fail+(log.length?' | '+log.join(' ; '):'');
