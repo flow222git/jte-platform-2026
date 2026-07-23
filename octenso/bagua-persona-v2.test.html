@@ -72,23 +72,28 @@
   t('pattern expect', P.build(mk({qian:54,rest:49})).signature.kind==='pattern');
 
   // ── iframe 渲染(B1 相容 + B2 含二選一)──
+  // v3.2 換裝(2026-07 起):報告本體改走共用 renderer(heroHtml/radarHtml/narrativeHtml/systemsHtml)
+  // + 保留的分享碼/按鈕列/PDF/伴讀/回饋問卷/誠實印章;舊有「每態六級」「四大系統(GATES)」
+  // 「你的章節/雙峰組合/你的格局/還沒長開/場域速查」「能格·用得剛不剛好」「接下來三個方向」
+  // 「二選一對照」「能量晶體」等特色段全數退場,故下列 expects/dom 對應改寫。
   var CASES=[
-    {code:'B19050505050505050', name:'B1-single-qian', expects:['開創者·乾','神韻','工作樣貌','愛情與親密','分享碼沒有能格資料']},
-    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者·乾','二選一時你','含二選一對照','題本 v2','接下來 · 三個方向','好好用','八態伴讀','開始伴讀','就在這裡聊','能量晶體','四大系統','建構系統','定方向','從你的峰讀起','展行','開始,如何成為現實?'],
-     dom:[{n:'狀態分區小平面已移除', f:function(doc){return doc.querySelectorAll('svg.splane').length===0;}},
+    {code:'B19050505050505050', name:'B1-single-qian', expects:['開創者(乾)','整體的你','四個系統 · 你怎麼運作','對照與分享']},
+    {code:'B29050505050505050'+'0523', name:'B2-single-fc', expects:['開創者(乾)','題本 v2','八態伴讀','開始伴讀','就在這裡聊','建構','調節','小練習'],
+     dom:[{n:'狀態分區小平面已移除(舊殘留斷言,恆真)', f:function(doc){return doc.querySelectorAll('svg.splane').length===0;}},
           {n:'存成 PDF 按鈕存在且在 noprint 區', f:function(doc){var b=doc.getElementById('btn-pdf');return !!b && !!b.closest('.noprint') && typeof b.onclick==='function';}},
           {n:'列印樣式存在(@media print 隱藏互動元件)', f:function(doc){var css='';var ss=doc.querySelectorAll('style');for(var i=0;i<ss.length;i++)css+=ss[i].textContent;return css.indexOf('@media print')>=0 && css.indexOf('.noprint{display:none')>=0;}},
           {n:'伴讀與回饋問卷包在 noprint', f:function(doc){var bs=doc.getElementById('bot-startrow'),ask=doc.querySelector('.ask');return !!bs && !!bs.closest('.noprint') && !!ask && ask.classList.contains('noprint');}},
-          {n:'beforeprint 展開 details、afterprint 還原', f:function(doc){
-            var w=doc.defaultView, before=doc.querySelectorAll('#scr-report details:not([open])').length;
-            if(!before) return false;
-            w.dispatchEvent(new w.Event('beforeprint'));
-            var during=doc.querySelectorAll('#scr-report details:not([open])').length;
-            w.dispatchEvent(new w.Event('afterprint'));
-            var after=doc.querySelectorAll('#scr-report details:not([open])').length;
-            return during===0 && after===before;}}],
+          // v3.2 換裝:核心四塊(渲染容器 id='scr-report')
+          {n:'v3.2 核心四塊出現(narrative-block+sys-detail)', f:function(doc){var H=doc.getElementById('scr-report').innerHTML; return H.indexOf('narrative-block')>=0 && H.indexOf('sys-detail')>=0;}},
+          {n:'v3.2 canonical 者名出現(開創者(乾))', f:function(doc){return doc.getElementById('scr-report').innerHTML.indexOf('開創者(乾)')>=0;}},
+          {n:'v3.2 漂移名退場(明現者/交流者/拓展者不出現)', f:function(doc){var H=doc.getElementById('scr-report').innerHTML; return H.indexOf('明現者')<0 && H.indexOf('交流者')<0 && H.indexOf('拓展者')<0;}},
+          {n:'v3.2 二選一對照段退場(報告容器內,不含頁面其他區的二選一題本文案)', f:function(doc){return doc.getElementById('scr-report').innerHTML.indexOf('二選一')<0;}},
+          {n:'v3.2 晶體連結退場(報告容器內)', f:function(doc){return doc.getElementById('scr-report').innerHTML.indexOf('bagua-crystal')<0;}},
+          {n:'v3.2 雷達互動(8 個 rgrp)', f:function(doc){return doc.querySelectorAll('#radar-wrap g.rgrp').length===8;}},
+          {n:'v3.2 conf=null(分享碼重建)→ 無可信度句', f:function(doc){return doc.getElementById('scr-report').innerText.indexOf('答得乾脆')<0;}}],
      click:'bot-start', expectsAfter:['我讀完你的報告了','結束伴讀 · 整理回饋']},
-    {code:'B14582454545854545', name:'B1-dual-kan-li', expects:['並重','雙峰組合','沉澱與明現並重']}
+    {code:'B14582454545854545', name:'B1-dual-kan-li', expects:['並重','沉潛者(坎)','洞見者(離)'],
+     dom:[{n:'v3.2 雙峰組合段退場(T3 特色段已併入共用 narrative)', f:function(doc){return doc.getElementById('scr-report').innerHTML.indexOf('雙峰組合')<0;}}]}
   ];
   var done=0;
   function checkFrame(cs){
@@ -114,13 +119,53 @@
         f.parentNode.removeChild(f);
         done++;
         if(done===CASES.length){
-          document.title='RESULT pass='+pass+' fail='+fail;
-          log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+          runConfDrivenCase();
         } else {
           checkFrame(CASES[done]);
         }
       }
     },150);
+  }
+
+  // v3.2 sure→firm:走真實測驗(非分享碼)才會有 conf 物件;每態三題(2 scale + 1 頻率)都點選同一個
+  // 選項位置(index 2),讓每態三題原始值落在 spread<=1 → confidence() 全部給 'sure';分數因此也全部
+  // 落在中段、不觸發能格追問,直達報告——這樣可以確定性地驗證 conf 真的有東西時,narrativeHtml 的
+  // 可信度句會出現(對照 CASES 走分享碼、conf 恆為 null 的「無可信度句」斷言,見上面 dom 檢查)。
+  function runConfDrivenCase(){
+    var f=document.createElement('iframe');
+    f.style.cssText='width:900px;height:600px';
+    f.src='bagua-persona-v2.html';
+    document.getElementById('frames').appendChild(f);
+    var tries=0;
+    var timer=setInterval(function(){
+      tries++;
+      var d=null;
+      try{ d=f.contentDocument; }catch(e){}
+      var ready = d && d.getElementById('btn-start');
+      if(ready || tries>200){
+        clearInterval(timer);
+        var ok1=false, ok2=false;
+        try{
+          d.getElementById('btn-start').click();
+          for(var i=0;i<32;i++){
+            var opts=d.querySelectorAll('#q-opts .opt');
+            if(!opts.length) break;
+            (opts[2]||opts[opts.length-1]).click();
+          }
+          var H=d.getElementById('scr-report').innerHTML;
+          ok1 = H.indexOf('答得乾脆')>=0;
+          var g=d.querySelector('#radar-wrap g.rgrp');
+          if(g) g.dispatchEvent(new d.defaultView.Event('click',{bubbles:true}));
+          var detail=d.getElementById('radar-detail')?d.getElementById('radar-detail').innerHTML:'';
+          ok2 = detail.indexOf('篤定')>=0;
+        }catch(e){}
+        t('v3.2 conf 真值(sure)渲染 → 可信度句出現', ok1);
+        t('v3.2 sure→firm 映射:雷達詳解顯示「篤定」', ok2);
+        f.parentNode.removeChild(f);
+        document.title='RESULT pass='+pass+' fail='+fail;
+        log.textContent='RESULT pass='+pass+' fail='+fail+'\n'+log.textContent;
+      }
+    },100);
   }
   checkFrame(CASES[0]);
 })();

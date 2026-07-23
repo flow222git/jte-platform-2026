@@ -139,12 +139,32 @@
   .ask .ah{font-family:"Songti TC","Noto Serif TC",serif;color:var(--pine);font-size:13.5px;letter-spacing:.12em;margin-bottom:6px}
   .ask ol{padding-left:1.3em;font-size:13px;line-height:2}
   a{color:var(--pine)}
+  /* v3.2 共用 renderer 區塊(octenso/bagua-report-renderer.js 產出;class 名與 bagua-persona.html 同構) */
+  .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .block h3{font-family:ui-sans-serif,sans-serif;font-size:13px;letter-spacing:.06em;color:var(--pine);margin-bottom:12px;font-weight:700}
+  .portrait{font-size:14px;line-height:1.95;color:var(--ink)}
+  .pair-foot{font-family:ui-sans-serif,sans-serif;font-size:11px;color:var(--muted);line-height:1.7;margin-top:12px;font-style:italic}
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px 20px;
+    box-shadow:none;position:relative;overflow:hidden;text-align:center;margin-bottom:18px}
+  .typecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,var(--pine))}
+  .tc-eyebrow{font-family:ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px}
+  .tc-sym{font-size:48px;line-height:1;margin-bottom:6px;color:var(--accent,var(--pine))}
+  .tc-title{font-size:25px;letter-spacing:.08em;margin-bottom:9px;color:var(--ink)}
+  .tc-essence{font-size:14.5px;color:var(--ink);line-height:1.85;max-width:400px;margin:0 auto}
+  .radar-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 12px 12px;margin-bottom:14px}
+  .radar-wrap{max-width:380px;margin:6px auto 4px}
+  .radar-wrap svg{width:100%;height:auto;display:block}
+  .radar-wrap.rint g.rgrp{cursor:pointer}
+  .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
+  .rlabel.top{fill:var(--pine);font-weight:700}
+  .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
   /* 列印/存 PDF:只印報告本體;互動元件(按鈕/伴讀/回饋問卷)不進紙面 */
   @media print{
     body{background:#fff;padding:0 4mm 10mm;font-size:12pt;
       -webkit-print-color-adjust:exact;print-color-adjust:exact}
     .fontbtns,#scr-intro,#scr-quiz,#scr-interlude,.btn,.navlink,.noprint{display:none!important}
-    .card,.pair,.cost-row,h4.blk,details,.band-row{break-inside:avoid}
+    .card,.pair,.cost-row,h4.blk,details,.band-row,.block,.typecard,.radar-card{break-inside:avoid}
     details{border-top-color:var(--line)}
     a{color:inherit;text-decoration:none}
   }
@@ -208,6 +228,8 @@
 <script src="bagua-catalog-data.js"></script>
 <script src="bagua-catalog-t1.js"></script>
 <script src="bagua-catalog-combos.js"></script>
+<script src="bagua-report-v32-data.js"></script>
+<script src="bagua-report-renderer.js"></script>
 <script>
 (function(){
 'use strict';
@@ -374,26 +396,12 @@ function costVerdicts(){
 function finishCost(){ S.phase='report'; save(); renderReport(computeScores(), costVerdicts(), confidence(), S.fcAns); }
 
 // ── 報告 ──
-function radarSVG(sc){
-  // 依圓周相鄰方位連線(canonical POLAR 幾何順序;艮/巽 已於 2026-07-05 對調座標,不可用 EKEYS 順序連)
-  var RING=['qian','li','zhen','dui','kun','kan','xun','gen'];
-  var pts=RING.map(function(k){var p=B.POLAR[k];
-    var r=(sc[k]||0)/100; return [200+(p.x-200)*r, 200+(p.y-200)*r];});
-  var frame=RING.map(function(k){var p=B.POLAR[k];return p.x+','+p.y;}).join(' ');
-  var half=RING.map(function(k){var p=B.POLAR[k];return (200+(p.x-200)*.5)+','+(200+(p.y-200)*.5);}).join(' ');
-  var poly=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
-  var labels=EKEYS.map(function(k){var p=B.POLAR[k],g=B.get(k);
-    var lx=200+(p.x-200)*1.22, ly=200+(p.y-200)*1.22+4;
-    return '<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+g.fnShort+'者</text>';}).join('');
-  return '<svg class="radar" viewBox="0 0 400 400" width="300" role="img" aria-label="八態雷達">'
-    +'<polygon points="'+frame+'" fill="none" stroke="var(--line)"/>'
-    +'<polygon points="'+half+'" fill="none" stroke="var(--surface2)"/>'
-    +EKEYS.map(function(k){var p=B.POLAR[k];return '<line x1="200" y1="200" x2="'+p.x+'" y2="'+p.y+'" stroke="var(--surface2)"/>';}).join('')
-    +'<polygon points="'+poly+'" fill="rgba(53,97,79,.16)" stroke="var(--pine)" stroke-width="1.4"/>'
-    +pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="var(--pine)"/>';}).join('')
-    +labels+'</svg>';
-}
-function signatureCard(pf){
+// v3.2:報告主體改走共用 renderer(octenso/bagua-report-renderer.js)的 heroHtml/radarHtml/
+// narrativeHtml/systemsHtml 四塊;radarSVG(舊行內雷達)、BANDS_TXT(舊每態六級列表用)、
+// reTitle(舊「先者後卦」顯示層,只有已刪的頁面區塊在用)三者已無殘餘呼叫,整段刪除。
+// signatureCard/catalogSections/fcCompareNote 三者雖不再供報告畫面使用,但 buildReportText
+// (八態伴讀的 grounding 文字)與 wireBot 仍呼叫,故保留——見下方各自函式頂的保留註記。
+function signatureCard(pf){ // 保留:buildReportText、wireBot 仍呼叫,供伴讀開場白組字
   var sig=pf.signature,k=sig.keys;
   if(sig.kind==='single'){var g=B.get(k[0]);
     return {sym:g.sym,title:g.title,sub:'單一主峰',ess:C.T1[k[0]].aura};}
@@ -401,18 +409,14 @@ function signatureCard(pf){
     return {sym:a.sym+' '+b.sym,title:a.nm+'×'+b.nm+' · '+a.fnShort+'與'+b.fnShort+'並重',
       sub:'兩個並重的主調,輪流主導',ess:''};}
   if(sig.kind==='multi'){
-    // 先者後卦(2026-07-15 使用者回饋:多主調也要跑出「者」)
+    // 先者後卦,一律走 canonical OCTENSO_BAGUA.pn(k)(2026-07-23 掃除 fnShort+'者' 漂移名組字)
     return {sym:k.map(function(x){return B.get(x).sym;}).join(' '),
-      title:k.map(function(x){var g=B.get(x);return g.fnShort+'者·'+g.nm;}).join(' × '),
+      title:k.map(function(x){return B.pn(x);}).join(' × '),
       sub:'多主調型 · '+k.length+' 個主調並重',ess:''};}
   var lv=pf.level.band, nm=lv==='high'?'高能多面型':lv==='low'?'低調蓄能型':'均衡型';
   return {sym:B.get(pf.leads[0]).sym,title:nm,sub:'沒有單一主峰,以整體格局描述',ess:''};
 }
-var BANDS_TXT={sure:'篤定',mixed:'兩可'};
-// 顯示層:先「者」後卦(2026-07-12 使用者回饋);canonical title 原樣不動
-function reTitle(s){return String(s).replace(/([乾坤震巽離坎艮兌])·([^×\s()]+)/g,'$2·$1');}
-function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
-function catalogSections(k,costSt){
+function catalogSections(k,costSt){ // 保留:buildReportText 仍呼叫,供伴讀 grounding 文字組章節
   var over=costSt[k]==='over';
   var secs=[['aura','神韻',''],['crowd','在人群中的樣子','']];
   secs.push(['work'+(over?'Over':'Mid'),'工作樣貌',over?'over':'mid']);
@@ -424,7 +428,7 @@ function catalogSections(k,costSt){
     alt:over?[['workMid','工作樣貌','mid'],['loveMid','愛情與親密','mid']]
             :[['workOver','工作樣貌','over'],['loveOver','愛情與親密','over'],['stress','壓力訊號','over']]};
 }
-// 二選一 × 量表偏向 對照(標註式,不入分)
+// 二選一 × 量表偏向 對照(標註式,不入分)。保留:報告畫面已無此段,但 buildReportText 仍呼叫。
 function fcCompareNote(ax, fcVal){
   if(fcVal==null) return '';
   var pickLeft=fcVal<=2;
@@ -500,135 +504,26 @@ function buildReportText(pf,sc,costSt,conf,fc){
   return L.join('\n');
 }
 
+// v3.2 adapter:頁內分數/校準/篤定/能格 → OctensoReport.build(input) 所需形狀
+// sure→firm:v2 confidence() 存 'sure'/'mixed'/'normal',renderer 詞彙為 'firm'/'mixed' —— 只搬 'sure'→'firm',其餘原樣。
+// shared=true(分享碼重建,conf 本來就是 null)時不組 conf,對齊「分享碼沒有篤定性資料」。
+function toRendererInput(sc,costSt,conf,shared){
+  var overs=[],unders=[];
+  Object.keys(costSt||{}).forEach(function(k){ if(costSt[k]==='over')overs.push(k); else if(costSt[k]==='under')unders.push(k); });
+  var cf=null;
+  if(conf && !shared){ cf={}; Object.keys(conf).forEach(function(k){ cf[k]=conf[k]==='sure'?'firm':conf[k]; }); }
+  return {scores:sc,conf:cf,overs:overs,unders:unders,neutral:null,now:null,hasCost:!!(costSt&&Object.keys(costSt).length>0)};
+}
+
 function renderReport(sc,costSt,conf,fc){
   costSt=costSt||{};
-  var pf=P.build(sc), sig=signatureCard(pf), code=encodeCode(sc,fc);
+  var ctx=OctensoReport.build(toRendererInput(sc,costSt,conf,!conf));
+  var code=encodeCode(sc,fc);
   var h='';
-  h+='<div class="card"><div class="r-head"><div class="r-sym serif">'+sig.sym+'</div>'
-    +'<div class="r-title">'+esc(reTitle(sig.title))+'</div><div class="r-sub">'+esc(sig.sub)+'</div></div>'
-    +(sig.ess?'<p class="r-ess">'+esc(sig.ess)+'</p>':'')
-    +radarSVG(sc)
-    +'<p class="center" style="margin:12px 0 4px"><a class="btn ghost" href="bagua-crystal.html#r='+code+'">立體看這份快照 · 能量晶體 →</a></p>'
-    +'<div class="felt">'+esc(C.FELT)+'<br>照的是你「感受到」的自己,不是行為的成績單。</div></div>';
-  h+='<div class="rule"></div><div class="seclabel">每態六級 · 與答題篤定性</div><div class="band-list">';
-  pf.ranked.forEach(function(o){
-    var g=B.get(o.k), bd=pf.bands[o.k];
-    var cf=conf?conf[o.k]:null, cfTxt=(cf==='sure'||cf==='mixed')?BANDS_TXT[cf]:'';
-    h+='<div class="band-row"><span class="nm">'+pn(o.k)+(V.ELEGANT?'<span class="ele">·'+esc(V.ELEGANT[o.k])+'</span>':'')+'</span><span class="sc">'+o.v+'</span>'
-      +'<span class="bl '+(bd.like?'like':'unlike')+'">'+bd.label+(bd.like?'你':'')+'</span>'
-      +(cfTxt?'<span class="conf '+cf+'">'+cfTxt+'</span>':'')+'</div>'
-      +'<div class="band-brief">'+esc(V.BRIEF[o.k])+'</div>';
-  });
-  h+='</div><p style="font-size:12px;color:var(--muted)">整體水平:'
-    +(pf.level.band==='high'?'偏高':pf.level.band==='low'?'偏收':'中間')+'(八態平均 '+pf.level.mean+')。'
-    +(conf?'「篤定」表示那一態的三題你答得很一致;「兩可」表示答得分散——這一態的分數,解讀時請保留彈性。':'(以分享碼重建,無篤定性資料。)')+'</p>';
-  h+='<div class="rule"></div><div class="seclabel">四大系統 · 你的能量怎麼運作'+(fc?'(含二選一對照)':'')+'</div>';
-  var GT=V.GATES;
-  h+='<p style="font-size:13px;color:var(--muted)">'+esc(GT.intro)+'</p>';
-  // 錨定敘事:從主峰所在的門讀起(不是強度排序,是「從你認識的自己」讀進去)
-  var lead0=pf.leads[0], lead1=pf.leads[1];
-  if(lead0){
-    var g0=null;P.PAIRS.forEach(function(p){if(p.l===lead0||p.r===lead0)g0=p.key;});
-    h+='<p style="font-size:13px;color:var(--pine)">'+esc(GT.anchor.replace('{P}',pn(lead0)).replace('{G}',GT.name[g0]))+'</p>';
-  }
-  var axArr=pf.axes.slice().sort(function(a,b){
-    function w(x){ if(lead0&&(x.l===lead0||x.r===lead0)) return 0;
-      if(lead1&&(x.l===lead1||x.r===lead1)) return 1; return 2; }
-    return w(a)-w(b);
-  });
-  axArr.forEach(function(ax){
-    var ai=pf.axes.indexOf(ax);
-    var st=ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
-      :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
-    var read=V.SYSTEM_READ[ax.key][st];
-    var tension=(ax.key==='drive'&&st==='bothHigh');
-    var plain=tension?GT.tension:GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
-    // 兩個音量條:每隻手一條,同一把尺;顏色=這隻手此刻有沒有被慣用
-    var onL=(st==='leanL'||st==='bothHigh'), onR=(st==='leanR'||st==='bothHigh');
-    var cls=tension?'tens':'';
-    h+='<div class="pair">'
-      +(GT.mission&&GT.mission[ax.key]?'<div class="mission">'+esc(GT.mission[ax.key])+'</div>':'')
-      +'<div class="gq"><b>'+GT.name[ax.key]+'系統</b> · '+esc(GT.q[ax.key])+'</div>'
-      +'<div class="duo"><div class="bars">'
-      +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.l])+'</span>'
-      +  '<div class="pbar"><i class="'+(onL?'on ':'')+cls+'" style="width:'+sc[ax.l]+'%"></i></div>'
-      +  '<span class="ps">'+sc[ax.l]+'</span></div>'
-      +'<div class="pole-row"><span class="pl">'+esc(GT.pole[ax.r])+'</span>'
-      +  '<div class="pbar"><i class="'+(onR?'on ':'')+cls+'" style="width:'+sc[ax.r]+'%"></i></div>'
-      +  '<span class="ps">'+sc[ax.r]+'</span></div>'
-      +'</div></div>'
-      +'<div class="plain"><b style="font-weight:400;color:var(--ink)">此刻的運作:</b>'+esc(plain)+'</div>'
-      +'<div class="verdict'+(tension?' tension':'')+'"><b>'+esc(read.tag)+'</b> — '+esc(read.desc)+'</div>'
-      +'<div class="cnote">'+pn(ax.l)+' ⇄ '+pn(ax.r)+'</div>'
-      +(fc?fcCompareNote(ax,fc[ai]):'')
-      +'</div>';
-  });
-  h+='<p style="font-size:11.5px;color:var(--muted)">'+esc(GT.noteBio)+'</p>';
-  h+='<div class="rule"></div><div class="seclabel">能格 · 用得剛不剛好</div>';
-  var stKeys=Object.keys(costSt);
-  if(!stKeys.length){
-    h+='<p style="font-size:13.5px;color:var(--muted)">'+(conf?'這次沒有態落在追問門檻(都在中間範圍)——以中正樣貌閱讀以下章節即可。':'分享碼沒有能格資料——以下章節以中正樣貌為主;想要完整判讀,請實際作答一次。')+'</p>';
-  } else {
-    stKeys.forEach(function(k){
-      var st=costSt[k], cd=V.COST[k], g=B.get(k);
-      var lbl=st==='over'?'亢 · 過用':st==='under'?'潛 · 不足':st==='midHi'?'中正 · 強而用得剛好':'中正 · 不強但無礙';
-      var cls=st==='over'?'st-over':st==='under'?'st-under':'st-mid';
-      var adv=st==='over'?cd.aOver:st==='under'?cd.aUnder:st==='midHi'?cd.aMidHi:cd.aMidLo;
-      h+='<div class="cost-row"><div class="ch"><span style="color:var(--ink)">'+pn(k)+'</span> <span class="'+cls+'">'+lbl+'</span></div><p>'+esc(adv)+'</p></div>';
-    });
-  }
-  pf.leads.slice(0,2).forEach(function(k){
-    var g=B.get(k), cs=catalogSections(k,costSt), p=C.T1[k];
-    h+='<div class="rule"></div><div class="seclabel">你的章節 · '+reTitle(g.title)+(cs.over?'(此刻偏亢,先讀亢段)':'')+'</div>';
-    cs.secs.forEach(function(s){
-      var tag=s[2]?'<span class="bandtag '+s[2]+'">'+(s[2]==='over'?'亢':'中正')+'</span>':'';
-      h+='<h4 class="blk">'+s[1]+tag+'</h4><p class="blktxt">'+esc(p[s[0]])+'</p>';
-    });
-    h+='<details><summary>另一面:'+(cs.over?'用得剛好時的樣子(中正段)':'用過頭時的樣子(亢段)')+'<span class="d-band">點開對照</span></summary>';
-    cs.alt.forEach(function(s){ h+='<h4 class="blk">'+s[1]+'<span class="bandtag '+s[2]+'">'+(s[2]==='over'?'亢':'中正')+'</span></h4><p class="blktxt">'+esc(p[s[0]])+'</p>'; });
-    h+='</details>';
-  });
-  var sg=pf.signature;
-  if(sg.kind==='dual'){
-    var key1=sg.keys[0]+'-'+sg.keys[1], key2=sg.keys[1]+'-'+sg.keys[0];
-    var combo=C.T3[key1]||C.T3[key2];
-    h+='<div class="rule"></div><div class="seclabel">雙峰組合</div>';
-    if(combo){ h+='<h4 class="blk">'+esc(combo.title)+'<span class="bandtag'+(combo.tension?' over':'')+'">'+esc(combo.pair)+' · '+esc(combo.character)+'</span></h4><p class="c-text">'+esc(combo.text)+'</p>'; }
-    else { h+='<p class="blktxt">'+esc(C.T3_FALLBACK)+'</p>'; }
-  }
-  if(sg.kind==='pattern'||sg.kind==='multi'){
-    var t4=C.T4[pf.level.band==='high'?'high':pf.level.band==='low'?'low':'mid'];
-    h+='<div class="rule"></div><div class="seclabel">你的格局</div><h4 class="blk">'+esc(t4.nm)+'</h4><p class="c-text">'+esc(t4.text)+'</p>';
-  }
-  if(pf.gaps.length){
-    var gk=pf.gaps[0], gg=B.get(gk);
-    h+='<div class="rule"></div><div class="seclabel">還沒長開 · '+pn(gk)+'</div>'
-      +'<h4 class="blk">還沒長開<span class="bandtag under">潛</span></h4><p class="blktxt">'+esc(C.T1[gk].latent)+'</p>';
-  }
-  var mainK=pf.leads[0];
-  h+='<div class="rule"></div><div class="seclabel">場域 × 能格 · 速查('+reTitle(B.get(mainK).title)+')</div>';
-  C.DOMAINS.forEach(function(d,di){
-    h+='<details'+(di===C.DOMAINS.length-1?' class="last"':'')+'><summary>'+d.nm+'</summary>';
-    C.LEVELS.forEach(function(l){
-      h+='<h4 class="blk" style="font-size:13px">'+l.nm+'<span class="bandtag '+l.key+'">'+l.note+'</span></h4>'
-        +'<p style="font-size:13px;line-height:1.95">'+esc(C.T2[mainK][d.key][l.key])+'</p>';
-    });
-    h+='</details>';
-  });
-  // 接下來 · 三個方向(好好用=主峰中正發揮;留意收=能格亢的建議;值得練=缺口潛的第一步)
-  h+='<div class="rule"></div><div class="seclabel">接下來 · 三個方向</div>';
-  pf.leads.slice(0,2).forEach(function(k){
-    h+='<div class="cost-row"><div class="ch"><span class="st-mid">好好用</span> <span style="color:var(--ink)">'+pn(k)+'</span></div><p>'+esc(V.DIRECTIONS[k].use)+'</p></div>';
-  });
-  var oversH=Object.keys(costSt).filter(function(k){return costSt[k]==='over';});
-  if(oversH.length){ oversH.forEach(function(k){
-    h+='<div class="cost-row"><div class="ch"><span class="st-over">留意收</span> <span style="color:var(--ink)">'+pn(k)+'</span></div><p>'+esc(V.COST[k].aOver)+'</p></div>';
-  }); } else {
-    h+='<div class="cost-row"><div class="ch"><span class="st-over">留意收</span></div><p style="color:var(--muted)">這次校準沒有出現過用訊號——先放心用你的本錢。</p></div>';
-  }
-  if(pf.gaps.length){ var gkD=pf.gaps[0];
-    h+='<div class="cost-row"><div class="ch"><span class="st-under">值得練</span> <span style="color:var(--ink)">'+pn(gkD)+'</span></div><p>'+esc(V.COST[gkD].aUnder)+'</p></div>';
-  }
+  h+=OctensoReport.heroHtml(ctx);
+  h+=OctensoReport.radarHtml(ctx);
+  h+=OctensoReport.narrativeHtml(ctx);
+  h+=OctensoReport.systemsHtml(ctx);
   h+='<div class="rule"></div><div class="seclabel">對照與分享</div>'
     +'<p style="font-size:13.5px">你的分享碼(題本 v2):<span class="mycode">'+code+'</span><br>'
     +'<a class="btn ghost" style="margin-top:8px" href="bagua-persona.html">打開正式版對照 →</a>'
@@ -655,12 +550,12 @@ function renderReport(sc,costSt,conf,fc){
   }
   h+='<div class="ask noprint"><div class="ah">題本 v2 試測 · 想聽你的感覺</div><ol>'
     +'<li>這次的題目好答嗎?「很不像/幾乎不曾」那端,你用到了嗎?</li>'
-    +'<li>二選一的四題——有沒有哪題兩邊都像、很難選?</li>'
-    +'<li>報告裡「二選一對照」的落差(如果有),你覺得哪邊更貼近你?</li>'
+    +'<li>那四題「強迫選邊」的題目——有沒有哪題兩邊都像、很難選?</li>'
     +'<li>整份報告,哪一句最中?哪一句最不像你?</li></ol></div>';
   h+='<div class="honest" style="margin-top:26px">'+esc(B.HONEST)+' 這是體驗版(題本 v2 試測):內容為草稿,你的作答只存在這台裝置上、不上傳。</div>';
   $('scr-report').innerHTML=h;
-  wireBot(pf,sc,costSt,conf,fc);
+  OctensoReport.bindRadar(ctx);
+  wireBot(ctx.pf,sc,costSt,conf,fc);
   var pb=$('btn-pdf'); if(pb) pb.onclick=function(){ window.print(); };
   show('scr-report');
 }
