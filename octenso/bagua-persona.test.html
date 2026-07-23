@@ -59,7 +59,9 @@ document.getElementById('f').onload=function(){
     w.showResult();
     var rc=d.getElementById('result').innerHTML;
     ok(rc.indexOf('並重')>=0,'乾坤並高 → 並列主旋律(並重)');
-    ok(rc.indexOf('完整的格局')>=0,'建構(乾坤)雙高 → 完整的格局(天地定位·非張力)');
+    // v3.2 Task5:systemsSection 改為 SYS_DETAIL 詳解,原 fourXiangHtml「完整的格局」文字不再進主線；
+    // C1 意圖(乾坤雙高=完整格局非張力)改由 SYS_DETAIL build.bothHigh.read「完整的建構格局」承接
+    ok(rc.indexOf('完整的建構格局')>=0,'建構(乾坤)雙高 → 完整的建構格局(天地定位·非張力)');
 
     // 4e. 確信度：qian 三題都 5（一致＋極端→篤定）；kan 三題 0/5/2（分散→兩可）
     w.answers=new Array(24).fill(2);
@@ -79,14 +81,73 @@ document.getElementById('f').onload=function(){
     ok(d.querySelector('.tc-title').textContent.indexOf('洞見者')>=0,'看完整解盤：用帶入分數渲染(離·洞見者)');
     ok(JSON.parse(w.localStorage.getItem('bagua_persona_v1')).ts==='KEEP-TS','viewScores 不覆寫存檔 ts');
 
-    // 5. all-null doesn't throw
+    // 5. v3.2 命名:pn() 者名(卦)
+    ok(typeof w.pn==='function' && w.pn('qian')==='開創者(乾)','pn(qian)=開創者(乾), got '+(w.pn&&w.pn('qian')));
+    ok(w.pn('li')==='洞見者(離)' && w.pn('gen')==='守界者(艮)' && w.pn('dui')==='共鳴者(兌)','pn canonical 名');
+    // 峰名卡:單峰標題用 者名(卦)
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
+    w.showResult();
+    ok(d.querySelector('.tc-title').textContent.indexOf('開創者(乾)')>=0,'單峰峰名卡=開創者(乾)');
+
+    // 6. v3.2 雷達:主線(不在 details 裡)、可點、解釋卡預設最高態
+    var rw=d.getElementById('radar-wrap');
+    ok(rw && !rw.closest('details'),'雷達在主線,不在折疊區');
+    ok(d.querySelectorAll('#radar-wrap g.rgrp').length===8,'雷達 8 個可點群組');
+    var rd=d.getElementById('radar-detail');
+    ok(rd && rd.textContent.indexOf('開創者(乾)')>=0,'解釋卡預設最高態(乾) 者名(卦)');
+    ok(rd && rd.style.display==='block','主結果頁 radar-detail 應為 display:block');
+    ok(w.radarCard(null).indexOf('display:none')>=0,'非互動 radarCard 預設 radar-detail 隱藏');
+    // 點擊換態
+    var giLi=d.querySelector('#radar-wrap g.rgrp[data-k="li"]');
+    giLi.dispatchEvent(new w.Event('click',{bubbles:true}));
+    ok(rd.textContent.indexOf('洞見者(離)')>=0,'點離角 → 解釋卡換洞見者(離)');
+    // 標籤=者名
+    var labels=Array.prototype.map.call(d.querySelectorAll('#radar-wrap text.rlabel'),function(t){return t.textContent;});
+    ok(labels.indexOf('開創者')>=0 && labels.indexOf('守界者')>=0,'雷達角標=者名');
+
+    // 50. all-null doesn't throw
     w.answers=new Array(24).fill(null);
     var sc2=w.computeScores();
     ok(sc2.qian===0,'null answers → 0');
 
-    // 6. radar has 8 score dots + 8 labels
+    // 51. radar has 8 score dots + 8 labels
     w.answers=new Array(24).fill(2); w.showResult();
     ok(d.querySelectorAll('.rlabel').length===8,'8 radar labels, got '+d.querySelectorAll('.rlabel').length);
+
+    // 52. v3.2 敘事:總述先行、零術語開場、無速寫圓、含場景段
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian') w.answers[i]=5; });
+    w.showResult();
+    var nb=d.getElementById('narrative-open');
+    ok(nb,'總述區存在');
+    ok(!/[乾坤震巽坎離艮兌]/.test(nb.textContent),'總述零術語(不含卦名)');
+    ok(d.querySelector('.punch'),'punch 句存在');
+    var blk=d.getElementById('result').innerHTML;
+    ok(blk.indexOf('整體的你')>=0,'敘事區標題=整體的你');
+    ok(blk.indexOf('如果這是你')>=0,'含場景段');
+    ok(!d.querySelector('#narrative-block svg'),'敘事區無圓相圖');
+    ok(typeof w.ensoSVG==='undefined','死碼已移除(能量印記走 buildEnsoCanvas)');
+    // 順序:雷達 < 敘事 < 四個系統
+    ok(blk.indexOf('radar-wrap')<blk.indexOf('整體的你'),'雷達在敘事前');
+
+    // 53. v3.2 四系統加詳
+    var sysB=d.getElementById('sys-detail');
+    ok(sysB,'四系統詳解區存在');
+    ok(sysB.textContent.indexOf('建構')>=0 && sysB.textContent.indexOf('調節')>=0,'含 canonical 系統名');
+    ok(sysB.textContent.indexOf('小練習')>=0,'含小練習');
+    ok(sysB.querySelectorAll('.pole-row').length===8,'8 條音量條');
+    ok(sysB.textContent.indexOf('協作者(巽)')>=0,'音量條用 者名(卦)');
+    // C1:乾坤雙高=完整格局非張力;震巽雙高=張力
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='zhen'||q.k==='xun') w.answers[i]=5; });
+    w.showResult();
+    ok(d.getElementById('sys-detail').textContent.indexOf('張力')>=0,'震巽雙高 → 張力');
+    w.answers=new Array(24).fill(0);
+    w.QUESTIONS.forEach(function(q,i){ if(q.k==='qian'||q.k==='kun') w.answers[i]=5; });
+    w.showResult();
+    var sdt=d.getElementById('sys-detail').textContent;
+    ok(sdt.indexOf('張力')<0,'乾坤雙高 → 不標張力');
 
     // 7. 底色 vs 此刻 — no snapshot → fallback CTA
     w.localStorage.removeItem('bagua_now_v1');
@@ -421,7 +482,9 @@ document.getElementById('f').onload=function(){
     ok(pblk,'pair block rendered in result');
     ok(pblk && pblk.textContent.indexOf('八態輪廓')>=0,'merged outline block 八態輪廓');
     ok(d.querySelector('#result').textContent.indexOf('四個系統')>=0,'四個系統 section present');
-    ok(d.querySelectorAll('#result .pair-bar').length===4,'結果頁四對 4 條, got '+d.querySelectorAll('#result .pair-bar').length);
+    // v3.2 Task5:systemsSection 改用 SYS_DETAIL 音量條(.pole-row),原 fourXiangHtml 的 .pair-bar
+    // 暫時不進主線(留給 Task 6 收納進深讀折疊區)；改斷言新結構的 8 條 .pole-row
+    ok(d.querySelectorAll('#result .pole-row').length===8,'結果頁四系統 8 條音量條, got '+d.querySelectorAll('#result .pole-row').length);
     ok(d.querySelector('#result').textContent.indexOf('不是非此即彼')>=0,'systems honest line present');
 
     // ── L1–L5 整合解讀 ──────────────────────────────────────
@@ -448,9 +511,10 @@ document.getElementById('f').onload=function(){
     ok(w.leadSentence(pfLead,{li:'mixed'}).indexOf('兩可')>=0,'L4 主調兩可→加脈絡');
     ok(w.leadSentence(pfLead,null).indexOf('兩可')<0,'L4 無 conf→不加脈絡');
     // 能量速寫 render（取代整合/人物速寫）
+    // v3.2: 標題「能量速寫」改為「整體的你」(task-4 敘事總述先行) — 保留本測試改斷言新標題
     w.answers=new Array(w.QUESTIONS.length).fill(2); w.currentFacet=null; w.showResult();
     var rhtml=d.getElementById('result').innerHTML;
-    ok(rhtml.indexOf('能量速寫')>=0,'能量速寫 render in result');
+    ok(rhtml.indexOf('整體的你')>=0,'整體的你 render in result');
     ok(rhtml.indexOf('整合 · 立體的你')<0 && rhtml.indexOf('人物速寫')<0,'舊整合/人物速寫已移除');
     // portraitNarrative 單元（解讀規則 spec）：三拍、缺口收尾、能格織入與退回
     var pfM=P.build({zhen:88,qian:78,li:78,dui:75,kun:74,xun:72,gen:72,kan:70});
@@ -468,8 +532,9 @@ document.getElementById('f').onload=function(){
     // 能量印記 canvas 產出
     var ec=w.buildEnsoCanvas({qian:72,li:62,zhen:82,dui:45,kun:55,kan:78,gen:38,xun:60},'行動沉澱者',['zhen','kan'],'gen');
     ok(ec&&ec.tagName==='CANVAS'&&ec.width===640,'能量印記 canvas 產出');
-    // 能量速寫含 ensō 圓（svg path）
-    ok(w.portraitNarrative(pfM,null).indexOf('<svg')>=0,'能量速寫含能量圓 svg');
+    // v3.2: 敘事區不再含 ensō 圓(圓相圖移除;ensoSVG 死碼已移除,能量印記走 buildEnsoCanvas) — 斷言改為「不含」
+    ok(w.portraitNarrative(pfM,null).indexOf('<svg')<0,'v3.2 敘事區已移除能量圓 svg');
+    ok(typeof w.ensoSVG==='undefined','死碼已移除(能量印記走 buildEnsoCanvas)');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
     // 38. selectFlagged：高→over、低→under、上限4、全中→無
@@ -530,6 +595,11 @@ document.getElementById('f').onload=function(){
     ok(st.indexOf('完整解讀')>=0,'分享報告含可展開完整');
     w.renderSharedReport(rsc0,'');
     ok(d.querySelector('#result').textContent.indexOf('某人')>=0,'分享報告匿名→某人');
+    // 45b. 無 conf(分享檢視)→敘事不虛稱篤定;有 conf(正常 showResult)→敘事含信任句
+    ok(d.querySelector('#result').textContent.indexOf('答得乾脆')<0,'分享檢視(無conf)→敘事不含答得乾脆(不虛稱篤定)');
+    w.answers=new Array(w.QUESTIONS.length).fill(3); w.currentFacet=null; w.showResult();
+    var confTxt=d.querySelector('#result').textContent;
+    ok(confTxt.indexOf('答得乾脆')>=0||confTxt.indexOf('比較猶豫')>=0,'正常 showResult(有conf)→敘事含信任句(答得乾脆/比較猶豫)');
 
     // ── Feature 4 對境耗能 ──────────────────────────────────
     // 46. ctxAnalyze(demand,deny,cap)：需求×容量→耗能/順流；被剝奪×底色高→提醒；低需求→無
@@ -575,6 +645,41 @@ document.getElementById('f').onload=function(){
     w.msNext(); // 最後一卡再按 → startQuiz
     ok(d.getElementById('mindset').style.display==='none','最後一卡 msNext 收掉進場卡');
     ok(d.getElementById('quiz').style.display==='block','msNext → 進測驗');
+
+    // 54. v3.2 順序與折疊
+    w.answers=new Array(24).fill(3); w.showResult();
+    var H=d.getElementById('result').innerHTML;
+    var iRadar=H.indexOf('radar-wrap'), iNarr=H.indexOf('整體的你'), iSys=H.indexOf('sys-detail'), iOutline=H.indexOf('八態輪廓');
+    ok(iRadar>0 && iRadar<iNarr && iNarr<iSys,'順序:雷達<敘事<四系統');
+    ok(iSys<iOutline,'八態輪廓在四系統後(深讀)');
+    var outlineEl=Array.prototype.find.call(d.querySelectorAll('details'),function(x){return x.textContent.indexOf('八態輪廓')>=0;});
+    ok(!!outlineEl,'八態輪廓已收進折疊');
+
+    // 55. 分享檢視頁同步:雷達互動抽成共用 bindRadar(showResult／renderSharedReport 同款膠水)
+    ok(typeof w.bindRadar==='function','bindRadar 已抽成共用函式');
+    ok(String(w.showResult).indexOf('bindRadar(')>=0,'showResult 呼叫 bindRadar');
+    ok(String(w.renderSharedReport).indexOf('bindRadar(')>=0,'renderSharedReport 呼叫 bindRadar');
+    w.renderSharedReport(rsc0,'阿明');
+    var srw=d.getElementById('radar-wrap');
+    ok(srw.classList.contains('rint'),'分享檢視雷達已加互動 class(rint)');
+    ok(d.querySelectorAll('#radar-wrap g.rgrp').length===8,'分享檢視雷達 8 個可點群組');
+    var srd=d.getElementById('radar-detail');
+    ok(srd && srd.style.display==='block','分享檢視解釋卡預設已展開');
+    var srTopTxt=srd.textContent;
+    var sGiLi=d.querySelector('#radar-wrap g.rgrp[data-k="li"]');
+    sGiLi.dispatchEvent(new w.Event('click',{bubbles:true}));
+    ok(srd.textContent!==srTopTxt && srd.textContent.indexOf('洞見者(離)')>=0,'分享檢視點角可切換解釋卡');
+    // 分享檢視 full 內容:無舊版速寫圓(ensoSVG),命名沿用 signatureTitle(pn 格式)
+    ok(String(w.renderSharedReport).indexOf('ensoSVG(')===-1,'分享檢視組裝不呼叫 ensoSVG(舊版速寫圓)');
+    ok(d.querySelector('.tc-title').textContent.indexOf('(')>0,'分享檢視峰名沿用 者名(卦) 格式');
+    // 55b. bindRadar pf 空後備:OctensoProfile 未載入(pf=null)時,解釋卡仍以 topKey 後備初始化(不留白)
+    var savedOP=w.OctensoProfile;
+    try{
+      w.OctensoProfile=undefined;
+      w.renderSharedReport(rsc0,'阿明');
+      var fbd=d.getElementById('radar-detail');
+      ok(!!fbd && fbd.style.display==='block' && fbd.textContent.trim().length>0,'pf 空時解釋卡仍以 topKey 後備初始化(非空白)');
+    }finally{ w.OctensoProfile=savedOP; }
 
   }catch(e){ fail++; log.push('EXCEPTION: '+e.message); }
 
