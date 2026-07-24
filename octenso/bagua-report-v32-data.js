@@ -83,5 +83,16 @@ var SYS_DETAIL={
    even:{read:'收與放在你身上大致平衡——能熱絡也能獨處，能答應也能拒絕，看場合切換，沒有明顯偏向哪一邊。',prac:'留意這個平衡的來源：是自然的節奏，還是勉強維持的禮貌？'}
   }}
 };
-window.REPORT_V32={PLAIN:PLAIN,SCENE:SCENE,OPEN:OPEN,SYS_DETAIL:SYS_DETAIL};
+// 峰名卡 essence(單峰型;自 persona 頁遷入 canonical,原文照搬)
+var ESSENCE={
+ qian:'你是天生的開創者——看得見方向，敢做決定。給你一張白紙，你能畫出藍圖、帶人往前。',
+ li:'你是看得清的人——先想明白、看穿本質，常能指出別人沒注意到的關鍵。',
+ zhen:'你是行動派——有念頭就衝，享受開始與突破的衝勁，是團隊的發動機。',
+ dui:'你靠交流而發光——擅長把感受說出口、把人聚在一起，所到之處氣氛變熱。',
+ kun:'你溫厚包容——是大家的依靠，擅長承接、支持，讓一切穩穩運轉。',
+ kan:'你深沉內斂——擅長獨處、沉澱與反思，是沉得住氣、想得夠深的人。',
+ gen:'你穩定可靠——知道何時該停、敢說不，守得住自己的節奏與界線。',
+ xun:'你柔韌而有滲透力——擅長向外鋪開、串連資源，讓事情自然生長、影響擴散。'
+};
+window.REPORT_V32={PLAIN:PLAIN,SCENE:SCENE,OPEN:OPEN,SYS_DETAIL:SYS_DETAIL,ESSENCE:ESSENCE};
 })();

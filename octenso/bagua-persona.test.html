@@ -516,24 +516,30 @@ document.getElementById('f').onload=function(){
     var rhtml=d.getElementById('result').innerHTML;
     ok(rhtml.indexOf('整體的你')>=0,'整體的你 render in result');
     ok(rhtml.indexOf('整合 · 立體的你')<0 && rhtml.indexOf('人物速寫')<0,'舊整合/人物速寫已移除');
-    // portraitNarrative 單元（解讀規則 spec）：三拍、缺口收尾、能格織入與退回
+    // narrativeHtml 單元（解讀規則 spec；task-3：portraitNarrative(pf,costItems,neutral,conf)
+    // 已搬進 octenso/bagua-report-renderer.js 改吃 ctx（overs/unders 需先由呼叫端跑 costVerdict
+    // 分類，見 showResult 的同款迴圈）——斷言改呼叫 w.OctensoReport.narrativeHtml(ctx) 等價式）：三拍、缺口收尾、能格織入與退回
     var pfM=P.build({zhen:88,qian:78,li:78,dui:75,kun:74,xun:72,gen:72,kan:70});
-    var pn=w.portraitNarrative(pfM,null);
+    var ctxM={pf:pfM,overs:[],unders:[],neutral:null,conf:null,hasCost:false};
+    var pn=w.OctensoReport.narrativeHtml(ctxM);
     ok((pn.match(/class="portrait"/g)||[]).length>=3,'portrait 三段, got '+((pn.match(/class="portrait"/g)||[]).length));
     ok(pn.indexOf('最有空間')>=0,'拍3 缺口空間收尾');
     ok(pn.indexOf('過頭')<0,'無能格→退回版不含過用字');
-    var pn2=w.portraitNarrative(pfM,[{k:'zhen',dir:'over',avg:4.5},{k:'kan',dir:'under',avg:4}]);
+    var items2=[{k:'zhen',dir:'over',avg:4.5},{k:'kan',dir:'under',avg:4}];
+    var overs2=[],unders2=[];
+    items2.forEach(function(it){var v=w.costVerdict(it.k,it.dir,it.avg); if(v.s==='過用')overs2.push(it.k); else if(v.s==='不足')unders2.push(it.k);});
+    var pn2=w.OctensoReport.narrativeHtml({pf:pfM,overs:overs2,unders:unders2,neutral:null,conf:null,hasCost:true});
     ok(pn2.indexOf('用得有點過頭')>=0,'有能格過用→拍2 講過頭');
     ok(pn2.indexOf('沉澱')>=0 && pn2.indexOf('它能帶來')>=0,'有能格不足→缺口拍講沉澱本身的價值');
     // 規則守門（spec C4）：行動為主導且無能格 → 拍1 用中正詞、不出現亢字
-    var pnz=w.portraitNarrative(P.build({zhen:85,qian:60,li:55,dui:50,kun:48,xun:46,gen:42,kan:40}),null);
+    var pnz=w.OctensoReport.narrativeHtml({pf:P.build({zhen:85,qian:60,li:55,dui:50,kun:48,xun:46,gen:42,kan:40}),overs:[],unders:[],neutral:null,conf:null,hasCost:false});
     ok(pnz.indexOf('執行力')>=0||pnz.indexOf('落地')>=0,'拍1 行動用中正詞(執行力/落地)');
     ok(pnz.indexOf('衝動')<0 && pnz.indexOf('焦躁')<0,'拍1 不出現亢字(衝動/焦躁)');
     // 能量印記 canvas 產出
     var ec=w.buildEnsoCanvas({qian:72,li:62,zhen:82,dui:45,kun:55,kan:78,gen:38,xun:60},'行動沉澱者',['zhen','kan'],'gen');
     ok(ec&&ec.tagName==='CANVAS'&&ec.width===640,'能量印記 canvas 產出');
     // v3.2: 敘事區不再含 ensō 圓(圓相圖移除;ensoSVG 死碼已移除,能量印記走 buildEnsoCanvas) — 斷言改為「不含」
-    ok(w.portraitNarrative(pfM,null).indexOf('<svg')<0,'v3.2 敘事區已移除能量圓 svg');
+    ok(w.OctensoReport.narrativeHtml(ctxM).indexOf('<svg')<0,'v3.2 敘事區已移除能量圓 svg');
     ok(typeof w.ensoSVG==='undefined','死碼已移除(能量印記走 buildEnsoCanvas)');
 
     // ── 能格（耗能引擎·整體情境） ──────────────────────────
@@ -656,7 +662,8 @@ document.getElementById('f').onload=function(){
     ok(!!outlineEl,'八態輪廓已收進折疊');
 
     // 55. 分享檢視頁同步:雷達互動抽成共用 bindRadar(showResult／renderSharedReport 同款膠水)
-    ok(typeof w.bindRadar==='function','bindRadar 已抽成共用函式');
+    // task-3：頁內 bindRadar 已刪，改直呼共用 renderer 的 OctensoReport.bindRadar(ctx)
+    ok(typeof w.OctensoReport.bindRadar==='function','bindRadar 已抽成共用函式(OctensoReport)');
     ok(String(w.showResult).indexOf('bindRadar(')>=0,'showResult 呼叫 bindRadar');
     ok(String(w.renderSharedReport).indexOf('bindRadar(')>=0,'renderSharedReport 呼叫 bindRadar');
     w.renderSharedReport(rsc0,'阿明');

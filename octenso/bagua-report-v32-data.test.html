@@ -1,4 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title>
+<script src="bagua-data.js"></script>
 <script src="bagua-report-v32-data.js"></script></head><body><pre id="out">running...</pre>
 <script>
 var pass=0,fail=0,log=[];
@@ -34,6 +35,12 @@ try{
   // C1:僅推動(雷風)雙高文案可含「張力」;建構雙高不可
   ok(R.SYS_DETAIL.drive.shapes.bothHigh.read.indexOf('張力')>=0,'推動雙高=張力');
   ok(R.SYS_DETAIL.build.shapes.bothHigh.read.indexOf('張力')<0,'建構雙高非張力');
+  // canonical pn
+  var D=window.OCTENSO_BAGUA;
+  ok(D && typeof D.pn==='function','OCTENSO_BAGUA.pn 存在');
+  ok(D.pn('qian')==='開創者(乾)' && D.pn('li')==='洞見者(離)' && D.pn('dui')==='共鳴者(兌)' && D.pn('xun')==='協作者(巽)','pn canonical 名');
+  // ESSENCE:八句峰名卡文案
+  EK.forEach(function(k){ ok(typeof R.ESSENCE[k]==='string' && R.ESSENCE[k].length>15,'ESSENCE.'+k); });
 }catch(e){ fail++; log.push('EXC: '+e.message); }
 document.title='RESULT pass='+pass+' fail='+fail;
 document.getElementById('out').textContent=document.title+'\n'+log.join('\n');

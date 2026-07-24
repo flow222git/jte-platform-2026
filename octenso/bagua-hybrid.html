@@ -256,7 +256,7 @@ function buildResults(){
   RES.costSt=costVerdicts();RES.code=encodeCode(RES.sc,S.fcAns);
 }
 function peakName(){
-  var leads=RES.pf.leads.slice(0,2).map(function(k){return B.get(k).fnShort+'者·'+B.get(k).nm;});
+  var leads=RES.pf.leads.slice(0,2).map(function(k){return B.pn(k);});
   var kind=RES.pf.signature.kind;
   var kn=kind==='single'?'單一主峰':kind==='dual'?'雙峰並立':kind==='multi'?'多峰同行':'看整體格局';
   return {title:leads.join(' × ')||'—',sub:kn};
@@ -311,7 +311,7 @@ function toSummary(){
       Object.keys(RES.costSt).forEach(function(k){
         var stx=RES.costSt[k],cd=V.COST[k];
         var adv=stx==='over'?cd.aOver:stx==='under'?cd.aUnder:stx==='midHi'?cd.aMidHi:cd.aMidLo;
-        t+='\n'+B.get(k).fnShort+'者('+B.get(k).nm+'):'+adv;
+        t+='\n'+B.pn(k)+':'+adv;
       });
       bot(t);
       askEcho('level',function(){
