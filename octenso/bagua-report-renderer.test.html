@@ -46,6 +46,12 @@ try{
   ok(rd.style.display==='block' && rd.textContent.indexOf('開創者(乾)')>=0,'預設解釋卡=最高態');
   document.querySelector('#radar-wrap g.rgrp[data-k="li"]').dispatchEvent(new Event('click',{bubbles:true}));
   ok(rd.textContent.indexOf('洞見者(離)')>=0,'點角換態');
+  // 雷達幾何回歸:八角依 EKEYS 順時針(qian北→li東北→…→gen西→xun西北),多邊形不得自交
+  // 原版佈局:gen=正西(cy=中心)、xun=西北(cx<中心 且 cy<中心);POLAR(極性輪盤)佈局會讓兩者對調→交叉
+  var dotGen=document.querySelector('#radar-wrap g.rgrp[data-k="gen"] circle');
+  var dotXun=document.querySelector('#radar-wrap g.rgrp[data-k="xun"] circle');
+  ok(dotGen && Math.abs(parseFloat(dotGen.getAttribute('cy'))-200)<0.5 && parseFloat(dotGen.getAttribute('cx'))<200,'gen 在正西(不用 POLAR 座標)');
+  ok(dotXun && parseFloat(dotXun.getAttribute('cx'))<200 && parseFloat(dotXun.getAttribute('cy'))<200,'xun 在西北');
 }catch(e){ fail++; log.push('EXC: '+e.message); }
 document.title='RESULT pass='+pass+' fail='+fail;
 document.getElementById('out').textContent=document.title+'\n'+log.join('\n');

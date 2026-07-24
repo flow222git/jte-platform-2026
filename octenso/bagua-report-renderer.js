@@ -69,7 +69,13 @@
   };
 
   // ── Radar wheel(自 buildRadar 搬入)────────────────────────
-  // 替換：E[k].pos→D.POLAR[k]；E[k].wx→D.get(k).wx；W[...]→D.W[...]；pn→D.pn
+  // 替換:E[k].wx→D.get(k).wx;W[...]→D.W[...];pn→D.pn
+  // 幾何:雷達八角=EKEYS 順時針(qian 正北起,每 45°);不可用 D.POLAR——
+  // 那是極性輪盤佈局(對極成直徑,艮/巽與雷達對調),依 EKEYS 連線會自交
+  function radarUV(k) {
+    var a = (-90 + EKEYS.indexOf(k) * 45) * Math.PI / 180;
+    return { x: Math.cos(a), y: Math.sin(a) };
+  }
   function buildRadar(sc, topKey, nowNorm) {
     var cx = 200, cy = 200, baseR = 140;
     var svg = document.createElementNS(NS, 'svg');
@@ -77,7 +83,7 @@
     // grid octagons
     [0.25, 0.5, 0.75, 1].forEach(function (f) {
       var pts = EKEYS.map(function (k) {
-        var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+        var u = radarUV(k), ux = u.x, uy = u.y;
         return (cx + ux * baseR * f) + ',' + (cy + uy * baseR * f);
       }).join(' ');
       var poly = document.createElementNS(NS, 'polygon');
@@ -90,7 +96,7 @@
     });
     // spokes
     EKEYS.forEach(function (k) {
-      var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+      var u = radarUV(k), ux = u.x, uy = u.y;
       var ln = document.createElementNS(NS, 'line');
       ln.setAttribute('x1', cx); ln.setAttribute('y1', cy);
       ln.setAttribute('x2', cx + ux * baseR); ln.setAttribute('y2', cy + uy * baseR);
@@ -100,7 +106,7 @@
     // score polygon (radius 30..140)
     function rOf(s) { return 30 + (s / 100) * 110; }
     var sp = EKEYS.map(function (k) {
-      var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+      var u = radarUV(k), ux = u.x, uy = u.y;
       var r = rOf(sc[k]);
       return (cx + ux * r) + ',' + (cy + uy * r);
     }).join(' ');
@@ -113,7 +119,7 @@
     // 此刻 overlay polygon (gold dashed)
     if (nowNorm) {
       var np = EKEYS.map(function (k) {
-        var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+        var u = radarUV(k), ux = u.x, uy = u.y;
         var r = rOf(nowNorm[k] || 0);
         return (cx + ux * r) + ',' + (cy + uy * r);
       }).join(' ');
@@ -125,7 +131,7 @@
       narea.setAttribute('stroke-dasharray', '5 4');
       svg.appendChild(narea);
       EKEYS.forEach(function (k) {
-        var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+        var u = radarUV(k), ux = u.x, uy = u.y;
         var r = rOf(nowNorm[k] || 0);
         var nd = document.createElementNS(NS, 'circle');
         nd.setAttribute('cx', cx + ux * r); nd.setAttribute('cy', cy + uy * r);
@@ -136,7 +142,7 @@
     // dots + labels
     EKEYS.forEach(function (k) {
       var b = D.get(k);
-      var ux = (D.POLAR[k].x - cx) / baseR, uy = (D.POLAR[k].y - cy) / baseR;
+      var u = radarUV(k), ux = u.x, uy = u.y;
       var r = rOf(sc[k]);
       var px = cx + ux * r, py = cy + uy * r;
       var grp = document.createElementNS(NS, 'g');
