@@ -8,7 +8,7 @@
   // ── 白名單（小寫比對）──
   // 失效保險：核心團隊寫死在此，即使 allowlist.json 載入失敗也永遠進得去。
   // 其餘所有人（含 flfm0137 等）由單一來源 allowlist.json 管理（見下方 fetchExtras）。
-  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com'];
+  var ALLOW = ['flow@jointoenjoy.com','simon@medialand.tw','dabo@jointoenjoy.com','lyn.hsieh@gmail.com','liluyu.tw@gmail.com','rurulin1349@gmail.com','hermia.chenhe@gmail.com','a76907062000@gmail.com'];
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function allowed(email){ return !!email && ALLOW.indexOf(String(email).trim().toLowerCase()) >= 0; }
@@ -50,9 +50,18 @@
     return host;
   }
 
+  // JWT payload 是 base64url（含 - _、無 padding），atob 只認標準 base64，
+  // 直接 atob 遇到含 - 或 _ 的 token 會丟例外 → 登入卡住。故先轉回標準 base64、補 padding，
+  // 再以 UTF-8 解碼（中文名字才不會亂碼）。
+  function decodeJwt(token){
+    var s=String(token).split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length%4) s+='=';
+    var bin=atob(s), bytes=Uint8Array.from(bin,function(c){return c.charCodeAt(0);});
+    return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+  }
   function onCred(resp){
     try{
-      var p=JSON.parse(atob(resp.credential.split('.')[1]));
+      var p=decodeJwt(resp.credential);
       localStorage.setItem('jte_user_email', p.email);
       if(p.name) localStorage.setItem('jte_user_name', p.name);
       if(p.picture) localStorage.setItem('jte_user_picture', p.picture);

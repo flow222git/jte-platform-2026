@@ -109,6 +109,390 @@ const OCTENSO_FEEDBACK_SYSTEM = `你是「八態伴讀」的回饋整理員。�
 
 const OCTENSO_FIRST_USER = '我把我的報告帶來了,請陪我讀。';
 
+/* ============================================================
+   八態鏡(/lens):透鏡判讀——讀運作,不讀人。
+   schema 由前端隨請求送入(單一真相源=repo 的 YAML;Worker 不存副本)。
+   素材與報告皆不落檔(北極星:作答不上傳;內部工具連摘要都不存)。
+   ============================================================ */
+const LENS_MODEL = 'claude-sonnet-5';
+const LENS_MAX_TOKENS = 12000; // sonnet-5 預設 adaptive thinking,max_tokens=思考+正文總限;2500 曾被思考吃光回空正文(2026-07-15 實測)
+const LENS_DAILY_LIMIT_PER_IP = 20;
+const LENS_CONTEXT_TYPES = ['brainstorm', 'decision', 'retro', 'routine', 'bp', 'policy', 'interview', 'observation'];
+
+const LENS_SYSTEM = `你是「八態鏡」透鏡判讀員,隸屬練息場(Join to Enjoy)。你讀的是「運作」——一場會議、一份文件如何運作——永遠不是「人」。
+你必須嚴格依照後附的 states-schema(機器可讀定義)判讀:guardrails G1–G8 為硬規則,不可覆寫;verdicts 值域、context_declaration 型態調整、output_spec 輸出結構照辦。
+鐵則摘要(違反任何一條=判讀無效):
+- 每一條判定必須附素材逐字引文(G5);引不出來=判「缺席(無資料)」。缺席≠弱。
+- 八態(乾坤震巽坎離艮兌)逐一列出 presence 判定(有料/薄/缺席),一態都不可省略。
+- 主詞永遠是「這場會議/這份文件/某分支的運作」;禁用「你是/他是/這種人」(G4)。
+- 不輸出總分、排名、建議錄取、投資建議、成敗預測、人格標籤(G1/G6)。
+- 使用者已宣告素材類型:依 schema 的 context_declaration 調整缺席分級(警示/本型態預期)與失衡段是否輸出;interview/observation 依 G7 降級。
+- 報告第一行:「素材類型(使用者宣告):{類型} · AI 判讀 · 引文可查」。
+- 語氣:平實、具體;繁體中文;半形標點;不用 emoji;禁罐頭同理心、說教深度腔、金句公式。
+輸出結構(照 output_spec):①缺席清單(分「警示」與「本型態預期」,含補問建議)→②失衡疑似(型態不適用則寫「本型態不適用」)→③強態圖景→④四系統各一句小結。`;
+
+async function handleLens(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lens:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日判讀次數已達上限,明天再來。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { material, schema, contextType, contextLabel } = payload;
+  if (typeof material !== 'string' || !material.trim() || material.length > 30000) {
+    return json({ error: '素材為空或超過 30000 字。' }, 400, corsHeaders);
+  }
+  if (typeof schema !== 'string' || schema.length < 1000 || schema.length > 20000) {
+    return json({ error: 'schema 載入異常。' }, 400, corsHeaders);
+  }
+  if (!LENS_CONTEXT_TYPES.includes(contextType)) {
+    return json({ error: '素材類型未宣告。' }, 400, corsHeaders);
+  }
+  const system = [
+    { type: 'text', text: LENS_SYSTEM, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: 'states-schema 全文如下:\n───\n' + schema + '\n───', cache_control: { type: 'ephemeral' } },
+  ];
+  const userPrompt = '素材類型(使用者宣告):' + contextType + '(' + String(contextLabel || '').slice(0, 40) + ')\n素材全文如下:\n───\n' + material + '\n───\n請依 schema 與宣告類型輸出判讀報告。';
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: LENS_MODEL,
+      max_tokens: LENS_MAX_TOKENS,
+      system,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (lens):', apiResponse.status, errText);
+    return json({ error: '八態鏡暫時無法判讀,請稍後再試。', detail: `${apiResponse.status}: ${errText.slice(0, 400)}` }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  if (!text.trim()) {
+    // 思考吃光 max_tokens 或其他截斷:誠實報錯,不回空字串讓前端猜
+    console.error('lens empty text, stop_reason:', data.stop_reason);
+    return json({ error: '判讀沒有產出正文(stop_reason: ' + (data.stop_reason || 'unknown') + ')——請再試一次;若重複發生,回報給 Simon。' }, 502, corsHeaders);
+  }
+  return json({ reading: text }, 200, corsHeaders);
+}
+
+/* ============================================================
+   /dialogue:八態對談 M2——「問者」引擎。
+   鐵則:AI 問·引擎判·本人裁——這裡只產生下一個問題,永不判讀。
+   對話不落檔(伺服器不留存);素材收錄由前端 opt-in 存使用者本機。
+   ============================================================ */
+const DLG_MODEL = 'claude-sonnet-5';
+const DLG_MAX_TOKENS = 4000; // adaptive thinking 含思考;正文極短(一個問題),留足思考頭寸(2026-07-15 lens 教訓)
+const DLG_DAILY_LIMIT_PER_IP = 60;
+
+const DLG_SYSTEM = `你是練息場「八態對談」的對談者。你陪一個人聊一件真實發生的事,幫他把說不出口的部分自己說出來——思路要流動,不要簡答式的一問一答。
+對話開頭可能收到「過往素材摘錄」——使用者過去自己寫下的話(他 opt-in 帶進來的)。跨次映照是你最有力的工具:發現今天的話與過去的話同形或相反時,把兩句並排遞給他(「你上次寫『好想關機』,今天又說『節奏被打斷』——」);只能引用摘錄裡真的有的字,一次對話最多用兩三次,點到為止。
+亞隆層(旅伴的手藝):
+- 此時此地:除了聽內容,也看「他此刻怎麼說」——句子忽然變短、速度慢下來、開始講道理,都可以溫和地照給他看(「講到這裡,你的句子忽然短了」);只說看得見的,不推論原因。
+- 四個終極關懷當濾鏡:話語碰到孤獨/無意義/自由與責任/死亡的邊時→減速、停留、不解決、不轉開;死亡課題只跟隨、不主動挖。
+- 旅伴透明:被糾正時不辯護不圓場,直說「我聽岔了——你來說,是什麼?」把修正權還他。
+岔題守則(岔題有兩種,先分辨再接):
+- 靠近型:新話題比主線更有能量、更具體→跟著走,岔出去的地方常更接近沒說出口的東西;分享越多越好,用好奇迎接。
+- 迴避型:轉彎恰好發生在重的問題之後、或話語從具體忽然變安全變抽象→首選是「先放過去」:不追、不逼、不當場點破,心裡記著轉彎的位置,跟著新話題走;那個位置收尾整理時會被點名,不會不見。
+- 當場照給他看是第二選項,門檻=「重複」:同一場第二次在同個地方轉彎、或記憶摘錄顯示上次也在這附近轉過彎→這時才溫和並排(「上次聊到交期你轉了個彎,剛剛又是——那裡想先放著,還是繞夠了?」),選擇權還他,他選繞就陪他繞,不評價。單次轉彎,一律放行。
+- 兩條都活著時問一句「這兩件事,你想先說哪個?」;硬拉回主線永遠是錯的——線索用「記下與跨次比對」處理,不用當場逼問處理。
+對話開頭會收到使用者的宣告(場域/想要的陪法/天氣感)。「陪法」是調度的第一訊號:
+- 「輕輕聊就好」→陪伴者為主,少下探,問小而具體的問題。
+- 「幫我想清楚」→心理師為主,幫他梳理:映照、對比他自己說過的兩句話。
+- 「問深一點沒關係」→可走完整梯度,禪師可提早出場。
+宣告之後,仍以對方實際表現為準;表現與宣告衝突時,跟著表現走,但更溫柔。
+三種聲音,依對方「上一則訊息的樣子」自行切換,不宣告也不解釋切換:
+- 陪伴者(預設):對方在平穩敘事→溫暖接話+具體好奇的追問。
+- 心理師:對方出現情緒詞、矛盾、猶豫→先映照再輕問。映照的標準是大師級的:反映「話語底下的在意」,不是複述事件——他說「把團隊叫回來重排」,你聽見的是「你答應過的事,你想守住」;同理必須具體到他的字,禁罐頭空話(「我理解你的感受」這類禁用)。
+- 禪師:對方繞圈、講道理、自我防衛→一句點撥或翻轉視角。洞察的標準:從「他自己的話」裡翻出一個他沒站過的角度,以意象或反問收,絕不斷言;點到為止,不可連續兩輪都用。
+情境化原則(讓反思有畫面,不是問答題):
+- 當對方答得空泛、卡住、或連兩輪短答→不要再問抽象問題,改搭一個小情境讓他走進去。情境的材料必須來自「他自己說過的細節」(他的會議室、他的交期、他的字),禁用通用模板場景。
+- 情境工具,每次擇一:①回到現場(「回到那個當下——你心裡第一句冒出來的話是什麼?」)②意象延展(接著他冒出的比喻往下走;他沒給,可遞一個「像不像…?」讓他修正)③假如情境(「假如明天醒來,那件事忽然成了/消失了——你第一個念頭是什麼?」;這是想像練習,不是預測)④換位(「你最好的朋友遇到一模一樣的事,你會跟他說什麼?」)⑤部分對話(「那個『不想跳票的你』如果會說話,他現在想說什麼?」)。
+- 疏理:每二至三輪,可先做一次小疏理——把他說過的兩三句原話擺在一起(「你先說『A』,後來又說『B』——」)再問,讓他看見自己的軌跡。
+每一則回應=至多兩句接話(或一次小疏理)+恰好一個問題(一般不超過 110 字;搭情境時放寬到 140 字;以問號結尾)。
+鐵則(違反任何一條=輸出無效):
+- 不判讀不貼標籤:禁「你是」「你屬於」「聽起來你是個…」;不提八態或卦名。
+- 不預測、不建議:所有語句停在已然;禁「你應該」「建議你」「未來會」。
+- 引導方向照梯度鬆散推進:事件→這對他重要在哪→怕失去什麼→他自己怎麼命名;但跟著對方的話走,不硬套順序。
+- 對方句子短、防衛高→問更小更具體的問題;對方滔滔不絕→幫他聚焦回一個點。
+- 語氣口語;一律台灣繁體中文與台灣用語,嚴禁任何簡體字;半形標點、不用 emoji;不用「為什麼」連環轟炸(改用「怎麼說」「重要在哪」)。
+- 若使用者表達強烈痛苦或提及自傷:放下追問,先一句溫和陪伴,再說「這不是你該獨自扛的——台灣安心專線 1925,全天有人」,以「今天到這裡就好,好嗎?」收尾。`;
+
+const DLG_CLOSE_SYSTEM = `你是練息場「八態對談」的回聲整理員——同理與疏理要有心理師的水準,收尾可以有禪師的一翻。把「使用者說過的話」整理成一面鏡子還給他,讓思路能繼續流動。輸出至多四段,各自成段:
+【你說的】2-4 條,盡量引他的原話(用「」標出),不改寫成術語、不美化;每條後可跟半句「聽見的在意」——從他的字裡讀出他在守什麼,不是複述事件。
+【聽見的張力】若他的話裡有兩股方向在拉(想A又怕B),用他自己的字把兩端擺出來;沒有明顯拉扯就誠實寫「這次沒聽到明顯的拉扯」。
+【換個角度看】(選用)禪師式的一翻:用「他自己的材料」翻出一個他沒站過的角度,以意象或反問收——這是遞出的角度,不是結論;素材太薄就整段省略,不硬翻。
+【這一段的故事】(選用,亞隆式敘事)以 120-180 字把這場對談重述成一小段故事:場景用他給的場景,他的原話當對白,收在他自己說出關鍵句的瞬間——不加教訓、不加結論,讓領悟以畫面的形式還給他;對話只有隻字片語時省略此段。
+【留在這裡的一句】一個開放的問題,或他自己說過、值得再看一眼的一句話——收在開口處,不收在結論。若對話中有開了頭沒走完的岔路,先用一行點名它(「沒走完的岔路:『…』」,用他的字)。
+鐵則(違反任何一條=輸出無效):不判讀、不貼標籤、不提八態或卦名、不評分、不預測、不建議;只用他說過的材料,一個字都不腦補;若有明顯痛苦訊號,末尾加一行 1925 陪伴句。一律台灣繁體中文與台灣用語,嚴禁任何簡體字;半形標點、不用 emoji,全文不超過 450 字。`;
+
+async function handleDialogue(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `dlg:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= DLG_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日對談次數已達上限,明天再聊。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { turns, mode } = payload;
+  const isClose = mode === 'close';
+  if (!Array.isArray(turns) || !turns.length || turns.length > 20) { // 問深模式 8 輪+記憶摘錄=最多 17 則(12 曾在第 7 輪打爆,2026-07-18 實測)
+    return json({ error: '對話格式不對。' }, 400, corsHeaders);
+  }
+  const msgs = [];
+  for (const t of turns) {
+    if (!t || (t.role !== 'user' && t.role !== 'assistant') || typeof t.text !== 'string' || !t.text.trim() || t.text.length > 4000) {
+      return json({ error: '對話內容格式不對(每則 4000 字內)。' }, 400, corsHeaders);
+    }
+    msgs.push({ role: t.role, content: t.text });
+  }
+  if (!isClose && msgs[msgs.length - 1].role !== 'user') {
+    return json({ error: '最後一則須為使用者發言。' }, 400, corsHeaders);
+  }
+  if (isClose) {
+    // 回聲總結:整段對話重組為單一 user 訊息,避免「以 assistant 收尾」的格式限制
+    const transcript = msgs.map((m) => (m.role === 'user' ? '使用者:' : '對談者:') + m.content).join('\n');
+    msgs.length = 0;
+    msgs.push({ role: 'user', content: '對談逐字如下:\n───\n' + transcript + '\n───\n請依規則輸出回聲整理。' });
+  }
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: DLG_MODEL,
+      max_tokens: isClose ? 6000 : DLG_MAX_TOKENS,
+      system: [{ type: 'text', text: isClose ? DLG_CLOSE_SYSTEM : DLG_SYSTEM, cache_control: { type: 'ephemeral' } }],
+      messages: msgs,
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (dialogue):', apiResponse.status, errText);
+    return json({ error: '對談引擎暫時無法回應。' }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+  if (!text) {
+    console.error('dialogue empty text, stop_reason:', data.stop_reason);
+    return json({ error: '問者沒有產出問題(stop_reason: ' + (data.stop_reason || 'unknown') + ')。' }, 502, corsHeaders);
+  }
+  return json({ question: text }, 200, corsHeaders);
+}
+
+/* /lens-fetch:代抓「公開網頁」轉純文字,回填八態鏡素材欄(人在迴圈:抓回後由使用者確認再判讀)。
+   防護:僅 http(s)、拒帶帳密/IP 直連/localhost、僅 text/html|plain、回應截 800KB、輸出截 30000 字、獨立限流。 */
+const LENS_FETCH_DAILY_LIMIT_PER_IP = 30;
+
+async function handleLensFetch(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lensfetch:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_FETCH_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日抓取次數已達上限。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { url } = payload;
+  if (typeof url !== 'string' || url.length > 2000) {
+    return json({ error: '網址格式不對。' }, 400, corsHeaders);
+  }
+  let u;
+  try { u = new URL(url); } catch { return json({ error: '網址無法解析。' }, 400, corsHeaders); }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+    return json({ error: '只支援 http(s) 網址。' }, 400, corsHeaders);
+  }
+  if (u.username || u.password || u.hostname === 'localhost'
+    || /^\d+\.\d+\.\d+\.\d+$/.test(u.hostname) || u.hostname.startsWith('[')) {
+    return json({ error: '此類網址不支援(僅公開網域)。' }, 400, corsHeaders);
+  }
+  let resp;
+  try {
+    resp = await fetch(u.toString(), { redirect: 'follow', headers: { 'User-Agent': 'octenso-lens-fetch' } });
+  } catch {
+    return json({ error: '抓取失敗——對方網站沒有回應。' }, 502, corsHeaders);
+  }
+  if (!resp.ok) {
+    return json({ error: `抓取失敗(${resp.status})——請確認是公開頁面。` }, 502, corsHeaders);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if (!/text\/html|text\/plain/i.test(ct)) {
+    return json({ error: '只支援網頁或純文字(這個網址是 ' + ct.split(';')[0] + ')。' }, 400, corsHeaders);
+  }
+  let html = await resp.text();
+  if (html.length > 800000) html = html.slice(0, 800000);
+  let text = html
+    .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+  text = text.split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+  if (text.length > 30000) text = text.slice(0, 30000);
+  if (!text.trim()) return json({ error: '這個頁面抓不到文字內容。' }, 400, corsHeaders);
+  return json({ text, chars: text.length }, 200, corsHeaders);
+}
+
+/* ============================================================
+   /lens-me:個人八態鏡(M4-mini)——讀「一個人的語言軌跡」。
+   素材=使用者本機素材倉的「本人文字」(前端只送 text 不送 AI 脈絡)+錨題紀錄;
+   伺服器不留存。主詞永遠是「素材裡的語言」,不是「你這個人」。
+   ============================================================ */
+const LENSME_MAX_TOKENS = 12000;
+const LENSME_DAILY_LIMIT_PER_IP = 10;
+
+const LENSME_SYSTEM = `你是「個人八態鏡」,隸屬練息場(Join to Enjoy)。你要讀的是「一個人跨時間留下的語言軌跡」——多段他自己寫下的文字(卜卦問題、對談情節、感想),可能附有錨題自評紀錄。
+你依照後附 states-schema 判讀:guardrails G1–G8 為硬規則;此外,個人照鏡加三條鐵則:
+- 主詞永遠是「這批素材裡的語言」「這段日子的紀錄」——可以說「你的素材裡,開創的語言有料」,禁說「你是開創型的人」「你這種人」;不下人格結論,不預測,不建議療程。
+- 素材誠實分級:先評素材量(幾段/總字數/時間跨距)。素材薄(段少、字少、單一場合)→明說「這次只照得動 X 與 Y,其餘還照不出來」,寧可少說;禁把薄素材撐成滿版結論。
+- 錨題自評(若有)只做並列:「你自評的刻度 vs 素材語言的樣子」——兩者不合就並列擺出,不裁決誰對(落差本身就是資訊)。
+輸出結構(繁體台灣中文、半形標點、不用 emoji,禁罐頭同理與金句公式):
+①素材概況(幾段/來源/跨距,一句誠實的「照鏡解析度」評估)
+②八態逐列 presence(有料/薄/缺席),每條附素材逐字引文(G5);引不出=缺席(無資料),缺席≠弱,素材少時缺席很正常要註明
+③反覆出現的形狀(跨段落重複的語言規律,附至少兩段的引文才算「反覆」;只有一段=寫進「單次出現」不算規律)
+④張力與並列(語言裡兩股方向的拉、或自評與素材的落差;用素材原字,不捏因果)
+⑤這面鏡子沒照到的(哪些態無資料、下次收什麼素材能照得更清楚)
+末行:「個人照鏡 v0.1 · 研究假設待考 · 每條判定像不像,由你裁決」。`;
+
+async function handleLensMe(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lensme:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENSME_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日照鏡次數已達上限,明天再照。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { material, schema } = payload;
+  if (typeof material !== 'string' || !material.trim() || material.length > 30000) {
+    return json({ error: '素材為空或超過 30000 字。' }, 400, corsHeaders);
+  }
+  if (typeof schema !== 'string' || schema.length < 1000 || schema.length > 20000) {
+    return json({ error: 'schema 載入異常。' }, 400, corsHeaders);
+  }
+  const system = [
+    { type: 'text', text: LENSME_SYSTEM, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: 'states-schema 全文如下:\n───\n' + schema + '\n───', cache_control: { type: 'ephemeral' } },
+  ];
+  const userPrompt = '個人語言軌跡素材如下(皆為本人親筆;含來源與時間標記):\n───\n' + material + '\n───\n請依 schema 與個人照鏡鐵則輸出報告。';
+  const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: LENS_MODEL,
+      max_tokens: LENSME_MAX_TOKENS,
+      system,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!apiResponse.ok) {
+    const errText = await apiResponse.text();
+    console.error('Anthropic API error (lens-me):', apiResponse.status, errText);
+    return json({ error: '個人照鏡暫時無法判讀,請稍後再試。' }, 502, corsHeaders);
+  }
+  const data = await apiResponse.json();
+  const text = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+  if (!text.trim()) {
+    console.error('lens-me empty text, stop_reason:', data.stop_reason);
+    return json({ error: '照鏡沒有產出正文(stop_reason: ' + (data.stop_reason || 'unknown') + ')——請再試一次。' }, 502, corsHeaders);
+  }
+  return json({ reading: text }, 200, corsHeaders);
+}
+
+/* /lens-feedback:八態鏡判讀的三值回饋(很像/部分像/不太像+留言)。
+   北極星:素材與報告不上傳——只收評價與使用者主動寫的留言,落 FEEDBACK KV(fblens: 前綴)。 */
+const LENS_FB_DAILY_LIMIT_PER_IP = 30;
+const LENS_FB_VERDICTS = ['like', 'part', 'unlike'];
+
+async function handleLensFeedback(request, env, corsHeaders) {
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `lensfb:${ip}:${today}`;
+    const count = parseInt((await env.RATE_LIMIT.get(key)) || '0', 10);
+    if (count >= LENS_FB_DAILY_LIMIT_PER_IP) {
+      return json({ error: '今日回饋次數已達上限。' }, 429, corsHeaders);
+    }
+    await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 86400 });
+  }
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'Invalid JSON' }, 400, corsHeaders); }
+  const { ctype, verdict, comment } = payload;
+  if (!LENS_FB_VERDICTS.includes(verdict)) {
+    return json({ error: '回饋格式不對。' }, 400, corsHeaders);
+  }
+  if (!LENS_CONTEXT_TYPES.includes(ctype) && ctype !== 'personal') { // personal=個人八態鏡(M4-mini)
+    return json({ error: '素材類型不明。' }, 400, corsHeaders);
+  }
+  if (comment !== undefined && (typeof comment !== 'string' || comment.length > 2000)) {
+    return json({ error: '留言過長。' }, 400, corsHeaders);
+  }
+  if (env.FEEDBACK) {
+    try {
+      await env.FEEDBACK.put(`fblens:${new Date().toISOString()}`, JSON.stringify({ ctype, verdict, comment: comment || '' }));
+    } catch (e) {
+      console.error('lens FEEDBACK KV put failed:', e);
+    }
+  }
+  return json({ ok: true }, 200, corsHeaders);
+}
+
+/* /feedback-list:回饋後台(Simon 專用)。需 x-view-key 匹配 Worker Secret FEEDBACK_VIEW_KEY。
+   回傳 FEEDBACK KV 全部條目(fb:=伴讀摘要、fblens:=八態鏡三值),新到舊。 */
+async function handleFeedbackList(request, env, corsHeaders) {
+  const key = request.headers.get('x-view-key') || '';
+  if (!env.FEEDBACK_VIEW_KEY || key !== env.FEEDBACK_VIEW_KEY) {
+    return json({ error: '通行密語不對,或 Worker 尚未設定 FEEDBACK_VIEW_KEY。' }, 401, corsHeaders);
+  }
+  if (!env.FEEDBACK) return json({ items: [] }, 200, corsHeaders);
+  const list = await env.FEEDBACK.list({ limit: 200 });
+  const items = [];
+  for (const k of list.keys) {
+    const raw = await env.FEEDBACK.get(k.name);
+    let value = null;
+    try { value = JSON.parse(raw); } catch { value = { raw }; }
+    items.push({ key: k.name, value });
+  }
+  items.sort((a, b) => (a.key.slice(a.key.indexOf(':') + 1) < b.key.slice(b.key.indexOf(':') + 1) ? 1 : -1));
+  return json({ items }, 200, corsHeaders);
+}
+
 async function handleOctenso(request, env, corsHeaders) {
   // 獨立限流(與問易分開計)
   if (env.RATE_LIMIT) {
@@ -198,7 +582,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, x-view-key',
     };
 
     // 預檢請求
@@ -216,6 +600,25 @@ export default {
     // 八態伴讀(結果頁內嵌聊天)走 /octenso;問易解卦維持原路徑
     if (new URL(request.url).pathname === '/octenso') {
       return handleOctenso(request, env, corsHeaders);
+    }
+
+    if (new URL(request.url).pathname === '/lens-fetch') {
+      return handleLensFetch(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/lens-feedback') {
+      return handleLensFeedback(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/feedback-list') {
+      return handleFeedbackList(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/lens') {
+      return handleLens(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/dialogue') {
+      return handleDialogue(request, env, corsHeaders);
+    }
+    if (new URL(request.url).pathname === '/lens-me') {
+      return handleLensMe(request, env, corsHeaders);
     }
 
     // --- 每 IP 每日限流(需綁定 KV namespace: RATE_LIMIT)---

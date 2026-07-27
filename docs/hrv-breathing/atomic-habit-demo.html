@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原子習慣：今日一件事 Demo</title>
+<style>
+:root{
+  --white:#FFFFFF;--gray-bg:#F5F5F7;--ink:#1D1D1F;--ink-2:#6E6E73;--ink-3:#86868B;
+  --border:#D2D2D7;--blue:#0071E3;--green:#1a9d5a;--amber:#c27a00;
+  --font:-apple-system,"SF Pro Text","PingFang TC","Helvetica Neue",sans-serif;--radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--ink);font-family:var(--font);line-height:1.6;
+  padding:48px 24px 90px;max-width:1000px;margin:0 auto}
+.eyebrow{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+h1{font-size:32px;font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.lead{font-size:16px;color:var(--ink-2);max-width:680px;margin-bottom:40px}
+.stage{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phonewrap{text-align:center}
+.phonewrap .cap{font-size:13px;color:var(--ink-3);margin-top:14px;font-weight:600}
+.phone{width:330px;background:var(--white);border:1px solid var(--border);border-radius:40px;
+  padding:24px 20px;box-shadow:0 8px 44px rgba(0,0,0,.09);text-align:left}
+.bar{width:120px;height:5px;background:var(--border);border-radius:3px;margin:0 auto 20px}
+/* onboarding */
+.ob-step{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.08em;margin-bottom:8px}
+.ob-title{font-size:21px;font-weight:700;line-height:1.35;margin-bottom:8px}
+.ob-sub{font-size:13px;color:var(--ink-2);margin-bottom:20px}
+.stack{background:var(--gray-bg);border-radius:14px;padding:16px;margin-bottom:14px}
+.stack .lbl{font-size:11px;color:var(--ink-3);font-weight:600;margin-bottom:7px}
+.stack .sentence{font-size:15px;font-weight:600;line-height:1.6}
+.stack .pick{display:inline-block;background:#fff;border:1.5px solid var(--blue);color:var(--blue);
+  border-radius:980px;padding:2px 12px;font-size:14px;font-weight:700;margin:0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.chip{font-size:12.5px;border:1.5px solid var(--border);border-radius:980px;padding:7px 13px;color:var(--ink-2)}
+.chip.on{border-color:var(--blue);background:#eaf4ff;color:var(--blue);font-weight:700}
+.ob-cta{background:var(--blue);color:#fff;border:none;border-radius:980px;width:100%;
+  padding:13px 0;font-size:15px;font-weight:600;font-family:var(--font);margin-top:18px}
+.ob-note{font-size:11px;color:var(--ink-3);text-align:center;margin-top:12px;line-height:1.5}
+/* home today */
+.greet{font-size:12.5px;color:var(--ink-3);margin-bottom:2px}
+.identity{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:18px}
+.identity b{color:var(--blue)}
+.todaycard{background:linear-gradient(160deg,#eaf4ff,#f5f5f7);border:1px solid #d6e8fb;
+  border-radius:18px;padding:22px 20px;margin-bottom:16px;text-align:center}
+.todaycard .tlbl{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.06em;margin-bottom:10px}
+.todaycard .ttitle{font-size:20px;font-weight:700;margin-bottom:4px}
+.todaycard .tcue{font-size:12.5px;color:var(--ink-2);margin-bottom:18px}
+.todaycard .tcue b{color:var(--ink)}
+.bigbtn{background:var(--blue);color:#fff;border:none;border-radius:980px;width:100%;
+  padding:15px 0;font-size:17px;font-weight:700;font-family:var(--font)}
+.bigbtn small{display:block;font-size:11px;font-weight:500;opacity:.85;margin-top:2px}
+/* streak */
+.streakwrap{background:var(--gray-bg);border-radius:14px;padding:15px 16px;margin-bottom:14px}
+.streaktop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px}
+.streaktop .s1{font-size:13px;font-weight:700}
+.streaktop .s1 b{color:var(--green);font-size:16px}
+.streaktop .s2{font-size:11px;color:var(--ink-3)}
+.days{display:flex;gap:6px;justify-content:space-between}
+.day{flex:1;aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700}
+.day.done{background:var(--green);color:#fff}
+.day.miss{background:#fff;border:1.5px dashed var(--border);color:var(--ink-3)}
+.day.today{background:#fff;border:2px solid var(--blue);color:var(--blue)}
+.day.future{background:#fff;border:1px solid var(--border);color:var(--ink-3);opacity:.5}
+.nevertwice{font-size:11.5px;color:#8a5a00;background:#fff5e6;border-radius:10px;
+  padding:9px 12px;margin-top:11px;line-height:1.45}
+.nevertwice b{font-weight:700}
+.secondary{display:flex;gap:8px}
+.secondary button{flex:1;background:#fff;border:1.5px solid var(--border);border-radius:13px;
+  padding:11px 0;font-size:12px;font-weight:600;color:var(--ink-2);font-family:var(--font)}
+/* side */
+.side{flex:1;min-width:240px;max-width:290px}
+.side h2{font-size:18px;font-weight:700;margin-bottom:12px}
+.law{background:var(--gray-bg);border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.law h3{font-size:13px;font-weight:700;margin-bottom:2px}
+.law h3 span{color:var(--blue)}
+.law p{font-size:12px;color:var(--ink-2);line-height:1.5}
+/* question */
+.q{background:var(--gray-bg);border-radius:var(--radius);padding:30px;max-width:820px;margin:40px auto 0}
+.q h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.q .sub{color:var(--ink-2);font-size:14.5px;margin-bottom:20px}
+.option{display:flex;gap:14px;align-items:flex-start;background:var(--white);border:1.5px solid var(--border);
+  border-radius:13px;padding:16px 18px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.option:hover{border-color:var(--blue)}
+.option .letter{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink-2);flex-shrink:0}
+.option h4{font-size:15px;font-weight:600;margin-bottom:2px}
+.option p{font-size:13px;color:var(--ink-2)}
+@media(max-width:740px){.phone{width:310px}h1{font-size:26px}}
+</style>
+</head>
+<body>
+  <div class="eyebrow">HRV-breathing ｜ 原子習慣 Demo</div>
+  <h1>每天那「一個小動作」，小到不可能失敗</h1>
+  <p class="lead">左：第一次進來，把練習接在一個你每天一定會做的事後面（習慣堆疊）。右：之後每天首頁只給你「今日一件事」——就 1 分鐘，做完打一格勾。成就卡與排行榜保留在第二層。</p>
+
+  <div class="stage">
+    <!-- ONBOARDING: habit stacking -->
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="bar"></div>
+        <div class="ob-step">設定 · 2 / 3</div>
+        <div class="ob-title">把它接在你<br>每天一定會做的事後面</div>
+        <div class="ob-sub">這樣你不用「記得」練習，舊習慣會自動提醒你。</div>
+
+        <div class="stack">
+          <div class="lbl">你的承諾句</div>
+          <div class="sentence">「<span class="pick">喝完早上咖啡</span> 之後，<br>我就做 <span class="pick">1 分鐘呼吸</span>。」</div>
+        </div>
+
+        <div class="lbl" style="font-size:11px;color:var(--ink-3);font-weight:600;margin-bottom:8px">選一個你每天一定會做的事</div>
+        <div class="chips">
+          <span class="chip on">喝完早上咖啡</span>
+          <span class="chip">午餐後</span>
+          <span class="chip">通勤坐下時</span>
+          <span class="chip">睡前放下手機</span>
+          <span class="chip">下班關電腦</span>
+          <span class="chip">＋ 自訂</span>
+        </div>
+
+        <button class="ob-cta">就這樣，開始我的第一次</button>
+        <div class="ob-note">📌 也會幫你加一個桌面 Widget，一鍵就能開始。</div>
+      </div>
+      <div class="cap">onboarding · 習慣堆疊</div>
+    </div>
+
+    <!-- HOME: today one thing -->
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="bar"></div>
+        <div class="greet">早安 · 6 月 12 日</div>
+        <div class="identity">你正在成為一個<br><b>會照顧自己自律神經的人</b> 🌱</div>
+
+        <div class="todaycard">
+          <div class="tlbl">今日一件事</div>
+          <div class="ttitle">1 分鐘諧振呼吸</div>
+          <div class="tcue">提示：<b>喝完早上咖啡後</b></div>
+          <button class="bigbtn">就 1 分鐘，開始<small>做完今天就完成了</small></button>
+        </div>
+
+        <div class="streakwrap">
+          <div class="streaktop">
+            <span class="s1">連續 <b>5</b> 天</span>
+            <span class="s2">本週 6/7</span>
+          </div>
+          <div class="days">
+            <div class="day done">一</div>
+            <div class="day done">二</div>
+            <div class="day miss">三</div>
+            <div class="day done">四</div>
+            <div class="day done">五</div>
+            <div class="day today">今</div>
+            <div class="day future">日</div>
+          </div>
+          <div class="nevertwice"><b>絕不連錯兩次：</b>週三斷了沒關係，今天做 1 分鐘就補回來，連續不歸零。</div>
+        </div>
+
+        <div class="secondary">
+          <button>看趨勢</button>
+          <button>成就卡</button>
+          <button>排行榜</button>
+        </div>
+      </div>
+      <div class="cap">首頁 · 今日一件事</div>
+    </div>
+
+    <!-- side: 4 laws -->
+    <div class="side">
+      <h2>四大法則對位</h2>
+      <div class="law"><h3><span>①</span> 顯而易見</h3><p>習慣堆疊「喝完咖啡 → 練習」＋桌面 Widget，舊習慣自動當提示。</p></div>
+      <div class="law"><h3><span>②</span> 有吸引力</h3><p>身分認同：「成為會照顧自律神經的人」，每次都是投一票，而非追數字。</p></div>
+      <div class="law"><h3><span>③</span> 輕而易舉</h3><p>兩分鐘法則：今日一件事＝「就 1 分鐘」，門檻低到不可能失敗。</p></div>
+      <div class="law"><h3><span>④</span> 令人滿足</h3><p>打一格勾＋連續格子＋練完即時前後對比，馬上有成就感。</p></div>
+      <div class="law" style="background:#fff5e6"><h3 style="color:#8a5a00">＋ 絕不連錯兩次</h3><p style="color:#8a5a00">斷一天不歸零，今天補回就好——降低罪惡感、避免放棄。</p></div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h2>原子習慣這兩頁，方向對嗎？</h2>
+    <p class="sub">點一個，想調的直接打字。</p>
+    <div class="option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div><h4>對，就是這個主軸</h4><p>習慣堆疊＋今日一件事當主打，社群擺第二層。</p></div>
+    </div>
+    <div class="option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div><h4>方向對，想微調</h4><p>例如身分認同那句話、連續格子呈現、Widget。</p></div>
+    </div>
+    <div class="option" data-choice="c" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div><h4>差不多了，收斂成設計文件</h4><p>核心都看過了，把整份寫成 spec 給我確認。</p></div>
+    </div>
+  </div>
+<script>function toggleSelect(el){el.classList.toggle("selected");}</script>
+</body>
+</html>

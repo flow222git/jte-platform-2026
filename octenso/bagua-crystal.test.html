@@ -8,7 +8,7 @@
 (function(){
   var pass=0, fail=0, log=document.getElementById('log');
   function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
-  var P=window.OctensoProfile, V=window.OCTENSO_V2;
+  var P=window.OctensoProfile, V=window.OCTENSO_V2, Bt=window.OCTENSO_BAGUA;
   var DEMO='B282745866457038522413';
 
   function finish(){
@@ -55,7 +55,11 @@
     var pf=P.build(dec.sc);
     t('canvas exists', !!doc.querySelector('canvas'));
     t('chips ×4', doc.getElementById('chips').children.length===4);
-    t('peak line plain', txt.indexOf('開創者·乾')>=0 && txt.indexOf('擅長定方向')>=0 && txt.indexOf('帶著光圈')>=0);
+    t('peak line plain', txt.indexOf(Bt.pn('qian'))>=0 && txt.indexOf('擅長定方向')>=0 && txt.indexOf('帶著光圈')>=0);
+    // 命名統一(2026-07-24):峰名/rnote 一律用 canonical B.pn(k)「者名(卦)」,不得是 fnShort+'者' 漂移組字
+    var driftNames=['明現者','交流者','拓展者','沉澱者','喊停者','承接者'];
+    t('無漂移 fnShort+者 命名', driftNames.every(function(d){return txt.indexOf(d)<0;}));
+    t('rnote 用 canonical 者名(卦)', txt.indexOf(Bt.pn('qian'))>=0 && txt.indexOf(Bt.pn('kun'))>=0);
     // 白話層:導讀三步 + 生活問句 + 白話動詞 + 「你此刻的樣子」
     t('howto 3 steps', txt.indexOf('晶體的形狀就是你')>=0 && txt.indexOf('四大系統')>=0 && txt.indexOf('可以同時亮')>=0);
     t('gate def shown(系統雙分支)', txt.indexOf('兩個分支')>=0 && txt.indexOf('定方向(往哪去、怎麼定)')>=0);

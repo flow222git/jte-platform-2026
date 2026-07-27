@@ -127,6 +127,7 @@
 
   .radar-wrap{max-width:380px;margin:6px auto 4px}
   .radar-wrap svg{width:100%;height:auto;display:block}
+  .radar-wrap.rint g.rgrp{cursor:pointer}
   .rlabel{font-size:13px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
   .rlabel.top{fill:var(--pine);font-weight:700}
   .rscore{font-size:10px;font-family:ui-sans-serif,sans-serif;fill:var(--muted)}
@@ -467,6 +468,9 @@
 <!-- QR 編碼/解碼（本機庫，相對路徑，同源；iframe onload 會等載完） -->
 <script src="lib/qrcode.js"></script>
 <script src="lib/jsQR.js"></script>
+<script src="bagua-data.js"></script>
+<script src="bagua-report-v32-data.js"></script>
+<script src="bagua-report-renderer.js"></script>
 
 <script>
 var W={metal:'#b0996a',wood:'#5f7d4a',water:'#4d6b86',fire:'#9d4b34',earth:'#a98238'}; // 八態雷達配色（內部色盤，非五行語意）
@@ -1047,20 +1051,19 @@ function renderCtxResult(label, data, intensity){
 function goCompatShare(c){ try{ location.hash='c='+c; }catch(e){} initFromHash(); }
 function renderSharedReport(sc,name){
   var sorted=Object.keys(E).sort(function(a,b){ return sc[b]-sc[a]; });
-  var topKey=sorted[0], top=E[topKey], accent=W[top.wx];
-  var pf=pfBuild(sc);
-  var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
+  var rctx=OctensoReport.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null,hasCost:false});
+  var pf=rctx.pf;
   var who=name?escH(name):'某人', code=encodeCode(sc), port=buildPortrait(sc,sorted);
   var kws=sorted.slice(0,3).map(function(k){ return '#'+fn1(k); }).join('　');
-  var full=portraitNarrative(pf,null)
+  var full=OctensoReport.narrativeHtml(rctx)
     +outlineBlock(sc,pf,null,null)
-    +systemsSection(sc)
+    +OctensoReport.systemsHtml(rctx)
     +'<div class="block"><h3>'+((pf&&pf.signature.kind==='pattern')?'TA 的整體能量':'TA 最鮮明的能量')+'</h3>'+(pf?strengthsHtml(pf):'')+'</div>';
   var html=''
     +'<div class="fsbar">字級<button class="a1 on" id="fsA" onclick="setFs(0)">A</button><button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button></div>'
     +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>這是 '+who+' 的能量速寫 ☯</b><br>看看 TA 慣用哪幾種能量——你也可以測測自己的。</div>'
-    +'<div class="typecard" style="--accent:'+accent+'"><div class="tc-eyebrow">'+who+' 的能量格局</div><div class="tc-sym">'+sig.sym+'</div><div class="tc-title">'+sig.title+'</div>'+(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')+'<div class="tc-essence">'+sig.essence+'</div></div>'
-    +radarCard(null)
+    +OctensoReport.heroHtml(rctx,who+' 的能量格局')
+    +OctensoReport.radarHtml(rctx)
     +'<div class="pullq" style="font-size:16px;padding-bottom:14px">'+kws+'</div>'
     +'<button class="start-btn" style="display:block;margin:4px auto 6px" onclick="showMindset()">測測你自己的能量 →</button>'
     +'<div class="share-hint" style="margin-bottom:18px">約 25～30 題 · 約 3 分鐘 · 看你慣用哪幾種能量</div>'
@@ -1073,7 +1076,7 @@ function renderSharedReport(sc,name){
   document.getElementById('quiz').style.display='none';
   document.getElementById('compat').style.display='none';
   r.style.display='block';
-  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey,null));
+  OctensoReport.bindRadar(rctx);
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);
 }
@@ -1098,101 +1101,8 @@ function pairLean(sc,l,r){
 // 四向度傾向區塊 HTML（雷達＋圖例之後、「這一型的你」之前）
 // pairBlockHtml 已併入「八態輪廓」大區塊（見 pairRowsHtml / outlineBlock）
 
-// ── Radar wheel ──────────────────────────────────────────
-function buildRadar(sc,topKey,nowNorm){
-  var cx=200,cy=200,baseR=140;
-  var svg=document.createElementNS(NS,'svg');
-  svg.setAttribute('viewBox','-54 -46 508 500');
-  // grid octagons
-  [0.25,0.5,0.75,1].forEach(function(f){
-    var pts=EKEYS.map(function(k){
-      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
-      return (cx+ux*baseR*f)+','+(cy+uy*baseR*f);
-    }).join(' ');
-    var poly=document.createElementNS(NS,'polygon');
-    poly.setAttribute('points',pts);
-    poly.setAttribute('fill','none');
-    poly.setAttribute('stroke','var(--line)');
-    poly.setAttribute('stroke-width',f===1?1.4:1);
-    poly.setAttribute('opacity',f===1?0.9:0.5);
-    svg.appendChild(poly);
-  });
-  // spokes
-  EKEYS.forEach(function(k){
-    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
-    var ln=document.createElementNS(NS,'line');
-    ln.setAttribute('x1',cx);ln.setAttribute('y1',cy);
-    ln.setAttribute('x2',cx+ux*baseR);ln.setAttribute('y2',cy+uy*baseR);
-    ln.setAttribute('stroke','var(--line)');ln.setAttribute('stroke-width',1);ln.setAttribute('opacity',0.5);
-    svg.appendChild(ln);
-  });
-  // score polygon (radius 30..140)
-  function rOf(s){return 30+(s/100)*110;}
-  var sp=EKEYS.map(function(k){
-    var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
-    var r=rOf(sc[k]);
-    return (cx+ux*r)+','+(cy+uy*r);
-  }).join(' ');
-  var area=document.createElementNS(NS,'polygon');
-  area.setAttribute('points',sp);
-  area.setAttribute('fill','rgba(53,97,79,.16)');
-  area.setAttribute('stroke','var(--pine)');
-  area.setAttribute('stroke-width',2);
-  svg.appendChild(area);
-  // 此刻 overlay polygon (gold dashed)
-  if(nowNorm){
-    var np=EKEYS.map(function(k){
-      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
-      var r=rOf(nowNorm[k]||0);
-      return (cx+ux*r)+','+(cy+uy*r);
-    }).join(' ');
-    var narea=document.createElementNS(NS,'polygon');
-    narea.setAttribute('points',np);
-    narea.setAttribute('fill','rgba(169,130,59,.10)');
-    narea.setAttribute('stroke','var(--gold)');
-    narea.setAttribute('stroke-width',2);
-    narea.setAttribute('stroke-dasharray','5 4');
-    svg.appendChild(narea);
-    EKEYS.forEach(function(k){
-      var ux=(E[k].pos.x-cx)/baseR, uy=(E[k].pos.y-cy)/baseR;
-      var r=rOf(nowNorm[k]||0);
-      var nd=document.createElementNS(NS,'circle');
-      nd.setAttribute('cx',cx+ux*r);nd.setAttribute('cy',cy+uy*r);
-      nd.setAttribute('r',3.5);nd.setAttribute('fill','var(--gold)');nd.setAttribute('stroke','#fff');nd.setAttribute('stroke-width',1);
-      svg.appendChild(nd);
-    });
-  }
-  // dots + labels
-  EKEYS.forEach(function(k){
-    var b=E[k];
-    var ux=(b.pos.x-cx)/baseR, uy=(b.pos.y-cy)/baseR;
-    var r=rOf(sc[k]);
-    var px=cx+ux*r, py=cy+uy*r;
-    var dot=document.createElementNS(NS,'circle');
-    dot.setAttribute('cx',px);dot.setAttribute('cy',py);
-    dot.setAttribute('r',k===topKey?7:5);
-    dot.setAttribute('fill',W[b.wx]);
-    dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',1.5);
-    svg.appendChild(dot);
-    // label outside
-    var lr=baseR+22;
-    var lx=cx+ux*lr, ly=cy+uy*lr;
-    var anchor = ux>0.35?'start':(ux<-0.35?'end':'middle');
-    if(anchor==='start') lx+=2; else if(anchor==='end') lx-=2;
-    ly += uy>0.35?12:(uy<-0.35?-6:4);
-    var tx=document.createElementNS(NS,'text');
-    tx.setAttribute('class','rlabel'+(k===topKey?' top':''));
-    tx.setAttribute('x',lx);tx.setAttribute('y',ly);tx.setAttribute('text-anchor',anchor);
-    tx.textContent=b.nm+'·'+b.fn.split('／')[0];
-    svg.appendChild(tx);
-    var ts=document.createElementNS(NS,'text');
-    ts.setAttribute('class','rscore');
-    ts.setAttribute('x',lx);ts.setAttribute('y',ly+13);ts.setAttribute('text-anchor',anchor);
-    ts.textContent=sc[k];
-    svg.appendChild(ts);
-  });
-  return svg;
-}
+// ── Radar wheel（自 buildRadar 搬入 octenso/bagua-report-renderer.js，
+//    頁內改用 OctensoReport.buildRadar 之 alias，見下方 var pn=… 區塊）────
 
 // ── Persona (top2 + low2) ────────────────────────────────
 function buildPortrait(sc,sorted){
@@ -1215,99 +1125,10 @@ var PORTRAIT_METAPHOR={
   jagged:['像稜角分明的一塊石——很有個性，也較容易卡在某幾處'],
   balanced:['像調得很勻的光，不刺眼也不暗','像一池有深度又平靜的水']
 };
-function pShapeKey(pf){
-  var spread=(pf.ranked[0].v||0)-(pf.ranked[pf.ranked.length-1].v||0), n=pf.leads.length, band=pf.level.band;
-  if(pf.single) return 'single';
-  if(n===2) return 'dual';
-  if(n>=3) return 'multi';
-  if(band==='high'&&spread<=30) return 'plateau';
-  if(band==='low'&&spread<=30) return 'low';
-  if(spread>=50) return 'jagged';
-  return 'balanced';
-}
 function pPick(arr,seedK){ return arr[(seedK?seedK.charCodeAt(0):0)%arr.length]; }
-// 中正詞庫（解讀規則 spec §5）：mid＝用得好的樣子(拍1)；lever＝怎麼發揮；gap＝這股本身能帶來的(拍3)
-var READ_LEX={
- qian:{mid:'能立方向、開局、作主',lever:'把這份開局的勁，放在你真正想長出來的事上',gap:'方向感與願景'},
- kun:{mid:'能承載、滋養，讓事情穩穩運轉',lever:'守住你願意承接的範圍，別把自己也賠進去',gap:'耐心、穩定，與接得住的底氣'},
- zhen:{mid:'有執行力，能把想法啟動、推著落地，卡關時用行動突破',lever:'把這股推力對準真正重要的事，讓它變成穩定的產出',gap:'啟動的勁與不拖延'},
- xun:{mid:'擅長連結資源、順勢鋪開，身段有彈性',lever:'在發散裡守住一個焦點，連結才不會散掉',gap:'向外觸及、把人與機會連起來的能力'},
- kan:{mid:'沉得住、想得深，獨處時能恢復充電',lever:'刻意守住安靜的時間，那是你判斷的底',gap:'沉著、定力，與把事情想透的空間'},
- li:{mid:'看得清，也能把看見的顯現出來、讓人理解',lever:'把你看清的東西，好好說出來、亮出來',gap:'洞察、表達，與讓想法被看見的力量'},
- gen:{mid:'守得住界線、知所進退',lever:'信任你喊停的判斷，該收的時候就收',gap:'設界線、喊卡、守住自己節奏的能力'},
- dui:{mid:'表達流暢、能與人互通，把話說開',lever:'把交流力，用在你真正想連結的關係上',gap:'把感受說出口、與人連結的能力'}
-};
-// 四對待「雙高」讀法（鍵為兩卦排序後 join；只有雷風＝張力，其餘和諧——對齊學理憲法）
-var PAIR_BOTHHIGH={
- 'kun|qian':'——開創與承接俱足，是完整的建構格局。',
- 'xun|zhen':'——行動與拓展都旺，像雷風鼓盪：推力很強，偶爾也會彼此較勁。',
- 'kan|li':'——既深又亮：能向內沉澱、也能向外明現，相成而不相礙。',
- 'dui|gen':'——進退有節：守得住界線，也開得了口。'
-};
-// 能量圓（ensō）：真分數長出的有機形狀＝整體畫面；主導股金點、缺口淡點。靜態 SVG（可放進 innerHTML）
-function ensoSVG(pf){
-  var sc={}; pf.ranked.forEach(function(r){ sc[r.k]=r.v; });
-  var EK=['qian','li','zhen','dui','kun','kan','gen','xun'], cx=140,cy=140,minR=46,maxR=108;
-  var P=EK.map(function(k,i){ var a=(-90+i*45)*Math.PI/180, r=minR+(Math.max(0,Math.min(100,sc[k]||0))/100)*(maxR-minR);
-    return {x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}; });
-  var n=P.length,d='';
-  for(var i=0;i<n;i++){ var p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
-    if(i===0)d+='M'+p1.x.toFixed(1)+','+p1.y.toFixed(1);
-    d+='C'+(p1.x+(p2.x-p0.x)/6).toFixed(1)+','+(p1.y+(p2.y-p0.y)/6).toFixed(1)+' '+(p2.x-(p3.x-p1.x)/6).toFixed(1)+','+(p2.y-(p3.y-p1.y)/6).toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1); }
-  d+='Z';
-  var leadKs=(pf.leads||[]).slice(0,2), gapK=(pf.gaps&&pf.gaps[0])||pf.ranked[pf.ranked.length-1].k, dots='';
-  EK.forEach(function(k,i){
-    if(leadKs.indexOf(k)>=0) dots+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="5.5" fill="#a9823b" stroke="#fff" stroke-width="2"/>';
-    else if(k===gapK) dots+='<circle cx="'+P[i].x.toFixed(1)+'" cy="'+P[i].y.toFixed(1)+'" r="4" fill="none" stroke="#c9bfa6" stroke-width="1.5"/>';
-  });
-  return '<svg width="236" height="236" viewBox="0 0 280 280" style="display:block;margin:0 auto 6px" aria-hidden="true">'
-    +'<path d="'+d+'" fill="rgba(169,130,59,.09)" stroke="none"/>'
-    +'<path d="'+d+'" fill="none" stroke="#2c2a22" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>'
-    +'<path d="'+d+'" fill="none" stroke="#a9823b" stroke-width="1.4" opacity=".5"/>'+dots+'</svg>';
-}
-// 解讀文字引擎（依 2026-06-21 解讀規則 spec）：三拍各守一個能格層、並存不捏因果、價值中性
-function portraitNarrative(pf, costItems, neutral){
-  if(!pf) return '';
-  function q(k){return '「'+fn1(k)+'」';}
-  // 能格分類（單股自己的事）
-  var overs=[],unders=[];
-  if(costItems&&costItems.length){ costItems.forEach(function(it){ var v=costVerdict(it.k,it.dir,it.avg);
-    if(v.s==='過用') overs.push(it.k); else if(v.s==='不足') unders.push(it.k); }); }
-  // ── 拍1 優勢（中正強項·並存不捏因果，spec 拍1/C1/C3/C4）──
-  var kind=pf.signature.kind, leads=pf.leads, b1;
-  if(kind==='pattern'){
-    b1='你的能量分布算均衡，沒有特別獨大的一股——這本身是一種<b>彈性</b>：面對不同場面，你都接得住、換得了檔。';
-  } else if(leads.length>=2){
-    var a=leads[0],b=leads[1], pk=PAIR_BOTHHIGH[[a,b].sort().join('|')];
-    b1='你最鮮明的是'+q(a)+'與'+q(b)+'——你'+READ_LEX[a].mid+'；同時也'+READ_LEX[b].mid+'。'
-      +(pk||'')+' 發揮：'+READ_LEX[a].lever+'；'+READ_LEX[b].lever+'。';
-  } else {
-    var a=leads[0]; b1='你最鮮明的是'+q(a)+'——你'+READ_LEX[a].mid+'。發揮：'+READ_LEX[a].lever+'。';
-  }
-  // ── 拍2 能格（過用代價／中性，spec 拍2/C1/C2）──
-  var b2;
-  if(overs.length){ var g=COST_GIST[overs[0]]||{};
-    b2='從你的校準看，'+q(overs[0])+'目前用得有點過頭'+(g.o?('——容易'+g.o):'')+'（這是這股<b>自己</b>的事，跟別股無關）。'
-      +(overs.length>1?(' '+q(overs[1])+'也是。'):'');
-  } else if(neutral==='flex'){
-    b2='你這幾股用得很<b>平均</b>——而你也確認了，這是真的<b>平衡、有彈性</b>：面對不同場面，你都換得了檔、接得住。';
-  } else if(neutral==='undev'){
-    b2='你這幾股用得很<b>平均</b>——你說還在摸索；那也好，表示你<b>最有可塑性</b>，正適合多方嘗試，慢慢長出自己最鮮明的那幾股。';
-  } else if(!costItems||!costItems.length){
-    b2='你這幾股用得挺<b>平均</b>——可能是平衡、有彈性，也可能是還在摸索、還沒長開。';
-  } else {
-    b2='整體看，你這幾股用得大致剛好，沒有明顯過頭的一股。';
-  }
-  // ── 拍3 缺口（不足空間·只它自己的價值，spec 拍3/C1）──
-  var gapK=(unders.length?unders[0]:(pf.gaps[0]||pf.ranked[pf.ranked.length-1].k));
-  var b3='你最少動用的是'+q(gapK)+'——它能帶來'+READ_LEX[gapK].gap+'。這是你最有空間的地方，刻意給它一點練習，會讓你更完整。';
-  return '<div class="block"><h3>能量速寫</h3>'
-    +ensoSVG(pf)
-    +'<div class="portrait">'+b1+'</div>'
-    +'<div class="portrait" style="margin-top:11px">'+b2+'</div>'
-    +'<div class="portrait" style="margin-top:11px">'+b3+'</div>'
-  +'</div>';
-}
+// pShapeKey／READ_LEX／PAIR_BOTHHIGH／portraitNarrative 已搬進
+// octenso/bagua-report-renderer.js（narrativeCore，改吃 ctx.overs/ctx.unders/ctx.hasCost）；
+// 頁內改呼叫 OctensoReport.narrativeHtml(rctx)，見 showResult／renderSharedReport。
 
 // ── 能量提醒 memo（依底色：弱項鼓勵＋強項叮嚀，可打勾自我檢查）──
 // 弱項提醒（該能量偏低時：鼓勵多用，關懷問句）
@@ -1462,6 +1283,9 @@ function leadSentence(pf,conf){
 }
 function fnList(keys){ return keys.map(function(k){return E[k].nm+'·'+E[k].fn;}).join('、'); }
 function fn1(k){ return E[k].fn.split('／')[0]; } // 取功能名第一段（顯現／覺察 → 顯現）
+// pn() canonical 定義已搬進 octenso/bagua-data.js（OCTENSO_BAGUA.pn）；
+// 頁內經 octenso/bagua-report-renderer.js 之 OctensoReport.pn 取用，格式不變：者名(卦):開創者(乾)
+var pn=OctensoReport.pn;
 // 確信度摘要：列出最篤定／最兩可的態（資料來自存檔 conf；沒有就不顯示）
 function confLine(conf){
   if(!conf) return '';
@@ -1474,11 +1298,15 @@ function confLine(conf){
   return '<div class="pair-foot" style="margin-top:10px"><b style="color:var(--gold)">確信度</b>：'+parts.join('；')+'。這跟分數高低無關，是你回答時的篤定程度。</div>';
 }
 // persona 標題自適應形狀：身分＝格局，卦只是峰名（依 MODEL.md）
+// task-3 例外保留：showResult／renderSharedReport 已改走 OctensoReport.build+heroHtml，
+// 不再呼叫本函式；但雙人合盤（showCompatResult 的 msig）仍需 {sym,title,sub} 這組原始 tuple
+// （非 typecard 完整 html），renderer 公開 API 未提供對應輸出、也不在 task-2 凍結清單內，
+// 故依任務指示「找不到可 alias 的匯出時，保留該單一函式並於報告註記」，本函式維持頁內。
 function signatureTitle(pf){
   var sig=pf.signature, k=sig.keys, lv=pf.level.band;
-  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym, title:e.title, sub:'', essence:e.essence}; }
+  if(sig.kind==='single'){ var e=E[k[0]]; return {sym:e.sym, title:pn(k[0]), sub:'', essence:e.essence}; }
   if(sig.kind==='dual'){ var a=E[k[0]],b=E[k[1]];
-    return {sym:a.sym+b.sym, title:a.nm+'×'+b.nm+' · '+fn1(k[0])+'與'+fn1(k[1])+'並重', sub:'兩個並重的主調，會交替出現',
+    return {sym:a.sym+b.sym, title:pn(k[0])+'×'+pn(k[1]), sub:'兩個並重的主調，會交替出現',
       essence:a.essence+'　同時，「'+fn1(k[1])+'」也同樣鮮明——你不是單一性格，而是這兩種能量輪流主導。'}; }
   if(sig.kind==='multi'){
     return {sym:k.map(function(x){return E[x].sym;}).join(''), title:k.map(function(x){return E[x].nm;}).join('×')+' · 多主調型', sub:k.length+' 個主調並重',
@@ -1623,17 +1451,8 @@ var COST={
 // 能格門檻
 var COST_HI=68, COST_LO=35;   // 分數 ≥HI→問過用、≤LO→問不足
 var COST_AGREE=2.5;           // 校準題平均（0–5）≥此＝有代價
-// 整體側寫用的能格「精華片語」（短、塞進敘事；完整建議仍在能格·調校段）
-var COST_GIST={
- qian:{o:'什麼都想自己扛、抓著方向不放',u:'少替自己定方向、常照別人安排走'},
- kun:{o:'把別人都接住、自己擺到最後',u:'接不太住別人、關係有點疏離'},
- zhen:{o:'衝太快、做白工，旁人跟不上',u:'卡在想、遲遲不開始'},
- xun:{o:'攤太開、收不回來',u:'少向外串連、錯過能借的力'},
- li:{o:'太想被看見、給自己壓力',u:'把自己收著、常被低估'},
- kan:{o:'想太多、走不出來',u:'很少停下回血、撐到耗盡'},
- gen:{o:'界線太硬、把人也擋在外',u:'不太替自己踩剎車、撐到累垮'},
- dui:{o:'社交太滿、話收不住',u:'把話悶著、關係停在表面'}
-};
+// COST_GIST（能格精華片語）已搬進 octenso/bagua-report-renderer.js（narrativeCore 拍2 用）；
+// 頁內不再需要——原本唯一用途 portraitNarrative 已刪，改走 OctensoReport.narrativeHtml。
 
 // ════ 對境耗能：情境需求題（每態1題）× 底色容量 → 哪股被掏空＋因應 ════
 // 每題測「這個情境多需要這股能量」(0–5)；demand 高 × 底色低 ＝ 耗能。【草稿，待潤】
@@ -1842,12 +1661,11 @@ function strengthsHtml(pf){
       +'<div class="trait-row g"><b>成長</b><span>'+bg.grow+'</span></div>';
   }).join('');
 }
-// 雷達獨立卡
-function radarCard(now){
-  return '<div class="radar-card"><div class="radar-wrap" id="radar-wrap"></div>'
-    +(now?'<div class="share-hint" style="margin-top:6px">松綠實線＝你的底色　·　金色虛線＝此刻（相對輪廓對照）</div>':'<div class="share-hint" style="margin-top:6px">越往外越強</div>')
-  +'</div>';
-}
+// radarCard／radarSelect／bindRadar 已搬進 octenso/bagua-report-renderer.js
+// （radarCardCore／radarSelect／bindRadar，改吃 ctx）；頁內留兩條 alias 供非 ctx 路徑
+// （renderCtxResult・facet radar・雙人合盤 仍直接傳 (scores,topKey,nowNorm)）沿用：
+function radarCard(now){ return OctensoReport.radarHtml({now:now}); }
+function buildRadar(sc,topKey,nowNorm){ return OctensoReport.buildRadar(sc,topKey,nowNorm); }
 // 八態輪廓（剖面：高低與平衡的文字；雷達與四對已獨立）
 function outlineBlock(sc,pf,now,conf){
   if(!pf) return '';
@@ -1862,15 +1680,8 @@ function outlineBlock(sc,pf,now,conf){
     +'<div class="trait-row"><b style="color:var(--pine)">少用</b><span>'+(gap?('比較少動用 <b>'+gap+'</b>，是還有空間的部分'):'沒有明顯空白，每種能量你多少都在用')+'</span></div>'
   +'</div>';
 }
-// 四個系統（折疊）：每系統＝說明（淡）＋你的結果（pine 面板）
-function systemsSection(sc){
-  return '<details class="rsec" open>'
-    +'<summary><span>四個系統 · 你怎麼運作<span class="rsum-hint">八態兩兩成一系統：建構 → 推動 → 認知 → 調節</span></span><span class="rchev">▾</span></summary>'
-    +'<div class="rbody">'+fourXiangHtml(sc)
-      +'<div class="pair-foot">這些是傾向、有程度，不是非此即彼；看的是系統怎麼運作，不是好壞。</div>'
-    +'</div>'
-  +'</details>';
-}
+// systemsSection 已搬進 octenso/bagua-report-renderer.js（systemsCore，改吃 ctx.scores）；
+// 頁內改呼叫 OctensoReport.systemsHtml(rctx)，見 showResult／renderSharedReport。
 // A／A⁺ 字級切換
 function setFs(big){
   try{ document.documentElement.classList.toggle('fs-lg',!!big); localStorage.setItem('bagua_fs',big?'1':'0'); }catch(e){}
@@ -1884,10 +1695,7 @@ function showResult(viewScores){
   var sorted=Object.keys(E).sort(function(a,b){ return sc[b]-sc[a]; });
   var topKey=sorted[0];
   var top=E[topKey];
-  var accent=W[top.wx];
   var now=readNow();
-  var pf=pfBuild(sc);
-  var sig=pf?signatureTitle(pf):{sym:top.sym,title:top.title,sub:'',essence:top.essence};
   var conf=viewScores
     ? (function(){ try{ var b=JSON.parse(localStorage.getItem('bagua_persona_v1')); return (b&&b.conf)||null; }catch(e){ return null; } })()
     : computeConf();
@@ -1895,8 +1703,18 @@ function showResult(viewScores){
     ? (function(){ try{ var b=JSON.parse(localStorage.getItem('bagua_persona_v1')); return (b&&b.tend)||null; }catch(e){ return null; } })()
     : computeTendency(conf);
 
+  // 能格分類（單股自己的事）：over/under → rctx.overs/unders（narrativeHtml 拍2 用）
+  var overs=[],unders=[];
+  (function(){var r=calibResults(); if(r&&r.items){ r.items.forEach(function(it){var v=costVerdict(it.k,it.dir,it.avg);
+    if(v.s==='過用')overs.push(it.k); else if(v.s==='不足')unders.push(it.k);});}})();
+  var rctx=OctensoReport.build({scores:sc,conf:conf,overs:overs,unders:unders,
+    neutral:(function(){var r=calibResults();return r&&r.neutral;})(),
+    now:now,
+    hasCost:(function(){var r=calibResults();return !!(r&&r.items&&r.items.length>0);})()});
+  var pf=rctx.pf;
+
   // save
-  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:sig.title,conf:conf,tend:tend,ts:new Date().toISOString()})); }catch(e){} }
+  if(!viewScores){ try{ localStorage.setItem('bagua_persona_v1', JSON.stringify({scores:sc,top:topKey,title:OctensoReport.titleOf(rctx),conf:conf,tend:tend,ts:new Date().toISOString()})); }catch(e){} }
 
   var port=buildPortrait(sc,sorted);
   var toolsHtml=top.tools.map(function(tk){ return toolRow(TOOLS[tk]); }).join('')
@@ -1908,26 +1726,20 @@ function showResult(viewScores){
      +'<button class="a2" id="fsAA" onclick="setFs(1)">A⁺</button>'
    +'</div>'
    +(tend?tendencyCard(tend):'')
-   +'<div class="typecard" style="--accent:'+accent+'">'
-     +'<div class="tc-eyebrow">你的能量格局</div>'
-     +'<div class="tc-sym">'+sig.sym+'</div>'
-     +'<div class="tc-title">'+sig.title+'</div>'
-     +(sig.sub?'<div class="tc-eyebrow" style="margin:2px 0 8px;color:var(--pine)">'+sig.sub+'</div>':'')
-     +'<div class="tc-essence">'+sig.essence+'</div>'
-   +'</div>'
+   +OctensoReport.heroHtml(rctx)
+   +OctensoReport.radarHtml(rctx)
+   +OctensoReport.narrativeHtml(rctx)
    +'<div class="honest" style="max-width:none;margin:0 0 16px;border-left-color:var(--pine)"><b>怎麼讀這張圖</b><br>這是把你<b>平常沒留意的能量習慣</b>，從心底搬到眼前——它照的是<b>你「感受到」的自己</b>，不是行為審計。所以<b>別人眼中的你，可能跟這張圖不一樣</b>；那個落差不是錯，反而最值得停下來想：哪些是你的<b>底色</b>，哪些是某個場景把你<b>暫時長出來</b>的樣子？</div>'
-   +portraitNarrative(pf, (function(){var r=calibResults();return r&&r.items;})(), (function(){var r=calibResults();return r&&r.neutral;})())
-   +'<details class="rsec"><summary>看雷達 · 數值對照版<span class="rchev">⌄</span></summary>'+radarCard(now)+'</details>'
-   +outlineBlock(sc,pf,now,conf)
-   +systemsSection(sc)
-   +calibBlock(sc)
+   +OctensoReport.systemsHtml(rctx)
+   +'<details class="rsec"><summary><span>深讀 · 八態輪廓<span class="rsum-hint">每態評價 · 高低與平衡 · 主調</span></span><span class="rchev">▾</span></summary><div class="rbody">'+outlineBlock(sc,pf,now,conf)+'</div></details>'
+   +'<details class="rsec"><summary><span>深讀 · 剛剛好嗎<span class="rsum-hint">校準：亢/潛/中正</span></span><span class="rchev">▾</span></summary><div class="rbody">'+calibBlock(sc)+'</div></details>'
+   +'<details class="rsec"><summary><span>深讀 · 四向度與提醒<span class="rsum-hint">四對細節 · 能量提醒</span></span><span class="rchev">▾</span></summary><div class="rbody">'+fourXiangHtml(sc)+memoBlockHtml(sc)+'</div></details>'
    +'<div class="block">'
      +'<h3>'+((pf&&pf.signature.kind==='pattern')?'你的整體能量':'你最鮮明的能量')+'</h3>'
      +(pf&&!pf.single&&pf.leads.length>1?'<div class="pair-sub">你最鮮明的不只一股——下面分別說，它們會在你身上輪流主導。</div>':'')
      +(pf?strengthsHtml(pf)
          :'<div class="trait-row s"><b>優勢</b><span>'+top.str+'</span></div><div class="trait-row b"><b>盲點</b><span>'+top.blind+'</span></div><div class="trait-row g"><b>成長</b><span>'+top.grow+'</span></div>')
    +'</div>'
-   +memoBlockHtml(sc)
    +'<details class="rsec"><summary><span>適合你的下一步<span class="rsum-hint">接著可以試的工具</span></span><span class="rchev">▾</span></summary><div class="rbody">'+toolsHtml+'</div></details>'
    +ctaBlock(sc,now)
    +'<div class="block"><h3>場景耗能</h3>'
@@ -1964,7 +1776,7 @@ function showResult(viewScores){
   document.getElementById('quiz').style.display='none';
   document.getElementById('cover').style.display='none';
   r.style.display='block';
-  document.getElementById('radar-wrap').appendChild(buildRadar(sc,topKey, now?now.norm:null));
+  OctensoReport.bindRadar(rctx);
   renderFacetMenu();
   try{ if(localStorage.getItem('bagua_fs')==='1') setFs(1); }catch(e){}
   window.scrollTo(0,0);

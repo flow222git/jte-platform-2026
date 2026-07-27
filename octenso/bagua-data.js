@@ -165,6 +165,8 @@
     // 便利存取
     get: function (k) { return BAGUA[k]; },
     pairOf: function (k) { return BAGUA[k] && BAGUA[BAGUA[k].pairKey]; },
-    titleOf: function (k) { return BAGUA[k] && BAGUA[k].title; }
+    titleOf: function (k) { return BAGUA[k] && BAGUA[k].title; },
+    // 者名(卦):開創者(乾)——顯示命名單一來源(2026-07-23 renderer spec)
+    pn: function (k) { var b = BAGUA[k]; return b ? b.title.split('·')[1] + '(' + b.nm + ')' : ''; }
   };
 })(typeof window !== 'undefined' ? window : this);

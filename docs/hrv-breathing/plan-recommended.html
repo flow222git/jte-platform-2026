@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRV-breathing 企劃建議版</title>
+<style>
+:root{
+  --white:#FFFFFF;--gray-bg:#F5F5F7;--ink:#1D1D1F;--ink-2:#6E6E73;--ink-3:#86868B;
+  --border:#D2D2D7;--blue:#0071E3;--blue-hover:#0077ED;--green:#1a9d5a;--amber:#b06a00;
+  --font:-apple-system,"SF Pro Text","PingFang TC","Helvetica Neue",sans-serif;
+  --radius:18px;--shadow:0 2px 12px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--ink);font-family:var(--font);line-height:1.65;
+  padding:56px 24px 100px;max-width:920px;margin:0 auto}
+.eyebrow{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+h1{font-size:38px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px}
+.lead{font-size:18px;color:var(--ink-2);max-width:680px;margin-bottom:14px}
+.note{font-size:13px;color:var(--ink-3);margin-bottom:52px}
+.sec{margin-bottom:56px}
+.sec>.kicker{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.06em;margin-bottom:8px}
+.sec>h2{font-size:26px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+.sec>.desc{font-size:16px;color:var(--ink-2);margin-bottom:24px;max-width:700px}
+.card{background:var(--gray-bg);border-radius:var(--radius);padding:26px 28px;margin-bottom:14px}
+.card h3{font-size:18px;font-weight:600;margin-bottom:8px}
+.card p{font-size:15px;color:var(--ink-2)}
+.card .src{display:block;font-size:12px;color:var(--ink-3);margin-top:10px}
+.rec{border-left:3px solid var(--blue);background:#F2F8FF;border-radius:0 14px 14px 0;padding:16px 20px;margin-top:14px}
+.rec b{color:var(--blue)}
+.rec p{font-size:14.5px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pc h4{font-size:14px;font-weight:700;margin-bottom:8px}
+.pc.pro h4{color:var(--green)} .pc.con h4{color:var(--amber)}
+.pc ul{list-style:none;font-size:14px;color:var(--ink-2)}
+.pc li{padding-left:18px;position:relative;margin-bottom:6px}
+.pc.pro li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
+.pc.con li:before{content:"!";position:absolute;left:0;color:var(--amber);font-weight:700}
+.painquote{font-size:20px;font-weight:600;line-height:1.5;color:var(--ink);
+  border-left:4px solid var(--blue);padding:6px 0 6px 22px;margin:18px 0}
+.stat{display:inline-block;font-size:32px;font-weight:700;color:var(--blue);margin-right:8px}
+.statlbl{font-size:15px;color:var(--ink-2)}
+.tag{display:inline-block;font-size:11px;font-weight:700;background:#fff;border:1px solid var(--border);
+  color:var(--ink-2);padding:3px 11px;border-radius:980px;margin:0 6px 6px 0}
+.tag.go{color:var(--green);border-color:#bfe3cd}
+.tag.stop{color:var(--amber);border-color:#f0d8ad}
+hr.div{border:none;border-top:1px solid var(--border);margin:0 0 52px}
+.q{background:var(--blue);color:#fff;border-radius:var(--radius);padding:32px 30px}
+.q h2{font-size:24px;font-weight:700;margin-bottom:8px;color:#fff}
+.q p{font-size:15px;opacity:.92;margin-bottom:4px}
+.q .opt{font-size:15px;margin-top:14px;padding-left:4px}
+.q .opt b{font-weight:700}
+@media(max-width:680px){.grid2{grid-template-columns:1fr}h1{font-size:30px}}
+</style>
+</head>
+<body>
+  <div class="eyebrow">HRV-breathing ｜ 企劃建議版（基於輕量研究）</div>
+  <h1>怎麼讓科技人「想一直用」<br>而不是用一次就放著</h1>
+  <p class="lead">這份是我查完競品與研究後的建議。每一段下面藍框是「我建議怎麼做」，引用來源附在卡片下方。</p>
+  <p class="note">研究方式：我自己直接做了 3 個重點網路查詢（競品準確度／遊戲化成效／自律神經痛點），沒有開重型研究代理。</p>
+
+  <!-- 1 痛點 -->
+  <div class="sec">
+    <div class="kicker">01 ｜ 首頁要打中的痛點</div>
+    <h2>「我覺得我沒壓力」——但身體已經在求救</h2>
+    <p class="desc">這正是你親身遇到的狀況，研究也站得住腳：心理自評（BSRS）跟生理彈性（HRV）會脫鉤。</p>
+    <div class="painquote">你以為的「還好」，可能只是身體還撐得住。<br>HRV 看的是壓力過後「彈得回來」的能力。</div>
+    <div class="card">
+      <h3>研究怎麼說</h3>
+      <p>低 HRV（尤其高頻 HF 部分偏低）是恐慌症、廣泛性焦慮、社交焦慮共通的指標，反映「自律神經失去彈性（autonomic inflexibility）」。也就是說：人可能主觀覺得沒事，但副交感（放鬆煞車）已經偏弱，長期累積才會走到失調或恐慌。</p>
+      <span class="src">來源：ScienceDirect《Autonomic dysregulation in panic disorder》、PMC《Worry is associated with robust reductions in HRV》、ScienceDirect《HF-HRV across anxiety disorders》</span>
+    </div>
+    <div class="rec">
+      <p><b>建議做法：</b>首頁主視覺就用這句反差當鉤子，下面放一個「30 秒自測：你的身體跟你想的一樣放鬆嗎？」按鈕。把「自評低分 ≠ 身體沒事」變成這個 App 的核心賣點，這是市面上多數 HRV 工具沒講清楚的角度。</p>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <!-- 2 量測準確度 -->
+  <div class="sec">
+    <div class="kicker">02 ｜ 量測要多準、要量多久</div>
+    <h2>手指蓋鏡頭，做得對其實夠準</h2>
+    <p class="desc">最大競品 Welltory 用的就是手機鏡頭 PPG，準確度有實證背書，可作為我們的標準參考。</p>
+    <div class="card">
+      <h3>競品基準（Welltory）</h3>
+      <p>鏡頭 PPG 的變異度量測，經期刊驗證可達到接近 ECG／Polar 胸帶的準確度。關鍵是「訊號品質控管」：量 60 秒，若有效資料不足 45 秒就判定無效、要求重量；準確度低於 30% 自動作廢。</p>
+      <span class="src">來源：Welltory Medium《Camera vs Polar》、Welltory Help Center《accurate measurements》、Welltory《rules for accurate HRV》</span>
+    </div>
+    <div class="rec">
+      <p><b>建議做法：</b>量測 <b>60–120 秒</b>，畫面即時顯示「訊號品質」綠燈；品質不足就溫和提示「再放穩一點，剩 X 秒」，而不是直接給一個可能錯的數字。寧可請使用者重量，也不要給不準的報告——這對你要「高準確度」的目標最關鍵。</p>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <!-- 3 遊戲化 -->
+  <div class="sec">
+    <div class="kicker">03 ｜ 遊戲化：有效，但對壓力 App 有陷阱</div>
+    <h2>留得住人，但別把「斷連」變成新的壓力</h2>
+    <div class="card" style="margin-bottom:18px">
+      <p><span class="stat">+62%</span><span class="statlbl">Headspace 導入徽章與每日挑戰後的留存提升</span></p>
+      <p style="margin-top:10px">研究也顯示積分／徽章／排行榜可讓參與度最高提升約 120%。</p>
+      <span class="src">來源：StriveCloud《Headspace gamification》、Smartico／Trophy 健康 App 遊戲化案例</span>
+    </div>
+    <div class="grid2">
+      <div class="card pc pro"><h4>對我們有效的機制</h4>
+        <ul>
+          <li>連續天數，但用「可補回」設計</li>
+          <li>累積總呼吸次數／總練習分鐘</li>
+          <li>進步可視化（壓力曲線往下走）</li>
+          <li>達成里程碑的溫和徽章</li>
+        </ul>
+      </div>
+      <div class="card pc con"><h4>要避開的反效果</h4>
+        <ul>
+          <li>斷一天就「歸零／失敗」的 streak</li>
+          <li>逼人為了不斷連而焦慮打開 App</li>
+          <li>把放鬆練習變成績效任務</li>
+          <li>跳過一次就讓人覺得「我連顧自己都失敗」</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rec">
+      <p><b>建議做法：</b>採用「<b>韌性型連續</b>」——斷一天不歸零，給一次「呼吸補回」修復；重點放在「進步」而非「全勤」。對一個要降壓的產品，連續紀錄必須是鼓勵，不能變成新的壓力來源。研究明白警告：streak 把漏掉一天當失敗，會把動機變焦慮，正好跟健康 App 的目的相反。</p>
+      <span class="src" style="color:var(--ink-3)">來源：Sustainability-Directory《gamification affect mental health》、Gamify《Gamification and Mindfulness》</span>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <!-- 4 社群炫耀 -->
+  <div class="sec">
+    <div class="kicker">04 ｜ 社群「隱性炫耀」與排名</div>
+    <h2>像 Nike 曬路線那樣，曬「我有在照顧自己」</h2>
+    <p class="desc">Nike 讓人把跑步路線分享到社群，本質是「健康／自律」的低調炫耀。我們可以用同樣心理，但曬的是身心狀態的進步。</p>
+    <div class="card">
+      <h3>可分享的「成就卡」</h3>
+      <p>一張漂亮的卡片：本週壓力指數下降 ↓、累積 X 分鐘諧振呼吸、HRV 進步幅度。設計成科技人願意放限動的質感——曬的不是數字高，而是「我有在規律調節自己」。</p>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card pc pro"><h4>排行榜這樣設才健康</h4>
+        <ul>
+          <li>比「進步幅度」不比絕對數值</li>
+          <li>比「規律度／總練習量」</li>
+          <li>同公司／團隊小圈圈匿名榜</li>
+          <li>完全選擇性加入（opt-in）</li>
+        </ul>
+      </div>
+      <div class="card pc con"><h4>排行榜的風險</h4>
+        <ul>
+          <li>比 HRV 絕對值會讓體質弱者更焦慮</li>
+          <li>健康變競賽，違背放鬆初衷</li>
+          <li>把私密的身心數據變公開壓力</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rec">
+      <p><b>建議做法：</b>社群分享用「<b>成就卡</b>」（個人主動曬），排行榜只做「<b>進步榜／規律榜</b>」而且預設關閉、要自己開。比絕對 HRV 會傷到最需要這個 App 的人；比進步，人人都能贏。</p>
+    </div>
+  </div>
+
+  <hr class="div">
+
+  <!-- 整體建議組合 -->
+  <div class="sec">
+    <div class="kicker">05 ｜ 建議的完整組合（一句話版）</div>
+    <h2>把它定位成「身心同步教練」</h2>
+    <p class="desc">量得準 → 看得懂 → 馬上呼吸有效 → 溫和地讓你想回來 → 願意低調分享。</p>
+    <div>
+      <span class="tag go">韌性型連續（可補回）</span>
+      <span class="tag go">進步可視化</span>
+      <span class="tag go">成就卡分享</span>
+      <span class="tag go">進步榜／規律榜（opt-in）</span>
+      <span class="tag go">身心反差痛點當鉤子</span>
+      <span class="tag stop">不歸零式 streak</span>
+      <span class="tag stop">不比 HRV 絕對值</span>
+      <span class="tag stop">不給不準的數字</span>
+    </div>
+  </div>
+
+  <!-- 問題 -->
+  <div class="q">
+    <h2>這份企劃方向，你的反應是？</h2>
+    <p>看完直接在終端機跟我說，想砍想加都可以。</p>
+    <p class="opt"><b>A.</b> 整體方向我喜歡，就照這個往下談細節（BSRS 放哪、四個值怎麼解釋）。</p>
+    <p class="opt"><b>B.</b> 大方向對，但某幾塊想調（例如排行榜要不要、分享要不要）。</p>
+    <p class="opt"><b>C.</b> 我想先聚焦其中一兩個點深入聊。</p>
+  </div>
+<script>function toggleSelect(el){el.classList.toggle("selected");}</script>
+</body>
+</html>

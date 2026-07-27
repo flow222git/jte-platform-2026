@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態對談機器人 · 架構圖 v0.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:56px 0 14px;padding-top:26px;border-top:1px solid var(--line)}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:30px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article a{color:var(--pine)}
+article ol,article ul{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:6px}
+.motto{border:1px solid var(--pine);border-radius:3px;padding:16px 20px;margin:20px 0;background:var(--surface);
+  text-align:center;font-family:var(--serif);font-size:17px;color:var(--ink);letter-spacing:.14em}
+.motto small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--muted);letter-spacing:.04em;margin-top:6px}
+/* 總圖:五層 */
+.stack{margin:24px 0}
+.layer{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:13px 18px;position:relative}
+.layer+.layer{margin-top:26px}
+.layer+.layer::before{content:"↓";position:absolute;top:-25px;left:50%;transform:translateX(-50%);
+  color:var(--hair);font-size:14px}
+.layer .ln{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.layer .lt{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:15.5px;letter-spacing:.06em}
+.layer p{font-size:13px;margin:4px 0 0;line-height:1.9}
+.layer.core{border-color:var(--pine)}
+.layer.core .ln{color:var(--pine)}
+/* 問法卡 */
+.move{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:0;margin:10px 0}
+.move summary{cursor:pointer;list-style:none;padding:12px 16px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.move summary::-webkit-details-marker{display:none}
+.move summary::after{content:"＋";margin-left:auto;color:var(--hair);font-size:13px}
+.move[open] summary::after{content:"－"}
+.move .mn{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:14.5px;letter-spacing:.05em}
+.move .org{font-family:var(--latin);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.move .org.w{color:var(--pine);border-color:var(--pine)}
+.move .org.e{color:var(--cinnabar);border-color:var(--cinnabar)}
+.move .org.a{color:var(--gold);border-color:var(--gold)}
+.move .mb{padding:0 16px 13px;font-size:13px;line-height:1.95}
+.move .mb .q{font-family:var(--serif);color:var(--ink);padding-left:12px;border-left:2px solid var(--gold);margin:8px 0;display:block}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
+.warn{border-left:2px solid var(--cinnabar);padding:2px 0 2px 16px;margin:16px 0;font-size:13.5px}
+.honest{margin-top:70px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Dialogue Bot · Architecture</div>
+  <h1>八態對談機器人 · 架構圖</h1>
+  <div class="meta">v0.1 · 2026-07-18 · 基於〈八態的邊界〉深度研究</div>
+</header>
+<article>
+
+<div class="motto">AI 問 · 引擎判 · 本人裁
+<small>問的方法千變萬化(因人因境);判讀永遠由規則引擎依 schema 組裝;蓋章的永遠是本人。</small></div>
+
+<p>設計前提來自〈<a href="octenso-boundary-research.html">八態的邊界</a>〉的結論:
+八態是引擎核心(不變的判讀依據),而問題與問法必須因人而異——
+因為意識化發生在「本人說出以前說不出的自己」那一刻,
+而每個人走到那一刻的路不同。機器人的智慧不在判讀(那是引擎的事),
+在<strong>選路</strong>。</p>
+
+<h2>一 · 總圖:五層</h2>
+
+<div class="stack">
+  <div class="layer">
+    <div class="ln">Layer 1 · Occasion</div>
+    <div class="lt">場合層——對話從哪裡開始</div>
+    <p>三個入口:對境(事情來了,卜易起卦/主動求談)· 日課(省察式定期回訪)· 重錨(系統提名底色移動候選時的深談邀請)。入口決定調度層的開局策略。</p>
+  </div>
+  <div class="layer">
+    <div class="ln">Layer 2 · Dispatch</div>
+    <div class="lt">調度層——因人因境選問法(機器人的智慧所在)</div>
+    <p>讀三種訊號選下一招:這個人(防衛度/表達型態/慣用語言)· 這個境(對境 vs 平時)· 這個洞(哪一態證據薄、哪條判定被按了不像)。詳見第三節。</p>
+  </div>
+  <div class="layer">
+    <div class="ln">Layer 3 · Moves</div>
+    <div class="lt">問法庫——東西方招式,可插拔</div>
+    <p>十二式起步(下表),每式標源流、機制、起手句、適用與不適用。新招式走 schema 同源原則入庫,不散寫在對話 prompt 裡。</p>
+  </div>
+  <div class="layer core">
+    <div class="ln">Layer 4 · Engine(核心,不變)</div>
+    <div class="lt">八態引擎——states-schema + 規則引擎 + 三層判別</div>
+    <p>對話收集的素材依 G1–G8 判讀:八態逐列、引文可查、缺席誠實。錨題時間序列+素材軌跡餵三層判別(天氣/底色/典範轉移),底色移動只提名、不宣告。</p>
+  </div>
+  <div class="layer">
+    <div class="ln">Layer 5 · Mirror &amp; Consent</div>
+    <div class="lt">回饋與裁決層——意識化發生的現場</div>
+    <p>逐條就地反應(像/不像)· 卡片認出 · 引文即錨點 · 否決有回聲。素材寫回=本人按下才發生,存本機素材倉。認出時刻(「原來我一直在守這個」)由本人說出,機器人閉嘴。</p>
+  </div>
+</div>
+
+<h2>二 · 問法庫:十二式</h2>
+
+<p>標籤:<span class="org w" style="font-size:10px">West</span> 西方實證/臨床傳統 ·
+<span class="org e" style="font-size:10px">East</span> 東方觀照傳統 ·
+<span class="org a" style="font-size:10px">Anchor</span> 標尺(固定不變的錨)。點開看細節。</p>
+
+<details class="move"><summary><span class="mn">1 · 情節回放</span><span class="org w">West · 行為訪談</span></summary>
+<div class="mb">機制:先落地到一次真實事件,杜絕「一般來說」的自我概念作答。一切下探的起點。
+<span class="q">「說一次最近真的發生的——那天實際上是怎麼開始的?」</span>
+適用:每場對話的標準開局。不適用:使用者情緒高張時(先接住,再回放)。</div></details>
+
+<details class="move"><summary><span class="mn">2 · 梯度下探</span><span class="org w">West · Laddering/下箭頭</span></summary>
+<div class="mb">機制:行為→重要性→恐懼→核心動機,一次往下一階,把九型訪談者的手藝變成對話流程。
+<span class="q">「你說那時候一定要自己來——如果那件事沒做好,最怕的是什麼?」</span>
+適用:情節回放後、防衛低時。不適用:連續下探超過三階(變審問);每階之間要給消化空間。</div></details>
+
+<details class="move"><summary><span class="mn">3 · 反例挑戰</span><span class="org w">West · 反 Barnum</span></summary>
+<div class="mb">機制:可證偽性的對話版——主動找不成立的地方,判定才有資訊量。
+<span class="q">「有沒有哪種場合,你完全不是這樣?那時候的你在做什麼?」</span>
+適用:某態證據一面倒時、使用者按「不像」時。不適用:認出時刻剛發生時(不要拆台)。</div></details>
+
+<details class="move"><summary><span class="mn">4 · 他人之眼</span><span class="org w">West · SOKA</span></summary>
+<div class="mb">機制:高可觀察特質他人看得比自己準;借助想像中的他評繞過自見盲區。
+<span class="q">「那天在場的同事如果描述你,他會說你當時在做什麼?」</span>
+適用:自述與素材矛盾時。不適用:關係議題本身是傷口時。</div></details>
+
+<details class="move"><summary><span class="mn">5 · 身體先行</span><span class="org w">West · Focusing</span></summary>
+<div class="mb">機制:先停在身體感,再給詞彙——「對上」由 felt sense 裁決,是最不算命的認出。
+<span class="q">「先不急著說是哪個態——那件事現在想起來,身體哪裡有感覺?」</span>
+適用:講不出話的人、抽象詞滿天飛的人。不適用:急著要答案的場合(它慢)。</div></details>
+
+<details class="move"><summary><span class="mn">6 · 隱喻延展</span><span class="org w">West · Clean Language</span></summary>
+<div class="mb">機制:使用者自己冒出的比喻是最乾淨的投射物,只延展、不替換。
+<span class="q">「你剛說像被卡住——那個卡住,像什麼樣的卡住?」</span>
+適用:對話中自然出現比喻時(機會招,不主動發)。不適用:比喻是機器人給的(那是污染)。</div></details>
+
+<details class="move"><summary><span class="mn">7 · 卦象投影</span><span class="org e">East · 對境起卦</span></summary>
+<div class="mb">機制:隨機的結構化意象=本人無法事先安排的鏡子;反應才是資料,卦不是。
+<span class="q">「這個卦擺在你現在的處境旁邊——哪裡像?哪裡你想反駁?」</span>
+適用:對境時刻的開局。不適用:任何暗示卦「知道」什麼的措辭(紅線)。</div></details>
+
+<details class="move"><summary><span class="mn">8 · 觀象玩辭</span><span class="org e">East · 易傳</span></summary>
+<div class="mb">機制:自然意象的 self-distancing——說「我在坎」比說「我很焦慮」容易出口,且自帶「會變」的語法。
+<span class="q">「這一個月的你,比較像哪種天氣?久旱、雷陣雨、還是起霧?」</span>
+適用:防衛高的開局、初次見面。不適用:已經能直說的人(意象反而繞遠)。</div></details>
+
+<details class="move"><summary><span class="mn">9 · 當下打卡</span><span class="org e">East · 內觀</span></summary>
+<div class="mb">機制:當下捕捉自動反應;價值在覺察動作重複發生,不在單次準確。ESM 的十秒版。
+<span class="q">「就現在,這一刻——哪個態在?」</span>
+適用:日課、對話開場暖身。不適用:當成正式判讀的依據(它是節律,不是證據)。</div></details>
+
+<details class="move"><summary><span class="mn">10 · 省察日課</span><span class="org e">East · 三省/功過格</span></summary>
+<div class="mb">機制:固定頻率+固定題目的自查,把散漫直覺變成可見的資料序列;只留軌跡不加總分。
+<span class="q">「老三題:今天哪一態上場最多?哪一刻它過了頭?哪一刻你喊了停?」</span>
+適用:願意建立節律的使用者。不適用:變成計分板(功過格八百年前就踩過這坑)。</div></details>
+
+<details class="move"><summary><span class="mn">11 · 卡片認出</span><span class="org w">West · 九型認出權</span></summary>
+<div class="mb">機制:認同是自己蓋的章——工具只提名候選,本人挑出「就是這個」。十秒完成八張。
+<span class="q">(出示八張態描述卡)「左滑不像、右滑像——不用想太久,手比腦誠實。」</span>
+適用:對話收尾的驗證、打不開話匣子的人。不適用:代替對話(它是驗證,不是探索)。</div></details>
+
+<details class="move"><summary><span class="mn">12 · 錨題</span><span class="org a">Anchor · 標尺</span></summary>
+<div class="mb">機制:每態少量固定題,一字不改地重複施測——時間序列的可比性全靠它;三層判別的數學基礎。
+<span class="q">(固定題文,兩分鐘)「照舊那幾題,量個刻度就好。」</span>
+適用:每次正式對話的固定尾聲。不適用:被對話化改寫(一改字,尺就斷了)。</div></details>
+
+<h2>三 · 調度層:因人而異怎麼「因」</h2>
+
+<h3>依人(對話中即時估計,不入檔不貼標)</h3>
+<div class="tblwrap"><table>
+<tr><th>訊號</th><th>觀察</th><th>調度</th></tr>
+<tr><td>防衛度高</td><td>答案短、多「還好/正常」、繞開情緒詞</td><td>先具象後直接:觀象玩辭→卡片認出,緩進梯度下探</td></tr>
+<tr><td>敘事型</td><td>愛講故事、細節多</td><td>情節回放為主軸,從故事裡撈態的訊號</td></tr>
+<tr><td>分析型</td><td>愛下定義、給框架、講抽象</td><td>反例挑戰+他人之眼(打破自我理論),少用意象(會被拿去分析)</td></tr>
+<tr><td>失語型</td><td>「不知道怎麼說」</td><td>身體先行+卡片認出,絕不連續開放式追問</td></tr>
+</table></div>
+
+<h3>依境</h3>
+<p>對境入口:卦象投影開局→情節回放→梯度下探(事情在場,直取深層)。
+日課入口:當下打卡→省察三題→(偶爾)錨題(輕、短、可十秒結束)。
+重錨入口:攤開軌跡→「這三個月的移動,你自己怎麼看?」→梯度下探→本人蓋章或否決。</p>
+
+<h3>依訊號(引擎回饋給調度層的洞)</h3>
+<p>哪一態長期證據薄→下次對話往那裡設一問;哪條判定被按「不像」→反例挑戰接手,
+且下次判讀註明「上次你否決過類似判定」(回饋要有回聲);
+素材與自述矛盾→他人之眼或落差並列,不裁決誰對。</p>
+
+<h3>停止規則(跟選招一樣重要)</h3>
+<ul>
+<li><strong>認出時刻發生就收手</strong>:使用者說出「原來……」的那一刻,該回合已完成,追問是貪。</li>
+<li>連續三問無新料→換入口或收尾,不空轉。</li>
+<li>情緒超載訊號→放下所有招式,回伴讀守則(接住優先,危機走既有危機線)。</li>
+<li>每回合以錨題或卡片收尾,素材寫回永遠問一次:「這段收進你的八態素材嗎?」</li>
+</ul>
+
+<h2>四 · 誠實護欄(全層適用)</h2>
+
+<div class="warn">
+問法可以千變萬化,以下五條在任何一招裡都不可違反:
+(1)機器人不判讀——判讀由引擎依 schema 組裝,對話中不搶答「你這是乾」;
+(2)不預測——所有時態停在已然;
+(3)素材寫回=本人按下才發生,存本機;
+(4)「準不準」不是成功標準,「跳框的視角」才是;
+(5)反 Barnum 五守則(可證偽/引文/敢排除/否決權/雙面性)適用於引擎的每一次輸出。
+</div>
+
+<h2>五 · 建造順序(建議)</h2>
+
+<ol>
+<li><strong>M1 · 對境迴圈最小版</strong>:問易對話尾加「收進我的八態素材」+本機素材倉——所有後續路線都吃它的素材。</li>
+<li><strong>M2 · 問法庫前四式</strong>:情節回放/梯度下探/觀象玩辭/卡片認出,先做固定順序(還不調度),配錨題收尾。</li>
+<li><strong>M3 · 調度層 v1</strong>:三型使用者訊號(敘事/分析/失語)+依訊號補洞;停止規則全數上線。</li>
+<li><strong>M4 · 三層判別</strong>:素材與錨題積累三個月後,重心計算+重錨對話上線。</li>
+</ol>
+<p>每一步都可獨立驗證(三值回饋照收),不必等全圖完工。</p>
+
+<div class="honest">
+本頁為 v0.1 架構提案,基於〈八態的邊界〉四路研究之綜合;問法庫十二式之源流均可考,
+但「調度規則有效」本身是研究假設——上線後以認出時刻發生率與三值回饋驗證。
+機器人可以很聰明,但它的聰明只用在選路;說出「原來如此」的,永遠是照鏡子的人。
+</div>
+
+</article>
+</div>
+</body></html>

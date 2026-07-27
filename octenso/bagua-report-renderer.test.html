@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>PENDING</title>
+<script src="bagua-data.js"></script><script src="profile.js"></script>
+<script src="bagua-report-v32-data.js"></script><script src="bagua-report-renderer.js"></script>
+</head><body><pre id="out">running...</pre>
+<div id="mount"></div>
+<script>
+var pass=0,fail=0,log=[];
+function ok(c,m){ if(c){pass++;} else {fail++; log.push('FAIL: '+m);} }
+try{
+  var RP=window.OctensoReport;
+  ok(!!RP,'OctensoReport 存在');
+  ok(RP.pn('li')==='洞見者(離)' && RP.pn('gen')==='守界者(艮)','pn canonical');
+  ok(RP.fn1('li')==='明現','fn1 功能短名');
+  // 斷崖型假資料(乾82 艮30 → jagged → 對比開場)
+  var sc={qian:82,li:74,zhen:66,dui:58,kun:47,kan:41,gen:30,xun:63};
+  var ctx=RP.build({scores:sc,conf:{qian:'firm',li:'mixed'},overs:['qian'],unders:['gen'],neutral:null,now:null});
+  ok(ctx.pf && ctx.topKey==='qian','build ctx');
+  var hero=RP.heroHtml(ctx);
+  ok(hero.indexOf('開創者(乾)')>=0 && hero.indexOf('tc-title')>=0,'heroHtml 單峰者名(卦)');
+  ok(RP.titleOf(ctx)==='開創者(乾)','titleOf 單峰=pn(k0)');
+  var nar=RP.narrativeHtml(ctx);
+  ok(nar.indexOf('narrative-open')>=0 && nar.indexOf('整體的你')>=0,'narrativeHtml 結構');
+  var openTxt=nar.split('narrative-open')[1].split('</div>')[0];
+  ok(!/[乾坤震巽坎離艮兌]/.test(openTxt.replace(/<[^>]*>/g,'')),'開場零術語');
+  ok(nar.indexOf('如果這是你')>=0,'場景段');
+  ok(nar.indexOf('比較猶豫')>=0||nar.indexOf('答得乾脆')>=0,'conf 有值 → 可信度句');
+  var nar2=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null}));
+  ok(nar2.indexOf('答得乾脆')<0 && nar2.indexOf('比較猶豫')<0,'conf=null → 不虛稱');
+  var narCostTrue=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null,hasCost:true}));
+  ok(narCostTrue.indexOf('大致剛好')>=0,'hasCost=true 且無過用 → 大致剛好句');
+  var narCostFalse=RP.narrativeHtml(RP.build({scores:sc,conf:null,overs:[],unders:[],neutral:null,now:null,hasCost:false}));
+  ok(narCostFalse.indexOf('還沒長開')>=0 && narCostFalse.indexOf('大致剛好')<0,'hasCost=false(預設) → 摸索/還沒長開句');
+  var sys=RP.systemsHtml(ctx);
+  ok(sys.indexOf('sys-detail')>=0 && sys.indexOf('建構')>=0 && sys.indexOf('小練習')>=0,'systemsHtml');
+  ok(sys.indexOf('協作者(巽)')>=0,'系統列 者名(卦)');
+  var scT={qian:50,li:55,zhen:80,dui:52,kun:46,kan:44,gen:48,xun:78};
+  ok(RP.systemsHtml(RP.build({scores:scT,conf:null,overs:[],unders:[],neutral:null,now:null})).indexOf('張力')>=0,'震巽雙高=張力');
+  var scB={qian:80,li:55,zhen:50,dui:52,kun:78,kan:44,gen:48,xun:46};
+  ok(RP.systemsHtml(RP.build({scores:scB,conf:null,overs:[],unders:[],neutral:null,now:null})).indexOf('張力')<0,'乾坤雙高≠張力');
+  // 雷達掛載+互動
+  document.getElementById('mount').innerHTML=RP.radarHtml(ctx);
+  RP.bindRadar(ctx);
+  ok(document.querySelectorAll('#radar-wrap g.rgrp').length===8,'雷達 8 組');
+  ok(document.getElementById('radar-wrap').classList.contains('rint'),'rint 旗標');
+  var rd=document.getElementById('radar-detail');
+  ok(rd.style.display==='block' && rd.textContent.indexOf('開創者(乾)')>=0,'預設解釋卡=最高態');
+  document.querySelector('#radar-wrap g.rgrp[data-k="li"]').dispatchEvent(new Event('click',{bubbles:true}));
+  ok(rd.textContent.indexOf('洞見者(離)')>=0,'點角換態');
+  // 雷達幾何回歸:八角依 EKEYS 順時針(qian北→li東北→…→gen西→xun西北),多邊形不得自交
+  // 原版佈局:gen=正西(cy=中心)、xun=西北(cx<中心 且 cy<中心);POLAR(極性輪盤)佈局會讓兩者對調→交叉
+  var dotGen=document.querySelector('#radar-wrap g.rgrp[data-k="gen"] circle');
+  var dotXun=document.querySelector('#radar-wrap g.rgrp[data-k="xun"] circle');
+  ok(dotGen && Math.abs(parseFloat(dotGen.getAttribute('cy'))-200)<0.5 && parseFloat(dotGen.getAttribute('cx'))<200,'gen 在正西(不用 POLAR 座標)');
+  ok(dotXun && parseFloat(dotXun.getAttribute('cx'))<200 && parseFloat(dotXun.getAttribute('cy'))<200,'xun 在西北');
+}catch(e){ fail++; log.push('EXC: '+e.message); }
+document.title='RESULT pass='+pass+' fail='+fail;
+document.getElementById('out').textContent=document.title+'\n'+log.join('\n');
+</script></body></html>

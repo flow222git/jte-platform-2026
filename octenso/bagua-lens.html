@@ -1,0 +1,217 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script defer src="octenso-gate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>八態鏡 · 透鏡判讀(內部工具)</title>
+<!--
+  八態鏡(2026-07-15;內部工具,未接導覽,2-3 人使用)
+  讀運作,不讀人。判讀依據=octenso-states-schema(單一真相源,前端 fetch 隨請求送 Worker)。
+  素材與報告不上傳不儲存(Worker 即時判讀不落檔);結果只留 localStorage。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:680px;margin:0 auto;padding:26px 20px 80px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:24px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:12.5px;letter-spacing:.05em;margin-bottom:12px}
+  .draft{display:block;width:fit-content;margin:0 auto 22px;text-align:center;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .lbl{font-size:13px;letter-spacing:.14em;color:var(--muted);margin:22px 0 8px}
+  textarea{width:100%;min-height:220px;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+    padding:12px 14px;color:var(--ink);font-size:14px;font-family:inherit;line-height:1.8;resize:vertical}
+  textarea:focus,select:focus{outline:none;border-color:var(--ink)}
+  select{width:100%;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+    padding:11px 14px;color:var(--ink);font-size:14px;font-family:inherit}
+  .btn{display:inline-block;font-size:14px;font-weight:300;letter-spacing:.08em;padding:11px 28px;cursor:pointer;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);background:transparent;transition:.2s;margin-top:16px}
+  .btn:hover{background:var(--ink);color:var(--bg)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn.ghost{border-color:var(--hair);color:var(--muted);font-size:12.5px;padding:8px 18px}
+  .btn.ghost:hover{border-color:var(--ink);color:var(--ink);background:transparent}
+  #status{font-size:12.5px;color:var(--muted);margin-top:10px;min-height:1.6em}
+  #status.err{color:var(--cinnabar)}
+  #report{display:none;margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:20px 20px;white-space:pre-line;font-size:14px;line-height:2}
+  .stamp{font-size:11.5px;color:var(--muted);letter-spacing:.06em;border-bottom:1px solid var(--line);
+    padding-bottom:10px;margin-bottom:12px}
+  .honest{font-size:12px;color:var(--muted);line-height:1.9;padding-left:14px;border-left:1px solid var(--hair);margin-top:26px}
+  .rule{height:1px;background:var(--line);margin:34px 0}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  input.harvest{width:100%;background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+    padding:10px 13px;color:var(--ink);font-size:13.5px;font-family:inherit}
+  #histlist{list-style:none}
+  #histlist li{padding:9px 2px;border-bottom:1px solid var(--surface2);font-size:13px;cursor:pointer}
+  #histlist li:hover{color:var(--ink)}
+  .fbv.on{border-color:var(--pine);color:var(--pine)}
+  #histlist .ht{font-family:"Jost",sans-serif;font-size:10.5px;color:var(--hair);margin-right:8px}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · Lens · Internal</div>
+<h1>八態鏡</h1>
+<div class="sub">讀運作,不讀人——貼上素材,宣告它是什麼,鏡子照給你看</div>
+<span class="draft">內部工具 · schema v0.1 研究假設待考</span>
+
+<div class="lbl">素材(會議紀錄/BP/制度/觀察筆記;語音轉文字原稿可直接貼)</div>
+<textarea id="mat" placeholder="貼上素材全文…"></textarea>
+
+<div class="lbl">或貼公開網址,抓下來當素材(只支援公開頁面)</div>
+<div style="display:flex;gap:8px;align-items:stretch">
+  <input class="harvest" id="urlin" placeholder="https://…" style="flex:1">
+  <button class="btn ghost" id="urlgo" style="margin-top:0;white-space:nowrap">抓取</button>
+</div>
+
+<div class="lbl">這份素材是——(宣告類型,判讀的尺依此調整)</div>
+<select id="ctype">
+  <option value="brainstorm">動腦會(發想/意見收集)</option>
+  <option value="decision">決策會</option>
+  <option value="retro">覆盤會/檢討會</option>
+  <option value="routine">例行會</option>
+  <option value="bp">BP/提案文件</option>
+  <option value="policy">制度/流程文件</option>
+  <option value="interview">面試筆記(自動降級為觀察模式)</option>
+  <option value="observation">個人觀察筆記</option>
+</select>
+
+<button class="btn" id="run">照一下</button>
+<div id="status"></div>
+
+<div id="report"><div class="stamp">AI 判讀 · 引文可查 · 依 states-schema v0.1(研究假設待考)</div><div id="rbody"></div>
+  <button class="btn ghost" id="copy" style="margin-top:14px">複製報告</button>
+</div>
+
+<div id="harvestwrap" style="display:none">
+  <div class="lbl">語彙收割(選填:哪句你會換個說法?寫下來,收進素材倉)</div>
+  <input class="harvest" id="harvest" placeholder="例:『低載』我會說『還沒開機』…">
+  <button class="btn ghost" id="hsave">存一句</button><span class="hint" id="hmsg"></span>
+</div>
+
+<div id="fbwrap" style="display:none">
+  <div class="lbl">這份判讀像不像?(按送出只回傳評價與留言,素材與報告不會上傳)</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn ghost fbv" data-v="like">很像</button>
+    <button class="btn ghost fbv" data-v="part">部分像</button>
+    <button class="btn ghost fbv" data-v="unlike">不太像</button>
+  </div>
+  <input class="harvest" id="fbcomment" placeholder="一句話也好:哪條判定最有感、哪條最不服?(選填)" style="margin-top:10px">
+  <button class="btn ghost" id="fbsend">送出回饋</button><span class="hint" id="fbmsg"></span>
+</div>
+
+<div class="rule"></div>
+<div class="lbl">最近判讀(只在這台裝置)</div>
+<ul id="histlist"></ul>
+
+<div class="honest">素材即時判讀、不上傳不儲存;報告只留在此裝置(最近 10 筆)。回饋按「送出」才會回傳練息場,且只含你的評價與留言。判讀是 AI 依 schema 產生,每條判定附素材原文引文,請自行核對。缺席=素材沒給,不等於弱;主詞永遠是運作,不是人。</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens';
+var FETCH_API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-fetch';
+var FB_API='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-feedback';
+var lastCtype='routine';
+var SCHEMA_URL='octenso-states-schema-v0.1.yaml';
+var HISTORY_KEY='lens_history', HARVEST_KEY='lens_harvest';
+var CTYPES={brainstorm:'動腦會(發想/意見收集)',decision:'決策會',retro:'覆盤會/檢討會',routine:'例行會',
+  bp:'BP/提案文件',policy:'制度/流程文件',interview:'面試筆記',observation:'個人觀察筆記'};
+var schemaText='';
+fetch(SCHEMA_URL).then(function(r){return r.text();}).then(function(t){schemaText=t;})
+  .catch(function(){$('status').textContent='schema 載入失敗——重新整理試試。';$('status').className='err';});
+
+function buildPayload(material,schema,ctype){
+  return {material:material,schema:schema,contextType:ctype,contextLabel:CTYPES[ctype]||ctype};
+}
+function loadHist(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY))||[];}catch(e){return [];}}
+function saveHist(list){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(list.slice(0,10)));}catch(e){}}
+function renderReport(text){
+  $('rbody').textContent=text;
+  $('report').style.display='block';
+  $('harvestwrap').style.display='block';
+  $('fbwrap').style.display='block';
+  $('report').scrollIntoView({block:'start',behavior:'smooth'});
+}
+function renderHist(){
+  var ul=$('histlist');ul.innerHTML='';
+  loadHist().forEach(function(h){
+    var li=document.createElement('li');
+    li.innerHTML='<span class="ht">'+h.time.slice(5,16).replace('T',' ')+' · '+(CTYPES[h.ctype]||h.ctype)+'</span>'+
+      h.head.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});
+    li.onclick=function(){lastCtype=h.ctype;renderReport(h.reading);};
+    ul.appendChild(li);
+  });
+}
+$('run').onclick=function(){
+  var mat=$('mat').value.trim(),ctype=$('ctype').value;lastCtype=ctype;
+  if(!mat){$('status').textContent='先貼素材。';$('status').className='err';return;}
+  if(!schemaText){$('status').textContent='schema 還在載入,等一下再按。';$('status').className='err';return;}
+  $('run').disabled=true;$('status').className='';$('status').textContent='照鏡子中……(認真判讀要一陣子,約 1–3 分鐘)';
+  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(buildPayload(mat,schemaText,ctype))})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.reading)throw new Error(d.error||'empty');
+    renderReport(d.reading);
+    var list=loadHist();
+    list.unshift({time:new Date().toISOString(),ctype:ctype,head:mat.slice(0,80),reading:d.reading});
+    saveHist(list);renderHist();
+    $('status').textContent='';
+  })
+  .catch(function(e){$('status').textContent='判讀失敗:'+(e.message||'請稍後再試');$('status').className='err';})
+  .then(function(){$('run').disabled=false;});
+};
+$('urlgo').onclick=function(){
+  var u=$('urlin').value.trim();
+  if(!/^https?:\/\//i.test(u)){$('status').textContent='要 http(s) 開頭的公開網址。';$('status').className='err';return;}
+  $('urlgo').disabled=true;$('status').className='';$('status').textContent='抓取中……';
+  fetch(FETCH_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.text)throw new Error(d.error||'empty');
+    $('mat').value=d.text;
+    $('status').textContent='抓到 '+d.chars+' 字——看一眼內容沒問題,再按「照一下」。';
+  })
+  .catch(function(e){$('status').textContent='抓取失敗:'+(e.message||'請確認是公開頁面');$('status').className='err';})
+  .then(function(){$('urlgo').disabled=false;});
+};
+$('copy').onclick=function(){
+  try{navigator.clipboard.writeText($('rbody').textContent);$('status').textContent='已複製。';}catch(e){}
+};
+function buildFeedback(ctype,verdict,comment){
+  return {ctype:ctype,verdict:verdict,comment:(comment||'').slice(0,2000)};
+}
+var fbVerdict=null;
+[].forEach.call(document.querySelectorAll('.fbv'),function(b){
+  b.onclick=function(){
+    fbVerdict=b.getAttribute('data-v');
+    [].forEach.call(document.querySelectorAll('.fbv'),function(x){x.classList.remove('on');});
+    b.classList.add('on');
+  };
+});
+$('fbsend').onclick=function(){
+  if(!fbVerdict){$('fbmsg').textContent='先選一個:很像/部分像/不太像。';return;}
+  $('fbsend').disabled=true;
+  fetch(FB_API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(buildFeedback(lastCtype,fbVerdict,$('fbcomment').value.trim()))})
+  .then(function(r){return r.json();})
+  .then(function(d){ $('fbmsg').textContent=d.ok?'收到,謝謝!會進修訂清單。':'送出失敗,再試一次。'; })
+  .catch(function(){$('fbmsg').textContent='送出失敗,再試一次。';})
+  .then(function(){$('fbsend').disabled=false;});
+};
+$('hsave').onclick=function(){
+  var v=$('harvest').value.trim();if(!v)return;
+  var list=[];try{list=JSON.parse(localStorage.getItem(HARVEST_KEY))||[];}catch(e){}
+  list.push({time:new Date().toISOString(),note:v});
+  try{localStorage.setItem(HARVEST_KEY,JSON.stringify(list));}catch(e){}
+  $('harvest').value='';$('hmsg').textContent='收了,謝謝。';
+};
+renderHist();
+window.LENS={buildPayload:buildPayload,buildFeedback:buildFeedback,renderReport:renderReport,HISTORY_KEY:HISTORY_KEY,HARVEST_KEY:HARVEST_KEY,CTYPES:CTYPES};
+document.body.setAttribute('data-ready','1');
+})();
+</script>
+</body></html>

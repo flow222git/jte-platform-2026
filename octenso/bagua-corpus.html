@@ -1,0 +1,263 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script defer src="octenso-gate.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>八態素材倉 · 練息場</title>
+<!--
+  八態素材倉(對境迴圈 M1,2026-07-18)
+  內容=使用者在問易/卜易等處 opt-in 收進來的「自己寫下的字」。
+  全部存本機 localStorage(octenso_corpus_v1),不上傳;刪了就沒了。
+  之後個人八態鏡(M4)從這裡讀素材照跨次規律。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:640px;margin:0 auto;padding:26px 20px 80px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:24px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:12.5px;letter-spacing:.05em;margin-bottom:8px}
+  #meta{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:20px;min-height:1.6em}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 17px;margin-top:12px}
+  .card .top{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+  .tag{font-family:"Jost",sans-serif;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tag.wy{color:var(--pine);border-color:var(--pine)}
+  .tag.by{color:var(--gold);border-color:var(--gold)}
+  .lab{font-size:13px;color:var(--ink)}
+  .time{font-family:"Jost",sans-serif;font-size:11px;color:var(--hair)}
+  .del{margin-left:auto;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;
+    text-decoration:underline;font-family:inherit;padding:2px}
+  .del:hover{color:var(--cinnabar)}
+  .body{white-space:pre-line;font-size:13.5px;line-height:1.95}
+  .card details{margin-top:8px;border-top:1px solid var(--surface2);padding-top:6px}
+  .card summary{cursor:pointer;font-size:12px;color:var(--muted);list-style:none}
+  .card summary::-webkit-details-marker{display:none}
+  .card summary::before{content:"＋ ";color:var(--hair)}
+  .card details[open] summary::before{content:"－ "}
+  .ctx{white-space:pre-line;font-size:12.5px;color:var(--muted);line-height:1.9;margin-top:6px}
+  #empty{text-align:center;color:var(--muted);font-size:13.5px;margin-top:36px;line-height:2.1}
+  .foot{text-align:center;margin-top:26px}
+  .clear{font-size:12.5px;color:var(--muted);background:none;border:1px solid var(--hair);border-radius:999px;
+    padding:7px 18px;cursor:pointer;font-family:inherit}
+  .clear:hover{border-color:var(--cinnabar);color:var(--cinnabar)}
+  .honest{font-size:12px;color:var(--muted);line-height:1.95;padding-left:14px;border-left:1px solid var(--hair);margin-top:30px}
+  .btn-act{font-size:13px;font-weight:300;letter-spacing:.06em;padding:9px 20px;cursor:pointer;margin:0 3px 6px;
+    border:1px solid var(--ink);border-radius:999px;color:var(--ink);background:transparent;font-family:inherit;display:inline-block}
+  .btn-act:disabled{opacity:.35;cursor:default}
+  .btn-act.ghost{border-color:var(--hair);color:var(--muted)}
+  .fbv{display:inline-block;font-size:12.5px;border:1px solid var(--hair);border-radius:999px;padding:3px 12px;
+    margin:0 3px;cursor:pointer;color:var(--ink-soft)}
+  .fbv.on{border-color:var(--pine);color:var(--pine)}
+  .fbc{display:block;width:100%;margin-top:8px;background:transparent;border:1px solid var(--hair);border-radius:8px;
+    padding:8px 11px;color:var(--ink);font-size:13px;font-family:inherit}
+  .fbsend{margin-top:8px;font-size:12.5px;border:1px solid var(--ink);border-radius:999px;padding:6px 18px;
+    background:none;color:var(--ink);cursor:pointer;font-family:inherit}
+</style></head>
+<body>
+<div class="eyebrow">Octenso · Corpus · Local Only</div>
+<h1>八態素材倉</h1>
+<div class="sub">你在問易/卜易按「收進素材」留下的話,只存在這台裝置</div>
+<div id="meta"></div>
+
+<div class="actions" style="text-align:center;margin-bottom:6px">
+  <button class="btn-act" id="mirror" disabled>照一下 · 個人八態鏡</button>
+  <button class="btn-act ghost" id="exp">下載備份</button>
+  <label class="btn-act ghost" style="cursor:pointer" for="impfile">匯入備份</label>
+  <input type="file" id="impfile" accept=".json,application/json" style="display:none">
+</div>
+<div id="mirhint" style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+
+<div id="mirwrap" style="display:none">
+  <div class="card"><div class="top"><span class="tag" style="color:var(--pine);border-color:var(--pine)">個人八態鏡</span>
+    <span class="time" id="mirtime"></span></div>
+    <div class="body" id="mirreport"></div>
+    <div id="mirfb" style="margin-top:12px;border-top:1px solid var(--surface2);padding-top:10px">
+      <span style="font-size:12.5px;color:var(--muted)">這面照得像嗎?</span>
+      <span class="fbv" data-v="like">很像</span><span class="fbv" data-v="part">部分像</span><span class="fbv" data-v="unlike">不太像</span>
+      <input class="fbc" id="mirfbc" placeholder="哪條最有感/最不服?(選填)" maxlength="2000">
+      <button class="fbsend" id="mirfbsend">送出</button>
+      <div id="mirfbdone" style="display:none;font-size:12px;color:var(--pine);margin-top:4px">收到,謝謝——這會幫鏡子變準。</div>
+    </div>
+  </div>
+</div>
+
+<div id="list"></div>
+<p id="empty" style="display:none">倉裡還沒有素材。<br>去問易或卜易走一輪,結尾按「收進素材」,這裡就會開始累積。</p>
+<div class="foot"><button class="clear" id="clearall" style="display:none">全部清空</button></div>
+
+<div class="honest">素材倉存在此裝置的瀏覽器(localStorage),不上傳、換裝置不同步、清瀏覽器資料會消失——
+所以請不時「下載備份」,換裝置用「匯入備份」接續。
+按「照一下」時,素材(只含你自己寫的字+錨題刻度)會送到練息場的解讀服務產生報告,伺服器不留存;
+報告主詞永遠是「素材裡的語言」,不是「你這個人」——每條判定像不像,由你裁決。</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var SRC={'ven-i-WenYi':['問易','wy'],'ven-i-BuYi':['卜易','by']};
+function esc(s){return String(s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+function fmtTime(ts){return String(ts).slice(0,16).replace('T',' ');}
+function render(){
+  var C=window.OctensoCorpus;
+  var list=C?C.list():[];
+  var box=$('list');box.innerHTML='';
+  $('empty').style.display=list.length?'none':'block';
+  $('clearall').style.display=list.length?'inline-block':'none';
+  $('meta').textContent=list.length?('共 '+list.length+' 段 · 約 '+C.totalChars()+' 字'):'';
+  list.slice().reverse().forEach(function(e){
+    var s=SRC[e.source]||[e.source||'其他',''];
+    var d=document.createElement('div');d.className='card';
+    d.innerHTML='<div class="top"><span class="tag '+s[1]+'">'+esc(s[0])+'</span>'
+      +(e.label?'<span class="lab">'+esc(e.label)+'</span>':'')
+      +'<span class="time">'+esc(fmtTime(e.ts))+'</span>'
+      +'<button class="del" data-id="'+esc(e.id)+'">刪除</button></div>'
+      +'<div class="body">'+esc(e.text)+'</div>'
+      +(e.context?('<details><summary>卦象與解讀紀錄</summary><div class="ctx">'+esc(e.context)+'</div></details>'):'');
+    d.querySelector('.del').onclick=function(){ OctensoCorpus.remove(e.id); render(); };
+    box.appendChild(d);
+  });
+  if(typeof updateMirrorGate==='function') updateMirrorGate();
+}
+$('clearall').onclick=function(){
+  if(confirm('確定清空素材倉?共 '+OctensoCorpus.count()+' 段,清了就沒了。')){ OctensoCorpus.clear(); render(); }
+};
+
+/* ── 個人八態鏡(M4-mini)── */
+var API_ME='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-me';
+var API_FB='https://calm-sunset-97f8.simon-ec6.workers.dev/lens-feedback';
+var ANCHOR_KEY='octenso_anchor_v1';
+var MIN_ENTRIES=3, MAT_CAP=28000;
+function anchorLog(){ try{var a=JSON.parse(localStorage.getItem(ANCHOR_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];} }
+function stateName(k){ var B=window.OCTENSO_BAGUA; if(!B||!B.get(k))return k; var g=B.get(k); return g.fnShort+'者('+g.nm+')'; }
+/* 素材=只送本人的字(text),不送 AI 脈絡(context)——個人照鏡引文必須是本人語言(G5) */
+function buildMaterial(){
+  var C=window.OctensoCorpus, list=C.list().slice().reverse(); // 新到舊
+  var secs=[],used=0,dropped=0;
+  list.forEach(function(e,i){
+    var s='【第'+(i+1)+'段 · '+(SRC[e.source]?SRC[e.source][0]:(e.source||'其他'))+(e.label?' · '+e.label:'')+' · '+String(e.ts).slice(0,10)+'】\n'+e.text;
+    if(used+s.length<=MAT_CAP){secs.push(s);used+=s.length;} else dropped++;
+  });
+  var log=anchorLog();
+  if(log.length){
+    var al=['【錨題自評紀錄(固定尺,'+log.length+' 次)】'];
+    log.slice(-6).forEach(function(r){
+      var parts=Object.keys(r.scores||{}).map(function(k){return stateName(k)+'='+((r.scores[k]||{}).t||'');});
+      al.push(String(r.ts).slice(0,10)+': '+parts.join('; '));
+    });
+    secs.push(al.join('\n'));
+  }
+  return {material:secs.join('\n\n'),dropped:dropped};
+}
+function readApiDefault(material,schema){
+  return fetch(API_ME,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({material:material,schema:schema})})
+    .then(function(r){return r.json();})
+    .then(function(d){if(!d.reading)throw new Error(d.error||'照鏡失敗');return d.reading;});
+}
+var readApi=readApiDefault;
+function updateMirrorGate(){
+  var n=window.OctensoCorpus?OctensoCorpus.count():0;
+  $('mirror').disabled=n<MIN_ENTRIES;
+  $('mirhint').textContent=n<MIN_ENTRIES
+    ?('素材滿 '+MIN_ENTRIES+' 段就能照(目前 '+n+' 段)——去卜易、對談走幾輪吧。')
+    :'照一輪約 1-3 分鐘;素材愈厚,照得愈清楚。';
+}
+function mirror(){
+  if(OctensoCorpus.count()<MIN_ENTRIES) return;
+  $('mirror').disabled=true;
+  $('mirhint').textContent='照鏡中……(認真判讀要一陣子,約 1-3 分鐘)';
+  var bm=buildMaterial();
+  fetch('octenso-states-schema-v0.1.yaml',{cache:'no-store'}).then(function(r){return r.text();})
+  .then(function(schema){ return readApi(bm.material,schema); })
+  .then(function(reading){
+    $('mirwrap').style.display='block';
+    $('mirtime').textContent=new Date().toISOString().slice(0,16).replace('T',' ');
+    $('mirreport').textContent=(bm.dropped?('(素材超量,最舊 '+bm.dropped+' 段這次沒入鏡)\n\n'):'')+reading;
+    $('mirfbdone').style.display='none';
+    updateMirrorGate();
+    $('mirwrap').scrollIntoView({behavior:'smooth'});
+  })
+  .catch(function(e){ $('mirhint').textContent=(e&&e.message)||'照鏡失敗,稍後再試。'; $('mirror').disabled=false; });
+}
+$('mirror').onclick=mirror;
+var fbVerdict='';
+Array.prototype.forEach.call(document.querySelectorAll('#mirfb .fbv'),function(el){
+  el.onclick=function(){
+    fbVerdict=el.getAttribute('data-v');
+    Array.prototype.forEach.call(document.querySelectorAll('#mirfb .fbv'),function(x){x.classList.toggle('on',x===el);});
+  };
+});
+$('mirfbsend').onclick=function(){
+  if(!fbVerdict){$('mirhint').textContent='先點一個「很像/部分像/不太像」。';return;}
+  fetch(API_FB,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ctype:'personal',verdict:fbVerdict,comment:$('mirfbc').value.trim()})})
+  .then(function(){$('mirfbdone').style.display='block';})
+  .catch(function(){$('mirfbdone').style.display='block';});
+};
+
+/* ── 備份:匯出/匯入(localStorage 保險;縱貫資料是三層判別的命)── */
+function buildBackup(){
+  return {kind:'octenso-corpus-backup',version:1,exported:new Date().toISOString(),
+    corpus:OctensoCorpus.list(),anchor:anchorLog()};
+}
+$('exp').onclick=function(){
+  var data=buildBackup();
+  var blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='octenso-corpus-'+data.exported.slice(0,10)+'.json';
+  a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+};
+function importData(obj){
+  if(!obj||obj.kind!=='octenso-corpus-backup'||!Array.isArray(obj.corpus)) return {ok:false};
+  var C=window.OctensoCorpus;
+  var have={},added=0;
+  C.list().forEach(function(e){have[e.id]=1;});
+  var merged=C.list();
+  obj.corpus.forEach(function(e){
+    if(e&&e.id&&e.text&&!have[e.id]){merged.push(e);added++;}
+  });
+  merged.sort(function(a,b){return String(a.ts).localeCompare(String(b.ts));});
+  localStorage.setItem(C.KEY,JSON.stringify(merged.slice(0,C.MAX_ENTRIES)));
+  var aAdded=0;
+  if(Array.isArray(obj.anchor)){
+    var logNow=anchorLog(),haveTs={};
+    logNow.forEach(function(r){haveTs[r.ts]=1;});
+    obj.anchor.forEach(function(r){if(r&&r.ts&&!haveTs[r.ts]){logNow.push(r);aAdded++;}});
+    logNow.sort(function(a,b){return String(a.ts).localeCompare(String(b.ts));});
+    try{localStorage.setItem(ANCHOR_KEY,JSON.stringify(logNow));}catch(e){}
+  }
+  return {ok:true,added:added,anchorAdded:aAdded};
+}
+$('impfile').addEventListener('change',function(){
+  var f=this.files&&this.files[0]; this.value='';
+  if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    var obj=null; try{obj=JSON.parse(rd.result);}catch(e){}
+    var r=importData(obj);
+    if(!r.ok){$('mirhint').textContent='這個檔案不是素材倉備份。';return;}
+    render();updateMirrorGate();
+    $('mirhint').textContent='匯入完成:新增 '+r.added+' 段素材、'+r.anchorAdded+' 筆錨題(重複的自動略過)。';
+  };
+  rd.readAsText(f);
+});
+
+function boot(){
+  if(window.OctensoCorpus){ render(); updateMirrorGate(); document.body.setAttribute('data-ready','1'); }
+  else setTimeout(boot,60);
+}
+boot();
+window.CORPUS_VIEW={render:render,buildMaterial:buildMaterial,buildBackup:buildBackup,importData:importData,
+  mirror:mirror,updateMirrorGate:updateMirrorGate,
+  setReadApi:function(f){readApi=f;},MIN_ENTRIES:MIN_ENTRIES};
+})();
+</script>
+<script defer src="octenso-corpus.js"></script>
+<script defer src="bagua-data.js"></script>
+</body></html>

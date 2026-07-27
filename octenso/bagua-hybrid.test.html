@@ -12,10 +12,14 @@
   var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2;
 
   // ── 資料完整性 ──
+  t('開場四卡已搬入 hybrid-data', H.INTRO && H.INTRO.length===4 && H.INTRO[3].t.indexOf('陪')>=0 && H.INTRO_GO.length>2);
   t('CHAT hello ×3 + 紅線句', H.CHAT.hello.length===3 && H.CHAT.hello[2].indexOf('分數永遠來自題目')>=0);
   t('CHAT 過場語', H.CHAT.breaks[8] && H.CHAT.breaks[16] && H.CHAT.fcIntro.length>10 && H.CHAT.costIntro.length>10);
-  t('衡鑑式欄位', H.CHAT.askIntro.length>10 && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
+  t('衡鑑式欄位', H.CHAT.askIntro===undefined && H.CHAT.segAsk.length===3 && H.CHAT.ackUnlike.indexOf('珍貴')>=0 && H.CHAT.letterTitle.indexOf('今天的整理')>=0);
+  t('開場問句已移除', ['askIntro','askPlaceholder','askSend','askSkip','askEcho','segEndAsk','letterAsk'].every(function(k){return H.CHAT[k]===undefined;}));
   t('界線句(不是衡鑑或治療)', H.CHAT.hello[2].indexOf('不是心理衡鑑或治療')>=0);
+  t('轉介文案 ×8', ['unlikeProbe','unlikeCtx','unlikeBase','unlikeGo','unlikeCtxAck','unlikeBaseAck','ctxRemind','baseBtn'].every(function(k){return H.CHAT[k]&&H.CHAT[k].length>2;}));
+  t('轉介 probe 講最近一個月', H.CHAT.unlikeProbe.indexOf('最近一個月')>=0);
   t('信件收尾精神 ×8(A-7 依分支選句)', ['qian','kun','zhen','xun','kan','li','gen','dui'].every(function(k){return H.CHAT.letterSpirit[k]&&H.CHAT.letterSpirit[k].length>8;}));
   t('收尾=恢復流動(A-2,非增強某能力)', H.CHAT.letterClose.indexOf('重新')>=0 && H.CHAT.letterClose.indexOf('衝到滿')>=0);
   t('MODULES ×2(work/love)', H.MODULES.length===2 && H.MODULES[0].dom==='work' && H.MODULES[1].dom==='love');
@@ -37,7 +41,7 @@
   f.style.cssText='width:700px;height:900px';
   f.src='bagua-hybrid.html';
   document.getElementById('frames').appendChild(f);
-  var tries=0, clicks=0, modClicked=false, done=false;
+  var tries=0, clicks=0, modClicked=false, done=false, unlikeDone=false;
   var timer=setInterval(function(){
     tries++;
     var doc=null;
@@ -48,7 +52,20 @@
       done=true; clearInterval(timer); assertAll(doc,txt); return;
     }
     var opt=doc.querySelector('.opts-live .opt');
-    if(opt && clicks<70){ clicks++; opt.click(); return; }
+    if(opt && clicks<80){
+      clicks++;
+      var opts=[].slice.call(doc.querySelectorAll('.opts-live .opt'));
+      var unlike=null,ctx=null;
+      opts.forEach(function(b){
+        if(b.textContent==='不太像')unlike=b;
+        if(b.textContent===H.CHAT.unlikeCtx)ctx=b;
+      });
+      if(unlike && !unlikeDone){unlikeDone=true;unlike.click();return;}
+      if(ctx){ctx.click();return;}
+      opt.click();return;
+    }
+    var inext=doc.getElementById('intro-next');
+    if(inext && !doc.getElementById('intro').classList.contains('hide')){ inext.click(); return; }
     if(!opt && !modClicked && doc.body.getAttribute('data-stage')==='talk'){
       var mb=doc.querySelector('.modrow .modbtn'); // 第一顆=工作
       if(mb){ modClicked=true; mb.click(); return; }
@@ -58,6 +75,10 @@
   function finishFail(msg){ clearInterval(timer); t('e2e '+msg, false); finish(); }
   function assertAll(doc,txt){
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
+    t('e2e 開場卡出現過', (doc.getElementById('intro').textContent||'').indexOf('深呼吸')>=0);
+    t('e2e 開場卡已收起', doc.getElementById('intro').classList.contains('hide'));
+    t('e2e 無開場問句', txt.indexOf('最想多了解自己')<0);
+    t('e2e 指導語直出', txt.indexOf('想著「最近一個月的日常」')>=0);
     t('e2e 過場語出現', txt.indexOf('第一圈走完了')>=0);
     t('e2e 二選一引言', txt.indexOf('二選一')>=0);
     t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
@@ -65,7 +86,11 @@
     t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
     t('e2e 全首選→無校準路徑', txt.indexOf('直接來看結果')>=0);
     t('e2e 模組選單含整備中', txt.indexOf('整備中')>=0);
-    t('e2e 分段核對:峰名段已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 分段核對:峰名=不太像,其餘=很像', St.echo.peak==='unlike' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 轉介 probe 出現一次', txt.indexOf('會不會其實比較像某個情境裡的你')>=0);
+    t('e2e 選了情境→ack+結尾提醒', txt.indexOf('好,我記著')>=0 && txt.indexOf('對境耗能小關卡,測的就是')>=0);
+    t('e2e 結尾卡有底色版按鈕', !!doc.querySelector('a.btn.ghost[href="bagua-persona.html"]'));
+    t('e2e 狀態旗標', St.unlikeAsked===true && St.echoCtx===true);
     t('e2e 核對回話出現', txt.indexOf('收到,謝謝你')>=0);
     t('e2e 逐段揭示引言', txt.indexOf('先看此刻最亮的地方')>=0 && txt.indexOf('四大系統')>=0);
     // 全「非常符合」(demand=100)+底色 67:六股順流、坎艮=場域不給
@@ -88,6 +113,11 @@
     });
     t('分類邏輯:低底色全掏空', flows===0&&drains===6&&denies===2);
     t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
+    // 命名統一(2026-07-24):峰名/能格列一律用 canonical B.pn(k)「者名(卦)」,不得是 fnShort+'者' 漂移組字
+    var Bt=window.OCTENSO_BAGUA;
+    t('e2e 峰名為 canonical 者名(卦)', R.pf.leads.slice(0,2).every(function(k){return txt.indexOf(Bt.pn(k))>=0;}));
+    var driftNames=['明現者','交流者','拓展者','沉澱者','喊停者','承接者'];
+    t('e2e 無漂移 fnShort+者 命名', driftNames.every(function(d){return txt.indexOf(d)<0;}));
     finish();
   }
   function finish(){

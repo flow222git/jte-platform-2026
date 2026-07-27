@@ -4,32 +4,13 @@
  * v3 體驗版=開場動畫(進場施測語四卡)+聊天式作答(hybrid)+更口語的分段解測。
  * ⚠ 命名邊界:這是「體驗版 v3」,題本與計分完全沿用 v2(B2 碼)——
  *   與 docs 的「題本 v3 候選題幹」(B3,未上線)是兩回事。
- * 本檔只放 v3 獨有的文案:INTRO(開場四卡)、SPOKEN(口語解測層)、
+ * 本檔只放 v3 獨有的文案:SPOKEN(口語解測層)、
  * CHAT_OVR(蓋在 OCTENSO_HYBRID.CHAT 上的口語版過場語)。
  * 其餘(題本/量尺/模組/判讀)一律取用 OCTENSO_V2 / OCTENSO_HYBRID,不複寫。
  * 草案待潤;心理師送審包含本檔口語層。
  */
 (function (g) {
   'use strict';
-
-  // ── 開場四卡(進場施測語:安定→站位→怎麼答→接下來;源自 v1 進場卡,末卡改伴讀版)──
-  var INTRO = [
-    { kicker: '安定', motif: 'breathe',
-      t: '先停一下,\n深呼吸。',
-      s: '這不是考試——\n沒有好答案,也沒有人在打分數。' },
-    { kicker: '這是在看誰', motif: 'orbit',
-      t: '是你最放鬆時\n自然的樣子。',
-      s: '沒人要求你的時候,你會怎麼反應——\n不是你想成為的樣子,\n也不是工作、家庭要你扮的角色。' },
-    { kicker: '怎麼答', motif: 'compass',
-      t: '憑第一個\n冒出來的直覺。',
-      s: '別想太多——\n直覺,往往比想出來的答案\n更接近真正的你。' },
-    { kicker: '接下來', motif: 'ring8',
-      t: '這一次,\n有人陪你一起看。',
-      s: '答完不會只丟給你一份報告——\n伴讀會一段一段陪你讀,\n你隨時可以說「不像我」。' }
-  ];
-  var INTRO_NEXT = '下一步';
-  var INTRO_GO = '開始對話 →';
-  var INTRO_SKIP = '直接開始';
 
   // ── 口語解測層(分段揭示時,伴讀開口說的話;鏡子語氣:此刻、不定型)──
   var SPOKEN = {
@@ -76,7 +57,6 @@
 
   g.OCTENSO_V3 = {
     version: '0.1-draft', base: 'hybrid+v2', codePrefix: 'B2',
-    INTRO: INTRO, INTRO_NEXT: INTRO_NEXT, INTRO_GO: INTRO_GO, INTRO_SKIP: INTRO_SKIP,
     SPOKEN: SPOKEN, CHAT_OVR: CHAT_OVR
   };
 })(typeof window !== 'undefined' ? window : this);

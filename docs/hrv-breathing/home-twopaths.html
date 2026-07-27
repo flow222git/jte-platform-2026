@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首頁兩種入口＋呼吸 Hub</title>
+<style>
+:root{
+  --white:#FFFFFF;--gray-bg:#F5F5F7;--ink:#1D1D1F;--ink-2:#6E6E73;--ink-3:#86868B;
+  --border:#D2D2D7;--blue:#0071E3;--blue-hover:#0077ED;
+  --font:-apple-system,"SF Pro Text","PingFang TC","Helvetica Neue",sans-serif;
+  --radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--ink);font-family:var(--font);line-height:1.6;
+  padding:48px 24px 80px;max-width:1080px;margin:0 auto}
+.eyebrow{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+h1{font-size:34px;font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.lead{font-size:18px;color:var(--ink-2);max-width:680px;margin-bottom:44px}
+.phones{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;margin-bottom:44px}
+.phonewrap{text-align:center}
+.phonewrap .cap{font-size:13px;color:var(--ink-3);margin-top:14px;font-weight:600}
+.phone{width:300px;background:var(--white);border:1px solid var(--border);border-radius:38px;
+  padding:20px 16px;box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.bar{width:120px;height:5px;background:var(--border);border-radius:3px;margin:2px auto 20px}
+/* home */
+.brand{font-size:13px;color:var(--ink-3);text-align:center;margin-bottom:6px;letter-spacing:.1em}
+.htitle{font-size:23px;font-weight:700;text-align:center;margin-bottom:4px}
+.hsub{font-size:13px;color:var(--ink-2);text-align:center;margin-bottom:24px}
+.path{border-radius:16px;padding:20px;margin-bottom:12px;text-align:left}
+.path-a{background:var(--blue);color:#fff}
+.path-a .pt{font-size:18px;font-weight:700;margin-bottom:3px}
+.path-a .ps{font-size:12.5px;opacity:.9}
+.path-b{background:var(--gray-bg);border:1px solid var(--border)}
+.path-b .pt{font-size:17px;font-weight:600;margin-bottom:3px;color:var(--ink)}
+.path-b .ps{font-size:12.5px;color:var(--ink-2)}
+.minirow{display:flex;align-items:center;gap:6px;justify-content:center;font-size:11.5px;color:var(--ink-3);margin-top:18px}
+/* breathing hub */
+.featured{background:linear-gradient(160deg,#EAF4FF,#F5F5F7);border:1px solid #D6E8FB;
+  border-radius:16px;padding:20px;margin-bottom:16px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;color:var(--blue);background:#fff;
+  padding:3px 10px;border-radius:980px;margin-bottom:10px;letter-spacing:.05em}
+.featured h3{font-size:20px;font-weight:700;margin-bottom:4px}
+.featured .fs{font-size:12.5px;color:var(--ink-2);margin-bottom:16px}
+.fbtn{background:var(--blue);color:#fff;border:none;border-radius:980px;padding:11px 0;width:100%;
+  font-size:14px;font-weight:600;font-family:var(--font)}
+.morebtn{background:#fff;color:var(--blue);border:1.5px solid var(--border);border-radius:980px;
+  padding:11px 0;width:100%;font-size:13.5px;font-weight:600;font-family:var(--font);margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.gcell{background:var(--gray-bg);border-radius:10px;padding:9px 4px;text-align:center;font-size:10px;color:var(--ink-2);line-height:1.3}
+.label{font-size:13px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;margin:0 auto 16px;text-align:center}
+/* question */
+.q{background:var(--gray-bg);border-radius:var(--radius);padding:32px;max-width:760px;margin:0 auto}
+.q h2{font-size:23px;font-weight:700;margin-bottom:6px}
+.q .sub{color:var(--ink-2);font-size:15px;margin-bottom:22px}
+.options{display:flex;flex-direction:column;gap:12px}
+.option{display:flex;gap:16px;align-items:flex-start;background:var(--white);border:1.5px solid var(--border);
+  border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .15s}
+.option:hover{border-color:var(--blue)}
+.option.selected{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.15)}
+.option .letter{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--ink-2);flex-shrink:0}
+.option.selected .letter{background:var(--blue);color:#fff;border-color:var(--blue)}
+.option h4{font-size:16px;font-weight:600;margin-bottom:3px}
+.option p{font-size:14px;color:var(--ink-2)}
+@media(max-width:720px){.phones{gap:28px}h1{font-size:27px}}
+</style>
+</head>
+<body>
+  <div class="eyebrow">HRV-breathing ｜ 首頁與呼吸 Hub</div>
+  <h1>兩種入口，呼吸法整批沿用</h1>
+  <p class="lead">左：首頁讓你自己選「先量測」或「直接呼吸」。右：呼吸頁以諧振呼吸為首，一鍵「看更多」展開本專案全部 14 種呼吸法，文案照原本。</p>
+
+  <div class="phones">
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="bar"></div>
+        <div class="brand">JOIN TO ENJOY</div>
+        <div class="htitle">現在想做什麼？</div>
+        <div class="hsub">隨手覺察，馬上調節</div>
+        <div class="path path-a">
+          <div class="pt">測量我的壓力</div>
+          <div class="ps">手指蓋鏡頭 60–120 秒 → 看報告 → 練呼吸</div>
+        </div>
+        <div class="path path-b">
+          <div class="pt">直接開始呼吸</div>
+          <div class="ps">先穩定下來，想測再測也可以</div>
+        </div>
+        <div class="minirow">⟳ 上次：壓力 130 · 3 天前</div>
+      </div>
+      <div class="cap">首頁 · 兩種入口</div>
+    </div>
+
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="bar"></div>
+        <div class="label" style="margin-bottom:14px">呼吸練習</div>
+        <div class="featured">
+          <span class="tag">★ 首選 · 降壓最有效</span>
+          <h3>諧振呼吸</h3>
+          <div class="fs">每分鐘 6 次（0.1Hz），最能調節自律神經、提升 HRV。</div>
+          <button class="fbtn">開始 · 5 分鐘</button>
+        </div>
+        <button class="morebtn">看更多呼吸法（14 種）</button>
+        <div class="grid">
+          <div class="gcell">正念三口</div><div class="gcell">生理嘆氣</div><div class="gcell">箱式呼吸</div>
+          <div class="gcell">數息法</div><div class="gcell">鼻孔交替</div><div class="gcell">風箱呼吸</div>
+          <div class="gcell">獅子吼</div><div class="gcell">冰人呼吸</div><div class="gcell">4-7-8</div>
+          <div class="gcell" style="color:var(--ink-3)">…更多</div>
+        </div>
+      </div>
+      <div class="cap">呼吸 Hub · 諧振為首</div>
+    </div>
+  </div>
+
+  <div class="q">
+    <h2>首頁兩入口＋呼吸 Hub，這樣對嗎？</h2>
+    <p class="sub">點一個，想微調的地方直接打字。</p>
+    <div class="options">
+      <div class="option" data-choice="a" onclick="toggleSelect(this)">
+        <div class="letter">A</div>
+        <div><h4>對，就是這樣</h4><p>兩入口清楚、諧振為首＋看更多，符合我要的。</p></div>
+      </div>
+      <div class="option" data-choice="b" onclick="toggleSelect(this)">
+        <div class="letter">B</div>
+        <div><h4>大致對，想微調</h4><p>例如文字、按鈕位置、哪個入口當主角。</p></div>
+      </div>
+    </div>
+  </div>
+<script>function toggleSelect(el){el.classList.toggle("selected");}</script>
+</body>
+</html>

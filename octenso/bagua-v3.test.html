@@ -14,9 +14,9 @@
   var KEYS=['qian','kun','zhen','xun','kan','li','gen','dui'];
 
   // ── 資料完整性 ──
-  t('INTRO 四卡齊備', X3.INTRO.length===4 && X3.INTRO.every(function(c){return c.kicker&&c.t&&c.s&&c.motif;}));
-  t('INTRO 安定/直覺卡都在', X3.INTRO[0].t.indexOf('深呼吸')>=0 && X3.INTRO[2].t.indexOf('直覺')>=0);
-  t('INTRO 末卡=伴讀版(有人陪)', X3.INTRO[3].t.indexOf('陪')>=0);
+  t('INTRO 四卡齊備', H.INTRO.length===4 && H.INTRO.every(function(c){return c.kicker&&c.t&&c.s&&c.motif;}));
+  t('INTRO 安定/直覺卡都在', H.INTRO[0].t.indexOf('深呼吸')>=0 && H.INTRO[2].t.indexOf('直覺')>=0);
+  t('INTRO 末卡=伴讀版(有人陪)', H.INTRO[3].t.indexOf('陪')>=0);
   t('SPOKEN peakLead ×8', KEYS.every(function(k){return X3.SPOKEN.peakLead[k]&&X3.SPOKEN.peakLead[k].length>15;}));
   t('SPOKEN peakKind ×3', ['dual','multi','pattern'].every(function(k){return X3.SPOKEN.peakKind[k]&&X3.SPOKEN.peakKind[k].length>10;}));
   t('SPOKEN level ×3 帶平均佔位', ['high','mid','low'].every(function(k){return X3.SPOKEN.level[k].indexOf('{M}')>=0;}));
@@ -25,6 +25,10 @@
     X3.CHAT_OVR.hello[2].indexOf('不是心理衡鑑或治療')>=0 && X3.CHAT_OVR.hello[2].indexOf('分數永遠來自題目')>=0);
   t('CHAT_OVR 不覆寫量尺/信件(只動過場語)', !X3.CHAT_OVR.segAsk && !X3.CHAT_OVR.letterSpirit && !X3.CHAT_OVR.letterClose);
   t('v3 碼前綴仍為 B2(體驗版≠題本v3)', X3.codePrefix==='B2');
+  t('v3 不依賴已刪的開場問句鍵(hybrid 已改開場直進)',
+    H.CHAT.askIntro===undefined && H.CHAT.askPlaceholder===undefined && H.CHAT.askSend===undefined
+    && H.CHAT.askSkip===undefined && H.CHAT.askEcho===undefined && H.CHAT.segEndAsk===undefined
+    && H.CHAT.letterAsk===undefined && X3.CHAT_OVR.askIntro===undefined);
 
   // ── E2E:開場四卡→開始→28 題→口語分段揭示→工作模組→註記 ──
   var f=document.createElement('iframe');
@@ -71,6 +75,8 @@
     t('e2e 分段核對已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
     t('e2e 模組結果已存+小碼', !!St.mods['ctx-work'] && txt.indexOf('模組小碼')>=0 && txt.indexOf('MW000000000')>=0);
     t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
+    t('e2e 開場無 undefined(共用資料檔刪鍵回歸守衛)', txt.indexOf('undefined')<0);
+    t('e2e 開場不再收問句(已改開場直進,舊死文案未殘留)', txt.indexOf('最想多了解自己')<0);
     f.parentNode.removeChild(f);
     finish();
   }
