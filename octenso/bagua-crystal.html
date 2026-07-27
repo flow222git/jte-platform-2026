@@ -79,12 +79,12 @@
 <div id="scr-code" class="card">
   <p style="font-size:13.5px;margin-bottom:14px">做完八態能格測驗,報告會給你一串分享碼(B 開頭)——貼進下面,
   就能把你的結果變成一顆轉得動的晶體。還沒測過?先按「用示範資料」感受一下。</p>
-  <input id="code-in" class="input" placeholder="B2…(22 碼)或 B1…(18 碼)">
+  <input id="code-in" class="input" placeholder="B3…(30 碼)/ B2…(22 碼)/ B1…(18 碼)">
   <p class="center" style="margin-top:14px">
     <button class="btn" id="btn-go">看我的晶體</button>
     <button class="btn ghost" id="btn-demo" style="margin-left:8px">用示範資料</button>
   </p>
-  <p id="code-err" class="err hide">這串碼讀不出來——請確認是 B1(18 碼)或 B2(22 碼)。</p>
+  <p id="code-err" class="err hide">這串碼讀不出來——請確認是 B1(18 碼)、B2(22 碼)或 B3(30 碼)。</p>
 </div>
 
 <div id="scr-view" class="hide">
@@ -131,6 +131,11 @@ function decodeCode(str){
   if(str.indexOf('B1')===0&&str.length===18&&/^[0-9]{16}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
     return {sc:sc,bank:'v1',code:str};
+  }
+  // B3(題本 v3 脈絡化)='B3'+16 位態分+8 位落差旗標+4 位二選一 = 30 碼;晶體只取態分
+  if(str.indexOf('B3')===0&&str.length===30&&/^[0-9]{28}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    return {sc:sc,bank:'v3',code:str};
   }
   if(str.indexOf('B2')===0&&str.length===22&&/^[0-9]{20}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
@@ -325,7 +330,7 @@ function start(d){
   $('scr-code').classList.add('hide');$('scr-view').classList.remove('hide');
   $('peakline').textContent=peakText();
   // 回完整報告(依分享碼版本帶回對應報告頁)
-  var back=d.bank==='v2'?'bagua-persona-v2.html#r='+d.code:'bagua-persona.html#r='+d.code;
+  var back=(d.bank==='v2'||d.bank==='v3')?'bagua-persona-v2.html#r='+d.code:'bagua-persona.html#r='+d.code;
   $('backrow').innerHTML='<a class="btn ghost" href="'+back+'">← 回到完整報告</a>';
   $('honest').textContent=B.HONEST+' 立體只是「看見」的方式——判讀以文字與規則為準。';
   renderChips();renderReading();draw();

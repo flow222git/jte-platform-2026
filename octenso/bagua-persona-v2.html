@@ -189,9 +189,9 @@
   <div class="seclabel">已經有分享碼?</div>
   <p style="font-size:13.5px;color:var(--muted)">貼上 B2 碼(本頁測完給的)或正式版 B1 碼,直接看完整版報告。<br>
   <span style="font-size:12px">※ B1 碼只有八態分數(v1 題本),報告以中正樣貌為主、無二選一對照;兩版分數不可互比。</span></p>
-  <div class="codebox"><input class="input" id="code-in" placeholder="B2×××××××××××××××××××× 或 B1…" maxlength="22">
+  <div class="codebox"><input class="input" id="code-in" placeholder="B3…(30 碼)/ B2…(22 碼)/ B1…(18 碼)" maxlength="30">
   <button class="btn ghost" id="btn-code">看報告</button></div>
-  <p id="code-err" class="center hide" style="color:var(--cinnabar);font-size:13px;margin-top:8px">這組碼讀不懂——B1 應為 18 碼、B2 應為 22 碼。</p>
+  <p id="code-err" class="center hide" style="color:var(--cinnabar);font-size:13px;margin-top:8px">這組碼讀不懂——B1 應為 18 碼、B2 為 22 碼、B3 為 30 碼。</p>
 </div>
 
 <!-- ═ 測驗 ═ -->
@@ -291,6 +291,13 @@ function decodeCode(str){
   if(str.indexOf('B1')===0 && str.length===18 && /^[0-9]{16}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
     return {sc:sc, fc:null, bank:'v1'};
+  }
+  // B3(題本 v3 脈絡化)='B3'+16 位態分+8 位跨情境落差旗標+4 位二選一 = 30 碼
+  if(str.indexOf('B3')===0 && str.length===30 && /^[0-9]{28}$/.test(str.slice(2))){
+    for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);
+    var sp3={}; for(i=0;i<8;i++) sp3[EKEYS[i]]={flag:parseInt(str.charAt(18+i),10)||0};
+    var fc3=[]; for(i=0;i<4;i++){ var d3=parseInt(str.charAt(26+i),10); fc3.push(d3<=5?d3:null); }
+    return {sc:sc, fc:fc3, spread:sp3, bank:'v3'};
   }
   if(str.indexOf('B2')===0 && str.length===22 && /^[0-9]{20}$/.test(str.slice(2))){
     for(i=0;i<8;i++) sc[EKEYS[i]]=parseInt(str.substr(2+i*2,2),10);

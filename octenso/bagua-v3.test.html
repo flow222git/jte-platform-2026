@@ -5,12 +5,13 @@
 <script src="profile.js"></script>
 <script src="bagua-v2-data.js"></script>
 <script src="bagua-hybrid-data.js"></script>
+<script src="bagua-v3-bank.js"></script>
 <script src="bagua-v3-data.js"></script>
 <script>
 (function(){
   var pass=0, fail=0, log=document.getElementById('log');
   function t(name, ok){ if(ok){pass++;} else {fail++; log.textContent+='FAIL: '+name+'\n'; } }
-  var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2, X3=window.OCTENSO_V3;
+  var H=window.OCTENSO_HYBRID, V=window.OCTENSO_V2, X3=window.OCTENSO_V3, W=window.OCTENSO_V3_BANK;
   var KEYS=['qian','kun','zhen','xun','kan','li','gen','dui'];
 
   // ── 資料完整性 ──
@@ -19,12 +20,52 @@
   t('INTRO 末卡=伴讀版(有人陪)', H.INTRO[3].t.indexOf('陪')>=0);
   t('SPOKEN peakLead ×8', KEYS.every(function(k){return X3.SPOKEN.peakLead[k]&&X3.SPOKEN.peakLead[k].length>15;}));
   t('SPOKEN peakKind ×3', ['dual','multi','pattern'].every(function(k){return X3.SPOKEN.peakKind[k]&&X3.SPOKEN.peakKind[k].length>10;}));
-  t('SPOKEN level ×3 帶平均佔位', ['high','mid','low'].every(function(k){return X3.SPOKEN.level[k].indexOf('{M}')>=0;}));
   t('SPOKEN 低=季節不是故障', X3.SPOKEN.level.low.indexOf('季節')>=0);
   t('CHAT_OVR 界線句仍在(不是衡鑑或治療+分數來自題目)',
     X3.CHAT_OVR.hello[2].indexOf('不是心理衡鑑或治療')>=0 && X3.CHAT_OVR.hello[2].indexOf('分數永遠來自題目')>=0);
   t('CHAT_OVR 不覆寫量尺/信件(只動過場語)', !X3.CHAT_OVR.segAsk && !X3.CHAT_OVR.letterSpirit && !X3.CHAT_OVR.letterClose);
-  t('v3 碼前綴仍為 B2(體驗版≠題本v3)', X3.codePrefix==='B2');
+  // ── 題本 v3(脈絡化)資料層 ──
+  t('B3 題本 24 題', W.ITEMS.length===24 && W.bank==='v3' && W.codePrefix==='B3');
+  t('B3 三區塊各 8 題(task/close/gen)', ['task','close','gen'].every(function(c){
+    return W.ITEMS.filter(function(q){return q.ctx===c;}).length===8;}));
+  t('B3 每態每情境各一題', KEYS.every(function(k){
+    return ['task','close','gen'].every(function(c){
+      return W.ITEMS.filter(function(q){return q.k===k&&q.ctx===c;}).length===1;});}));
+  t('B3 區塊順序=task 0-7 / close 8-15 / gen 16-23', W.ITEMS.slice(0,8).every(function(q){return q.ctx==='task';})
+    && W.ITEMS.slice(8,16).every(function(q){return q.ctx==='close';})
+    && W.ITEMS.slice(16,24).every(function(q){return q.ctx==='gen';}));
+  t('B3 gen 全為頻率題且與 v2 逐字相同', W.ITEMS.slice(16,24).every(function(q,i){
+    return q.kind==='fq' && q.t===V.ITEMS[16+i].t;}));
+  t('B3 場域定義為功能式(不含身分詞)', W.CTX.task.def.indexOf('有任務')>=0
+    && W.CTX.task.def.indexOf('工作')<0 && W.CTX.close.def.indexOf('最親近')>=0);
+  t('B3 區塊過場語 ×3', !!W.BLOCKS[0] && !!W.BLOCKS[8] && !!W.BLOCKS[16] && W.BLOCKS[8].indexOf('答不一樣完全正常')>=0);
+  t('B3 落差門檻=40(≥2 階)', W.SPREAD_MIN===40);
+  // 計分與落差
+  (function(){
+    var ans=new Array(24).fill(3);
+    // 乾:任務 5、親近 0 → 落差 100 → flag=1
+    ans[0]=5; ans[8]=0;
+    // 坤:任務 0、親近 5 → flag=2
+    ans[7]=0; ans[15]=5;
+    // 兌:任務 3、親近 3 → 無落差
+    var sp=W.spread(ans);
+    t('spread 乾=偏任務(flag1)', sp.qian.flag===1 && sp.qian.d===100);
+    t('spread 坤=偏親近(flag2)', sp.kun.flag===2 && sp.kun.d===-100);
+    t('spread 兌=無落差(flag0)', sp.dui.flag===0 && sp.dui.d===0);
+    var sc=W.scores(ans);
+    t('scores 為三題平均', sc.qian===Math.round((5+0+3)/3/5*100));
+    var code=W.encode(sc,sp,[0,1,2,3]);
+    t('B3 碼 30 位', /^B3[0-9]{28}$/.test(code) && code.length===30);
+    var d=W.decode(code);
+    t('B3 decode 往返一致', d && d.bank==='v3' && d.sc.qian===sc.qian
+      && d.spread.qian.flag===1 && d.spread.kun.flag===2 && d.fc[1]===1);
+    t('B3 decode 拒收 B2 碼', W.decode('B2'+'50'.repeat(8)+'9999')===null);
+  })();
+  t('SPREAD_READ 模板齊備且不解因', ['none','lead','task','close','honest'].every(function(k){
+    return W.SPREAD_READ[k]&&W.SPREAD_READ[k].length>5;}) && W.SPREAD_READ.honest.indexOf('不解釋原因')>=0);
+  t('level 口語改講結構不講平均', ['high','mid','low'].every(function(k){
+    return X3.SPOKEN.level[k].indexOf('平均')<0;}) && X3.SPOKEN.level.high.indexOf('{ON}')>=0);
+  t('CHAT_OVR 有跨情境落差段', X3.CHAT_OVR.segSpread.indexOf('有任務的場合')>=0);
   t('v3 不依賴已刪的開場問句鍵(hybrid 已改開場直進)',
     H.CHAT.askIntro===undefined && H.CHAT.askPlaceholder===undefined && H.CHAT.askSend===undefined
     && H.CHAT.askSkip===undefined && H.CHAT.askEcho===undefined && H.CHAT.segEndAsk===undefined
@@ -68,11 +109,24 @@
     t('e2e 系統段口語(住在「…系統」)', txt.indexOf('住在「')>=0 && txt.indexOf('系統」裡')>=0);
     t('e2e 系統段含核心命題問句', txt.indexOf('如何成為現實?')>=0 || txt.indexOf('如何深入系統?')>=0 || txt.indexOf('如何形成理解?')>=0 || txt.indexOf('如何形成共好?')>=0);
     t('e2e 不再唸正式判讀全文(無 tag 括號)', txt.indexOf('(主導承接俱全——')<0 && txt.indexOf('(偏開創——')<0);
-    t('e2e 電量段口語(帶平均)', txt.indexOf('平均 '+R.pf.level.mean)>=0);
-    t('e2e B2 碼格式', /^B2[0-9]{20}$/.test(R.code) && txt.indexOf(R.code)>=0);
+    t('e2e 電量段不再報平均數', txt.indexOf('八股平均')<0 && txt.indexOf('平均 '+R.pf.level.mean)<0);
+    t('e2e 跨情境落差段出現', txt.indexOf('有任務的場合')>=0 && txt.indexOf('不解釋原因')>=0);
+    t('e2e 落差段已核對', ['like','part','unlike'].indexOf(St.echo.spread)>=0);
+    // 有落差的分支:直接注入旗標,驗敘事模板組得出來(E2E 全選首項故無落差)
+    (function(){
+      var save=R.sp;
+      R.sp={qian:{flag:1},kun:{flag:2},zhen:{flag:0},xun:{flag:0},kan:{flag:0},li:{flag:0},gen:{flag:0},dui:{flag:0}};
+      var lines=win.HYBRID.spreadLines();
+      t('落差敘事:偏任務/偏親近各出一行', lines.length===2
+        && lines[0].indexOf('開創者')>=0 && lines[0].indexOf('有任務的場合明顯更亮')>=0
+        && lines[1].indexOf('承接者')>=0 && lines[1].indexOf('最親近的人相處時明顯更亮')>=0);
+      R.sp=save;
+    })();
+    t('e2e B3 碼格式', /^B3[0-9]{28}$/.test(R.code) && txt.indexOf(R.code)>=0);
     t('e2e 完整報告連結帶碼', !!doc.querySelector('a[href="bagua-persona-v2.html#r='+R.code+'"]'));
     t('e2e 晶體連結帶碼', !!doc.querySelector('a[href="bagua-crystal.html#r='+R.code+'"]'));
     t('e2e 分段核對已答', St.echo.peak==='like' && St.echo.gate==='like' && St.echo.level==='like');
+    t('e2e 區塊過場語三段都出現', txt.indexOf('先從「有任務的場合」開始')>=0 && txt.indexOf('換個場合')>=0 && txt.indexOf('最後一圈')>=0);
     t('e2e 模組結果已存+小碼', !!St.mods['ctx-work'] && txt.indexOf('模組小碼')>=0 && txt.indexOf('MW000000000')>=0);
     t('e2e talkbar 顯示', !doc.getElementById('talkbar').classList.contains('hide'));
     t('e2e 開場無 undefined(共用資料檔刪鍵回歸守衛)', txt.indexOf('undefined')<0);

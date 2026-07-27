@@ -4,8 +4,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
 <title>Octenso 八態能格 · v3 體驗版(開場+聊天式作答+口語解測)</title>
 <!--
-  v3 體驗版(2026-07-14;未接導覽)=開場動畫(進場施測語四卡)+聊天式作答+口語解測。
-  ⚠ 題本與計分完全沿用 v2(B2 碼)——「體驗版 v3」≠「題本 v3(B3,未上線)」。
+  v3 體驗版(2026-07-14 起;2026-07-27 接上題本 v3;未接導覽)
+  = 開場動畫(進場施測語四卡)+ 分場域聊天式作答 + 口語解測。
+  題本 v3(脈絡化):每題標定場域(任務/親近/泛用),出 B3 碼,與 B1/B2 不可互比。
+  設計 spec:docs/superpowers/specs/2026-07-27-octenso-item-bank-v3-contextualized-design.md
   紅線不變:題庫負責測量、對話負責選路——測驗全程為「規則腳本」對話(確定性),
   分數只來自固定量尺題目;LLM 只在報告後的伴讀聊天出場(走與問易同一個 Worker)。
   v3 獨有文案(開場卡/口語層/過場語覆寫)在 bagua-v3-data.js;其餘同源取用。
@@ -101,8 +103,8 @@
 
 <div class="eyebrow">Octenso · Experience v3 · Prototype</div>
 <h1>八態能格 · v3 體驗版</h1>
-<div class="sub">開場安定 → 聊天式作答 → 一段一段口語解測;答完想多懂哪塊,再加測那一關</div>
-<span class="draft">體驗版 v3 · 題本與計分同 v2(B2 碼) · 未接導覽</span>
+<div class="sub">開場安定 → 分場域作答 → 一段一段口語解測;同一股能量在不同場合不一樣,也讀得出來</div>
+<span class="draft">題本 v3 · 脈絡化(B3 碼,與 B1/B2 不可互比) · 未接導覽</span>
 
 <div id="intro"></div>
 
@@ -124,19 +126,21 @@
 <script src="bagua-catalog-data.js"></script>
 <script src="bagua-catalog-t1.js"></script>
 <script src="bagua-hybrid-data.js"></script>
+<script src="bagua-v3-bank.js"></script>
 <script src="bagua-v3-data.js"></script>
 <script>
 (function(){
 'use strict';
 var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2,
     C=window.OCTENSO_CATALOG, H=window.OCTENSO_HYBRID, X3=window.OCTENSO_V3;
+var W=window.OCTENSO_V3_BANK;
 var $=function(id){return document.getElementById(id);};
 var EKEYS=P.EKEYS, GT=V.GATES, SP=X3.SPOKEN;
 // 口語版過場語蓋在 hybrid 腳本上(沒覆寫的沿用)
 var CH={};Object.keys(H.CHAT).forEach(function(k){CH[k]=H.CHAT[k];});
 Object.keys(X3.CHAT_OVR).forEach(function(k){CH[k]=X3.CHAT_OVR[k];});
-var NB=V.ITEMS.length, NF=V.FC_ITEMS.length, NT=NB+NF, SMAX=5;
-var KEY='bagua_v3_exp';
+var NB=W.ITEMS.length, NF=V.FC_ITEMS.length, NT=NB+NF, SMAX=5;
+var KEY='bagua_v3b_exp';
 
 var S={phase:'hello',idx:0,answers:new Array(NB).fill(null),fcAns:new Array(NF).fill(null),
        flags:[],costQ:[],costAns:[],costIdx:0,mods:{},echo:{}};
@@ -174,21 +178,18 @@ function prog(p){$('prog-i').style.width=Math.round(p*100)+'%';}
 // ── 計分(與 v2 完全同源)──
 function computeScores(){
   var sum={},n={};EKEYS.forEach(function(k){sum[k]=0;n[k]=0;});
-  V.ITEMS.forEach(function(q,i){var v=S.answers[i];if(v==null)return;sum[q.k]+=v;n[q.k]++;});
+  W.ITEMS.forEach(function(q,i){var v=S.answers[i];if(v==null)return;sum[q.k]+=v;n[q.k]++;});
   var sc={};EKEYS.forEach(function(k){sc[k]=n[k]?Math.round(sum[k]/n[k]/SMAX*100):0;});
   return sc;
 }
 function confidence(){
-  var by={};V.ITEMS.forEach(function(q,i){var v=S.answers[i];if(v==null)return;(by[q.k]=by[q.k]||[]).push(v);});
+  var by={};W.ITEMS.forEach(function(q,i){var v=S.answers[i];if(v==null)return;(by[q.k]=by[q.k]||[]).push(v);});
   var out={};EKEYS.forEach(function(k){var a=by[k]||[];if(!a.length){out[k]=null;return;}
     var sp=Math.max.apply(null,a)-Math.min.apply(null,a);out[k]=sp<=1?'sure':(sp>=3?'mixed':'normal');});
   return out;
 }
-function encodeCode(sc,fc){
-  var s='B2';EKEYS.forEach(function(k){var v=Math.max(0,Math.min(99,Math.round(sc[k]||0)));s+=(v<10?'0':'')+v;});
-  for(var i=0;i<NF;i++){var f=fc&&fc[i]!=null?fc[i]:9;s+=String(f);}
-  return s;
-}
+// B3 碼由題本層組(含跨情境落差旗標);見 bagua-v3-bank.js
+function encodeCode(sc,sp,fc){ return W.encode(sc,sp,fc); }
 function pickFlags(sc){
   var flags=[];
   EKEYS.forEach(function(k){
@@ -215,8 +216,8 @@ var shownBreak={};
 function stepCore(){
   var i=S.idx;prog(i/NT*0.7);
   if(i<NB){
-    if(CH.breaks[i]&&!shownBreak[i]){shownBreak[i]=1;bot(CH.breaks[i]);}
-    var q=V.ITEMS[i],opts=q.kind==='fq'?V.FREQ_OPTS:V.OPTS;
+    if(W.BLOCKS[i]&&!shownBreak[i]){shownBreak[i]=1;bot(W.BLOCKS[i]);}
+    var q=W.ITEMS[i],opts=q.kind==='fq'?V.FREQ_OPTS:V.OPTS;
     botHtml('<span class="qn">'+(i+1)+' / '+NT+'</span>'+esc(q.t));
     askOpts(opts.map(function(o){return{t:o.t,v:o.v};}),function(o){
       S.answers[i]=o.v;S.idx++;save();stepCore();
@@ -254,10 +255,21 @@ function stepCost(){
 }
 
 // ── 第三段:摘要 → 伴讀+模組(對話只選路,不打分)──
-var RES={sc:null,pf:null,conf:null,costSt:null,code:''};
+var RES={sc:null,pf:null,conf:null,costSt:null,sp:null,code:''};
 function buildResults(){
   RES.sc=computeScores();RES.pf=P.build(RES.sc);RES.conf=confidence();
-  RES.costSt=costVerdicts();RES.code=encodeCode(RES.sc,S.fcAns);
+  RES.costSt=costVerdicts();RES.sp=W.spread(S.answers);
+  RES.code=encodeCode(RES.sc,RES.sp,S.fcAns);
+}
+// 跨情境落差敘事(規則組裝;只講往哪個場合偏,不解因、不評價)
+function spreadLines(){
+  var R=W.SPREAD_READ,out=[];
+  EKEYS.forEach(function(k){
+    var f=RES.sp[k]&&RES.sp[k].flag;
+    if(!f)return;
+    out.push((f===1?R.task:R.close).replace('{N}',B.get(k).fnShort+'者('+B.get(k).nm+')'));
+  });
+  return out;
 }
 function peakName(){
   var leads=RES.pf.leads.slice(0,2).map(function(k){return B.get(k).fnShort+'者·'+B.get(k).nm;});
@@ -304,7 +316,10 @@ function toSummary(){
     segEcho('gate',function(){
       // 段 3:整體水平(口語)+能格(若有)
       bot(CH.segLevel);
-      var t=(SP.level[RES.pf.level.band]||SP.level.mid).replace('{M}',RES.pf.level.mean);
+      var on=0,off=0;
+      EKEYS.forEach(function(k){ if(RES.sc[k]>=P.TUNE.RES)on++; else if(RES.sc[k]<=P.TUNE.GAP)off++; });
+      var t=(SP.level[RES.pf.level.band]||SP.level.mid)
+        .replace('{ON}',on).replace('{OFF}',off);
       Object.keys(RES.costSt).forEach(function(k){
         var stx=RES.costSt[k],cd=V.COST[k];
         var adv=stx==='over'?cd.aOver:stx==='under'?cd.aUnder:stx==='midHi'?cd.aMidHi:cd.aMidLo;
@@ -312,6 +327,14 @@ function toSummary(){
       });
       bot(t);
       segEcho('level',function(){
+        // 段 3.5:跨情境落差(題本 v3 新增)
+        var sl=spreadLines(), R=W.SPREAD_READ;
+        bot(CH.segSpread);
+        bot(sl.length?(R.lead+'\n'+sl.join('\n')):R.none);
+        bot(R.honest);
+        segEcho('spread',afterSpread);
+      });
+      function afterSpread(){
         // 段 4:二選一落差(若有)
         var gaps=[];
         RES.pf.axes.forEach(function(a,i){
@@ -326,7 +349,7 @@ function toSummary(){
         function finish(){revealEnd(pk);}
         if(gaps.length){bot(CH.segFcGap);bot(gaps.join('\n'));segEcho('fcgap',finish);}
         else finish();
-      });
+      }
     });
   });
 }
@@ -450,7 +473,7 @@ function renderAnnex(m,rec){
 var msgs=[],busy=false;
 function ground(){
   var L=[],pk=peakName();
-  L.push('【八態能格快照(v3 體驗版,題本與 v2 同源)】');
+  L.push('【八態能格快照(題本 v3 · 脈絡化;分數不可與 B1/B2 互比)】');
   L.push('峰名:'+pk.title+'('+pk.sub+')');
   RES.pf.ranked.forEach(function(o){
     L.push('・'+B.get(o.k).nm+'·'+B.get(o.k).fnShort+' '+o.v+' — '+RES.pf.bands[o.k].label);
@@ -472,7 +495,7 @@ function ground(){
       +';場域不給空間:'+(a.denies.map(function(f){return GT.pole[f.k];}).join('、')||'無')
       +';整體感受:'+rec.intensity);
   });
-  var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
+  var names={peak:'峰名',gate:'四大系統',level:'能量水平',spread:'跨情境落差',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'='+lbl[S.echo[k]];});
   if(es.length)L.push('【逐段核對】'+es.join('、')+'——「不太像」的段落請先謝謝並好奇地多問,不辯護。');
   return L.join('\n');
@@ -504,7 +527,7 @@ $('talk-in').addEventListener('keydown',function(e){
 function letter(){
   var pk=peakName(),L=[CH.letterTitle];
   L.push(CH.letterPeak.replace('{P}',pk.title+'('+pk.sub+')'));
-  var names={peak:'峰名',gate:'四大系統',level:'能量水平',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
+  var names={peak:'峰名',gate:'四大系統',level:'能量水平',spread:'跨情境落差',fcgap:'二選一落差'},lbl={like:'很像',part:'部分像',unlike:'不太像'};
   var es=Object.keys(S.echo).map(function(k){return names[k]+'—'+lbl[S.echo[k]];});
   if(es.length)L.push(CH.letterEcho.replace('{E}',es.join('、')));
   if(Object.keys(S.echo).some(function(k){return S.echo[k]==='unlike';}))L.push(CH.letterUnlike);
@@ -581,7 +604,7 @@ function reveal(){ // 開場結束→亮出聊天介面
 }
 
 // ── 入口/續走 ──
-$('honest').textContent=B.HONEST+' 這是 v3 體驗版(開場+聊天式作答+口語解測;題本與計分同 v2):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話;只有你按「結束今天」時的整理摘要會回傳練息場,幫助我們改進。';
+$('honest').textContent=B.HONEST+' 這是 v3 體驗版(開場+分場域作答+口語解測;題本 v3 脈絡化,B3 碼與舊版不可互比):對話只負責陪與選路,分數永遠來自題目;你的作答只存在這台裝置。伴讀聊天會把摘要與你的訊息傳給雲端代理即時生成回覆,不儲存對話;只有你按「結束今天」時的整理摘要會回傳練息場,幫助我們改進。';
 function begin(){
   CH.hello.forEach(function(t){bot(t);});
   askOpts([{t:CH.startBtn,v:'go',cls:'primary'}],function(){
@@ -614,7 +637,8 @@ if(saved&&saved.phase&&saved.phase!=='hello'){
 document.body.setAttribute('data-ready','1');
 
 // 測試掛鉤
-window.HYBRID={state:function(){return S;},results:function(){return RES;},annexData:annexData,moduleCode:moduleCode};
+window.HYBRID={state:function(){return S;},results:function(){return RES;},annexData:annexData,moduleCode:moduleCode,
+  spreadLines:function(){return spreadLines();}};
 })();
 </script>
 </body></html>
