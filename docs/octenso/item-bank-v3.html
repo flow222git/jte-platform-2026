@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>題本 v3 · 脈絡化(跨情境)量測</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 34px;text-align:center;border-bottom:1px solid var(--line);margin-bottom:20px}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance;border:none;padding:0}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+article h1{display:none}
+article h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(18px,4.4vw,21.5px);
+  letter-spacing:.1em;margin:64px 0 14px;padding-top:26px;border-top:1px solid var(--line);text-wrap:balance}
+article h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:34px 0 10px}
+article p{margin:0 0 15px;max-width:70ch}
+article strong{font-weight:400;color:var(--ink)}
+article em{font-style:normal;color:var(--pine)}
+article a{color:var(--pine)}
+article ul,article ol{padding-left:1.5em;margin:0 0 15px}
+article li{margin-bottom:4px}
+article blockquote{margin:20px 0;padding:2px 0 2px 18px;border-left:1px solid var(--pine);color:var(--ink);
+  font-family:var(--serif);font-size:14.5px}
+article blockquote p{max-width:none}
+article code{font-family:var(--latin);font-size:12.5px;background:var(--surface2);
+  padding:1px 7px;border-radius:4px;color:var(--ink)}
+article pre{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.8;margin:18px 0}
+article pre code{background:none;padding:0}
+article hr{border:none;height:1px;background:var(--line);margin:44px 0}
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85}
+article th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+article td{padding:11px 14px 11px 2px;vertical-align:top;min-width:7em;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+article tr:last-child td{border-bottom:none}
+article td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap;min-width:auto}
+.honest{margin-top:80px;padding:24px 0 0;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:2;letter-spacing:.04em}
+.honest .src{font-family:var(--latin);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+@media print{ body{font-size:12px} article h2{margin-top:36px} .tblwrap{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso · Document</div>
+  <h1>題本 v3 · 脈絡化(跨情境)量測</h1>
+  <div class="meta">同題數、標場域 · 讓「看場合」從雜訊變訊號 · 設計草案</div>
+</header>
+<article>
+<p>日期:2026-07-27 ｜ 狀態:<strong>設計 spec · 草案待實作</strong> ｜ 版號:題本 v3(碼前綴 <strong>B3</strong>)
+上游討論:2026-07-27 Simon × Claude 設計對話
+關聯:⑧ 題本 v2 設計(2026-07-08)、⑪ 題庫池規格與 v3 候選題幹(2026-07-09)
+北極星:鏡子非算命／誠實印章／作答不上傳／並列不捏因果／meta A 同源／AI=伴讀不是主筆</p>
+<hr />
+<h2>0. 一句話</h2>
+<p><strong>同樣的八態、同樣的題數,但每一題明確標定生活場域</strong>——讓「同一個人在不同場合不一樣」從被丟掉的雜訊,變成報告讀得出來的訊號。</p>
+<hr />
+<h2>1. 為什麼要做</h2>
+<h3>1.1 三個問題</h3>
+<p><strong>① 情境依賴被當成雜訊丟掉了。</strong> 現制每態 3 題,答得一致=篤定、分散=兩可,報告對「兩可」的處置是「解讀請保留彈性」。但分散有兩種可能:量測誤差,或<strong>這一態很看場合</strong>。現在分不出來,因為三題的情境是隨手寫的、不成系統。</p>
+<p><strong>② 題本有一個隱性偏誤(本次盤點才發現)。</strong> 把 16 題微場景按場域歸位後看到:需要補「工作版」的是 <strong>兌交流、巽拓展、坤承接</strong>;需要補「親近關係版」的是 <strong>離明現、震行動、坎沉澱</strong>。</p>
+<p>也就是說,我們一直不自覺地<strong>把每一態寫進它「本來就該在」的場合</strong>——關係型的態寫成社交場景,任務型的態寫成工作場景。後果是題本可能系統性低估「震在親密關係裡的樣子」與「兌在工作場合的樣子」。<strong>這是既有的效度問題,不是新功能。</strong></p>
+<p><strong>③ 平均數壓掉了形狀。</strong> 現行報告的「整體水平:偏高/中間/偏收(八態平均 XX)」是把形狀壓掉後剩下的東西。而產品的意義在<strong>現出主形/副形/雙峰/三峰</strong>——「都像就沒意義」。平均數不是沒用(高能量的坎與低能量的坎不同),但它不該站在前面,更不該是使用者記住的數字。</p>
+<h3>1.2 不解決的問題(講清楚,避免誤期待)</h3>
+<p><strong>「自己覺得是」vs「誤認」,本設計不處理。</strong> 兩個情境仍然是<strong>同一個資訊源</strong>(自陳),一個人可以在兩個場合都同樣地誤解自己。效度要靠第二資訊源(行為證據/他評/時間),那是另一條線——見 §9。</p>
+<hr />
+<h2>2. 學理依據</h2>
+<h3>2.1 我們走的三條線</h3>
+<p><strong>① 脈絡化特質量表(frame-of-reference, FOR)。</strong> 同一批特質題加上場域框,<strong>仍是特質測驗</strong>。自 Schmit, Ryan, Stierwalt &amp; Powell (1995) 起的一致結論:降低誤差變異、提高效標關聯效度。</p>
+<p>關鍵操作結論:效度提升幅度為 <strong>通用 &lt; 加標籤 &lt; 完全脈絡化</strong>——<strong>整句改寫題幹</strong>顯著優於只在句首加「在工作中」。本設計因此採整句改寫。</p>
+<p><strong>② 密度分布/全特質論(Fleeson, 2001)。</strong> 特質=行為狀態的分布,平均數只是第一動差,<strong>變異本身也是人格的一部分</strong>;且個人內變異常大於個人間變異。這是「兩可可能是訊號不是雜訊」的學理依據。</p>
+<p><strong>③ CAPS if-then 行為簽名(Mischel &amp; Shoda, 1995)。</strong> 人格是穩定的「若 A 則 X、若 B 則 Y」剖面;<strong>變化的模式本身就是穩定的個體差異</strong>。這是「跨情境落差」的理論定位:落差不是測不準,落差就是那個人。</p>
+<h3>2.2 我們明確不走的一條</h3>
+<p><strong>情境判斷測驗(SJT)。</strong> 給情境、選做法(如「六選一」)。這是<strong>方法</strong>不是構念,通常為領域特定的甄選工具,測判斷與知識而非特質。</p>
+<p>不採用的具體理由:
+- <strong>會失去強度與整體水平</strong>——選一個只給名目資料,不給 0–5 強度;「水平 × 形狀」的水平軸會直接消失,能格的過用/不足門檻也失去依據。
+- <strong>認知負荷上升</strong>——「這句像不像我」是一次判斷,「六個做法哪個最像」是六次閱讀加比較。
+- <strong>寫題成本高一個量級</strong>——六個選項須同時做到合理、吸引力相當、不重疊、各自乾淨指向一態;八態不能整除六,覆蓋不均。
+- <strong>方向與目標相反</strong>——六選一本質上更「分類」,而目標是更完整地描繪。</p>
+<hr />
+<h2>3. 情境定義(功能式,不用機構式)</h2>
+<h3>3.1 問題</h3>
+<p>「工作場域」會把學生、家庭主婦/主夫、退休者、待業者擋在外面。</p>
+<h3>3.2 決策:用功能定義,不用身分定義</h3>
+<p>FOR 文獻的框可以是任何生活領域(組織/學業/感情皆有研究),不限於工作。因此:</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>槽</th>
+<th>對外用語</th>
+<th>涵蓋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>C1 任務場域</strong></td>
+<td>「<strong>有任務、有期限、有人等你交出東西</strong>的場合」</td>
+<td>上班、唸書趕報告、接案、家務與照顧、志工、備考</td>
+</tr>
+<tr>
+<td><strong>C2 親近場域</strong></td>
+<td>「<strong>跟最親近的人相處時</strong>」(伴侶、家人、最熟的朋友)</td>
+<td>人人都有對象可想;不預設婚戀狀態</td>
+</tr>
+<tr>
+<td><strong>C0 泛用</strong></td>
+<td>不指定場合(頻率題保留原樣)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>施測指導語須明講這兩個定義</strong>,且用「你心裡想到的那個場合/那個人」的措辭,不替使用者指定。</p>
+<h3>3.3 連帶事項</h3>
+<p><strong>現有「對境耗能 · 工作」模組有同樣的排除問題</strong>(愛情模組設為可跳過,無意間繞過了)。若本案實作,兩邊的場域用語應一起改。</p>
+<h3>3.4 未採用的替代方案(存查)</h3>
+<p><strong>開場選主場 →「場景皮膚」換卷</strong>(上班/求學/家務照顧/接案/其他,題幹用詞跟著換)。體感最佳,但須寫多套題幹、成本高一階,且各人題幹不同會使跨人比較變模糊。<strong>擱置,等題庫池有餘裕再議。</strong></p>
+<hr />
+<h2>4. 槽位表(8 態 × 3 槽)</h2>
+<p>標記:<code>✓</code> 就位(只需加場域錨定詞)· <code>◐</code> 微調(場景可用,換對象或場合)· <code>⚠</code> 改寫(整題重寫)</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>態</th>
+<th>C1 任務場域</th>
+<th>C2 親近場域</th>
+<th>C0 頻率(不動)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>乾 開創</strong></td>
+<td><code>✓</code> 討論繞了半天沒結論時,我會忍不住跳出來說「不然就這樣做」</td>
+<td><code>◐</code> 一群人約好要出去玩…最後把日期地點定下來的常常是我 → 對象收成家人/伴侶/最熟的朋友</td>
+<td>遇到該做決定的事,我先等等、看別人怎麼說</td>
+</tr>
+<tr>
+<td><strong>兌 交流</strong></td>
+<td><code>⚠</code> 現為「場子冷掉的時候,把話接起來」(社交場)→ 需任務場域版</td>
+<td><code>◐</code> 有開心的事,我第一個反應是找人分享 → 錨定分享對象=最親近的人</td>
+<td>心裡有話想說、最後還是吞回去</td>
+</tr>
+<tr>
+<td><strong>離 明現</strong></td>
+<td><code>◐</code> 開會<strong>或聚會</strong>裡,大家還在繞,我常已經先看出卡住的點 → 刪「或聚會」</td>
+<td><code>⚠</code> 現為「做出自己滿意的東西時,我會想找機會讓別人看到」(泛)→ 需親近場域版</td>
+<td>心裡有想法卻沒說出口,事後被別人講走</td>
+</tr>
+<tr>
+<td><strong>震 行動</strong></td>
+<td><code>✓</code> 事情卡住的時候,我寧可先做一版粗糙的出來試</td>
+<td><code>⚠</code> 現為「想到一個好主意,我常當天就動手做一點什麼」(泛)→ 需親近場域版</td>
+<td>想做的事一直拖著</td>
+</tr>
+<tr>
+<td><strong>巽 拓展</strong></td>
+<td><code>⚠</code> 現為「發現好用的東西…轉給可能需要的人」(泛)→ 需任務場域版</td>
+<td><code>◐</code> 聽到朋友在找什麼,我腦中自動跳出「我認識誰可以幫上忙」→ 對象收成親近的人</td>
+<td>開口借個力就能省事,還是自己硬做完</td>
+</tr>
+<tr>
+<td><strong>坎 沉澱</strong></td>
+<td><code>◐</code> 遇到重要的事,我習慣放一個晚上、多想幾天再回覆 → 錨定任務上的決定</td>
+<td><code>⚠</code> 現為「忙完一段,我需要完全屬於自己的時間」(獨處)→ 需親近場域版(與人相處後需要抽身)</td>
+<td>明明已經很累,還一直撐著</td>
+</tr>
+<tr>
+<td><strong>艮 喊停</strong></td>
+<td><code>◐</code> 事情做到我自己設定的程度,我就會收手 → 錨定任務</td>
+<td><code>◐</code> 不想去的邀約,我能好好地說「這次先不了」→ 對象收成親近的人(對熟人劃線更難,鑑別度更好)</td>
+<td>想拒絕、最後還是答應下來</td>
+</tr>
+<tr>
+<td><strong>坤 承接</strong></td>
+<td><code>⚠</code> 現為「聚會散場後留下來收拾」(社交)→ 需任務場域版(專案收尾、團隊善後)</td>
+<td><code>◐</code> 朋友臨時打來說心情很糟…我通常還是會先聽他說完 → 對象收成親近的人</td>
+<td>別人說煩惱時,我聽不到幾句就急著給建議</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>工作量:改寫 6 題、微調 8 題、就位 2 題;8 題頻率完全不動。新增題數 0。</strong></p>
+<hr />
+<h2>5. 方案比較與決策</h2>
+<h3>5.1 解析度論證(為什麼不能每情境只用 1 題判峰)</h3>
+<p>六點量尺換算 0–100 後,<strong>單題只有 6 個可能值:0/20/40/60/80/100,一階=20 分</strong>。而 <code>TUNE.LEAD_GAP=15</code>(判並列主峰的門檻)<strong>小於一階</strong>。</p>
+<p>⇒ 若以單題構成某情境的剖面,<strong>該情境裡誰是主峰會被單一次點擊決定,重測即翻盤</strong>。這對「呈現主形/副形」是致命的。</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>每態每情境題數</th>
+<th>分數階距</th>
+<th>LEAD_GAP=15 相當於</th>
+<th>可否判峰</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 題</td>
+<td>20 分</td>
+<td>0.75 階</td>
+<td>✗ 不可</td>
+</tr>
+<tr>
+<td>2 題</td>
+<td>10 分</td>
+<td>1.5 階</td>
+<td>△ 勉強</td>
+</tr>
+<tr>
+<td>3 題(現制,不分情境)</td>
+<td>~6.7 分</td>
+<td>2.2 階</td>
+<td>✓ 可</td>
+</tr>
+</tbody>
+</table></div>
+<h3>5.2 三方案</h3>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>題數</th>
+<th>每情境題數</th>
+<th>產出</th>
+<th>代價</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td><strong>28</strong>(24+4FC,零增加)</td>
+<td>1</td>
+<td><strong>一份剖面</strong> + 情境落差註記</td>
+<td>拿不到兩份形狀</td>
+</tr>
+<tr>
+<td>B</td>
+<td>36(32+4FC)</td>
+<td>2</td>
+<td>兩份剖面</td>
+<td>砍掉 8 題頻率,低端使用率問題可能復發</td>
+</tr>
+<tr>
+<td>C</td>
+<td>44(40+4FC)</td>
+<td>2</td>
+<td>兩份剖面 + 保留頻率</td>
+<td>最壞含校準達 52 題,過長</td>
+</tr>
+</tbody>
+</table></div>
+<h3>5.3 決策:<strong>先做 A,用試測資料決定要不要走 B/C</strong></h3>
+<p>理由:<strong>目前不知道情境效應有多大</strong>。花 8–16 題支撐一個尚未量測過的效應,順序顛倒。A 版本身已是淨賺——它修掉了 §1.1② 的既有偏誤。</p>
+<p><strong>A 版的情境落差處理</strong>:單題差距需 <strong>≥40 分(即兩階以上)</strong> 才視為落差並敘事;未達門檻不敘事(比照向量層 NOISE 地板的誠實原則)。</p>
+<hr />
+<h2>6. 試測要驗證的假設</h2>
+<ol>
+<li><strong>落差是否存在</strong>:兩情境分數差超過門檻的態,佔比多少?</li>
+<li><strong>落差是否為訊號</strong>:落差集中於特定幾態(=真)還是隨機散布(=雜訊)?</li>
+<li><strong>★ 情境化是否提高鑑別度</strong>:加上場域框後,<strong>明顯峰比例是否上升</strong>?</li>
+<li>FOR 文獻預測「降低誤差變異」⇒ 峰應更清楚。這是本設計最重要的可否證預測。</li>
+<li>若成立:同時證明情境化值得做、且值得再投資題數走 B。</li>
+<li>若落差很小或很隨機:省下那 8 題,A 版仍保留偏誤修正的價值。</li>
+</ol>
+<hr />
+<h2>7. 新增檢核指標(鑑別度)</h2>
+<p>既有題庫池檢核基準為:低端使用率、天花板、槽內一致。<strong>本案新增兩條</strong>,因為「現出形狀」就是產品意義所在:</p>
+<div class="tblwrap"><table>
+<thead>
+<tr>
+<th>指標</th>
+<th>定義</th>
+<th>不合格的意義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>明顯峰比例</strong></td>
+<td>判為 single(最高與次高差 ≥ LEAD_GAP 且 ≥ LEAD_MIN)的受測者佔比</td>
+<td>過低 ⇒ 題目沒有鑑別力</td>
+</tr>
+<tr>
+<td><strong>格局型比例</strong></td>
+<td>判為 pattern(無明顯峰)的受測者佔比</td>
+<td>過高 ⇒ <strong>是題本要修,不是解讀要圓場</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>門檻值待 ≥30 份試測後設定(v0.1 待考)。</p>
+<hr />
+<h2>8. 報告連動改動(非選配)</h2>
+<p>情境一旦設計進題本,<strong>只顯示平均分即構成誤導</strong>:任務場域乾 90、親近場域乾 30,平均 60 描述的是不存在的人。</p>
+<ol>
+<li><strong>落差必須呈現</strong>:超過門檻的態要在報告中標示「這一態很看場合」,並指出往哪個場域偏。</li>
+<li><strong>平均數降位</strong>:現行「整體水平:偏高/中間/偏收(八態平均 XX)」不再置於前段;v3 口語層 <code>SPOKEN.level</code> 的「八股平均 {M}」句式改寫為「<strong>你有幾股同時在線、哪幾股收著</strong>」——講結構,不講平均數。</li>
+<li><strong>六級列表與四大系統區</strong>需容納落差標記(版面待設計)。</li>
+<li>伴讀 grounding 需帶入落差資訊,口語層要能說出「你的開創在有任務的場合特別亮,在親近關係裡收著——這個落差本身可能比分數更值得聊」。</li>
+</ol>
+<hr />
+<h2>9. 誠實邊界</h2>
+<ul>
+<li><strong>兩點不是分布。</strong> Fleeson 的密度分布靠經驗取樣(連續數日、一日多次)做出;本設計是<strong>兩個情境各一題的廉價近似</strong>。可以說「你的開創在這兩種場合看起來不一樣」,<strong>不可</strong>說「你的開創變異度是 X」、不可給變異數或分布形狀。</li>
+<li><strong>不解決效度(誤認)問題</strong>,見 §1.2;那需要第二資訊源(開放式行為描述/他評/重測),屬另案。</li>
+<li><strong>落差不解釋原因、不評好壞</strong>(C1 並列不捏因果)。</li>
+<li>版號維持 <strong>v0.1 研究假設·待考</strong>。</li>
+</ul>
+<hr />
+<h2>10. 版本與資料相容</h2>
+<ul>
+<li>題幹一經改寫即為<strong>新題本 v3,碼前綴 B3</strong>;<strong>B2 與 B3 分數不可互比、不可併池</strong>(比照 B1×B2 既有規則,月照鏡須拒算跨題本對照)。</li>
+<li><strong>實作時機取決於 B2 試測狀態</strong>:若已開始收 B2 資料,應先收滿 ≥30 份再切換;否則現在切換、B2 視為未收。</li>
+<li>⑪ 題庫池 spec 的「v3 候選題幹 28 題(與 v2 同槽不同景)」原為<strong>平行題組</strong>用途;本案改變槽位結構(新增情境維度),兩者需重新對齊——<strong>建議</strong>:那 28 題候選轉為本案改寫的素材來源(同樣八態、只需指派場域),不另立平行題組。待決。</li>
+</ul>
+<hr />
+<h2>11. 待決清單</h2>
+<ol>
+<li>施測指導語中兩個場域定義的<strong>確切文案</strong>(使用者第一眼看到的東西)。</li>
+<li>6 題改寫草稿 + 8 題微調草稿(須過 speak-human-tw 校對)。</li>
+<li>A 版落差門檻 40 分是否合適(現為推論值,待試測校正)。</li>
+<li>報告如何呈現落差(版面設計)。</li>
+<li>⑪ 平行題組與本案的對齊方式(見 §10)。</li>
+<li>對境耗能模組的場域用語是否同步改為功能式。</li>
+</ol>
+<hr />
+<h2>參考文獻</h2>
+<ul>
+<li>Schmit, M. J., Ryan, A. M., Stierwalt, S. L., &amp; Powell, A. B. (1995). Frame-of-reference effects on personality scale scores and criterion-related validity. <em>Journal of Applied Psychology</em>.</li>
+<li>Bing, M. N., Whanger, J. C., Davison, H. K., &amp; VanHook, J. B. (2004). Incremental validity of the frame-of-reference effect in personality scale scores. <em>Journal of Applied Psychology</em>.</li>
+<li>Pathki, C. S., Kluemper, D. H., Meuser, J. D., &amp; McLarty, B. D. (2022). The Org-B5: Development of a short work frame-of-reference measure of the Big Five. <em>Journal of Management</em>.</li>
+<li>Heller, D., Ferris, D. L., Brown, D., &amp; Watson, D. (2007). Contextualized personality: Traditional and new assessment procedures. <em>Journal of Personality</em>.</li>
+<li>Fleeson, W. (2001). Toward a structure- and process-integrated view of personality: Traits as density distributions of states. <em>Journal of Personality and Social Psychology</em>.</li>
+<li>Mischel, W., &amp; Shoda, Y. (1995). A cognitive-affective system theory of personality. <em>Psychological Review</em>.</li>
+</ul>
+</article>
+<div class="honest">
+  這是一面認識自己與關係的鏡子,不是算命、不是命定——能量會流動,也可以成長。
+  <div class="src">Source · docs/superpowers/specs/2026-07-27-octenso-item-bank-v3-contextualized-design.md</div>
+</div>
+</div>
+
+</body>
+</html>
