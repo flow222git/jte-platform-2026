@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態鏡 · 討論版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+header{padding:64px 0 30px;text-align:center;border-bottom:1px solid var(--line)}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.12em;margin:0 0 10px;text-wrap:balance}
+.subtitle{color:var(--muted);font-size:13.5px;letter-spacing:.06em;margin:0 0 14px}
+.stamp{display:block;width:fit-content;margin:0 auto 14px;font-size:11.5px;color:var(--cinnabar);
+  border:1px solid var(--cinnabar);border-radius:999px;padding:3px 15px;letter-spacing:.1em}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+nav.toc{margin:26px 0 0;padding:18px 0 4px;border-bottom:1px solid var(--line)}
+nav.toc .tl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font-size:12.5px;letter-spacing:.06em;text-decoration:none;color:var(--pine);
+  border:1px solid var(--hair);border-radius:999px;padding:5px 14px;transition:.2s;display:inline-block;line-height:1.6}
+nav.toc a:hover{border-color:var(--pine)}
+
+section{padding-top:20px}
+.seclabel{display:flex;align-items:baseline;gap:12px;margin:54px 0 12px;padding-top:26px;border-top:1px solid var(--line)}
+.seclabel .num{font-family:var(--serif);color:var(--gold);font-size:14px;letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:clamp(18px,4.4vw,21.5px);letter-spacing:.1em;margin:0;text-wrap:balance}
+.seclead{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:66ch}
+h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.07em;margin:30px 0 10px}
+p{margin:0 0 15px;max-width:70ch}
+strong{font-weight:400;color:var(--ink)}
+a{color:var(--pine)}
+ul,ol{padding-left:1.5em;margin:0 0 15px;max-width:70ch}
+li{margin-bottom:7px}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:12.5px;
+  background:var(--surface2);border-radius:3px;padding:1px 5px;word-break:break-all}
+
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85;min-width:460px}
+th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+tr:last-child td{border-bottom:none}
+td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
+
+.key{border:1px solid var(--pine);border-radius:3px;padding:14px 18px;margin:18px 0;background:var(--surface)}
+.key .kl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:4px}
+.key p:last-child{margin-bottom:0}
+.warn{border-left:2px solid var(--cinnabar);padding:2px 0 2px 16px;margin:18px 0;font-size:13.5px}
+.warn p:last-child{margin-bottom:0}
+.quiet{border-left:1px solid var(--hair);padding:2px 0 2px 16px;margin:18px 0;font-size:13px;color:var(--muted)}
+.quiet p:last-child{margin-bottom:0}
+
+.item{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px;margin:14px 0}
+.item .ih{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.item .inum{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:15.5px;letter-spacing:.06em}
+.item .itag{font-family:var(--latin);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  border:1px solid var(--hair);border-radius:999px;padding:2px 9px;color:var(--muted)}
+.item .itag.open{color:var(--cinnabar);border-color:var(--cinnabar)}
+.item .itag.new{color:var(--gold);border-color:var(--gold)}
+.item p{margin:0 0 8px;font-size:13.5px}
+.item p:last-child{margin-bottom:0}
+.item .src{font-size:12px;color:var(--muted)}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 20px;font-size:13px}
+.flow span{border:1px solid var(--hair);border-radius:3px;padding:5px 12px;background:var(--surface)}
+.flow em{font-style:normal;color:var(--muted)}
+
+footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:2}
+footer a{color:var(--pine)}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Octenso Lens · Discussion</div>
+  <h1>八態鏡 · 討論版</h1>
+  <p class="subtitle">讀運作,不讀人——一頁看完這面鏡子現在長什麼樣、停在哪裡、還有什麼要吵</p>
+  <span class="stamp">v0.1 研究假設 · 待考</span>
+  <div class="meta">整理日期 2026-07-28 · 快照,非真相源</div>
+</header>
+
+<nav class="toc">
+  <div class="tl">Contents</div>
+  <ol>
+    <li><a href="#s1">一 · 這面鏡子是什麼</a></li>
+    <li><a href="#s2">二 · 一次判讀怎麼跑</a></li>
+    <li><a href="#s3">三 · 規則地圖(真相源)</a></li>
+    <li><a href="#s4">四 · 護欄 G1–G8</a></li>
+    <li><a href="#s5">五 · 判卦引擎</a></li>
+    <li><a href="#s6">六 · 邊界:能讀多遠</a></li>
+    <li><a href="#s7">七 · 學理鄰居</a></li>
+    <li><a href="#s8">八 · 待議題</a></li>
+  </ol>
+</nav>
+
+<div class="key" style="margin-top:26px">
+  <div class="kl">這一區在幹嘛</div>
+  <p>八態鏡從 2026-07-15 內部上線到今天,材料長進了四份 canonical、兩份筆記、一份 SOP、一支 skill 與八份 spec,散落在 <code>octenso/</code> 與 <code>docs/superpowers/specs/</code>。文件入口原本沒有它的位置——要討論就得同時開七八個檔。</p>
+  <p>這一頁把全局收成一份可讀、可指、可吵的快照。<strong>真相源仍在原檔</strong>(每節都標);本頁只是索引與摘要,原檔改了要同步回來(同 <code>COMPENDIUM.md</code> 的維護原則)。要動規則,走 skill 的進化流程,不改這裡。</p>
+</div>
+
+<section id="s1">
+  <div class="seclabel"><span class="num">一</span><h2>這面鏡子是什麼</h2></div>
+  <p class="seclead">一句話:八態鏡拿八態 × 道理用三角形當固定構面,讀一份素材裡的「運作」,輸出可追溯到逐字引文的映照——不評成敗、不判人、不預測。</p>
+
+  <p>它跟測驗端(八態能格)是<strong>兩件事、同一個家</strong>。平台第一原則講整體感不硬整合,這裡是最典型的一組:兩邊共用八態語言與誠實邊界,但輸入、對象、輸出各自獨立,不做量表對映。</p>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th></th><th>八態能格(測驗端)</th><th>八態鏡(透鏡端)</th></tr>
+    <tr><td>讀什麼</td><td>人的自我感覺</td><td>一份素材裡的運作</td></tr>
+    <tr><td>輸入</td><td>25 題六點自評</td><td>會議紀錄 / BP / 制度 / 觀察筆記</td></tr>
+    <tr><td>輸出</td><td>八態剖面 + 格局 + 三拍解讀</td><td>八態在場缺席 + 三角形體檢 + 判卦與轉化參考</td></tr>
+    <tr><td>誰在判</td><td>規則引擎(確定性)</td><td>AI 判定 + 機械推導(每條附引文)</td></tr>
+    <tr><td>場景讀法</td><td>正向心理學讀法(先正面)</td><td>吳怡版(坎=度險維心、震=謀定後動、離=附麗虛己)</td></tr>
+    <tr><td>共同紅線</td><td colspan="2">不預測成敗(G1)· 主詞不是「這種人」(G4)· 無引文不判定(G5)· 不排名不評分(G6)</td></tr>
+  </table>
+  </div>
+
+  <p>目前狀態:<strong>內部工具</strong>。<code>octenso/bagua-lens.html</code> 掛 noindex、未接導覽、走登入閘,2–3 人使用;素材與報告不上傳不儲存(Worker 即時判讀不落檔),結果只留 localStorage。另有 skill 版 <code>.claude/skills/bagua-lens/</code>,判讀在對話裡跑,真相源可抓 GitHub raw,更新一處全部跟上。</p>
+</section>
+
+<section id="s2">
+  <div class="seclabel"><span class="num">二</span><h2>一次判讀怎麼跑</h2></div>
+  <p class="seclead">SOP 十二步,分取料 / 讀規則 / 判定 / 推導 / 輸出 / 品管六段。以下是操作地圖的濃縮,細節以 <code>daoliyong-lens-sop.md</code> 與 schema 為準。</p>
+
+  <div class="flow">
+    <span>素材進場</span><em>→</em><span>宣告(不猜)</span><em>→</em><span>載入真相源</span><em>→</em><span>逐句歸池歸格</span><em>→</em><span>六格判定</span><em>→</em><span>成卦或降級</span><em>→</em><span>機械反查</span><em>→</em><span>交叉驗證</span><em>→</em><span>動爻與轉化</span><em>→</em><span>報告組裝</span><em>→</em><span>三值回饋</span>
+  </div>
+
+  <h3>宣告在前,不猜(G8)</h3>
+  <p>必宣告兩項:<strong>素材類型</strong>(brainstorm / decision / retro / routine / bp / policy / interview / observation 八型)與<strong>判讀對象</strong>。可選兩項:目標與 TA——宣告越齊,第⑥段越準;沒宣告就不猜,寧可先問一句。另附<strong>次型</strong>註記(宣言型 / 調查型 / 內部報告型 / 成功敘事型 / 法規理論文本型),各自帶偏置聲明,預期缺席不列病理。</p>
+
+  <h3>報告六段</h3>
+  <ol>
+    <li><strong>缺席清單</strong>——依宣告分「警示 / 本型態預期」,附補問建議。缺席優先於失衡,失衡優先於滿格(G2)。</li>
+    <li><strong>失衡疑似</strong>——型態不適用則註明。</li>
+    <li><strong>強態圖景</strong>。</li>
+    <li><strong>四系統各一句小結</strong>。</li>
+    <li><strong>三角形體檢</strong>——理 / 用 / 道逐層 presence + 逐字引文,一層不可省略,後接三隅箴警示與一句量形描述。</li>
+    <li><strong>判卦與轉化參考</strong>——本卦 → 變爻 → 之卦(見第五節)。</li>
+  </ol>
+  <p>八態要<strong>逐一列</strong>在場狀態(有料 / 薄 / 缺席),一態不可省略;引不出原文就是缺席(無資料),缺席不等於弱。收尾必附<strong>道理用總綰</strong>:三層各一句判定、樣貌、功課,末一句總綰;未及之層明文「素材不及,待補」。</p>
+
+  <h3>雙軌輸出(2026-07-22 定案)</h3>
+  <p>正式交付分兩軌:<strong>白話版</strong>給素材主人與決策者,<strong>深讀版</strong>給校準與專業用(完整判定過程)。白話版七條借金字塔原理與 Gallup 報告設計:答案先行、行動標題(只讀標題就懂全篇)、紅綠燈道理用(術語零出現)、每個發現「這代表什麼 / 該注意什麼 / 怎麼做」三件套配一句原話、先力量後缺口、技術層收進附錄摺疊區、訊噪紀律。</p>
+
+  <div class="key">
+    <div class="kl">語氣律</div>
+    <p>準而不刺——先力量後缺口、隱喻不判死(缺口意象須與在場力量同句並呈)、想像素材主人正在讀。</p>
+  </div>
+
+  <h3>判完不算完:迭代模式</h3>
+  <p>鏡子靠這個變準。每次判讀後收<strong>三值回饋</strong>(很像 / 部分像 / 不太像 + 哪一條最有感、哪一條最不服,記原話與理由),分歧記進 backlog 分五類:判定分歧、語彙、schema 缺口、三層判定分歧、判卦分歧(本卦 / 變爻 / 之卦分開記,六爻另記分池歸屬)。累積後才走進化流程:提案 → 逐條核准 → 修 schema + 檢查器 → 測試全綠 → 開 PR。</p>
+</section>
+
+<section id="s3">
+  <div class="seclabel"><span class="num">三</span><h2>規則地圖(真相源)</h2></div>
+  <p class="seclead">判讀的唯一依據是 canonical schema,任何頁面與 skill 都不複寫定義(meta A 同源)。以下是這面鏡子現在踩著的全部檔案。</p>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th>檔案</th><th>管什麼</th><th>版號 / 狀態</th></tr>
+    <tr><td>octenso-states-schema-v0.1.yaml</td><td>八態判準:G1–G8 護欄、逐態識別信號 / 缺席判定 / 混淆對照、脈絡宣告八型</td><td>0.1.1 · 未達 v0.2 收斂門檻</td></tr>
+    <tr><td>daoliyong-lens-schema-v0.2.yaml</td><td>三層判準(⑤⑥段唯一依據)、判卦引擎、判讀紀律、歸格例句庫、適用域宣告</td><td>0.3.3-draft · 研究假設待考</td></tr>
+    <tr><td>daoliyong-data.js</td><td>三角形文本(真善美 / 四德 / 三隅箴)與八模式腳本;只引用不複寫</td><td>canonical</td></tr>
+    <tr><td>64 卦能量需求表(spec)</td><td>六爻成卦時的卦旨 / 時勢基調 / 召喚節制 / 經典依據</td><td>v0.1 · 未經易學專家終審</td></tr>
+    <tr><td>daoliyong-lens-sop.md</td><td>白話版操作地圖:十二步 + 呈現規範七條</td><td>1.0 · 2026-07-22</td></tr>
+    <tr><td>BOUNDARIES.md</td><td>適用域邊界地圖:六案壓測實證 + 三條件</td><td>0.1 · 工作假說</td></tr>
+    <tr><td>NEIGHBORS.md</td><td>學理鄰居筆記(並列參照,非判準)</td><td>0.2 · 2026-07-22</td></tr>
+    <tr><td>skills/bagua-lens/SKILL.md</td><td>判讀流程與迭代模式;不複寫任何定義</td><td>—</td></tr>
+  </table>
+  </div>
+
+  <p>檢查器:<code>python3 tools/check-states-schema.py</code>、<code>python3 tools/check-daoliyong-lens-schema.py</code>(本機無 python 用 <code>node tools/smoke-daoliyong-lens-schema.mjs</code>)。</p>
+
+  <h3>版號紀律</h3>
+  <p>內容修訂走 0.1.x;<strong>升 0.2 的唯一途徑是真實素材雙盲收斂達標</strong>——不靠寫得比較完整、不靠跑得比較久。這條是誠實印章在版號上的具體形式。</p>
+</section>
+
+<section id="s4">
+  <div class="seclabel"><span class="num">四</span><h2>護欄 G1–G8</h2></div>
+  <p class="seclead">硬規則,編進定義層,任何 agent 不可覆寫;對⑤⑥段同樣適用。下表為 states-schema 快照,以原檔為準。</p>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th></th><th>規則</th><th>怎麼執行</th></tr>
+    <tr><td>G1</td><td>只診斷能量分佈,不預測成敗</td><td>禁止成功機率、成敗預言、「這樣下去會…」句式</td></tr>
+    <tr><td>G2</td><td>缺席優先於失衡,失衡優先於滿格</td><td>報告順序:無資料的態 → 失衡疑似 → 強態</td></tr>
+    <tr><td>G3</td><td>回溯敘事僅供教學且需標明</td><td>歷史素材一律加註「回溯性閱讀,不構成因果宣稱」</td></tr>
+    <tr><td>G4</td><td>分析單位是運作,主詞不是「這種人」</td><td>合法主詞:某分支 / 某個態 / 這份文件 / 這場會議</td></tr>
+    <tr><td>G5</td><td>無證據即無判定</td><td>每條判定附逐字引文;引不出來 → 判缺席(無資料)</td></tr>
+    <tr><td>G6</td><td>禁止輸出清單</td><td>總分、排名、錄取 / 投資建議、相性分數、人格標籤</td></tr>
+    <tr><td>G7</td><td>面試 / 人事場景降級為觀察筆記</td><td>只列「已收集到 / 尚無資料」的態,提示補問,不評價;不輸出⑤⑥</td></tr>
+    <tr><td>G8</td><td>時間視角可用,因果推移禁止</td><td>禁止系統主動宣稱態序推移;宣告一律使用者說,系統不猜</td></tr>
+  </table>
+  </div>
+
+  <div class="warn">
+    <p>三種失敗要分清楚:<strong>良性失敗</strong>=誠實不成卦 / 拒判 / 降級鏈正確觸發(護欄成功);<strong>惡性失敗</strong>=界外素材仍得自信判讀且不可否證(星座化);<strong>護欄失敗</strong>=讀人紅線素材未拒判就評價了人(G4 破防,最嚴重)。</p>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="seclabel"><span class="num">五</span><h2>判卦引擎</h2></div>
+  <p class="seclead">第⑥段從「引用兩個腳本」長成本卦→變爻→之卦,再長出六爻版。整塊掛<strong>工作假說·待收斂</strong>印章,收斂前不進正式產品文案。</p>
+
+  <div class="key">
+    <div class="kl">必附聲明</div>
+    <p>此卦由素材判讀推導,非起卦占斷;變爻是處方,不是預言。</p>
+  </div>
+
+  <h3>四律</h3>
+  <ul>
+    <li><strong>非占卜律</strong>:爻由判讀而來(每爻附引文)、變由診斷與宣告而來,無一絲隨機。</li>
+    <li><strong>機械推導律</strong>:AI 只判剛柔與安動,卦由反查表自動得出;不得跳過判定直接「感覺是某卦」。同素材同判定必同卦。</li>
+    <li><strong>主詞律</strong>:卦名給運作不給人——「此局呈乾象」可以,「你是乾卦」不行。</li>
+    <li><strong>不預測律</strong>:之卦是參考路徑,不是「將會變成」;死角是結構警訊,不是命運。</li>
+  </ul>
+
+  <h3>三爻 / 六爻與四階降級</h3>
+  <p>素材厚時自動升六爻:內池(對象內部的運作)× 外池(對外的行為與姿態)各撐三爻,內卦 × 外卦查 64 卦需求表,再做<strong>召喚對照</strong>——64 表召喚的態 × 八態在場缺席交叉驗證,召喚而缺席=首要功課,節制而正強=第一級警訊。歸池以「行為的受向」判,界隨判讀對象移動。</p>
+  <p>撐不起來就優雅降級,四階:六爻 → 局部深探(半象 / 爻象深讀,以小觀大,明標其小)→ 三爻(全料合判)→ 不成卦。<strong>不成卦是有尊嚴的輸出</strong>,附缺哪池哪爻與補問。</p>
+
+  <h3>判讀紀律(v0.3.1 六律 + v0.3.3 回填)</h3>
+  <div class="tblwrap">
+  <table>
+    <tr><th>律</th><th>內容</th></tr>
+    <tr><td>證據純化</td><td>引文計入某爻前先問「這是誰的行為」;判讀對象以外的行為者(委辦方 / 供應商 / 撰稿者)之品質不得計入</td></tr>
+    <tr><td>成爻門檻</td><td>每爻 ≥2 句獨立引文(不同段落)方成爻;孤證標「薄」不成爻</td></tr>
+    <tr><td>同爻雙訊號</td><td>亢溺同現先重驗歸格;仍衝突=該爻判動,陰陽並列兩讀標「爻疑」,異卦則並列 + 補問</td></tr>
+    <tr><td>爻疑氾濫</td><td>爻疑爻數 ≥3 = 主體性存疑,拒判並附拆分建議</td></tr>
+    <tr><td>主體同一性</td><td>行為者須能對彼此的行為負責或回應(同一主體、同一時段);跨主體跨世代聚合不判</td></tr>
+    <tr><td>動爻上限</td><td>動爻 ≥4 加註「局勢多處臨界,菜單失焦」,建議先宣告目標或先處理缺席警示——不發明亂局占法</td></tr>
+  </table>
+  </div>
+  <p>亢與溺在過勞終點外觀相同(都停不下),判別看動力來源:<strong>自驅過極=亢(剛)、被外牽走=溺(柔)</strong>。剛柔是絕對質性判定,不與他爻比強弱,全剛 / 全柔之卦必須可達。</p>
+
+  <h3>歸格例句庫(只增不減)</h3>
+  <ul>
+    <li>「不敢休 / 筆電隨身」= 用爻亢(輸出停不下)</li>
+    <li>「假期存在但無法放鬆」= 道爻(餘地機制失效)</li>
+    <li>「被客戶時程牽走」= 外用溺</li>
+    <li>「不知為何努力 / 意義真空」= 道爻溺</li>
+    <li>「怎麼做都不夠好」= 理爻溺(根基被評價體系牽走)</li>
+    <li>「無對沖的極化語言」= 道爻亢,文體不豁免(雙盲 #2 裁定)</li>
+    <li>「建制描述」歸內池、「交付動作」歸外池(雙盲 #2 裁定)</li>
+  </ul>
+</section>
+
+<section id="s6">
+  <div class="seclabel"><span class="num">六</span><h2>邊界:能讀多遠,在哪裡該停</h2></div>
+  <p class="seclead">2026-07-23 邊界壓測六案,配對跨線(抽象 / 尺度 / 紅線各一對,界內界外各一)。素材皆公開文獻,可入 git。</p>
+
+  <div class="key">
+    <div class="kl">適用域三條件</div>
+    <p>判讀對象必須同時滿足:<strong>單一運作主體 × 行為證據 × 同一時段</strong>。缺一不判。</p>
+  </div>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th>案</th><th>方向</th><th>結果</th><th>歸類</th></tr>
+    <tr><td>Linux kernel 社群治理</td><td>抽象 · 界內</td><td>半象 · 內兌,一動爻;兌死角=素材自點名之問題,閉環</td><td>正常出判</td></tr>
+    <tr><td>民法總則條文</td><td>抽象 · 界外</td><td>證據純化全攔 + 分池失錨 → 不成卦</td><td>良性失敗</td></tr>
+    <tr><td>邱吉爾戰時內閣 1940/5</td><td>尺度 · 界內</td><td>半象 · 內兌 · 靜;與 Linux 成兌×兌同象異態對</td><td>正常出判</td></tr>
+    <tr><td>羅馬帝國衰亡</td><td>尺度 · 界外</td><td>形式檢查全綠,每爻跨世紀衝突訊號;可合規聚合出對立判讀</td><td><strong>半開破口</strong></td></tr>
+    <tr><td>Buffett–Munger 合夥</td><td>紅線 · 界內</td><td>半象 · 內震 · 靜(理剛 / 用柔 / 道柔)</td><td>正常出判</td></tr>
+    <tr><td>婚姻告白 essay</td><td>紅線 · 界外</td><td>G7 + G4 + G6 三重護欄疊加拒判;零運作證據</td><td>護欄成功</td></tr>
+  </table>
+  </div>
+
+  <p>界內三案的<strong>對立卦替換測試</strong>皆不成立(結論換成對立卦說不通=有鑑別度);界外三案無一惡性輸出。三案共同點是<strong>外池薄</strong>——公開素材天然偏內部治理紀錄。</p>
+
+  <div class="warn">
+    <p><strong>唯一實證破口</strong>:缺主體同一性時,引擎不會停。羅馬案形式檢查全綠仍可合規聚合出對立判讀;主體同一性律已於 v0.3.3 回填為判讀紀律,但 BOUNDARIES 明記誠實拒判目前<strong>靠判讀者自律,非規則</strong>。</p>
+  </div>
+
+  <p class="quiet">誠實邊界:六案樣本、每方向僅一對,邊界線是「首測定位」不是定論;界內活下來不等於適用域擴張定案。六案素材由校準者選材與代宣告,存在選材偏置;案 3 / 5 帶英雄敘事與成功敘事偏置(已於各判讀註記)。</p>
+</section>
+
+<section id="s7">
+  <div class="seclabel"><span class="num">七</span><h2>學理鄰居(並列相望,不做對映)</h2></div>
+  <p class="seclead">依平台第一原則,鄰居的概念與我們的概念並列,任何「×」讀作窗戶相望,不讀作等號。判讀仍以 schema 為唯一依據。</p>
+
+  <h3>司徒達賢(策略管理)</h3>
+  <p>最強共振三窗:<strong>描述與評估分離</strong>——「策略分析應始於描述現狀」,他明文不可與評價混淆;差別在他第二步就評估成功機會,我們停在映照(G1)。<strong>星座生肖之批</strong>——他批「不可能依星座、生肖來分類」,此窗是自我警惕:卦名一旦被當標籤就踩進他批評的坑,我們的解方是逐句判定、機械推導、孤證不判。<strong>分析與結論脫鉤</strong>——他批 SWOT 式報告的結論查不回前面的分析;我們的可追溯朝過去素材。</p>
+
+  <h3>金樹人(心理位移 / 本土諮商)</h3>
+  <p><strong>三個通道</strong>——高行健「人稱就是通道,而且不是一個通道,是三個通道」;單一視角是平面,三座標交叉才立體。<strong>繞過洞</strong>——Portia Nelson 五章自傳詩「第四章……我繞過它」,變爻的本意正是看見洞、繞過它;且轉化靠迭代不靠頓改。<strong>超越功能</strong>——榮格式的張力要留著,不壓平成折衷(爻疑兩讀並列的學理鄰居);差別在榮格承諾第三物會誕生,我們只擺好並列。</p>
+
+  <div class="warn">
+    <p>鄰居家的房間,不進我們家:成功機率語言、作戰地圖與壓制對手、判領導人的心、為素材方預設「生存獲利成長」的目的論;八態鏡非治療,不宣稱療效,不下探無意識。位移書寫若要進平台,另立工具並列轉介,不與八態鏡混併。</p>
+  </div>
+</section>
+
+<section id="s8">
+  <div class="seclabel"><span class="num">八</span><h2>待議題</h2></div>
+  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後兩條是本頁提出,待裁。</p>
+
+  <div class="item">
+    <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag open">在檔未結</span></div>
+    <p>升 v0.2 的唯一途徑是真實素材雙盲收斂達標,雙盲 #1、#2 的裁定都已回填(#2 一致率 83%),但 schema 的 acceptance 沒寫死門檻:一致率要多少、算法怎麼定(presence 一致率 × 引文重疊如何加權)、要幾份素材。<strong>要討論:把門檻寫成數字,還是明文承認它是判斷題?</strong>寫成數字才擋得住「感覺差不多了就升版」;不寫則要說清楚誰有權判定收斂。</p>
+    <p class="src">出處:states-schema meta · SKILL.md 步驟 5 / 9 · lens-schema acceptance</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">二 · 主體同一性靠自律,不靠規則</span><span class="itag open">在檔未結</span></div>
+    <p>六案壓測的唯一破口。條文已回填 v0.3.3,但那是判讀紀律(要 AI 自己遵守),不是形式檢查能攔的。爻疑氾濫規則(N≥3)是目前最接近的攔截網,<strong>但沒有實證它攔得住羅馬案</strong>——該案形式檢查全綠。要討論:補一道形式檢查(素材時間跨度 / 行為者數量門檻)?還是接受這裡就是自律區,寫進誠實邊界?</p>
+    <p class="src">出處:BOUNDARIES.md §2 · §4 條文 2–3</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">三 · 「設計樣態剛柔」要不要立項</span><span class="itag open">未立項</span></div>
+    <p>民法總則案的副產品:讀<strong>文本設計</strong>而非運作,剛柔並濟的設計讀之成理。BOUNDARIES 明記這與運作判讀分屬兩種判讀學、不可混池。要討論:立成獨立工具(另一面鏡子),還是就此存照不做?混池的風險是模糊「行為證據」這條適用域鐵線。</p>
+    <p class="src">出處:BOUNDARIES.md §4 條文 5</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">四 · 外池永遠薄</span><span class="itag open">在檔待辦</span></div>
+    <p>界內三案全出半象,共同原因是外池證據不足——公開素材天然偏內部治理紀錄。這直接卡住六爻版(升級門檻要兩池各撐三爻)。已列待辦的解法是「外池證據學:素材組合拳」(用多份素材補外池)。要討論:組合拳會不會違反主體同一性律(不同時段的素材算不算同一運作)?這兩條規則有潛在衝突。</p>
+    <p class="src">出處:BOUNDARIES.md §3 · lens-schema guapan.liuyao 升級門檻</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">五 · 兩層雙假說印章疊在一起</span><span class="itag open">在檔未結</span></div>
+    <p>六爻版本身是工作假說待收斂,它依賴的 64 卦需求表 v0.1 又未經易學專家終審——兩個「待考」相乘。要討論:64 表的終審找誰、什麼時候找;在終審前,六爻版的輸出是否應該再降一級(只給卦旨不給召喚對照)?</p>
+    <p class="src">出處:lens-schema guapan.liuyao.status · 64 卦需求表 spec</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">六 · 白話版只有規範,沒有樣張</span><span class="itag open">在檔未結</span></div>
+    <p>呈現規範七條 2026-07-22 定案,但 git 裡沒有任何一份白話版成品可看——因為真實素材(含人名機密)不 commit。要討論:做一份<strong>合成素材</strong>的白話版樣張入 git 當模板,還是維持只有文字規範?沒有樣張,七條在下一次判讀時會各自解讀。</p>
+    <p class="src">出處:daoliyong-lens-sop.md 呈現規範 · SKILL.md 誠實邊界</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">七 · 八態鏡與平台的轉介動線</span><span class="itag new">本頁提出</span></div>
+    <p>第一原則要的是整體感:同一個家、工具間的轉介動線。八態鏡目前是完全獨立的內部工具(noindex、未接導覽)。要討論:它未來對外時,與測驗端的<strong>雙向轉介</strong>怎麼寫?難點在轉介話術本身就可能越界——「你的八態剖面這樣,來看看你的團隊會議」很容易被讀成人與運作的因果,而這正是 C1 與 G4 各自守著的那條線。轉介語言要先過一次憲法審。</p>
+    <p class="src">依據:CLAUDE.md 第一原則 · bagua-lens.html 現況</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">八 · 這一區怎麼維護</span><span class="itag new">本頁提出</span></div>
+    <p>本頁是快照,原檔一改就會漂。要討論:進化流程(修 schema → 檢查器 → PR)要不要明文加一步「同步本頁與 COMPENDIUM」?不加的話,半年後這頁會變成第二套說法——正是 meta A 同源要根治的病。</p>
+    <p class="src">依據:CLAUDE.md meta A 同源 · COMPENDIUM.md 維護原則</p>
+  </div>
+</section>
+
+<footer>
+  真相源一覽(GitHub):
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/octenso-states-schema-v0.1.yaml">states-schema</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/daoliyong-lens-schema-v0.2.yaml">lens-schema</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/daoliyong-data.js">daoliyong-data.js</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/daoliyong-lens-sop.md">SOP</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/BOUNDARIES.md">BOUNDARIES</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/NEIGHBORS.md">NEIGHBORS</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/.claude/skills/bagua-lens/SKILL.md">SKILL</a><br>
+  相關頁:<a href="bagua-lens-install.html">skill 安裝說明</a> ·
+  <a href="octenso-boundary-research.html">八態的邊界 · 深度研究</a> ·
+  <a href="states-schema-completion.html">states-schema 補完</a> ·
+  <a href="compendium.html">全料總覽</a> ·
+  <a href="index.html">文件入口</a><br>
+  本頁為快照,不是判準;要動規則走 skill 的進化流程,逐條核准後改 schema。誠實印章照掛:v0.1 研究假設·待考。
+</footer>
+
+</div>
+</body>
+</html>
