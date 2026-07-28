@@ -126,6 +126,7 @@
 <script src="bagua-catalog-data.js"></script>
 <script src="bagua-catalog-t1.js"></script>
 <script src="bagua-hybrid-data.js"></script>
+<script src="bagua-report-v32-data.js"></script>
 <script src="bagua-v3-bank.js"></script>
 <script src="bagua-v3-data.js"></script>
 <script>
@@ -133,7 +134,7 @@
 'use strict';
 var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2,
     C=window.OCTENSO_CATALOG, H=window.OCTENSO_HYBRID, X3=window.OCTENSO_V3;
-var W=window.OCTENSO_V3_BANK;
+var W=window.OCTENSO_V3_BANK, R32=window.REPORT_V32;
 var $=function(id){return document.getElementById(id);};
 var EKEYS=P.EKEYS, GT=V.GATES, SP=X3.SPOKEN;
 // 口語版過場語蓋在 hybrid 腳本上(沒覆寫的沿用)
@@ -278,6 +279,22 @@ function peakName(){
   return {title:leads.join(' × ')||'—',sub:kn};
 }
 // ── 分段揭示+逐段核對(TA;v3:每段先由伴讀「開口說」口語版,再看卡)──
+// 形狀鍵(與 bagua-report-renderer.js systemsCore.shapeOf 同法)
+function shapeKey(L,Rv){
+  if(L>=60&&Rv>=60)return 'bothHigh';
+  if(L<=40&&Rv<=40)return 'bothLow';
+  if(Math.abs(L-Rv)<P.TUNE.AXIS_EVEN)return 'even';
+  return L>Rv?'left':'right';
+}
+// 開場總述:jagged→對比、峰型→峰、其餘→水平(與報告端同一套策略)
+function openLine(){
+  if(!R32)return null;
+  var pf=RES.pf, rk=pf.ranked, spread=rk[0].v-rk[rk.length-1].v, n=pf.leads.length;
+  var PL=R32.PLAIN, O=R32.OPEN;
+  if(!pf.single && n<2 && spread>=50) return O.contrast(PL[rk[0].k],PL[rk[rk.length-1].k]);
+  if(pf.single||n>=2) return O.peak(pf.leads.slice(0,2).map(function(k){return PL[k];}));
+  return O.level(pf.level.band);
+}
 function axState(ax){
   return ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
     :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
@@ -297,10 +314,13 @@ function toSummary(){
   bot(CH.segPeak);
   var kind=RES.pf.signature.kind;
   var lead0=RES.pf.leads[0];
-  bot(kind==='single'?SP.peakLead[lead0]:(SP.peakKind[kind]||SP.peakKind.pattern));
-  var ess=kind==='single'?(C.T1[lead0].aura||''):'';
-  botHtml('<div class="ct">'+esc(pk.title)+'</div><div class="cs">'+esc(pk.sub)+' · '+esc(C.FELT)+'</div>'
-    +(ess?'<p style="font-size:13.5px;line-height:2">'+esc(ess)+'</p>':''),'cardmsg');
+  // 開場總述:依地形選策略(與報告端同源 REPORT_V32.OPEN;不再用結構語)
+  var op=openLine();
+  if(op){ bot(op.story); bot(op.punch); }
+  botHtml('<div class="ct">'+esc(pk.title)+'</div><div class="cs">'+esc(pk.sub)+' · '+esc(C.FELT)+'</div>','cardmsg');
+  // 「如果這是你」場景段——最有共鳴的一段,放在核對之前
+  var sc0=R32&&R32.SCENE[kind==='pattern'?'pattern':lead0];
+  if(sc0) bot(sc0);
   segEcho('peak',function(){
     // 段 2:主峰所在的系統(口語:命題問句+白話運作;不再唸正式判讀全文)
     var ax=null;
@@ -310,9 +330,14 @@ function toSummary(){
     var plain=(ax.key==='drive'&&st==='bothHigh')?GT.tension
       :GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
     bot(CH.segGate);
-    bot(SP.gateIntro.replace('{G}',GT.name[ax.key])+'\n'
-      +(GT.mission&&GT.mission[ax.key]?GT.mission[ax.key]+'\n':'')
-      +'這個系統'+GT.q[ax.key]+'\n此刻的運作:'+plain);
+    var sd=R32&&R32.SYS_DETAIL[ax.key], item=sd&&sd.shapes[shapeKey(RES.sc[ax.l],RES.sc[ax.r])];
+    if(item){
+      bot(sd.pull);
+      bot(item.read);
+      bot('小練習:'+item.prac);
+    } else {
+      bot(GT.name[ax.key]+'系統 · '+GT.q[ax.key]+'\n此刻的運作:'+plain);
+    }
     segEcho('gate',function(){
       // 段 3:整體水平(口語)+能格(若有)
       bot(CH.segLevel);

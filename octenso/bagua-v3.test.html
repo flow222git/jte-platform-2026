@@ -104,10 +104,14 @@
     var win=f.contentWindow, R=win.HYBRID.results(), St=win.HYBRID.state();
     t('e2e 開場四卡有出現且點過 4 次', sawIntro && introClicks===4);
     t('e2e 開場結束後聊天亮出', !doc.getElementById('chat').classList.contains('hide'));
-    t('e2e 口語峰語出現(單峰句或格局句)', txt.indexOf('先說你此刻最亮的一股')>=0
-      || txt.indexOf('兩股一起亮')>=0 || txt.indexOf('你亮的地方不只一處')>=0 || txt.indexOf('沒有特別突出的單一峰')>=0);
-    t('e2e 系統段口語(住在「…系統」)', txt.indexOf('住在「')>=0 && txt.indexOf('系統」裡')>=0);
-    t('e2e 系統段含核心命題問句', txt.indexOf('如何成為現實?')>=0 || txt.indexOf('如何深入系統?')>=0 || txt.indexOf('如何形成理解?')>=0 || txt.indexOf('如何形成共好?')>=0);
+    // v3 解測已改用 REPORT_V32 敘事材料(2026-07-27):主詞是你、零結構語
+    t('e2e 開場總述用特質語彙', txt.indexOf('特別突出的特質')>=0 || txt.indexOf('最突出的特質有兩個')>=0
+      || txt.indexOf('你的各種特質')>=0 || txt.indexOf('你的特質有強有弱')>=0);
+    t('e2e 場景段「如果這是你」出現', txt.indexOf('如果這是你')>=0);
+    t('e2e 系統段用 SYS_DETAIL(這一對管的是 + 小練習)', txt.indexOf('這一對管的是')>=0 && txt.indexOf('小練習')>=0);
+    t('e2e 結構語退場(不再出現 優勢分支/張力較低/住在「…系統」)',
+      txt.indexOf('住在「')<0 && txt.indexOf('張力較低')<0 && txt.indexOf('此刻的運作:優勢分支')<0);
+    t('e2e 文案不用「燈」的比喻、不強調近期', txt.indexOf('盞燈')<0 && txt.indexOf('這一個月,你身上')<0);
     t('e2e 不再唸正式判讀全文(無 tag 括號)', txt.indexOf('(主導承接俱全——')<0 && txt.indexOf('(偏開創——')<0);
     t('e2e 電量段不再報平均數', txt.indexOf('八股平均')<0 && txt.indexOf('平均 '+R.pf.level.mean)<0);
     t('e2e 跨情境落差段出現', txt.indexOf('有任務的場合')>=0 && txt.indexOf('不解釋原因')>=0);

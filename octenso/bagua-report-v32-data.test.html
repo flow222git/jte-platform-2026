@@ -20,7 +20,7 @@ try{
   ok(o1.story && o1.punch && !/[乾坤震巽坎離艮兌]/.test(o1.story+o1.punch),'OPEN.contrast 零術語');
   ok(o1.punch.indexOf(R.PLAIN.qian.short)>=0 && o1.punch.indexOf(R.PLAIN.gen.short)>=0,'contrast punch 含兩端短語');
   var o2=R.OPEN.peak([R.PLAIN.qian]); ok(o2.story && o2.punch,'OPEN.peak 單峰');
-  var o2b=R.OPEN.peak([R.PLAIN.qian,R.PLAIN.li]); ok(o2b.story.indexOf(R.PLAIN.li.lamp)>=0,'OPEN.peak 雙峰含第二盞燈');
+  var o2b=R.OPEN.peak([R.PLAIN.qian,R.PLAIN.li]); ok(o2b.story.indexOf(R.PLAIN.li.lamp)>=0,'OPEN.peak 雙峰含第二個特質');
   ['high','low','mid'].forEach(function(b){ var o3=R.OPEN.level(b); ok(o3.story && o3.punch,'OPEN.level '+b); });
   // SYS_DETAIL:四系統 × 五形,名用 canonical
   var SYS={build:'建構',drive:'推動',aware:'認知',regulate:'調節'};
