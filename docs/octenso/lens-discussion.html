@@ -77,6 +77,9 @@ td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
 .warn p:last-child{margin-bottom:0}
 .quiet{border-left:1px solid var(--hair);padding:2px 0 2px 16px;margin:18px 0;font-size:13px;color:var(--muted)}
 .quiet p:last-child{margin-bottom:0}
+.said{font-family:var(--serif);color:var(--ink);font-size:16px;line-height:2.05;letter-spacing:.03em;
+  border-left:2px solid var(--gold);padding:4px 0 4px 20px;margin:18px 0;max-width:64ch}
+.said .attr{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);letter-spacing:.06em;margin-top:8px}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px;margin:14px 0}
 .item .ih{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
@@ -149,6 +152,34 @@ footer a{color:var(--pine)}
   </div>
 
   <p>目前狀態:<strong>內部工具</strong>。<code>octenso/bagua-lens.html</code> 掛 noindex、未接導覽、走登入閘,2–3 人使用;素材與報告不上傳不儲存(Worker 即時判讀不落檔),結果只留 localStorage。另有 skill 版 <code>.claude/skills/bagua-lens/</code>,判讀在對話裡跑,真相源可抓 GitHub raw,更新一處全部跟上。</p>
+
+  <h3>定位討論:二元引擎(2026-07-28)</h3>
+
+  <div class="said">
+    八態鏡+哲學三角是試圖把二元世界更完整解讀的引擎,藉由各種素材的學習,去理解二元的特性定義變化而不斷迭代自己並完整呈現照看解析的過程。
+    <span class="attr">Simon,2026-07-28 · 原話照抄,未潤</span>
+  </div>
+
+  <p>這句話技術上站得住,而且已經長成 schema 的形狀:剛=陽、柔=陰,每爻判的就是一個二元;三爻二元組合成八態,六爻內外分池組合成 64 卦。二元確實是原子。句中三個詞各自對得上一個區塊——</p>
+  <ul>
+    <li><strong>特性</strong> → 剛柔判準三表(每爻的剛/柔/亢/溺各附樣態與信號)</li>
+    <li><strong>定義</strong> → 歸格例句庫與混淆對照(定義的操作化;只增不減)</li>
+    <li><strong>變化</strong> → 亢/溺 → 動爻 → 之卦(變化的機制,一爻變)</li>
+  </ul>
+  <p>「哲學三角」在檔內的名字是道理用三角形,與八態的關係已定於憲法增修:<strong>三角形為體、八態為用</strong>,縱軸三層 × 橫軸八態=引擎核心。</p>
+
+  <p>三處要收緊,否則會踩到自己立的線:</p>
+  <ol>
+    <li><strong>「更完整」的合法意思是構面不漏,不是結論完整。</strong>引擎保證的是八態一態不可省略、三層一層不可省略、缺席也要列出來、未及之層明寫「素材不及,待補」。完整的是<strong>缺口清單</strong>,不是照出多少——「不成卦是有尊嚴的輸出」整條紀律靠這個區別站著。</li>
+    <li><strong>「藉由素材的學習」不是模型餵養。</strong>素材不入 git、Worker 不落檔;累積下來的是被判讀分歧逼出來的<strong>判準修訂</strong>,而且逐條經人核准、G1–G8 凍結。準確的說法是:<strong>素材過鏡不留檔,留下的是判準。</strong>寫模糊會直接和「作答不上傳」那條北極星打架;核心凍結反而是迭代可信的前提。</li>
+    <li><strong>二元要留逃生口,而且已經留了。</strong>爻疑兩讀並列、薄、缺席、不成卦——引擎明文允許二元判不下去。這正是與星座式二分法的分野(NEIGHBORS 窗七的自我警惕、窗十六的張力不壓平)。定位句若不寫這一層,「二元引擎」會被聽成更精緻的二分法。</li>
+  </ol>
+
+  <div class="key">
+    <div class="kl">候選定位句 · 待核准</div>
+    <p>八態鏡以剛柔二元為原子、以道理用三角形為縱軸、以八態為橫軸,把一份素材的運作攤成不漏構面的映照。它不追求把話說滿,而追求每一格都指得回原文,指不回就明說沒有;二元判不下去時兩讀並列,不硬選。它的迭代不來自素材本身——素材過鏡不留檔,留下的是被分歧逼出來的判準。</p>
+  </div>
+  <p class="quiet">狀態:原始 · 待審閱(未入 canonical)。此為定位敘述,非效度宣稱;schema 仍掛 v0.1 研究假設·待考。另一處用詞待定:「<strong>照看</strong>」——照=映照無虞,「看」若被讀成照護,會碰到「八態鏡非治療」的紅線;候選改「照見」,或在文案裡把它定義死。</p>
 </section>
 
 <section id="s2">
@@ -326,7 +357,7 @@ footer a{color:var(--pine)}
 
 <section id="s8">
   <div class="seclabel"><span class="num">八</span><h2>待議題</h2></div>
-  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後兩條是本頁提出,待裁。</p>
+  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後三條由這一區的討論長出來,待裁。</p>
 
   <div class="item">
     <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag open">在檔未結</span></div>
@@ -374,6 +405,15 @@ footer a{color:var(--pine)}
     <div class="ih"><span class="inum">八 · 這一區怎麼維護</span><span class="itag new">本頁提出</span></div>
     <p>本頁是快照,原檔一改就會漂。要討論:進化流程(修 schema → 檢查器 → PR)要不要明文加一步「同步本頁與 COMPENDIUM」?不加的話,半年後這頁會變成第二套說法——正是 meta A 同源要根治的病。</p>
     <p class="src">依據:CLAUDE.md meta A 同源 · COMPENDIUM.md 維護原則</p>
+  </div>
+
+  <div class="item">
+    <div class="ih"><span class="inum">九 · 迭代只有收斂管線,沒有存異管線</span><span class="itag new">討論提出</span></div>
+    <p>期待是:在演進裡看得到不同視角,甚至典範轉移。但現行機制把分歧當雜訊處理——雙盲的目的是收斂,分歧的<strong>唯一去處</strong>是「回填混淆對照」,也就是被消化掉;升 v0.2 的門檻又是收斂達標。制度上獎勵收斂,不記錄被頂翻的地方。</p>
+    <p>NEIGHBORS 窗十一寫的卻是相反立場:質疑與挑戰能讓不易注意到的前提浮上檯面,而該窗的「異」欄自己就寫著「他終須收斂成一個決策;我們可並列存檔蓋待考章」——<strong>存異是寫在筆記裡的承諾,流程裡卻沒有這一格</strong>。現成證據:案 2 頂出來的「設計樣態剛柔」是真正的視角轉移候選(讀文本設計而非運作),無處安放,只能標「未立項」。</p>
+    <p>風險不是抽象的:只收斂不存異的迭代,長期會把自己推向不可否證——那正是 BOUNDARIES 對<strong>惡性失敗</strong>的定義,只是發生在制度層而非單次判讀。</p>
+    <p>要討論:分歧三分流要不要寫進進化流程?(a) 判準沒說清 → 收斂,回填混淆對照(現行唯一路徑);(b) 判準沒錯、兩讀都成立 → 並列存檔蓋待考章,即爻疑的組織版;(c) 分歧指向「這套判讀學被素材頂到了」→ 立為典範候選,獨立列冊。零件已經有三個,缺的是接成一條與收斂並行的管線:爻疑兩讀並列(單次判讀層)、對立卦替換測試(目前只用於邊界壓測,可常態化)、NEIGHBORS 引進外部典範且明文並列不對映(防止典範被同化)。另可加一種<strong>異視角雙盲</strong>:同素材、不同宣告(換判讀對象=換界),得出不同卦不是雜訊而是視角——界隨對象移動本來就是規則寫好的。</p>
+    <p class="src">出處:SKILL.md 步驟 5 / 8 · NEIGHBORS 窗十一 · 窗十六 · BOUNDARIES.md §1 惡性失敗定義 · §4 條文 5</p>
   </div>
 </section>
 
