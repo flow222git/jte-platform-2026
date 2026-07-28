@@ -283,7 +283,7 @@ COST_GIST(敘事用短語)另存 8 卦 × o/u,見 persona:1627-1636。
 | octenso-journey/notes/feedback/admin/ci/wheel-min | 旅程/筆記/回饋/管理/CI | 周邊 |
 | **bagua-catalog(+data)** | **型錄(2026-07-07 草稿,未上線、未接導覽)** | 內容層新家 |
 
-共用:`bagua-data.js`(canonical)、`profile.js`(剖面)、`octenso-nav.js`(切換列)、`octenso-gate.js`(白名單閘)。
+共用:`bagua-data.js`(canonical)、`profile.js`(剖面)、`octenso-nav.js`(切換列)、`octenso-gate.js`(登入閘:Google 登入留身分＋通行密碼拿使用權;2026-07-27 起白名單退場)。
 
 ## 9. 決策史(timeline)
 

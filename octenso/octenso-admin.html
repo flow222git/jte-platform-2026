@@ -99,11 +99,11 @@ function showManager(){
     ? extras.map(function(e){return '<div class="row"><span class="em">'+esc(e)+'</span></div>';}).join('')
     : '<div class="row"><span class="em" style="color:var(--muted)">（名單是空的）</span></div>';
   app().innerHTML=
-    '<div class="head"><div class="k">Allowlist</div><h1>白名單（唯讀）</h1><div class="who">管理者 · '+esc(myEmail)+'</div></div>'
+    '<div class="head"><div class="k">Allowlist</div><h1>白名單（唯讀 · 已停用）</h1><div class="who">管理者 · '+esc(myEmail)+'</div></div>'
     +'<div class="wrap">'
-      +'<div class="sec"><div class="sec-t">目前可進入的帳號<span class="sub">共 '+extras.length+' 個 · 由程式碼管理</span></div>'+rows+'</div>'
-      +'<div class="note">白名單已改為<b>程式碼管理</b>（單一來源：<code>octenso/allowlist.json</code>）。<br>要新增或移除，把 email 給開發者更新即可，改完幾分鐘後生效。<br>※ 誠實提醒：這是靜態站的客戶端閘門，屬軟性存取控制，非後端級安全。</div>'
-      +'<div class="foot">Octenso ｜ 八態能格 · 白名單</div>'
+      +'<div class="sec"><div class="sec-t">曾邀請過的帳號<span class="sub">共 '+extras.length+' 個 · 歷史紀錄</span></div>'+rows+'</div>'
+      +'<div class="note">⚠️ <b>這份名單已不再控制進入權</b>（2026-07-27 起）。<br>現在的閘門是：<b>Google 登入</b>（留身分，回饋與記錄用）＋<b>通行密碼</b>（拿使用權）；<code>octenso/allowlist.json</code> 只留作歷史紀錄，改它不會影響任何人能不能進。<br>※ 誠實提醒：這是靜態站的客戶端閘門，屬軟性存取控制，非後端級安全；通行密碼可被自由轉發。</div>'
+      +'<div class="foot">Octenso ｜ 八態能格 · 白名單（歷史紀錄）</div>'
     +'</div>';
 }
 
