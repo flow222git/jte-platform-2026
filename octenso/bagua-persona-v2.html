@@ -641,7 +641,7 @@ $('btn-code').onclick=function(){
   renderReport(d.sc,{},null,d.fc);
 };
 (function(){
-  var m=(location.hash||'').match(/[#&]r=(B[12][0-9]{16,20})/i);
+  var m=(location.hash||'').match(/[#&]r=(B[123][0-9]{16,28})/i);
   if(m){ var d=decodeCode(m[1]); if(d){ renderReport(d.sc,{},null,d.fc); return; } }
   load();
   if(S.phase==='quiz'&&(S.answers.some(function(a){return a!=null;})||S.fcAns.some(function(a){return a!=null;}))){ show('scr-quiz'); renderQ(); }
