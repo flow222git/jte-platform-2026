@@ -1,0 +1,310 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Noto+Sans+TC:wght@200;300;400&display=swap" rel="stylesheet">
+<title>解讀寫法 demo · 現在 vs 提案</title>
+<!--
+  解讀寫法比較 demo(2026-07-27;純比稿用,未接導覽、不影響任何線上頁)
+  左=現在的口語解測層(bagua-v3-data.js SPOKEN 逐字)
+  右=提案寫法:標籤列 / 喜歡·不耐煩對照 / 系統三段式 / 音量條教學 / 測量品質聲明
+  分數與判讀一律走真引擎(profile.js),不手工假造;右欄新增文案為草稿,
+  若採用須移入 canonical 資料檔(meta A 同源)。
+-->
+<style>
+  :root{--bg:#f4efe4;--surface:#f8f4ec;--surface2:#efe9dc;--ink:#23241f;--ink-soft:#3a3a32;--muted:#6f6657;
+    --line:#d2c7b4;--hair:#bcb09a;--pine:#35614f;--cinnabar:#9d4b34;--gold:#a9823b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink-soft);font-family:"Noto Sans TC",ui-sans-serif,system-ui,sans-serif;
+    font-weight:300;line-height:1.9;font-size:15px;max-width:1180px;margin:0 auto;padding:26px 20px 80px}
+  .eyebrow{font-family:"Jost",ui-sans-serif,sans-serif;font-size:11px;letter-spacing:.26em;color:var(--muted);
+    text-transform:uppercase;text-align:center;margin-bottom:10px}
+  h1{font-weight:200;font-size:24px;letter-spacing:.14em;color:var(--ink);text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:12px}
+  .draft{display:block;width:fit-content;margin:0 auto 18px;text-align:center;font-size:11.5px;color:var(--cinnabar);
+    border:1px solid var(--cinnabar);border-radius:999px;padding:3px 14px;letter-spacing:.1em}
+  .switch{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 22px}
+  .sw{font-family:inherit;font-weight:300;font-size:13px;letter-spacing:.04em;padding:8px 16px;cursor:pointer;
+    border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--muted);transition:.15s}
+  .sw:hover{border-color:var(--ink);color:var(--ink)}
+  .sw.on{border-color:var(--ink);color:var(--ink);background:var(--surface)}
+  .cols{display:grid;grid-template-columns:1fr;gap:18px}
+  @media(min-width:900px){.cols{grid-template-columns:1fr 1fr;gap:22px}}
+  .col{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 24px}
+  .col.now{background:transparent;border-style:dashed}
+  .ctag{font-family:"Jost",sans-serif;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:4px}
+  .ctitle{font-size:14px;color:var(--ink);letter-spacing:.06em;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .msg{font-size:13.5px;line-height:1.95;white-space:pre-line;background:var(--bg);border:1px solid var(--line);
+    border-radius:11px;padding:10px 13px;margin-bottom:9px}
+  .col.now .msg{background:var(--surface)}
+  .lbl{font-size:11px;letter-spacing:.16em;color:var(--gold);margin:16px 0 6px;font-family:"Jost",sans-serif;text-transform:uppercase}
+  /* 提案:峰名卡 */
+  .pcard{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;margin-bottom:10px}
+  .pcard .pt{font-family:"Songti TC","Noto Serif TC",serif;font-weight:500;font-size:21px;letter-spacing:.1em;color:var(--ink)}
+  .pcard .ps{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:11.5px;letter-spacing:.06em;color:var(--pine);border:1px solid var(--hair);
+    border-radius:999px;padding:2px 11px;background:var(--surface)}
+  /* 提案:喜歡/不耐煩 */
+  .pref{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px}
+  .pref th{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:400;text-align:left;padding:4px 8px 6px;border-bottom:1px solid var(--line)}
+  .pref td{padding:7px 8px;vertical-align:top;border-bottom:1px solid var(--surface2);line-height:1.8}
+  .pref td.k{white-space:nowrap;color:var(--ink);font-size:12.5px}
+  .pref td.y{color:var(--pine)} .pref td.n{color:var(--cinnabar)}
+  .pref .sc{font-family:"Jost",sans-serif;font-size:11px;color:var(--muted);margin-left:4px}
+  /* 提案:系統三段式 */
+  .sys{border-left:2px solid var(--pine);padding:2px 0 2px 13px;margin:12px 0}
+  .sys .sh{font-size:13.5px;color:var(--ink);letter-spacing:.05em;margin-bottom:7px}
+  .sys .sh b{font-weight:400;color:var(--pine)}
+  .sys .row{font-size:13px;line-height:1.85;margin-bottom:5px}
+  .sys .row i{font-style:normal;color:var(--muted);font-size:11.5px;letter-spacing:.1em;margin-right:6px}
+  .bars{margin:8px 0 4px}
+  .bar{display:flex;align-items:center;gap:9px;margin:5px 0}
+  .bar .bl{flex:none;width:4.6em;font-size:12.5px;color:var(--ink)}
+  .bar .bt{flex:1;height:8px;background:var(--surface2);border-radius:5px;overflow:hidden}
+  .bar .bt i{display:block;height:100%;border-radius:5px;background:var(--hair)}
+  .bar .bt i.on{background:var(--pine)}
+  .bar .bv{flex:none;width:2em;text-align:right;font-family:"Jost",sans-serif;font-size:11px;color:var(--muted)}
+  .teach{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:6px}
+  .quo{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .quo .q{display:flex;gap:10px;align-items:baseline;margin:4px 0;flex-wrap:wrap}
+  .quo .qt{font-size:13.5px;color:var(--ink)}
+  .quo .qw{font-size:11.5px;color:var(--muted)}
+  /* 提案:測量品質 */
+  .qual{border:1px solid var(--gold);border-radius:11px;padding:11px 14px;margin-bottom:10px;background:var(--bg)}
+  .qual .qh{font-size:12px;letter-spacing:.1em;color:var(--gold);margin-bottom:4px}
+  .qual .qb{font-size:13px;line-height:1.9}
+  .dissent{margin-top:8px;font-size:12px;color:var(--muted)}
+  .dissent input{width:100%;margin-top:5px;background:var(--surface);border:1px solid var(--hair);
+    border-radius:8px;padding:7px 11px;font-family:inherit;font-size:12.5px;color:var(--ink)}
+  .note{font-size:12px;color:var(--muted);line-height:1.9;padding-left:14px;border-left:1px solid var(--hair);margin-top:26px}
+  .scores{font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px;font-family:"Jost",sans-serif;letter-spacing:.04em}
+</style>
+</head><body>
+
+<div class="eyebrow">Octenso · Reading Copy · A/B Demo</div>
+<h1>解讀寫法 · 現在 vs 提案</h1>
+<div class="sub">同一份結果、同一個引擎判讀,只有「怎麼講」不一樣</div>
+<span class="draft">比稿用 demo · 未接導覽 · 右欄文案為草稿</span>
+
+<div class="switch" id="sw"></div>
+<div class="scores" id="scores"></div>
+<div class="cols">
+  <div class="col now"><div class="ctag">Before</div><div class="ctitle">現在的樣子(線上 v3 口語層逐字)</div><div id="now"></div></div>
+  <div class="col"><div class="ctag">After</div><div class="ctitle">提案的樣子(參考 types.tw 的具體物)</div><div id="new"></div></div>
+</div>
+
+<div class="note" id="note"></div>
+
+<script src="bagua-data.js"></script>
+<script src="profile.js"></script>
+<script src="bagua-v2-data.js"></script>
+<script src="bagua-v3-data.js"></script>
+<script>
+(function(){
+'use strict';
+var B=window.OCTENSO_BAGUA, P=window.OctensoProfile, V=window.OCTENSO_V2, X3=window.OCTENSO_V3;
+var $=function(id){return document.getElementById(id);};
+var EK=P.EKEYS, GT=V.GATES, SP=X3.SPOKEN;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── 提案新增文案(草稿;採用後移入 canonical)──
+var TAGS={
+  qian:['定調','開局','說了算'], kun:['接得住','穩','收尾'],
+  zhen:['行動快','先試再說','起跑'], xun:['牽線','鋪路','順勢'],
+  kan:['想得深','沉得住','需要獨處'], li:['看得清','說得明','被看見'],
+  gen:['界線清楚','踩得住剎車','知道何時停'], dui:['話說得開','接得上','靠聊天回血']
+};
+var PREF={
+  qian:{y:'講重點、有人拍板、當場定案',n:'議而不決、無限期擱置、沒人負責'},
+  kun:{y:'有人收尾、講清楚誰接手、關係裡踏實',n:'開頭很熱後面沒人管、把人丟著、只看數字不看人'},
+  zhen:{y:'先做再說、快速試錯、看得到進度',n:'只討論不動手、等完美方案、卡流程'},
+  xun:{y:'牽對線、資源流得動、順勢推',n:'各做各的、硬碰硬、封閉的小圈子'},
+  kan:{y:'留時間想、獨處的空檔、想到底',n:'當場逼你決定、連環社交、沒有喘息'},
+  li:{y:'把話說清楚、被看見、想法見天日',n:'講不清楚、努力沒人知道、要用猜的'},
+  gen:{y:'界線清楚、範圍講定、說不就是不',n:'一直加碼、責任模糊、情緒勒索'},
+  dui:{y:'話說開、有來有往、氣氛是活的',n:'冷場硬撐、悶著不講、單向下指令'}
+};
+// 最想聽到的話(台詞 + 為什麼有效)——參考 types.tw「最想聽到的話」
+var LINES={
+  qian:[['這件事你決定就好。','把決定權交出來'],['方向你定,我來執行。','信任你的判斷']],
+  kun:[['有你在,我就放心。','肯定你的承接'],['這次換我來收尾。','讓你也被接住']],
+  zhen:[['先做做看再說。','給你行動的許可'],['不用等完美,邊做邊修。','拿掉你最煩的等待']],
+  xun:[['你覺得該找誰?','重視你的連結力'],['這件事交給你去牽線。','給你發揮的空間']],
+  kan:[['你先想想,不急著回我。','給你思考的時間'],['我不打擾你,想好再說。','給你獨處的空檔']],
+  li:[['我懂你的意思了。','你被真的聽懂'],['這個想法很好,說給大家聽。','讓你的東西被看見']],
+  gen:[['你說不就不,我不會再問。','尊重你劃的線'],['範圍就到這裡,不會再加。','讓你安心']],
+  dui:[['我們聊聊吧。','把話接起來'],['你怎麼看?我想聽。','有來有往']]
+};
+// 系統三段式:在做什麼 / 優勢 / 代價(依系統×狀態)
+var SYS3={
+  build:{
+    leanL:{d:'事情來了,你先想「往哪走」——方向定下來,大家才動得了。',
+           a:'局面越亂你越清楚;別人還在觀望,你已經拍板。',
+           c:'接住人那一手比較少用——事情推得動,但誰在硬撐、誰快撐不住,你常常是最後一個知道的。'},
+    leanR:{d:'事情來了,你先看「誰在裡面」——人穩住了,事才走得下去。',
+           a:'你在,場就不容易散;別人願意把難處交給你。',
+           c:'比較少自己起頭定方向——等別人決定的過程裡,你可能默默吞掉不少。'},
+    bothHigh:{d:'方向和人你都顧得到——該帶頭時帶,該接住時接。',
+              a:'開得了局也收得住場,是完整的一手。',
+              c:'兩邊都扛,容易變成什麼都是你的事。'},
+    bothLow:{d:'這一塊此刻兩邊都收著——既不特別主導,也不特別承接。',
+             a:'不搶不攬,省下的力氣可以花在別處。',
+             c:'需要有人拍板或有人接住時,你可能都不在那個位置上。'},
+    mid:{d:'帶頭還是接住,你看場合決定。',a:'兩種位置你都站得住,調度空間大。',c:'沒有固定招牌,別人可能不確定該把哪種角色交給你。'}
+  },
+  drive:{
+    leanL:{d:'想讓事情發生,你的方式是直接動手,先做一版出來再修。',
+           a:'第一步永遠比別人快;卡住的局常常被你一動就開了。',
+           c:'比較少先鋪人和資源——常常做出來才發現該找的人沒找、該借的力沒借,回頭補的成本比省下的多。'},
+    leanR:{d:'想讓事情發生,你會先鋪路:找對的人、把資源接上,讓它順勢長。',
+           a:'你動的時候阻力小,因為該打點的都打點過了。',
+           c:'臨門那一腳可能遲遲不落地——鋪得很好,但事情還沒開始。'},
+    bothHigh:{d:'衝和鋪你同時在做,兩股都往外推。',
+              a:'動能很足,推得動別人推不動的事。',
+              c:'兩個都是油門,同時全開會互相搶方向盤——這一對需要刻意輪替。'},
+    bothLow:{d:'此刻推動的力道兩邊都收著,在蓄勢。',a:'不亂動,省下來的力氣還在。',c:'想做的事可能一直停在「想」的階段。'},
+    mid:{d:'要衝還是先鋪路,你看當下決定。',a:'兩種節奏都叫得動。',c:'關鍵時刻可能會猶豫該用哪一種。'}
+  },
+  aware:{
+    leanL:{d:'想法和感受,你傾向先往內收——放著想、想透了再說。',
+           a:'你的判斷有底;安靜裡長出來的答案,常常比較耐用。',
+           c:'想得很多但說得少——好東西可能爛在心裡,或被別人先講走。'},
+    leanR:{d:'想法和感受,你傾向往外走——說出來、寫下來、讓人看見。',
+           a:'你能把複雜的東西講到別人也懂,想法不會被埋沒。',
+           c:'往內沉澱的時間少——有些判斷還沒想透就先出口了,事後才發現要收回。'},
+    bothHigh:{d:'你既想得深,也說得出來。',a:'想清楚再講,講出來又有份量。',c:'兩邊都很滿,腦子可能一直沒關機。'},
+    bothLow:{d:'此刻想與說兩邊都淡——沒特別鑽,也沒特別表達。',a:'不糾結,也不用應付表達的壓力。',c:'該被看見的時候,可能沒被看見。'},
+    mid:{d:'收著想或說出來,你隨情境切換。',a:'該深的時候深、該說的時候說。',c:'沒有固定慣性,別人不容易預測你的反應。'}
+  },
+  regulate:{
+    leanL:{d:'能量要回來,你走的是關起門、斷線休息這條路。',
+           a:'你守得住自己的線,不容易被無限加碼。',
+           c:'比較少用「找人講一講」來消化——有些事可能一直自己扛著。'},
+    leanR:{d:'能量要回來,你走的是找人聊、把話說掉這條路。',
+           a:'情緒不容易積著,講一講就過去了。',
+           c:'比較少關起門獨處——真的累的時候你會用更多社交去補,結果越補越累。'},
+    bothHigh:{d:'想停就停得下來,想聊就聊得起來。',a:'進退都順,收放之間不卡。',c:'兩邊都開著,要留意總量。'},
+    bothLow:{d:'此刻兩邊都收著——不太主動休息,也不太主動找人。',a:'安靜,不耗在來回上。',c:'累了可能沒有現成的回血方式。'},
+    mid:{d:'要靜要聊,你自己會調。',a:'哪邊需要就往哪邊,不勉強。',c:'節奏隨機,別人不容易配合。'}
+  }
+};
+var BAR_TEACH='每個系統有兩條——它們不是二選一,可以同時亮、也可以同時暗。條子長=此刻用得多。';
+
+// ── 範例(用真引擎判讀,不手工假造)──
+var CASES=[
+  {id:'clear', nm:'範例一 · 形狀清楚',
+   sc:{qian:88,zhen:68,li:64,dui:56,xun:52,kun:44,gen:36,kan:28}},
+  {id:'flat', nm:'範例二 · 形狀很平(前三名幾乎同分)',
+   sc:{qian:58,li:56,dui:55,zhen:53,kun:52,xun:51,kan:49,gen:47}}
+];
+
+function nowHtml(pf,sc){
+  var h='', kind=pf.signature.kind, lead0=pf.leads[0];
+  h+='<div class="lbl">峰名段</div>';
+  h+='<div class="msg">先看此刻最亮的地方——</div>';
+  h+='<div class="msg">'+esc(kind==='single'?SP.peakLead[lead0]:(SP.peakKind[kind]||SP.peakKind.pattern))+'</div>';
+  // 系統段(主峰所在)
+  var ax=null;
+  pf.axes.forEach(function(a){P.PAIRS.forEach(function(p){if(p.key===a.key&&(p.l===lead0||p.r===lead0))ax=a;});});
+  if(!ax)ax=pf.axes[0];
+  var st=axState(ax);
+  var plain=(ax.key==='drive'&&st==='bothHigh')?GT.tension
+    :GT.state[st].replace(/\{L\}/g,GT.pole[ax.l]).replace(/\{R\}/g,GT.pole[ax.r]);
+  h+='<div class="lbl">系統段</div>';
+  h+='<div class="msg">再往裡看一層——這股峰,在你內在的四大系統裡住在哪:</div>';
+  h+='<div class="msg">'+esc(SP.gateIntro.replace('{G}',GT.name[ax.key])+'\n'
+      +(GT.mission&&GT.mission[ax.key]?GT.mission[ax.key]+'\n':'')
+      +'這個系統'+GT.q[ax.key]+'\n此刻的運作:'+plain)+'</div>';
+  // 電量段
+  var on=0,off=0;
+  EK.forEach(function(k){ if(sc[k]>=P.TUNE.RES)on++; else if(sc[k]<=P.TUNE.GAP)off++; });
+  h+='<div class="lbl">電量段</div>';
+  h+='<div class="msg">然後看整體的電量——</div>';
+  h+='<div class="msg">'+esc((SP.level[pf.level.band]||SP.level.mid).replace('{ON}',on).replace('{OFF}',off))+'</div>';
+  return h;
+}
+function axState(ax){
+  return ax.intensity==='both-high'?'bothHigh':ax.intensity==='both-low'?'bothLow'
+    :ax.intensity==='single'?(ax.lean==='left'?'leanL':'leanR'):'mid';
+}
+function pn(k){var g=B.get(k);return g.fnShort+'者('+g.nm+')';}
+
+function newHtml(pf,sc){
+  var h='', kind=pf.signature.kind, rk=pf.ranked, lead0=pf.leads[0];
+  // ① 測量品質聲明
+  var gap=rk[0].v-rk[1].v, clear=(kind==='single');
+  h+='<div class="lbl">① 測量品質聲明(新)</div>';
+  h+='<div class="qual"><div class="qh">這次照得清不清楚</div><div class="qb">'
+    +(clear
+      ? '這次的形狀蠻清楚的——'+pn(rk[0].k)+'比第二名高出 '+gap+' 分,主峰站得住。'
+      : '這次的形狀很平——前三名只差 '+(rk[0].v-rk[2].v)+' 分,幾乎是平手。可能你本來就均衡,也可能今天答得比較保守。<b>下面的主峰判讀,請放輕一點看。</b>')
+    +'</div>'
+    +'<div class="dissent">'+(clear?'覺得不像?下面每一段都可以告訴我們。'
+      :'如果三個都不像你,直接告訴我們你覺得自己是哪一種(不會改變這次結果):')
+    +(clear?'':'<input placeholder="例如:我覺得我比較像 承接者">')+'</div></div>';
+  // ② 峰名卡+標籤列
+  h+='<div class="lbl">② 峰名卡 + 標籤列(新)</div>';
+  var leads=pf.leads.slice(0,kind==='single'?1:3);
+  var tg=[];leads.forEach(function(k){ (TAGS[k]||[]).forEach(function(t){ if(tg.indexOf(t)<0)tg.push(t); }); });
+  h+='<div class="pcard"><div class="pt">'+esc(leads.map(pn).join(' × '))+'</div>'
+    +'<div class="ps">'+esc(kind==='single'?'單一主峰':kind==='dual'?'雙峰並立':kind==='multi'?'多峰同行':'看整體格局')+' · 此刻的快照</div>'
+    +'<div class="tags">'+tg.map(function(t){return '<span class="tag">'+esc(t)+'</span>';}).join('')+'</div></div>';
+  // ③ 喜歡/不耐煩
+  h+='<div class="lbl">③ 你偏好什麼 / 什麼會讓你不耐煩(新)</div>';
+  h+='<table class="pref"><tr><th style="width:7.5em">最亮的幾股</th><th>你偏好</th><th>會讓你不耐煩</th></tr>';
+  rk.slice(0,3).forEach(function(o){
+    h+='<tr><td class="k">'+esc(B.get(o.k).fnShort)+'<span class="sc">'+o.v+'</span></td>'
+      +'<td class="y">'+esc(PREF[o.k].y)+'</td><td class="n">'+esc(PREF[o.k].n)+'</td></tr>';
+  });
+  var last=rk[rk.length-1];
+  h+='<tr><td class="k" style="color:var(--muted)">'+esc(B.get(last.k).fnShort)+'<span class="sc">'+last.v+'</span></td>'
+    +'<td colspan="2" style="color:var(--muted)">此刻收得最多的一股——上面那組「偏好」,你目前比較少去要。</td></tr>';
+  h+='</table>';
+  // ④ 系統三段式 + 音量條教學
+  var ax=null;
+  pf.axes.forEach(function(a){P.PAIRS.forEach(function(p){if(p.key===a.key&&(p.l===lead0||p.r===lead0))ax=a;});});
+  if(!ax)ax=pf.axes[0];
+  var st=axState(ax), s3=SYS3[ax.key][st];
+  h+='<div class="lbl">④ 系統段:固定三段式(新)</div>';
+  h+='<div class="teach">'+esc(BAR_TEACH)+'</div>';
+  h+='<div class="bars">'
+    +bar(GT.pole[ax.l],sc[ax.l],st==='leanL'||st==='bothHigh')
+    +bar(GT.pole[ax.r],sc[ax.r],st==='leanR'||st==='bothHigh')+'</div>';
+  h+='<div class="sys"><div class="sh"><b>'+esc(GT.name[ax.key])+'</b>——'+esc(GT.pole[ax.l])+' ⇄ '+esc(GT.pole[ax.r])+'</div>'
+    +'<div class="row"><i>在做什麼</i>'+esc(s3.d)+'</div>'
+    +'<div class="row"><i>你的優勢</i>'+esc(s3.a)+'</div>'
+    +'<div class="row"><i>要留意</i>'+esc(s3.c)+'</div></div>';
+  // ⑤ 最想聽到的話(台詞)
+  h+='<div class="lbl">⑤ 你最想聽到的話(新)</div>';
+  h+='<div class="quo">';
+  (LINES[rk[0].k]||[]).concat(LINES[rk[1].k]||[]).slice(0,3).forEach(function(x){
+    h+='<div class="q"><span class="qt">「'+esc(x[0])+'」</span><span class="qw">'+esc(x[1])+'</span></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function bar(nm,v,on){
+  return '<div class="bar"><span class="bl">'+esc(nm)+'</span><span class="bt"><i class="'+(on?'on':'')+'" style="width:'+v+'%"></i></span><span class="bv">'+v+'</span></div>';
+}
+
+function render(i){
+  var c=CASES[i], pf=P.build(c.sc);
+  $('scores').textContent=P.EKEYS.map(function(k){return B.get(k).fnShort+' '+c.sc[k];}).join(' · ');
+  $('now').innerHTML=nowHtml(pf,c.sc);
+  $('new').innerHTML=newHtml(pf,c.sc);
+  [].slice.call($('sw').children).forEach(function(b,j){ b.className='sw'+(j===i?' on':''); });
+  document.body.setAttribute('data-case',c.id);
+}
+CASES.forEach(function(c,i){
+  var b=document.createElement('button');b.className='sw';b.textContent=c.nm;
+  b.onclick=function(){render(i);};
+  $('sw').appendChild(b);
+});
+$('note').textContent=B.HONEST+' 這是比稿用 demo:兩欄的分數與判讀都走同一個引擎(profile.js),差別只在文案寫法。右欄的標籤、偏好對照、系統三段式為草稿文案,若採用須移入 canonical 資料檔。';
+render(0);
+document.body.setAttribute('data-ready','1');
+window.DEMO={cases:CASES,render:render};
+})();
+</script>
+</body></html>
