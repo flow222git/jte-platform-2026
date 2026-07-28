@@ -66,6 +66,16 @@
   t('level 口語改講結構不講平均', ['high','mid','low'].every(function(k){
     return X3.SPOKEN.level[k].indexOf('平均')<0;}) && X3.SPOKEN.level.high.indexOf('{ON}')>=0);
   t('CHAT_OVR 有跨情境落差段', X3.CHAT_OVR.segSpread.indexOf('有任務的場合')>=0);
+  // ── 快速可讀層(標籤/偏好/台詞)──
+  t('TAGS ×8 各 3 個短標籤', KEYS.every(function(k){
+    return X3.TAGS[k] && X3.TAGS[k].length===3 && X3.TAGS[k].every(function(t){return t.length<=6;});}));
+  t('PREF ×8 有偏好與不耐煩', KEYS.every(function(k){
+    return X3.PREF[k] && X3.PREF[k].y.length>6 && X3.PREF[k].n.length>6;}));
+  t('LINES ×8 各 2 句台詞+為什麼', KEYS.every(function(k){
+    return X3.LINES[k] && X3.LINES[k].length===2
+      && X3.LINES[k].every(function(x){return x.length===2 && x[0].length>4 && x[1].length>3;});}));
+  t('READ_LBL 標題齊備', ['prefHead','prefY','prefN','prefLow','linesHead','linesNote'].every(function(k){
+    return X3.READ_LBL[k] && X3.READ_LBL[k].length>1;}));
   t('v3 不依賴已刪的開場問句鍵(hybrid 已改開場直進)',
     H.CHAT.askIntro===undefined && H.CHAT.askPlaceholder===undefined && H.CHAT.askSend===undefined
     && H.CHAT.askSkip===undefined && H.CHAT.askEcho===undefined && H.CHAT.segEndAsk===undefined
@@ -108,9 +118,13 @@
     t('e2e 開場總述用特質語彙', txt.indexOf('特別突出的特質')>=0 || txt.indexOf('最突出的特質有兩個')>=0
       || txt.indexOf('你的各種特質')>=0 || txt.indexOf('你的特質有強有弱')>=0);
     t('e2e 場景段「如果這是你」出現', txt.indexOf('如果這是你')>=0);
+    t('e2e 峰名卡有標籤列', doc.querySelectorAll('.cardmsg .tags .tag').length>=3);
+    t('e2e 偏好/不耐煩表出現', !!doc.querySelector('table.pref') && txt.indexOf('會讓你不耐煩')>=0);
+    t('e2e 台詞區出現(含為什麼有效)', !!doc.querySelector('.quo .qt') && txt.indexOf('這幾句話對你最有用')>=0);
     t('e2e 系統段用 SYS_DETAIL(這一對管的是 + 小練習)', txt.indexOf('這一對管的是')>=0 && txt.indexOf('小練習')>=0);
-    t('e2e 結構語退場(不再出現 優勢分支/張力較低/住在「…系統」)',
-      txt.indexOf('住在「')<0 && txt.indexOf('張力較低')<0 && txt.indexOf('此刻的運作:優勢分支')<0);
+    t('e2e 結構語退場(峰/優勢分支/張力/住在…系統 全不出現)',
+      txt.indexOf('住在')<0 && txt.indexOf('張力較低')<0 && txt.indexOf('此刻的運作:優勢分支')<0
+      && txt.indexOf('這股峰')<0 && txt.indexOf('四大系統裡')<0);
     t('e2e 文案不用「燈」的比喻、不強調近期', txt.indexOf('盞燈')<0 && txt.indexOf('這一個月,你身上')<0);
     t('e2e 不再唸正式判讀全文(無 tag 括號)', txt.indexOf('(主導承接俱全——')<0 && txt.indexOf('(偏開創——')<0);
     t('e2e 電量段不再報平均數', txt.indexOf('八股平均')<0 && txt.indexOf('平均 '+R.pf.level.mean)<0);
