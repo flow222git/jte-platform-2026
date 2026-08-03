@@ -93,8 +93,14 @@ def main():
     qx = gp.get("量形圖", {})
     check("量形圖齊", "非分數" in str(qx.get("頂點", "")) and "趨韓非形" in str(qx.get("形態", {}).get("道頂縮", "")) and bool(qx.get("輸出")))
     sd = gp.get("宣告體系", {})
-    check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 2
+    # 必宣告 2026-08-03 由 2 項增為 3 項(+主體同一性,待議題二 Simon 核可)
+    check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 3
+          and "主體同一性" in sd["必宣告"]
           and isinstance(sd.get("可選宣告"), list) and len(sd["可選宣告"]) == 2)
+    tyi = sd.get("主體同一性宣告", {})
+    check("主體同一性宣告齊", "負責或回應" in str(tyi.get("問法", ""))
+          and "拒判" in str(tyi.get("處置", "")) and "不確定" in str(tyi.get("處置", ""))
+          and "數字門檻" in str(tyi.get("不採", "")))
 
     zh = gp.get("剛柔判準註", {})
     check("剛柔判準註兩條", "非相對比較" in str(zh.get("絕對質性", "")) and "動力來源" in str(zh.get("亢溺判別", "")))
