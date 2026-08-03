@@ -88,6 +88,7 @@ td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
   border:1px solid var(--hair);border-radius:999px;padding:2px 9px;color:var(--muted)}
 .item .itag.open{color:var(--cinnabar);border-color:var(--cinnabar)}
 .item .itag.new{color:var(--gold);border-color:var(--gold)}
+.item .itag.done{color:var(--pine);border-color:var(--pine)}
 .item p{margin:0 0 8px;font-size:13.5px}
 .item p:last-child{margin-bottom:0}
 .item .src{font-size:12px;color:var(--muted)}
@@ -417,12 +418,20 @@ footer a{color:var(--pine)}
 
 <section id="s9">
   <div class="seclabel"><span class="num">九</span><h2>待議題</h2></div>
-  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後五條由這一區的討論與資料觀察長出來,待裁。</p>
+  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後五條由這一區的討論與資料觀察長出來。逐條裁決中——已裁定者標日期與結論,其餘待裁。</p>
 
   <div class="item">
-    <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag open">在檔未結</span></div>
-    <p>升 v0.2 的唯一途徑是真實素材雙盲收斂達標。雙盲已跑三輪(#1 抓出五條規則缺口、#2 格級一致率 83%、#3 爻疑首次自然觸發),校準素材累計 30+ 件,但 schema 的 acceptance 沒寫死門檻:一致率要多少、算法怎麼定(presence 一致率 × 引文重疊如何加權)、要幾份素材。<strong>要討論:把門檻寫成數字,還是明文承認它是判斷題?</strong>寫成數字才擋得住「感覺差不多了就升版」;不寫則要說清楚誰有權判定收斂。分母的問題見資料觀察末節的登記表提案。</p>
-    <p class="src">出處:states-schema meta · SKILL.md 步驟 5 / 9 · lens-schema acceptance</p>
+    <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag done">已裁定 2026-08-03</span></div>
+    <p>升 v0.2 的唯一途徑是真實素材雙盲收斂達標。雙盲已跑三輪,校準素材累計 30+ 件,但門檻只有「收斂達標」四字:沒有數字、沒有算法(一致率的分母是什麼、引文重疊怎麼算)、沒有樣本數。</p>
+    <p><strong>清點時另外發現一件事:三輪雙盲沒有一輪測的是這個門檻要的數。</strong>#1 測內卦、#2 測格級(83%)、#3 驗爻疑機制——全部打在透鏡層(lens-schema)。而 v0.2 的門檻掛在 states-schema,要的是<strong>八態 presence 一致率</strong>。也就是說,這一層的指標<strong>至今無任何測量值</strong>。</p>
+    <p><strong>裁定(Simon,C 案):算法定死、門檻留人判、判定留痕。</strong></p>
+    <ul>
+      <li><strong>算法定死</strong>——逐態 presence 三值一致 ÷ 8;引文重疊限兩盲皆判「有料」且態別一致者,看是否至少共用一句逐字引文。透鏡層同精神、單位改六格。</li>
+      <li><strong>門檻不寫數字</strong>——樣本仍少,此時訂數字即假精確,違「寧可少說、不可亂說」。達標與否由 Simon 逐輪判定,判定須附一句指得回數字的理由。</li>
+      <li><strong>判定留痕</strong>——每輪必須算出指標並記進 <code>CALIBRATION.md</code> 的收斂指標紀錄表;<strong>跑過≠測過</strong>,沒有數字的輪次不計入升版之路,兩層不可互充。</li>
+    </ul>
+    <p>已落地:兩份 schema 新增 <code>convergence</code> 區塊(算法為 canonical)、CALIBRATION 新增指標紀錄表(補記 #1–#3 現況與 #4 待跑)、SKILL 步驟 5 改為指向 schema 不複寫算法。<strong>下一步是雙盲 #4,標的必須是八態 presence</strong>,否則門檻無樣本可對。</p>
+    <p class="src">出處:states-schema convergence / acceptance · lens-schema convergence · SKILL.md 步驟 5 / 9 · CALIBRATION.md 收斂指標紀錄</p>
   </div>
 
   <div class="item">
