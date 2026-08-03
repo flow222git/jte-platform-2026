@@ -18,7 +18,7 @@ meta:
   guardrails_ref: "octenso-states-schema-v0.1.yaml#guardrails——G1–G8 全部適用於本檔判讀,凍結、不複製、不覆寫"
   canonical_ref: "octenso/daoliyong-data.js——TRIANGLE(真善美/四德/三隅箴文本)、MODES(八模式腳本)"
   verdicts_ref: "presence 值域沿用 states-schema:有料/薄/缺席(缺席=無資料,≠弱)"
-  history: "v0.1 診斷層第一輪驗收完成(2 份真實素材+三值回饋,2026-07-21);v0.2-draft 新增判卦區塊(guapan),另計驗收;v0.3-draft 新增六爻子區塊(liuyao),v3 首判分歧(乾/兌)為立案案例;v0.3.1-draft 判讀紀律六律(雙盲#1 五缺口+Simon 以小觀大),博報堂裁定內坎(半象);v0.3.2-draft 雙盲#2 兩裁定入例句庫+道理用總綰入輸出(2026-07-22);v0.3.3-draft 邊界壓測四條回填(適用域宣告/主體同一性律/爻疑氾濫規則/法規理論文本次型,六案實證見 octenso/BOUNDARIES.md,Simon 2026-07-23 全收)"
+  history: "v0.1 診斷層第一輪驗收完成(2 份真實素材+三值回饋,2026-07-21);v0.2-draft 新增判卦區塊(guapan),另計驗收;v0.3-draft 新增六爻子區塊(liuyao),v3 首判分歧(乾/兌)為立案案例;v0.3.1-draft 判讀紀律六律(雙盲#1 五缺口+Simon 以小觀大),A 集團裁定內坎(半象);v0.3.2-draft 雙盲#2 兩裁定入例句庫+道理用總綰入輸出(2026-07-22);v0.3.3-draft 邊界壓測四條回填(適用域宣告/主體同一性律/爻疑氾濫規則/法規理論文本次型,六案實證見 octenso/BOUNDARIES.md,Simon 2026-07-23 全收)"
 
 # -----------------------------------------------------
 # 三層定義(縱向:理→用→道)
