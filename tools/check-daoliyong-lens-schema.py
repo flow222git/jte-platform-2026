@@ -120,7 +120,12 @@ def main():
     check("歸格例句庫八條", isinstance(gk, list) and len(gk) >= 8)
     check("道理用總綰", "素材不及" in str(gp.get("道理用總綰", "")))
     ly = gp.get("liuyao", {})
-    check("以小觀大階梯", "以小觀大" in str(ly.get("升級門檻", "")) and "半象" in str(ly.get("升級門檻", "")) and "爻象深讀" in str(ly.get("升級門檻", "")))
+    # 2026-08-03 待議題四:階梯由「升級門檻」內文抽出獨立為「解析度階梯」,並改述為解析度非好壞
+    jt = str(ly.get("解析度階梯", ""))
+    check("以小觀大階梯", "以小觀大" in jt and "半象" in jt and "爻象深讀" in jt)
+    check("階梯=解析度非好壞", "解析度不是好壞" in jt and "有尊嚴" in jt)
+    zh3 = str(ly.get("組合拳三界線", ""))
+    check("組合拳三界線", "同一運作主體" in zh3 and "不設數字" in zh3 and "不得跨檔拼湊" in zh3)
     check("liuyao 子區塊在位", bool(ly))
     check("雙假說印章", "雙印章" in str(ly.get("status", "")))
     check("排法 B", "下卦=內在運作的理用道" in str(ly.get("排法", "")))
