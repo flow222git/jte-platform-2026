@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>題本 v4 設計候選 · 雙極不相減 × 他評並列</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px 90px}
+
+header{padding:64px 0 30px;text-align:center;border-bottom:1px solid var(--line)}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.1em;margin:0 0 10px;text-wrap:balance}
+.subtitle{color:var(--muted);font-size:13.5px;letter-spacing:.05em;margin:0 0 14px;text-wrap:balance}
+.stamp{display:block;width:fit-content;margin:0 auto 14px;font-size:11.5px;color:var(--cinnabar);
+  border:1px solid var(--cinnabar);border-radius:999px;padding:3px 15px;letter-spacing:.1em}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+.lead{margin:34px 0 0;padding-left:18px;border-left:1px solid var(--hair);font-size:13.5px;color:var(--muted)}
+.lead p{margin:0 0 8px}.lead p:last-child{margin:0}
+
+.seclabel{display:flex;align-items:baseline;gap:12px;margin:56px 0 12px;padding-top:26px;border-top:1px solid var(--line)}
+.seclabel .num{font-family:var(--serif);color:var(--gold);font-size:14px;letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:clamp(18px,4.4vw,21.5px);letter-spacing:.08em;margin:0;text-wrap:balance}
+.seclead{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:66ch}
+h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.06em;margin:32px 0 10px}
+p{margin:0 0 15px;max-width:70ch}
+strong{font-weight:400;color:var(--ink)}
+a{color:var(--pine)}
+ul,ol{padding-left:1.5em;margin:0 0 15px;max-width:70ch}
+li{margin-bottom:7px}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:12.5px;
+  background:var(--surface2);border-radius:3px;padding:1px 5px;word-break:break-all}
+
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85;min-width:460px}
+th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+tr:last-child td{border-bottom:none}
+td:first-child{font-family:var(--serif);color:var(--ink)}
+
+.key{border:1px solid var(--pine);border-radius:3px;padding:14px 18px;margin:18px 0;background:var(--surface)}
+.key .kl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:4px}
+.key p:last-child{margin-bottom:0}
+.warn{border-left:2px solid var(--cinnabar);padding:2px 0 2px 16px;margin:18px 0;font-size:13.5px}
+.warn p:last-child{margin-bottom:0}
+.quiet{border-left:1px solid var(--hair);padding:2px 0 2px 16px;margin:18px 0;font-size:13px;color:var(--muted)}
+.quiet p:last-child{margin-bottom:0}
+.said{font-family:var(--serif);color:var(--ink);font-size:15.5px;line-height:2.05;letter-spacing:.02em;
+  border-left:2px solid var(--gold);padding:4px 0 4px 20px;margin:18px 0;max-width:64ch}
+.said .attr{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);letter-spacing:.05em;margin-top:8px}
+
+.pick{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px;margin:16px 0}
+.pick .ph{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.pick .pn{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:15.5px;letter-spacing:.05em}
+.pick .tag{font-family:var(--latin);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  border:1px solid var(--hair);border-radius:999px;padding:2px 9px;color:var(--muted)}
+.pick .tag.yes{color:var(--pine);border-color:var(--pine)}
+.pick .tag.no{color:var(--cinnabar);border-color:var(--cinnabar)}
+.pick p{margin:0 0 8px;font-size:13.5px}
+.pick p:last-child{margin-bottom:0}
+
+.axis{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 20px;font-size:13px}
+.axis span{border:1px solid var(--hair);border-radius:3px;padding:5px 12px;background:var(--surface)}
+.axis em{font-style:normal;color:var(--muted)}
+
+footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:2}
+footer a{color:var(--pine)}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Item Bank v4 · Candidates</div>
+  <h1>題本 v4 設計候選</h1>
+  <p class="subtitle">雙極不相減 × 他評並列——兩個從鄰居看到、我們結構上做不到的東西</p>
+  <span class="stamp">設計候選 · 待審 · 不動 B3</span>
+  <div class="meta">2026-08-04 · 來源:學理鄰居三 九向度氣質</div>
+</header>
+
+<div class="lead">
+  <p>這份文件把兩件事寫成候選讓人裁,<strong>沒有動任何 canonical,沒有改題本 v3</strong>。兩條都碰得到計分本體,所以走候選而非直接修訂。</p>
+  <p>第三節另記一個一直存在、但從沒被明確選過的設計立場問題。</p>
+</div>
+
+<section>
+  <div class="seclabel"><span class="num">一</span><h2>候選一 · 雙極分開計分(不相減)</h2></div>
+  <p class="seclead">鄰居能表達「兩端都高」與「兩端都低」的差別,我們的 ipsative 設計表達不出來。這不是精度問題,是結構問題。</p>
+
+  <h3>鄰居的做法</h3>
+  <p>九向度每個向度分 A/B 兩端,各 4 題,<strong>分別加總、明令不相減</strong>。關鍵在解讀規則:</p>
+  <div class="said">
+    兩端都高,表示會依情境切換;兩端都低,表示此向度較少主導你的管理行為。
+    <span class="attr">《主管帶領氣質:九向度自評問卷與下屬管理指南》</span>
+  </div>
+
+  <h3>我們現在做不到什麼</h3>
+  <p>八態能格是 ipsative(相對高低)。<strong>「艮與震都高」和「艮與震都低」在相對座標裡可能落在同一個位置</strong>——前者是該衝時衝、該停時停的切換能力,後者是既不推進也不設界。兩種很不一樣的人,讀出同一個結果。</p>
+  <p>這個缺口跟一條既有規則有關:解讀憲法 C3 明訂「組合僅限四對待、只有雷風可講張力」。那條規則是為了防捏因果,但它同時讓「兩端都高」這個訊號<strong>無處安放</strong>——不是不准講,是根本讀不出來。</p>
+
+  <h3>三個方案</h3>
+  <div class="tblwrap">
+  <table>
+    <tr><th>方案</th><th>做法</th><th>代價</th></tr>
+    <tr><td>A 全面雙極化</td><td>每態拆成兩端各出題,獨立加總</td><td>推翻 ipsative 本體;題數至少翻倍;報告引擎全改;B3 之後分數不可互比</td></tr>
+    <tr><td><strong>B 只在四對待上加標記</strong></td><td>計分不動,四對待各加一層讀法:雙高=切換、雙低=此對不主導</td><td>需要「高/低」的絕對門檻——踩到假精確之戒</td></tr>
+    <tr><td>C 不做</td><td>明文寫進誠實邊界:本工具讀不出「兩端都高」</td><td>誠實,但缺口留著</td></tr>
+  </table>
+  </div>
+
+  <div class="pick">
+    <div class="ph"><span class="pn">建議:B</span><span class="tag yes">待審</span></div>
+    <p>B 是唯一不動本體、又能補上表達力的路。但它有一個直接的地雷:<strong>判定「雙高」需要絕對門檻,而我們的分數是相對的。</strong></p>
+    <p>這正是待議題一(收斂指標)剛裁過的同一種問題,照同一套處理——</p>
+  </div>
+
+  <ul>
+    <li><strong>算法定死</strong>:雙高/雙低的判定式寫進 canonical,且<strong>用個人內部的相對位置定義,不用跨人的絕對分數</strong>(例如該對兩態皆位於個人剖面的上/下三分位,且兩者差距小於以個人分布定義的量)。</li>
+    <li><strong>門檻不從空氣裡訂</strong>:先用既有作答資料跑分布,看「雙高」若照某定義會出現在多少比例的人身上。比例過高(人人都雙高)或過低(沒人雙高)都代表定義沒抓到東西。</li>
+    <li><strong>留痕</strong>:每次調整門檻要記錄理由與當時的分布。</li>
+  </ul>
+
+  <div class="warn">
+    <p><strong>未經資料就寫死門檻,這條不准上線。</strong></p>
+  </div>
+
+  <h3>需要先驗證的事</h3>
+  <ul>
+    <li>現有作答資料裡,四對待「兩態皆高」的實際出現率是多少?(先看分布,再談定義)</li>
+    <li>雙高的人在既有報告裡<strong>現在被讀成什麼</strong>?——可能已經被讀成「格局型」。若如此,本候選的價值就從「補表達力」降為「把既有讀法講清楚」。</li>
+  </ul>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">二</span><h2>候選二 · 他評並列</h2></div>
+  <p class="seclead">我們的誠實邊界一直寫著「主觀自評有天花板」,但從沒做過任何補救。這是最大的一扇窗,也是風險最高的一扇。</p>
+
+  <h3>鄰居的做法</h3>
+  <div class="said">
+    最有價值的是比較「主管自評」與「下屬實際感受」。<br>
+    若主管自評與下屬感受不同,應優先討論具體事件,而不是爭論類型名稱。
+    <span class="attr">九向度氣質工具文件</span>
+  </div>
+  <p>他評不是為了「校正」自評,是為了<strong>讓分歧本身成為對話材料</strong>。而這跟我們既有的機制同構:自評 × 他評的分歧,結構上等同雙盲兩個 agent 的分歧;處理原則也一樣——<strong>回到證據,不爭標籤</strong>。</p>
+
+  <h3>三個層次(建議由淺入深)</h3>
+  <div class="tblwrap">
+  <table>
+    <tr><th>層次</th><th>做法</th><th>風險</th></tr>
+    <tr><td><strong>L1 像不像核對</strong></td><td>不另外施測。報告分段揭示時請對方找一個熟識者一起讀,逐段核對「像不像」,記下不像的地方</td><td>最低。衡鑑式伴讀 spec 的分段核對已有此形狀</td></tr>
+    <tr><td>L2 他評同一份題本</td><td>熟識者依同一題本作答「我看到的他」,兩條剖面並列</td><td>題幹是第一人稱自述,轉他評需改寫;易被讀成評分</td></tr>
+    <tr><td>L3 他評獨立題本</td><td>另寫一套行為描述題(我看到他做了什麼),不問特質</td><td>最貴;但最接近「行為證據」的精神</td></tr>
+  </table>
+  </div>
+
+  <h3>他評一進來就會拉高的風險</h3>
+  <div class="warn">
+    <p><strong>他評極易滑成考評。</strong>這是 G6 最脆弱的一面:一旦主管可以「評」下屬,工具就變成人事工具。</p>
+  </div>
+  <ul>
+    <li><strong>現成護欄已經有了</strong>:CALIBRATION 的 schema 待辦第 6 條「練息場自有 G 條款」——① 個人資料永不進績效考評 ② 只做正向分析不做反向標記 ③ 對資方僅去識別化趨勢。<strong>他評若立項,這三條必須先明文化並上線,不能後補。</strong></li>
+    <li><strong>他評結果永不進報告的「分數」,只進「對照」</strong>。分數只有一條,就是本人的自評;他評是並排的另一面鏡子——<strong>不合成、不平均、不修正</strong>,同「並列不對映」的第一原則。</li>
+    <li><strong>作答不上傳的處置</strong>:他評必然涉及第二個人的資料,localStorage 模式不成立。這是<strong>戰略決定不是功能</strong>,要單獨過。</li>
+  </ul>
+
+  <div class="pick">
+    <div class="ph"><span class="pn">建議:從 L1 起,而且 L1 現在就能做</span><span class="tag yes">待審</span></div>
+    <p>L1 不需要新題本、不需要後端、不碰資料回流,只是報告的一句引導語。L2 / L3 等 G 條款明文化之後再談。</p>
+  </div>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">三</span><h2>一個從沒明確選過的設計立場</h2></div>
+  <p class="seclead">拆題還是並列——同一個問題的兩種解法,我們兩邊都在用,卻從沒說過那是一個選擇。</p>
+
+  <div class="axis">
+    <span>同一訊號有兩種合法讀法</span><em>→</em><span>拆題:事前消歧,換乾淨資料</span><em>或</em><span>並列:事後留張力,換真實</span>
+  </div>
+
+  <p>鄰居發現「低反應閾」有歧義(可能敏感於下屬情緒,也可能敏感於品質偏差),解方是<strong>拆成兩個問法</strong>。我們遇到同型問題的解方是<strong>爻疑並列</strong>。</p>
+  <p>兩種都合法。但我們從來沒有明確選過——而題本 v3 的脈絡化(每題標定場域)<strong>其實已經在往拆題那邊走了</strong>,只是當時沒意識到這是同一個選擇。</p>
+
+  <div class="key">
+    <div class="kl">建議寫成明文立場</div>
+    <p><strong>測驗端傾向拆題</strong>(事前消歧,換乾淨資料);<strong>判讀端傾向並列</strong>(事後留張力,換真實)。</p>
+    <p>理由:測驗端要算分,歧義會直接污染分數;判讀端不算分,張力可以原樣交還素材主人。</p>
+  </div>
+
+  <p>這條若成立,可同時解釋 v3 為何要標場域、以及爻疑為何不強裁——<strong>兩個看似無關的決定,其實出自同一條原則的兩端</strong>。</p>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">四</span><h2>下一步</h2></div>
+  <ol>
+    <li><strong>候選一</strong>:先跑既有作答資料的四對待雙高分布,再談定義與門檻(未經資料不得寫死門檻)。</li>
+    <li><strong>候選二</strong>:L1 可即刻試行(報告加一句引導語);L2 / L3 待 G 條款三條明文化。</li>
+    <li><strong>設計立場</strong>:若認可,寫進解讀憲法或題本 spec 當一條明文原則。</li>
+    <li>三條皆<strong>不動 B3</strong>;任何實作都會產生新題本碼,分數不可與 B3 互比(比照 B1 × B2 × B3 既有規則)。</li>
+  </ol>
+
+  <div class="quiet">
+    <p><strong>誠實邊界</strong>:本文件為候選,非決議。鄰居的做法<strong>並列參照、不做對映</strong>——九向度測的是<strong>反應風格</strong>(多快、多強、多規律),八態測的是<strong>功能傾向</strong>(開創、承接、行動…),兩者正交。任何「高活動量 ≈ 震」式的對照表都是錯的,會同時損害兩邊的公信力。此處借的只是<strong>設計手法</strong>,不是內容。</p>
+  </div>
+</section>
+
+<footer>
+  真相源:<a href="https://github.com/flow222git/jte-platform-2026/blob/main/docs/superpowers/specs/2026-08-04-octenso-item-bank-v4-candidates.md">spec 原始檔</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/NEIGHBORS.md">學理鄰居 NEIGHBORS(鄰居三)</a><br>
+  相關頁:<a href="item-bank-v3.html">題本 v3 脈絡化</a> ·
+  <a href="item-bank-v2.html">題本 v2</a> ·
+  <a href="item-pool.html">題庫池規格</a> ·
+  <a href="lens-discussion.html">八態鏡討論版</a> ·
+  <a href="index.html">文件入口</a><br>
+  本頁為 spec 的閱讀版,內容與 repo 同源;潤稿請改 GitHub 檔案。設計候選待審,未進 canonical。
+</footer>
+
+</div>
+</body>
+</html>
