@@ -88,6 +88,7 @@ td:first-child{font-family:var(--serif);color:var(--ink);white-space:nowrap}
   border:1px solid var(--hair);border-radius:999px;padding:2px 9px;color:var(--muted)}
 .item .itag.open{color:var(--cinnabar);border-color:var(--cinnabar)}
 .item .itag.new{color:var(--gold);border-color:var(--gold)}
+.item .itag.done{color:var(--pine);border-color:var(--pine)}
 .item p{margin:0 0 8px;font-size:13.5px}
 .item p:last-child{margin-bottom:0}
 .item .src{font-size:12px;color:var(--muted)}
@@ -417,37 +418,74 @@ footer a{color:var(--pine)}
 
 <section id="s9">
   <div class="seclabel"><span class="num">九</span><h2>待議題</h2></div>
-  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後五條由這一區的討論與資料觀察長出來,待裁。</p>
+  <p class="seclead">這一區真正要吵的東西。前六條有出處、在檔未結案;後五條由這一區的討論與資料觀察長出來。逐條裁決中——已裁定者標日期與結論,其餘待裁。</p>
 
   <div class="item">
-    <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag open">在檔未結</span></div>
-    <p>升 v0.2 的唯一途徑是真實素材雙盲收斂達標。雙盲已跑三輪(#1 抓出五條規則缺口、#2 格級一致率 83%、#3 爻疑首次自然觸發),校準素材累計 30+ 件,但 schema 的 acceptance 沒寫死門檻:一致率要多少、算法怎麼定(presence 一致率 × 引文重疊如何加權)、要幾份素材。<strong>要討論:把門檻寫成數字,還是明文承認它是判斷題?</strong>寫成數字才擋得住「感覺差不多了就升版」;不寫則要說清楚誰有權判定收斂。分母的問題見資料觀察末節的登記表提案。</p>
-    <p class="src">出處:states-schema meta · SKILL.md 步驟 5 / 9 · lens-schema acceptance</p>
+    <div class="ih"><span class="inum">一 · v0.2 的「達標」沒有數字</span><span class="itag done">已裁定 2026-08-03</span></div>
+    <p>升 v0.2 的唯一途徑是真實素材雙盲收斂達標。雙盲已跑三輪,校準素材累計 30+ 件,但門檻只有「收斂達標」四字:沒有數字、沒有算法(一致率的分母是什麼、引文重疊怎麼算)、沒有樣本數。</p>
+    <p><strong>清點時另外發現一件事:三輪雙盲沒有一輪測的是這個門檻要的數。</strong>#1 測內卦、#2 測格級(83%)、#3 驗爻疑機制——全部打在透鏡層(lens-schema)。而 v0.2 的門檻掛在 states-schema,要的是<strong>八態 presence 一致率</strong>。也就是說,這一層的指標<strong>至今無任何測量值</strong>。</p>
+    <p><strong>裁定(Simon,C 案):算法定死、門檻留人判、判定留痕。</strong></p>
+    <ul>
+      <li><strong>算法定死</strong>——逐態 presence 三值一致 ÷ 8;引文重疊限兩盲皆判「有料」且態別一致者,看是否至少共用一句逐字引文。透鏡層同精神、單位改六格。</li>
+      <li><strong>門檻不寫數字</strong>——樣本仍少,此時訂數字即假精確,違「寧可少說、不可亂說」。達標與否由 Simon 逐輪判定,判定須附一句指得回數字的理由。</li>
+      <li><strong>判定留痕</strong>——每輪必須算出指標並記進 <code>CALIBRATION.md</code> 的收斂指標紀錄表;<strong>跑過≠測過</strong>,沒有數字的輪次不計入升版之路,兩層不可互充。</li>
+    </ul>
+    <p>已落地:兩份 schema 新增 <code>convergence</code> 區塊(算法為 canonical)、CALIBRATION 新增指標紀錄表(補記 #1–#3 現況與 #4 待跑)、SKILL 步驟 5 改為指向 schema 不複寫算法。<strong>下一步是雙盲 #4,標的必須是八態 presence</strong>,否則門檻無樣本可對。</p>
+    <p class="src">出處:states-schema convergence / acceptance · lens-schema convergence · SKILL.md 步驟 5 / 9 · CALIBRATION.md 收斂指標紀錄</p>
   </div>
 
   <div class="item">
-    <div class="ih"><span class="inum">二 · 主體同一性靠自律,不靠規則</span><span class="itag open">在檔未結</span></div>
-    <p>六案壓測的唯一破口。條文已回填 v0.3.3,但那是判讀紀律(要 AI 自己遵守),不是形式檢查能攔的。爻疑氾濫規則(N≥3)是目前最接近的攔截網,<strong>但沒有實證它攔得住羅馬案</strong>——該案形式檢查全綠。要討論:補一道形式檢查(素材時間跨度 / 行為者數量門檻)?還是接受這裡就是自律區,寫進誠實邊界?</p>
-    <p class="src">出處:BOUNDARIES.md §2 · §4 條文 2–3</p>
+    <div class="ih"><span class="inum">二 · 主體同一性靠自律,不靠規則</span><span class="itag done">已裁定 2026-08-03</span><span class="itag open">留一問待裁</span></div>
+    <p>六案壓測的唯一破口。適用域三條件裡,缺行為證據與缺語用正當性都有現成規則會讓引擎自停;<strong>唯獨缺主體同一性不會停</strong>——羅馬案形式檢查全綠、每爻跨世紀衝突訊號,合規地聚合出對立判讀。</p>
+    <p><strong>規則層追測(本次新發現)</strong>:回填的爻疑氾濫規則(爻疑 ≥3 → 拒判)原是為此破口而設,但照條文推演<strong>攔不住羅馬案</strong>。<code>同爻雙訊號裁決</code> 的觸發條件是「同一爻同現<strong>亢與溺</strong>訊號」,而跨世代聚合最可能產生的是<strong>剛與柔</strong>同現——剛↔柔 衝突在規則表裡沒有這一格。判讀者只能擇一定案,爻疑數 = 0,氾濫規則永不觸發。破口成因因此更具體:<strong>缺一格規則,不只是缺紀律</strong>。(此為條文推演非重判;真正迴測需原始素材,已列待辦。)</p>
+    <p><strong>裁定:把自律變成宣告,不變成數字。</strong>必宣告新增第三項<strong>主體同一性</strong>——問「這份素材裡的行為者,能否對彼此的行為負責或回應?(是/否/不確定)」,答否或不確定即拒判並附拆分建議。引擎偵測不到主體同一性,但可以要求宣告者說出來,同 G8「使用者宣告,系統不猜」的既有模式;不確定就停,是誠實的預設。</p>
+    <p><strong>明文不採數字門檻</strong>(如「時間跨度 &gt; N 年自動停」):N 從何而來?跨兩個半世紀好判,一家公司的十年史不好判;訂數字會同時誤殺合法素材與放過界外素材,理由同待議題一的假精確之戒。</p>
+    <p>已落地:lens-schema <code>宣告體系.必宣告</code> 加第三項、SKILL 步驟 3、SOP 步驟 2、BOUNDARIES §2 追記。<strong>留一問待裁:剛↔柔 同爻並現要不要比照亢/溺 標爻疑?</strong>(動判讀紀律,需逐條核准。)</p>
+    <p class="src">出處:BOUNDARIES.md §2 · §4 條文 2–3 · lens-schema 判讀紀律 / 宣告體系</p>
   </div>
 
   <div class="item">
-    <div class="ih"><span class="inum">三 · 「設計樣態剛柔」要不要立項</span><span class="itag open">未立項</span></div>
-    <p>民法總則案的副產品:讀<strong>文本設計</strong>而非運作,剛柔並濟的設計讀之成理。BOUNDARIES 明記這與運作判讀分屬兩種判讀學、不可混池。要討論:立成獨立工具(另一面鏡子),還是就此存照不做?混池的風險是模糊「行為證據」這條適用域鐵線。</p>
-    <p class="src">出處:BOUNDARIES.md §4 條文 5</p>
+    <div class="ih"><span class="inum">三 · 「設計樣態剛柔」要不要立項</span><span class="itag done">已裁定 2026-08-03 · 凍結</span></div>
+    <p>民法總則案的副產品:讀<strong>文本設計</strong>而非運作,剛柔並濟的設計讀之成理。能力是真的,應用面不小(制度設計、契約、章程、產品規格皆為被設計出的靜態物件)。</p>
+    <p><strong>裁定:凍結,但把存照升級。</strong>不立項的三個理由,重要性遞增——</p>
+    <ol>
+      <li><strong>它不是八態鏡的一個模式,是另一套判讀學。</strong>適用域三條件(單一運作主體 × 行為證據 × 同一時段)對讀設計整條不適用:靜態物件無主體、無行為、無時段。連邊界地圖都要重畫,不是加個開關。</li>
+      <li><strong>G5 會失去意義。</strong>本鏡整個靠「每條判定指得回行為引文」撐著;讀設計時引文指的是條文本身,而條文不是行為證據,是被設計出的物件。同一塊「引文可查」招牌底下換了東西——這是誠實印章最容易貶值的路徑。</li>
+      <li><strong>地基未驗收。</strong>states-schema 仍在 v0.1,升 v0.2 的算法今天才定義,第一個有效樣本(雙盲 #4)還沒跑。此時開第二套判讀學=地基驗收前蓋第二棟樓,且稀釋得來不易的 30+ 案校準能量。</li>
+    </ol>
+    <p><strong>解凍三條件(需同時滿足)</strong>:① states-schema 已升 v0.2;② 有具體需求推著、不是好奇心(參 NEIGHBORS 窗十:mission 是分析後的結論,不是起點——「我們發現可以做」不構成立項理由);③ 立項時另立工具、獨立 schema、不共用 canonical 判準,並列轉介不做對映(平台第一原則在工具層的落法)。</p>
+    <p><strong>已記下的反面</strong>:若出現付費需求要讀契約或制度設計,凍結等於推掉生意;該情形改列第二優先,但觸發者必須是帶著素材來的需求方,不是我們自己。存照全文見 BOUNDARIES §4.1。</p>
+    <p class="src">出處:BOUNDARIES.md §4 條文 5 → §4.1 存照</p>
   </div>
 
   <div class="item">
-    <div class="ih"><span class="inum">四 · 缺的不是外池,是雙池齊備的素材</span><span class="itag open">在檔待辦 · 已修正</span></div>
-    <p>原本的說法是「外池永遠薄」——邊界壓測界內三案全出半象,公開素材天然偏內部治理紀錄。但日用第一案給了鏡像反例:22 萬字級的聚合交付文本,外池厚實,<strong>內池零證據</strong>,一樣退半象。所以內部報告型缺外池、聚合交付型缺內池,問題不是某一池薄,是<strong>雙池齊備的素材類型還沒被辨識出來</strong>(見資料觀察一)。</p>
-    <p>已列待辦的解法是「外池證據學:素材組合拳」(用多份素材補另一池)。要討論:組合拳會不會違反主體同一性律(不同時段的素材算不算同一運作)?這兩條規則有潛在衝突;而且組合拳只解單向,鏡像那一側要另想。</p>
-    <p class="src">出處:BOUNDARIES.md §3 · lens-schema guapan.liuyao 升級門檻 · 記憶快照「聚合交付文本型」次型候選</p>
+    <div class="ih"><span class="inum">四 · 缺的不是外池,是雙池齊備的素材</span><span class="itag done">已裁定 2026-08-03</span><span class="itag open">迴測待跑</span></div>
+    <p>原本的說法是「外池永遠薄」——邊界壓測界內三案全出半象,公開素材天然偏內部治理紀錄。但日用第一案給了鏡像反例:最厚的一份聚合交付文本,外池厚實而<strong>內池零證據</strong>,一樣退半象。問題不是某一池薄,是<strong>素材體裁天生偏一邊</strong>:內部報告型外池薄、聚合交付型內池零、宣言型內池薄——單一體裁幾乎不可能雙池齊備。這是結構,不是運氣。</p>
+    <p class="quiet">更正一句本頁原本寫過的話:「組合拳會不會違反主體同一性律」講得太重。該律針對的是跨主體跨世代聚合;同一組織、同一時段的多份素材並不違反它。真正的限制較窄,見下方三條界線。</p>
+    <p><strong>還沒查的關鍵事實。</strong>五個六爻成卦全在第一輪(股東信、事故調查報告、深度個案史——這些體裁確實兩邊都寫),但<strong>都在判讀紀律六律上線之前判的</strong>,而六律裡就有成爻門檻 ≥2 句獨立引文。沒人知道那五案在現行規則下還撐不撐得住六爻。撐得住 → 六爻只是選材問題;撐不住 → 現行紀律下六爻實質不可達,而六爻層加 64 卦需求表是引擎最大最新的一批規則,份量比表面大得多。</p>
+    <p><strong>裁定三件:</strong></p>
+    <ol>
+      <li><strong>先迴測一案(決定性)</strong>——取挑戰者號羅傑斯報告或 Bezos 2016 股東信,以 v0.3.3 重判。素材公開、成本低,結果直接決定六爻層的定位。已入 CALIBRATION 待辦(下站)。</li>
+      <li><strong>「降級」改述為「解析度階梯」</strong>——四階代表這份素材給得起多細的照,不是成績單。資料顯示半象是單一最大宗(29 案中 13 案);把階梯講成降級會誘使判讀者為「升到六爻」勉強湊證據,正好違反成爻門檻的精神。<strong>半象與不成卦同樣是有尊嚴的輸出。</strong></li>
+      <li><strong>組合拳三條界線</strong>——若以多份素材補另一池:① 同一運作主體;② 同一時段,時段由宣告者宣告、系統不設數字(同待議題一的反假精確原則);③ <strong>同一爻的 ≥2 句引文不得跨檔拼湊</strong>,該爻要嘛靠 A 檔獨立成立、要嘛靠 B 檔。第三條是技術護欄:用兩份素材的證據合成一個判定,是最容易星座化的地方。</li>
+    </ol>
+    <p class="src">出處:BOUNDARIES.md §3 · lens-schema guapan.liuyao 升級門檻 / 解析度階梯 / 組合拳三界線 · CALIBRATION 待辦</p>
   </div>
 
   <div class="item">
-    <div class="ih"><span class="inum">五 · 兩層雙假說印章疊在一起</span><span class="itag open">在檔未結</span></div>
-    <p>六爻版本身是工作假說待收斂,它依賴的 64 卦需求表 v0.1 又未經易學專家終審——兩個「待考」相乘。要討論:64 表的終審找誰、什麼時候找;在終審前,六爻版的輸出是否應該再降一級(只給卦旨不給召喚對照)?</p>
-    <p class="src">出處:lens-schema guapan.liuyao.status · 64 卦需求表 spec</p>
+    <div class="ih"><span class="inum">五 · 兩層雙假說印章疊在一起</span><span class="itag done">已裁定 2026-08-03</span></div>
+    <p>六爻版本身是工作假說待收斂,它依賴的 64 卦需求表 v0.1 又未經易學專家終審——兩個「待考」相乘。裁定前先做了一份資料稽核(64 列全數程式清點,可重算),結果改變了問題的形狀。</p>
+    <p><strong>曝險其實接近零</strong>:待議題四查出六爻自六律上線後一次都沒成過,所以 64 表在現行規則下<strong>從沒被實際引用過</strong>。不是正在出貨壞東西,是還債要趕在六爻再次啟用之前。</p>
+    <p><strong>真正該先想清楚的是:「終審」能審什麼。</strong>依據欄引的是經典(彖 61/64、象 59/64),但「象『自強不息』→ 召喚乾態與震態」這一步是<strong>我們的框架</strong>——八態不是易學的既有語彙。專家能審引文有沒有引錯、解讀偏不偏;審不了翻成八態這一步。把整張表講成「已專家終審」,等於借他的權威覆蓋我們自己的構造。</p>
+    <p><strong>裁定四件:</strong></p>
+    <ol>
+      <li><strong>拆印章</strong>——64 表引用分兩類:<strong>可溯源</strong>(經典引文、卦旨、時勢基調,可被終審)與<strong>自造橋</strong>(召喚/節制的八態對應,終審永不覆蓋)。</li>
+      <li><strong>終審 scope 收斂到 27 卦</strong>——稽核發現召喚態全落在內外卦內者 31 卦可機械推導、無詮釋風險;超出的 27 卦才是風險集中處。且只審「解讀是否偏離原典」。</li>
+      <li><strong>不整段降級,改逐項標記</strong>——六爻輸出中引自 64 表的內容逐項標明屬哪一類。比「終審前只給卦旨」精準,保住召喚對照的價值。</li>
+      <li><strong>自造橋自己驗</strong>——schema 原有「咬不上=分歧素材記 backlog」即其收斂機制,本次正式化:記錄咬合/咬不上次數,累積後才談可信度。借不到別人的印章,只能自己走過。</li>
+    </ol>
+    <p><strong>稽核另外翻出三個先修項</strong>(資料工作,不需終審、不動判準):節制欄僅 <strong>7/64</strong> 有態標記,致「節制而正強=第一級警訊」在 57/64 上實質不可執行;「待考」機制寫了 <strong>0/64</strong> 使用;八純卦中唯一未把本股標成召喚的是<strong>艮卦</strong>。全文見 <code>2026-08-03-bagua-64-table-audit.md</code>。</p>
+    <p class="src">出處:lens-schema guapan.liuyao(印章分層 / 終審scope / 自造橋校準 / 已知缺口) · 64 卦需求表 spec 誠實邊界增補 · 64 表資料稽核</p>
   </div>
 
   <div class="item">

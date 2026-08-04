@@ -93,8 +93,14 @@ def main():
     qx = gp.get("量形圖", {})
     check("量形圖齊", "非分數" in str(qx.get("頂點", "")) and "趨韓非形" in str(qx.get("形態", {}).get("道頂縮", "")) and bool(qx.get("輸出")))
     sd = gp.get("宣告體系", {})
-    check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 2
+    # 必宣告 2026-08-03 由 2 項增為 3 項(+主體同一性,待議題二 Simon 核可)
+    check("宣告體系", isinstance(sd.get("必宣告"), list) and len(sd["必宣告"]) == 3
+          and "主體同一性" in sd["必宣告"]
           and isinstance(sd.get("可選宣告"), list) and len(sd["可選宣告"]) == 2)
+    tyi = sd.get("主體同一性宣告", {})
+    check("主體同一性宣告齊", "負責或回應" in str(tyi.get("問法", ""))
+          and "拒判" in str(tyi.get("處置", "")) and "不確定" in str(tyi.get("處置", ""))
+          and "數字門檻" in str(tyi.get("不採", "")))
 
     zh = gp.get("剛柔判準註", {})
     check("剛柔判準註兩條", "非相對比較" in str(zh.get("絕對質性", "")) and "動力來源" in str(zh.get("亢溺判別", "")))
@@ -114,7 +120,12 @@ def main():
     check("歸格例句庫八條", isinstance(gk, list) and len(gk) >= 8)
     check("道理用總綰", "素材不及" in str(gp.get("道理用總綰", "")))
     ly = gp.get("liuyao", {})
-    check("以小觀大階梯", "以小觀大" in str(ly.get("升級門檻", "")) and "半象" in str(ly.get("升級門檻", "")) and "爻象深讀" in str(ly.get("升級門檻", "")))
+    # 2026-08-03 待議題四:階梯由「升級門檻」內文抽出獨立為「解析度階梯」,並改述為解析度非好壞
+    jt = str(ly.get("解析度階梯", ""))
+    check("以小觀大階梯", "以小觀大" in jt and "半象" in jt and "爻象深讀" in jt)
+    check("階梯=解析度非好壞", "解析度不是好壞" in jt and "有尊嚴" in jt)
+    zh3 = str(ly.get("組合拳三界線", ""))
+    check("組合拳三界線", "同一運作主體" in zh3 and "不設數字" in zh3 and "不得跨檔拼湊" in zh3)
     check("liuyao 子區塊在位", bool(ly))
     check("雙假說印章", "雙印章" in str(ly.get("status", "")))
     check("排法 B", "下卦=內在運作的理用道" in str(ly.get("排法", "")))
