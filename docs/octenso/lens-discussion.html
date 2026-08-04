@@ -473,9 +473,19 @@ footer a{color:var(--pine)}
   </div>
 
   <div class="item">
-    <div class="ih"><span class="inum">五 · 兩層雙假說印章疊在一起</span><span class="itag open">在檔未結</span></div>
-    <p>六爻版本身是工作假說待收斂,它依賴的 64 卦需求表 v0.1 又未經易學專家終審——兩個「待考」相乘。要討論:64 表的終審找誰、什麼時候找;在終審前,六爻版的輸出是否應該再降一級(只給卦旨不給召喚對照)?</p>
-    <p class="src">出處:lens-schema guapan.liuyao.status · 64 卦需求表 spec</p>
+    <div class="ih"><span class="inum">五 · 兩層雙假說印章疊在一起</span><span class="itag done">已裁定 2026-08-03</span></div>
+    <p>六爻版本身是工作假說待收斂,它依賴的 64 卦需求表 v0.1 又未經易學專家終審——兩個「待考」相乘。裁定前先做了一份資料稽核(64 列全數程式清點,可重算),結果改變了問題的形狀。</p>
+    <p><strong>曝險其實接近零</strong>:待議題四查出六爻自六律上線後一次都沒成過,所以 64 表在現行規則下<strong>從沒被實際引用過</strong>。不是正在出貨壞東西,是還債要趕在六爻再次啟用之前。</p>
+    <p><strong>真正該先想清楚的是:「終審」能審什麼。</strong>依據欄引的是經典(彖 61/64、象 59/64),但「象『自強不息』→ 召喚乾態與震態」這一步是<strong>我們的框架</strong>——八態不是易學的既有語彙。專家能審引文有沒有引錯、解讀偏不偏;審不了翻成八態這一步。把整張表講成「已專家終審」,等於借他的權威覆蓋我們自己的構造。</p>
+    <p><strong>裁定四件:</strong></p>
+    <ol>
+      <li><strong>拆印章</strong>——64 表引用分兩類:<strong>可溯源</strong>(經典引文、卦旨、時勢基調,可被終審)與<strong>自造橋</strong>(召喚/節制的八態對應,終審永不覆蓋)。</li>
+      <li><strong>終審 scope 收斂到 27 卦</strong>——稽核發現召喚態全落在內外卦內者 31 卦可機械推導、無詮釋風險;超出的 27 卦才是風險集中處。且只審「解讀是否偏離原典」。</li>
+      <li><strong>不整段降級,改逐項標記</strong>——六爻輸出中引自 64 表的內容逐項標明屬哪一類。比「終審前只給卦旨」精準,保住召喚對照的價值。</li>
+      <li><strong>自造橋自己驗</strong>——schema 原有「咬不上=分歧素材記 backlog」即其收斂機制,本次正式化:記錄咬合/咬不上次數,累積後才談可信度。借不到別人的印章,只能自己走過。</li>
+    </ol>
+    <p><strong>稽核另外翻出三個先修項</strong>(資料工作,不需終審、不動判準):節制欄僅 <strong>7/64</strong> 有態標記,致「節制而正強=第一級警訊」在 57/64 上實質不可執行;「待考」機制寫了 <strong>0/64</strong> 使用;八純卦中唯一未把本股標成召喚的是<strong>艮卦</strong>。全文見 <code>2026-08-03-bagua-64-table-audit.md</code>。</p>
+    <p class="src">出處:lens-schema guapan.liuyao(印章分層 / 終審scope / 自造橋校準 / 已知缺口) · 64 卦需求表 spec 誠實邊界增補 · 64 表資料稽核</p>
   </div>
 
   <div class="item">
