@@ -1,6 +1,6 @@
 # 「能格」重新檢視與統一(設計)
 
-日期:2026-08-05 ｜ 狀態:grilling session 共識包已獲 Simon 口頭確認,spec 待審
+日期:2026-08-05 ｜ 狀態:Simon 已核准;D1–D6 已執行完成,D7/D8 已登記 MEMORY-SNAPSHOT 待辦
 關聯:`octenso/COMPENDIUM.md`、`octenso-model-spec.html`(學理憲法)、`2026-06-21-octenso-interpretation-rules-design.md`(解讀憲法)、`2026-06-18-octenso-persona-v2-design.md`、`octenso/octenso-states-schema-v0.1.yaml`、`platform-intro/octenso.html`(白皮書)
 
 ## 背景與動機
