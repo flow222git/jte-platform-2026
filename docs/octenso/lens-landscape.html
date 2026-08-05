@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>八態鏡 · 鄰近地景與呈現範例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657;
+  --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui,sans-serif;
+  --latin:"Jost","Avenir Next",ui-sans-serif,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+    --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882;
+    --hair:#4c4a3c; --line:#39382f; --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+}
+:root[data-theme="light"]{ --paper:#f4efe4; --surface:#f8f4ec; --surface2:#efe9dc;
+  --ink:#23241f; --ink-soft:#3a3a32; --muted:#6f6657; --hair:#bcb09a; --line:#d2c7b4;
+  --pine:#35614f; --cinnabar:#9d4b34; --gold:#a9823b; }
+:root[data-theme="dark"]{ --paper:#1c1d19; --surface:#22231e; --surface2:#282923;
+  --ink:#e8e1cf; --ink-soft:#d5cdb9; --muted:#a29882; --hair:#4c4a3c; --line:#39382f;
+  --pine:#8fb3a1; --cinnabar:#cd8368; --gold:#c4a56d; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);
+  font-weight:300;font-size:15px;line-height:2;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px 90px}
+
+header{padding:64px 0 30px;text-align:center;border-bottom:1px solid var(--line)}
+.trigrams{font-family:var(--serif);color:var(--hair);font-size:15px;letter-spacing:.9em;padding-left:.9em;margin-bottom:26px}
+.eyebrow{font-family:var(--latin);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+header h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(23px,5vw,32px);
+  letter-spacing:.1em;margin:0 0 10px;text-wrap:balance}
+.subtitle{color:var(--muted);font-size:13.5px;letter-spacing:.05em;margin:0 0 14px;text-wrap:balance}
+.stamp{display:block;width:fit-content;margin:0 auto 14px;font-size:11.5px;color:var(--cinnabar);
+  border:1px solid var(--cinnabar);border-radius:999px;padding:3px 15px;letter-spacing:.1em}
+.meta{font-family:var(--latin);font-size:10.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+
+.seclabel{display:flex;align-items:baseline;gap:12px;margin:56px 0 12px;padding-top:26px;border-top:1px solid var(--line)}
+.seclabel .num{font-family:var(--serif);color:var(--gold);font-size:14px;letter-spacing:.1em}
+.seclabel h2{font-family:var(--serif);font-weight:500;color:var(--ink);
+  font-size:clamp(18px,4.4vw,21.5px);letter-spacing:.08em;margin:0;text-wrap:balance}
+.seclead{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:66ch}
+h3{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:16px;letter-spacing:.06em;margin:32px 0 10px}
+p{margin:0 0 15px;max-width:70ch}
+strong{font-weight:400;color:var(--ink)}
+a{color:var(--pine)}
+ul,ol{padding-left:1.5em;margin:0 0 15px;max-width:70ch}
+li{margin-bottom:7px}
+code{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:12.5px;
+  background:var(--surface2);border-radius:3px;padding:1px 5px}
+
+.tblwrap{overflow-x:auto;margin:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.85;min-width:480px}
+th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.08em;text-align:left;
+  padding:11px 14px 9px 2px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px 11px 2px;vertical-align:top;
+  border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+tr:last-child td{border-bottom:none}
+td:first-child{font-family:var(--serif);color:var(--ink)}
+
+.key{border:1px solid var(--pine);border-radius:3px;padding:14px 18px;margin:18px 0;background:var(--surface)}
+.key .kl{font-family:var(--latin);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--pine);margin-bottom:4px}
+.key p:last-child{margin-bottom:0}
+.warn{border-left:2px solid var(--cinnabar);padding:2px 0 2px 16px;margin:18px 0;font-size:13.5px}
+.warn p:last-child{margin-bottom:0}
+.quiet{border-left:1px solid var(--hair);padding:2px 0 2px 16px;margin:18px 0;font-size:13px;color:var(--muted)}
+.quiet p:last-child{margin-bottom:0}
+
+/* 範例框 */
+.demo{border:1px solid var(--hair);border-radius:4px;margin:22px 0;background:var(--surface);overflow:hidden}
+.demo>.dh{background:var(--surface2);border-bottom:1px solid var(--line);padding:9px 18px;
+  font-family:var(--latin);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.demo>.db{padding:20px 22px}
+.demo h4{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:17px;letter-spacing:.04em;margin:0 0 4px;text-wrap:balance}
+.demo .sub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.demo p{font-size:14px;margin:0 0 12px}
+.demo p:last-child{margin-bottom:0}
+
+.bluf{border-left:3px solid var(--ink);padding:4px 0 4px 16px;margin:0 0 18px}
+.bluf .bl{font-family:var(--latin);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.bluf p{font-family:var(--serif);font-size:16px;color:var(--ink);line-height:1.95;margin:4px 0 0}
+
+.gapbox{border:1px solid var(--cinnabar);border-radius:3px;padding:14px 16px;margin:0 0 18px}
+.gapbox .gl{font-family:var(--latin);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--cinnabar);margin-bottom:8px}
+.gapbox ul{margin:0;padding-left:1.3em;font-size:13.5px}
+
+.lights{margin:0 0 18px}
+.lights .row{display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+.lights .row:last-child{border-bottom:none}
+.lights .ly{font-family:var(--serif);color:var(--ink);width:2.2em;flex:none}
+.lights .lg{font-family:var(--latin);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid var(--hair);border-radius:999px;padding:1px 9px;flex:none}
+.lights .lg.ok{color:var(--pine);border-color:var(--pine)}
+.lights .lg.watch{color:var(--gold);border-color:var(--gold)}
+.lights .lg.act{color:var(--cinnabar);border-color:var(--cinnabar)}
+.lights .lt{font-size:13.5px}
+
+.pres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.pres span{font-size:12.5px;border:1px solid var(--hair);border-radius:3px;padding:3px 10px}
+.pres span.full{border-color:var(--pine);color:var(--pine)}
+.pres span.thin{border-color:var(--gold);color:var(--gold)}
+.pres span.none{border-color:var(--cinnabar);color:var(--cinnabar)}
+
+details{margin:14px 0 0;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:12.5px;color:var(--muted);letter-spacing:.06em}
+details[open] summary{margin-bottom:10px}
+details .q{font-family:var(--serif);color:var(--ink);font-size:13.5px;border-left:2px solid var(--gold);
+  padding:2px 0 2px 14px;margin:8px 0}
+
+footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:2}
+footer a{color:var(--pine)}
+:focus-visible{outline:1.5px solid var(--pine);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="trigrams">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+  <div class="eyebrow">Lens · Landscape &amp; Formats</div>
+  <h1>八態鏡的鄰近地景與呈現範例</h1>
+  <p class="subtitle">世界上誰在做類似的事、我們的位置在哪、能做哪五件事、長什麼樣子</p>
+  <span class="stamp">研究筆記 + 產品建議 · 待審</span>
+  <div class="meta">2026-08-04</div>
+</header>
+
+<div class="warn" style="margin-top:30px">
+  <p><strong>證據等級聲明</strong>:本頁的<strong>外部框架資訊來自模型訓練知識,非本次查證</strong>——判讀環境的對外網路受政策限制,無法抓取原文。凡涉及外部工具者一律視為<strong>待查</strong>,引用前須自行核對。凡涉及本專案的數字都指得回 repo 檔案。</p>
+  <p>本頁<strong>不適用「引文可查」標準</strong>;它是地圖,不是判讀。</p>
+</div>
+
+<section>
+  <div class="seclabel"><span class="num">〇</span><h2>先講一個可以直接用的技術發現</h2></div>
+
+  <div class="key">
+    <div class="kl">我們現在算的一致率沒有校正機遇一致</div>
+    <p>八態 presence 是三值(有料/薄/缺席)。兩個盲判者<strong>就算完全亂猜,期望一致率也有約 1/3</strong>。所以「83%」看起來很高,但它跟質性研究慣用的 κ / α 不是同一個尺度——後者把亂猜該有的一致先扣掉。</p>
+  </div>
+
+  <p>粗略換算:若原始一致率 0.83、機遇一致約 0.33,則 κ ≈ (0.83 − 0.33) / (1 − 0.33) ≈ <strong>0.75</strong>。仍是不錯的數字,但跟 0.83 是兩回事。</p>
+
+  <p><strong>這直接影響待議題一。</strong>該裁定已定「算法定死」,但算法目前寫的是原始一致率。建議把 <code>convergence.指標一</code> 升級為<strong>同時記錄原始一致率與 κ</strong>——原始值好懂、κ 可比,兩個都記不必二選一。</p>
+
+  <p>至於門檻:質性研究界有慣用區間(數值待查),但待議題一「門檻不寫死、由人判、留痕」的理由仍然成立——<strong>那些慣例是為別的任務校準的</strong>。可以拿它們當參照點,不當門檻。</p>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">一</span><h2>誰在做類似的事</h2></div>
+  <p class="seclead">先定範疇:八態鏡<strong>不是</strong>人格分類工具——那是八態能格的鄰居。八態鏡做的是「從文件與紀錄,讀一個運作的狀態,輸出可追溯到逐字引文的映照」。以這個定義,鄰居分四群。</p>
+
+  <h3>群一 · 方法學同源:質性編碼與內容分析</h3>
+  <p>主題分析、紮根理論編碼(NVivo / Atlas.ti 一類)、內容分析。做法是:建 codebook → 逐句給碼 → 引文為證 → 多人編碼算信度。</p>
+  <p><strong>這幾乎是同一套工序,而且是八態鏡真正的學科母體。</strong>我們自己摸索出來的成爻門檻 ≥2 句獨立引文、混淆對照、雙盲收斂,在這個領域都有成熟對應。差異在:他們的碼由資料浮現(歸納),我們的碼先驗固定。</p>
+  <p><strong>可借三樣(待查後評估)</strong>:κ / α 的算法;codebook 版本管理慣例;<strong>編碼者訓練程序</strong>——我們目前沒有,判讀者換人時的一致性無任何保障。</p>
+
+  <h3>群二 · 讀組織,但靠問卷</h3>
+  <div class="tblwrap">
+  <table>
+    <tr><th>工具</th><th>讀什麼</th><th>與我們的關係</th></tr>
+    <tr><td>Gallup Q12</td><td>員工投入度</td><td>呈現法可借(優勢先行)</td></tr>
+    <tr><td>Denison 文化調查</td><td>四象限文化剖面</td><td>剖面呈現參照</td></tr>
+    <tr><td>競值架構 OCAI</td><td>四種文化類型</td><td><strong>反面</strong>:四型有名字,踩 G4 命名紅線</td></tr>
+    <tr><td>團隊診斷調查</td><td>團隊條件清單</td><td>與缺席清單形狀相近</td></tr>
+  </table>
+  </div>
+  <p><strong>共同差異:它們問人,我們讀紀錄。</strong>問人拿得到感受,讀紀錄拿得到行為證據——這是八態鏡在這一群裡唯一但關鍵的差異化。</p>
+
+  <h3>群三 · 從事故與文件讀系統(最接近的工程學鄰居)</h3>
+  <div class="tblwrap">
+  <table>
+    <tr><th>工具</th><th>相望之處</th><th>我們不做的</th></tr>
+    <tr><td>HFACS</td><td>分層讀法與三角形同構(結構同,內容不同)</td><td>導向歸因與責任</td></tr>
+    <tr><td>CAST / STAMP</td><td><strong>拒絕歸咎個人</strong>,與 G4 精神共振</td><td>它要找出該修什麼;我們映照後交還</td></tr>
+    <tr><td>FRAM</td><td>不找根因、讀功能之間的耦合</td><td>建模導向</td></tr>
+    <tr><td><strong>Safety-II / 韌性四潛能</strong></td><td><strong>最強共振</strong>:讀「如何成功」而非「為何失敗」,與語氣律「先力量後缺口」同源</td><td>它是安全工程,有明確績效目標</td></tr>
+  </table>
+  </div>
+
+  <h3>群四 · 成熟度與敘事框架</h3>
+  <p>CMMI / DORA:<strong>分級即排名,踩 G6</strong>。Cynefin:精神相近,拒絕普適最佳實踐。Wardley Mapping:呈現法可參考(地圖而非分數)。</p>
+  <div class="warn">
+    <p><strong>Westrum 三型值得單獨記一筆</strong>:把組織文化分成「病態的 / 官僚的 / 生成的」——這是與人才九宮格<strong>完全同型的錯誤</strong>,三個格子有名字,而其中一個叫「病態」。同樣是善意的框架(它想推動資訊流通),同樣被命名法出賣。<strong>收進 NEIGHBORS 紅線標本群的候選。</strong></p>
+  </div>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">二</span><h2>我們在這張地圖上的位置</h2></div>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th>軸</th><th>兩端</th><th>八態鏡</th></tr>
+    <tr><td>資料來源</td><td>問人 ↔ 讀紀錄</td><td>讀紀錄</td></tr>
+    <tr><td>輸出性質</td><td>分數分級 ↔ 映照描述</td><td>映照</td></tr>
+    <tr><td>對象</td><td>人 ↔ 運作</td><td>運作(G4)</td></tr>
+    <tr><td>可追溯性</td><td>黑箱 ↔ 逐句可查</td><td>逐句可查</td></tr>
+    <tr><td><strong>照不出來時</strong></td><td>硬給結果 ↔ 明說不成</td><td><strong>明說不成</strong></td></tr>
+  </table>
+  </div>
+
+  <div class="key">
+    <div class="kl">最後一列是真正的稀有位置</div>
+    <p>四群鄰居裡,幾乎沒有一個把「這份素材照不出東西」設計成正式輸出。我們有四階解析度階梯與拒判規則——而登記表顯示 <strong>30 案裡有 7 案落在拒判 / 不成 / 降級</strong>。<strong>那不是失敗率,那是產品的一部分。</strong></p>
+  </div>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">三</span><h2>建議實際做這五件事</h2></div>
+  <p class="seclead">排序依據是資料不是野心:六爻成卦在現行紀律下 0 次、半象 13 案為最大宗、三值回饋「很像」全部來自日用會議素材。</p>
+
+  <div class="tblwrap">
+  <table>
+    <tr><th>#</th><th>做什麼</th><th>為什麼排這個位置</th></tr>
+    <tr><td>①</td><td><strong>會議照鏡</strong>——單場會議紀錄 → 在場缺席 + 補問</td><td>日用三案全部拿到「很像」;單場會議天然滿足適用域三條件</td></tr>
+    <tr><td>②</td><td><strong>文件體檢</strong>——BP / 提案 / 制度 → 理用道紅綠燈</td><td>不評好壞只照結構;純規範文本不判,那是誠實不是限制</td></tr>
+    <tr><td>③</td><td><strong>回顧鏡</strong>——retro 的結構映照</td><td>與 CAST 分工:它找該修什麼,我們照這份回顧有沒有把該看的看到</td></tr>
+    <tr><td>④</td><td><strong>前後對照</strong>——同一運作兩個時點,並列</td><td><strong>不合成、不算差值、不畫趨勢線</strong>;兩份判讀是兩面鏡子,不是一條曲線</td></tr>
+    <tr><td>⑤</td><td><strong>拒判服務</strong>——照不出來時,說清楚缺什麼</td><td>7/30 落在這一類;知道自己沒留下什麼紀錄,本身就是發現</td></tr>
+  </table>
+  </div>
+
+  <div class="warn">
+    <p><strong>明確不做</strong>:人才盤點與接班人辨識、任何「八態 × 績效/潛力」格子、跨組織排名或標竿、成熟度分級、預測成敗。</p>
+  </div>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">四</span><h2>呈現原則</h2></div>
+  <ol>
+    <li><strong>缺席清單放最前面</strong>,不是最後。G2 已規定順序,但呈現上要真的讓它是第一屏——這是與所有鄰居最不一樣的地方,埋在後面等於浪費。</li>
+    <li><strong>半象是常態,版面不能預設完整。</strong>只有一池、只有幾爻時仍要好看,否則會誘使判讀者湊證據。</li>
+    <li><strong>引文可展開,預設收合。</strong>它是可追溯性的證據,要在,但不能擋路。</li>
+    <li><strong>不畫可比較的圖。</strong>雷達圖天生誘人比較;前後對照要用<strong>並列的兩張獨立圖</strong>,不疊在同一組軸上。</li>
+    <li><strong>拒判要有正式版面</strong>,不是錯誤訊息——一樣要有標題、理由、下一步。</li>
+  </ol>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">五</span><h2>三個呈現範例</h2></div>
+  <div class="warn">
+    <p><strong>以下全部是合成示意,不是真實判讀。</strong>組織名為虛構,引文為示範用途編寫,不得引用為案例。做這三個範例是為了看版面長什麼樣,不是為了展示判讀結果。</p>
+  </div>
+
+  <h3>範例一 · 會議照鏡</h3>
+  <div class="demo">
+    <div class="dh">合成示意 · Meeting Mirror</div>
+    <div class="db">
+      <h4>這場會議把方向定下來了,但沒有人接住它</h4>
+      <p class="sub">素材類型(宣告):decision · 判讀對象:某產品週會的運作 · AI 判讀 · 引文可查</p>
+
+      <div class="gapbox">
+        <div class="gl">先看沒照到什麼</div>
+        <ul>
+          <li><strong>坤 承接:缺席</strong>——全場沒有一句談到「誰接手、需要什麼支援」。<br><span style="color:var(--muted);font-size:12.5px">補問:散會前有沒有人確認過各自要帶走什麼?</span></li>
+          <li><strong>艮 喊停:薄</strong>——只有一處提到範圍,沒有明確的收手線。<br><span style="color:var(--muted);font-size:12.5px">補問:這一輪做到什麼程度算完成?</span></li>
+        </ul>
+      </div>
+
+      <div class="pres">
+        <span class="full">乾 有料</span><span class="full">震 有料</span><span class="full">離 有料</span>
+        <span class="full">兌 有料</span><span class="thin">巽 薄</span><span class="thin">坎 薄</span>
+        <span class="thin">艮 薄</span><span class="none">坤 缺席</span>
+      </div>
+
+      <p><strong>做對了什麼</strong>:決策沒有懸空——「那就先照 A 案走,兩週後回來看數字」把方向與檢核點一次定下來。討論也真的在交鋒,不是各說各話。</p>
+      <p><strong>該注意什麼</strong>:定了方向卻沒有落地的承接。這不是誰的疏忽,是這場會議的結構——議程排到決議就結束了。</p>
+      <p><strong>怎麼做</strong>:議程最後加三分鐘「誰帶走什麼」。不必改流程,加一格就好。</p>
+
+      <details>
+        <summary>進階閱讀 · 判定與引文</summary>
+        <div class="q">「那就先照 A 案走,兩週後回來看數字。」→ 乾(定方向)· 有料</div>
+        <div class="q">「我覺得問題不在這裡,是在前一段。」→ 離(看清楚並說出來)· 有料</div>
+        <div class="q">坤:全文檢索「支援 / 接手 / 需要什麼」零命中 → 缺席(無資料,≠弱)</div>
+        <p style="font-size:12.5px;color:var(--muted);margin-top:10px">成卦階:三爻(外池薄,六爻不成——單場內部會議之預期)。</p>
+      </details>
+    </div>
+  </div>
+
+  <h3>範例二 · 文件體檢</h3>
+  <div class="demo">
+    <div class="dh">合成示意 · Document Check</div>
+    <div class="db">
+      <h4>這份提案的根基很紮實,但還沒有人負責把它變成動作</h4>
+      <p class="sub">素材類型(宣告):bp · 次型:內部報告型(外池天生薄) · AI 判讀 · 引文可查</p>
+
+      <div class="lights">
+        <div class="row"><span class="ly">理</span><span class="lg ok">穩</span><span class="lt">每個主張都指得回資料或來源,沒有憑感覺定案的地方</span></div>
+        <div class="row"><span class="ly">用</span><span class="lg act">行動</span><span class="lt">通篇沒有出現「誰、何時、缺什麼」——想法還沒有落地的骨架</span></div>
+        <div class="row"><span class="ly">道</span><span class="lg watch">注意</span><span class="lt">目標訂得很滿,但沒有一句提到餘裕或退路</span></div>
+      </div>
+
+      <p><strong>做對了什麼</strong>:「這個價格是根據三個月的成本數據與兩輪訪談定的」——主張附根據,而且根據可查。這在提案文件裡少見。</p>
+      <p><strong>該注意什麼</strong>:理厚而用空,是提案最常見的形狀。它不代表做不到,代表<strong>這份文件還不足以讓別人接手執行</strong>。</p>
+      <p><strong>怎麼做</strong>:在現有結構後補一節「誰做、何時、缺什麼」。不必改論述,補一張表就好。</p>
+
+      <details>
+        <summary>進階閱讀 · 三隅箴檢查</summary>
+        <p style="font-size:13px;margin:0">用層為<strong>缺席</strong>(非薄)→ 觸發<strong>自產病警示</strong>:理不落地,知識與原則未轉成任何實踐。</p>
+        <p style="font-size:13px;margin:8px 0 0">量形:理長 · 用短 · 道中 → <strong>用頂縮(自產病形)</strong>。</p>
+      </details>
+    </div>
+  </div>
+
+  <h3>範例三 · 拒判</h3>
+  <p>拒判不是錯誤訊息。它跟正常判讀一樣需要標題、理由、下一步。</p>
+  <div class="demo">
+    <div class="dh">合成示意 · Declined</div>
+    <div class="db">
+      <h4>這份素材照不出運作——但它告訴了我們一件事</h4>
+      <p class="sub">素材類型(宣告):policy · 判讀對象:某制度文件 · <strong>不判讀</strong></p>
+
+      <p><strong>為什麼不判</strong>:適用域三條件是「單一運作主體 × 行為證據 × 同一時段」。這份素材是<strong>制度條文</strong>——它規定了應該怎麼做,但沒有記錄任何人實際做了什麼。<strong>只有結構,沒有運作。</strong></p>
+      <p>硬判也判得出來,但那會是把「條文寫得剛硬」讀成「這個組織很剛硬」——兩件不同的事。這種讀法不可否證,就是星座化。</p>
+
+      <p><strong>這本身是一個發現</strong>:如果一個制度上路一年,卻拿不出任何執行紀錄、修訂討論或例外處理的痕跡,那不是素材不足,是<strong>這個制度可能沒有真的在運轉</strong>。</p>
+
+      <p><strong>你可以補什麼</strong>——任一項都能讓它變成可判素材:</p>
+      <ul>
+        <li>制度上路後的例外處理紀錄</li>
+        <li>修訂討論的會議紀錄</li>
+        <li>執行者的操作筆記或抱怨</li>
+      </ul>
+      <p style="color:var(--muted);font-size:13px">補進來之後,判讀對象要改宣告為「這個制度的執行運作」——換主體,不換素材。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="seclabel"><span class="num">六</span><h2>待決</h2></div>
+  <ol>
+    <li><code>convergence.指標一</code> 是否升級為「原始一致率 + κ 並記」。</li>
+    <li>編碼者訓練程序要不要建立——判讀者換人時的一致性目前無任何保障。</li>
+    <li>Westrum 三型是否收進 NEIGHBORS 紅線標本群。</li>
+    <li>五件事的優先序與各自的最小可交付版本。</li>
+    <li>本頁所有外部框架敘述<strong>待查證後</strong>才可對外引用。</li>
+  </ol>
+</section>
+
+<footer>
+  真相源:<a href="https://github.com/flow222git/jte-platform-2026/blob/main/docs/superpowers/specs/2026-08-04-lens-landscape-and-offerings.md">spec 原始檔</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/READINGS-LOG.md">判讀登記表</a> ·
+  <a href="https://github.com/flow222git/jte-platform-2026/blob/main/octenso/NEIGHBORS.md">學理鄰居</a><br>
+  相關頁:<a href="lens-discussion.html">八態鏡討論版</a> ·
+  <a href="octenso-boundary-research.html">八態的邊界</a> ·
+  <a href="item-bank-v4-candidates.html">題本 v4 候選</a> ·
+  <a href="index.html">文件入口</a><br>
+  外部框架資訊來自模型訓練知識、未經本次查證,一律視為待查;範例全為合成示意,不得引用為案例。
+</footer>
+
+</div>
+</body>
+</html>
