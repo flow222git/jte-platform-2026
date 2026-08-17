@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>心率變異 HRV · 練息場</title>
-<meta name="description" content="手指輕貼後鏡頭，約三分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
+<meta name="description" content="手指輕貼後鏡頭，約一分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
 <meta property="og:title" content="心率變異 HRV · 練息場">
-<meta property="og:description" content="手指貼鏡頭，三分鐘量身體狀態。">
+<meta property="og:description" content="手指貼鏡頭，一分鐘量身體狀態。">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -142,6 +142,9 @@
   .stuck-card p{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:0 0 10px}
   .stuck-card textarea{width:100%;font:11px/1.5 monospace;border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--ink-soft);background:transparent}
   .inapp-warn{background:#fff7ea;border:1px solid #e8cfa0;border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.7;color:#7a5b22;margin-bottom:14px}
+  .deep-row{text-align:center;margin:2px 0 12px}
+  .deep-row .btn-ghost{width:100%}
+  .facet-deep-cta{width:100%;margin-top:10px}
   .qdot{width:11px;height:11px;border-radius:50%;background:var(--red);transition:.3s;box-shadow:0 0 0 0 rgba(255,255,255,.0)}
   .qdot.green{background:var(--green)} .qdot.yellow{background:var(--yellow)} .qdot.red{background:var(--red)}
   .hr-live{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px}
@@ -272,7 +275,7 @@
 <body>
 <div class="wrap">
   <header><span class="logo">心率變異 HRV</span><span class="sub">CAMERA PPG</span></header>
-  <p class="tagline">手指貼鏡頭，三分鐘量身體狀態。</p>
+  <p class="tagline">手指貼鏡頭，一分鐘量身體狀態。</p>
   <div id="app"></div>
 </div>
 <div class="bar" id="bar"></div>
@@ -288,13 +291,17 @@ if(typeof window.jteT!=='function'){ window.jteT=function(k,fb){ return fb!==und
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
-const MEASURE_SEC=180;      // 固定 3 分鐘：HR/RMSSD 涵蓋，且頻域面相(LF 需 2–3 分)才準
+// 雙模式：快測 60 秒（預設，HR/RMSSD/身體能量——超短時 HRV 研究中 60 秒 RMSSD 與標準值相關 >0.9）
+// 深度測 180 秒（頻域四面相；LF 頻段 0.04Hz＝25 秒/週期，物理上就需要 2–3 分鐘）。
+// 誠實框架：不把 3 分鐘的指標塞進 1 分鐘——快測只出撐得住的，四面相留給深度測。
+const QUICK_SEC=60;
+const DEEP_SEC=180;
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
-function measureSec(){ return MEASURE_SEC; }
+function measureSec(){ return session.measureMode==='deep' ? DEEP_SEC : QUICK_SEC; }
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
 const STUCK_SEC=40;      // 擷取超過這麼久還沒開始倒數 → 顯示「好像不太順？」出口（換地方/複製診斷回報）
 
-const session={ mode:'intro', stream:null, track:null, raf:null,
+const session={ mode:'intro', measureMode:'quick', stream:null, track:null, raf:null,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null, lockSince:null };
 var _lastResultSamples=null; // stored for jteI18nApply re-render on lang switch
 
@@ -338,7 +345,7 @@ function renderIntro(){
   const leadP=document.createElement('p');
   leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。');
   const leadTag=document.createElement('div');leadTag.className='tag';
-  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約三分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
+  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
   lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
   d.appendChild(lead);
 
@@ -349,7 +356,7 @@ function renderIntro(){
     {t:jteT('hrv.p1.t','什麼是 HRV？'),d:jteT('hrv.p1.d','心率變異＝每次心跳間隔的細微變化。變化越豐富，通常代表身體越能放鬆、恢復力越好。'),icon:'ti-heartbeat'},
     {t:jteT('hrv.p2.t','它反映什麼？'),d:jteT('hrv.p2.d','你的自律神經狀態——交感（油門·備戰）和副交感（剎車·休息）的平衡。'),icon:'ti-activity'},
     {t:jteT('hrv.p3.t','怎麼看才準？'),d:jteT('hrv.p3.d','跟自己平常比、看趨勢就好，不是跟別人比；多量幾次會越來越貼近你。'),icon:'ti-trending-up'},
-    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','身體能量，以及放鬆、壓力、活力、彈性等面相，幫你覺察當下的身心狀態。'),icon:'ti-eye'}
+    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','快測（1 分鐘）看身體能量與心率；深度測（3 分鐘）再加上放鬆、壓力、活力、彈性四面相。'),icon:'ti-eye'}
   ];
   let gh='<h3><i class="ti ti-bulb"></i>'+_h(jteT('hrv.title','認識 HRV'))+'</h3><div class="steps">';
   hrvPts.forEach(function(s){
@@ -359,6 +366,14 @@ function renderIntro(){
   gh+='</div>';
   g.innerHTML=gh;
   d.appendChild(g);
+
+  // 深度測入口：快測（預設鈕）撐不起 LF 頻域，四面相走這裡（誠實框架：不縮短、只分層）
+  const deepRow=document.createElement('div'); deepRow.className='deep-row';
+  const deepBtn=document.createElement('button'); deepBtn.className='btn-ghost';
+  deepBtn.textContent=jteT('btn.deep','深度測 · 3 分鐘 · 完整四面相');
+  deepBtn.onclick=function(){ renderMeasure('deep'); };
+  deepRow.appendChild(deepBtn);
+  d.appendChild(deepRow);
 
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('disclaimer',DISCLAIMER))+'</p>');
   app.appendChild(d);
@@ -375,8 +390,8 @@ function renderIntro(){
 
 /* —— 量測（相機 + 即時回饋）—— */
 let waveCanvas=null, waveCtx=null;
-function renderMeasure(){
-  session.mode='measure'; clearAll();
+function renderMeasure(mode){
+  session.mode='measure'; session.measureMode=(mode==='deep')?'deep':'quick'; clearAll();
   session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
@@ -793,7 +808,7 @@ function renderResult(samples){
     app.appendChild(d);
     const inner=document.createElement('div');inner.className='bar-inner';
     const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.again','再量一次');
-    again.onclick=function(){ renderMeasure(); };
+    again.onclick=function(){ renderMeasure(session.measureMode); }; // 再量一次沿用當次模式
     inner.appendChild(again);
     bar.appendChild(inner);
     return;
@@ -921,6 +936,13 @@ function buildFacets(facets){
   wrap.appendChild(head);
   if(!facets){
     const na=document.createElement('div'); na.className='facet-na';
+    if(session.measureMode!=='deep'){
+      // 快測本來就不夠長算頻域——這不是使用者的錯，誠實說明並給深度測入口
+      na.textContent=jteT('facets.quick','快測看的是身體能量與心率。想看放鬆／壓力／活力／彈性四面相，需要較長的訊號——做一次 3 分鐘深度測就有了。');
+      wrap.appendChild(na);
+      wrap.appendChild(deepCtaBtn());
+      return wrap;
+    }
     na.textContent=jteT('facets.na','這次資料不夠算這幾個面相（可能沒量滿或訊號晃），下次坐穩、手指蓋好再量一次就有了。');
     wrap.appendChild(na); return wrap;
   }
@@ -947,11 +969,24 @@ function buildFacets(facets){
   });
   if(facets.partial){
     const pn=document.createElement('div'); pn.className='facet-na';
-    pn.textContent=jteT('facets.partial','這次乾淨的連續片段偏短，壓力／活力需要更長一段穩定訊號才準，先顯示放鬆與彈性。下次坐穩、手指蓋好量滿就會補齊。');
-    wrap.appendChild(pn);
+    if(session.measureMode!=='deep'){
+      pn.textContent=jteT('facets.partial.quick','快測撐得起放鬆與彈性；壓力／活力需要更長的穩定訊號——想看完整四面相，做一次 3 分鐘深度測。');
+      wrap.appendChild(pn);
+      wrap.appendChild(deepCtaBtn());
+    }else{
+      pn.textContent=jteT('facets.partial','這次乾淨的連續片段偏短，壓力／活力需要更長一段穩定訊號才準，先顯示放鬆與彈性。下次坐穩、手指蓋好量滿就會補齊。');
+      wrap.appendChild(pn);
+    }
   }
   wrap.appendChild(birthYearRow());
   return wrap;
+}
+// 深度測 CTA（快測結果頁用）
+function deepCtaBtn(){
+  const b=document.createElement('button'); b.className='btn-ghost facet-deep-cta';
+  b.textContent=jteT('btn.deep','深度測 · 3 分鐘 · 完整四面相');
+  b.onclick=function(){ renderMeasure('deep'); };
+  return b;
 }
 
 // 事後自我回饋：選身體/精神感覺 → 對照身體量到的 state（中性、非糾正）
@@ -1189,7 +1224,7 @@ function renderTrend(){
   const home=document.createElement('button');home.className='btn btn-ghost';home.style.flex='1';home.textContent=jteT('btn.home','回開始');
   home.onclick=function(){ renderIntro(); };
   const again=document.createElement('button');again.className='btn btn-primary';again.textContent=jteT('btn.measure.once','量一次');
-  again.onclick=function(){ renderMeasure(); };
+  again.onclick=function(){ renderMeasure(session.measureMode); }; // 再量一次沿用當次模式
   inner.appendChild(home);inner.appendChild(again);
   bar.appendChild(inner);
 
@@ -1483,6 +1518,10 @@ window.JTE_I18N = {
     'intro.step4.title': 'Wait for the signal light to turn green',
     'intro.step4.desc': 'A ~1 minute countdown begins, and results appear automatically.',
     'btn.start': 'Start Measuring',
+    'btn.deep': 'Deep Measure · 3 min · All four facets',
+    'hrv.p4.d': 'Quick measure (1 min) shows Body Energy and heart rate; Deep measure (3 min) adds the four facets: relaxation, stress, vitality, flexibility.',
+    'facets.quick': 'Quick measure covers Body Energy and heart rate. The four facets (relaxation / stress / vitality / flexibility) need a longer signal — take one 3-minute Deep measure to see them.',
+    'facets.partial.quick': 'Quick measure supports relaxation and flexibility; stress and vitality need a longer stable signal. Take a 3-minute Deep measure to see all four facets.',
     'btn.trend': 'View Trend',
     'btn.cancel': 'Cancel',
     'btn.again': 'Measure Again',
@@ -1563,6 +1602,10 @@ window.JTE_I18N = {
     'intro.step4.title': 'シグナルランプが緑になるまで待つ',
     'intro.step4.desc': '約1分のカウントダウンが始まり、自動的に結果が表示されます。',
     'btn.start': '測定を開始',
+    'btn.deep': 'じっくり測定 · 3分 · 4つの側面すべて',
+    'hrv.p4.d': 'クイック測定（1分）ではからだのエネルギーと心拍数を、じっくり測定（3分）ではさらにリラックス・ストレス・活力・柔軟性の4側面を確認できます。',
+    'facets.quick': 'クイック測定で見られるのは、からだのエネルギーと心拍数です。4つの側面（リラックス／ストレス／活力／柔軟性）にはより長い信号が必要です — 3分のじっくり測定でご覧いただけます。',
+    'facets.partial.quick': 'クイック測定ではリラックスと柔軟性まで算出できます。ストレス／活力にはより長い安定した信号が必要です — 4側面すべては3分のじっくり測定で。',
     'btn.trend': 'トレンドを見る',
     'btn.cancel': 'キャンセル',
     'btn.again': 'もう一度測る',

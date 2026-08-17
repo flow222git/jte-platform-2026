@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-modes tests</title>
+<style>body{font-family:monospace;padding:16px}iframe{display:none}pre{white-space:pre-wrap}</style>
+</head><body>
+<h2>hrv-modes.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html"></iframe>
+<script>
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+'\n  got : '+a+'\n  want: '+b);}
+function assert(c,m){if(!c)throw new Error(m||'assert failed');}
+
+const fr=document.getElementById('fr');
+let iw=null;
+
+function waitFor(fn,timeout){
+  return new Promise(function(resolve,reject){
+    var start=Date.now();
+    var t=setInterval(function(){
+      try{if(fn()){clearInterval(t);resolve();}}catch(e){}
+      if(Date.now()-start>timeout){clearInterval(t);reject(new Error('waitFor timeout'));}
+    },150);
+  });
+}
+function findBtn(txts){
+  var btns=iw.document.querySelectorAll('button,a.btn');
+  for(var i=0;i<btns.length;i++){
+    for(var j=0;j<txts.length;j++){ if(btns[i].textContent.indexOf(txts[j])>=0) return btns[i]; }
+  }
+  return null;
+}
+
+fr.addEventListener('load',function(){
+  iw=fr.contentWindow;
+  waitFor(function(){
+    return iw.__jteI18nLoaded && iw.document.getElementById('bar');
+  },25000).then(runTests).catch(function(e){
+    log('SETUP FAILED: '+e.message);
+    finish();
+  });
+});
+
+function runTests(){
+  try{ iw.localStorage.removeItem('jte_lang'); }catch(e){}
+  iw.jteSetLang('zh');
+
+  // TEST 1: intro 有「深度測」入口
+  check('intro 有深度測入口（3 分鐘）',function(){
+    iw.renderIntro();
+    var deep=findBtn(['深度測']);
+    assert(deep!==null,'找不到含「深度測」的按鈕');
+  });
+
+  // TEST 2: 預設快測 → 倒數 60 秒
+  check('點「開始量測」→ 快測 60 秒',function(){
+    iw.renderIntro();
+    var start=findBtn(['開始量測']);
+    assert(start!==null,'找不到開始量測鈕');
+    start.click();
+    var ring=iw.document.getElementById('ringSec');
+    assert(ring!==null,'量測頁應有 ringSec');
+    eq(ring.textContent,'60','快測倒數秒數');
+  });
+
+  // TEST 3: 深度測 → 倒數 180 秒
+  check('點「深度測」→ 180 秒',function(){
+    iw.renderIntro();
+    var deep=findBtn(['深度測']);
+    deep.click();
+    var ring=iw.document.getElementById('ringSec');
+    eq(ring.textContent,'180','深度測倒數秒數');
+  });
+
+  // TEST 4: 快測沒有面相時 → 誠實說明＋深度測 CTA（不是「你沒量好」）
+  check('快測 facets=null → 顯示深度測 CTA',function(){
+    iw.renderIntro();
+    findBtn(['開始量測']).click();           // 進入快測 → measureMode='quick'
+    var el=iw.buildFacets(null);
+    assert(el.textContent.indexOf('深度測')>=0,'快測空面相應含深度測引導，實得：'+el.textContent.slice(0,80));
+  });
+
+  // TEST 5: 深度測沒有面相 → 維持原本「資料不夠」說明（不出快測 CTA）
+  check('深度測 facets=null → 維持資料不夠說明',function(){
+    iw.renderIntro();
+    findBtn(['深度測']).click();             // 進入深度測 → measureMode='deep'
+    var el=iw.buildFacets(null);
+    assert(el.textContent.indexOf('資料不夠')>=0,'深度測空面相應為資料不夠說明，實得：'+el.textContent.slice(0,80));
+  });
+
+  finish();
+}
+function finish(){
+  log('---');log('DONE pass='+pass+' fail='+fail);
+  document.title=fail?('FAIL '+fail):'OK';
+  window.__done=true;
+  try{fetch('/__result',{method:'POST',body:lines.join('\n')});}catch(e){}
+}
+</script>
+</body></html>
