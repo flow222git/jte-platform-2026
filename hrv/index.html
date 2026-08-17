@@ -126,6 +126,22 @@
   .ring .ring-num .n{font-family:"Noto Serif TC",serif;font-size:34px;font-weight:700;line-height:1}
   .ring .ring-num .u{font-size:10px;letter-spacing:.1em;opacity:.8;margin-top:2px}
   .quality{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border-radius:999px;padding:7px 14px;font-size:13px}
+  /* 擷取分關清單：三關即時打勾，新手隨時知道卡在哪一關 */
+  .acq-list{display:flex;flex-direction:column;gap:5px;background:rgba(0,0,0,.35);border-radius:12px;padding:9px 14px;font-size:13px;line-height:1.5}
+  .acq-item{display:flex;align-items:center;gap:8px;opacity:.55;transition:.3s}
+  .acq-item .acq-dot{flex:none;width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
+  .acq-item.ok{opacity:.95}
+  .acq-item.ok .acq-dot{background:var(--green);border-color:var(--green)}
+  .acq-item.ok .acq-dot::after{content:'✓';color:#fff}
+  .acq-item.now{opacity:1;font-weight:600}
+  .acq-item.now .acq-dot{border-color:#fff;animation:acqPulse 1.6s ease infinite}
+  @keyframes acqPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}50%{box-shadow:0 0 0 5px rgba(255,255,255,0)}}
+  /* 卡住面板：等太久時給出口與一鍵複製診斷 */
+  .stuck-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:12px}
+  .stuck-card h3{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .stuck-card p{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:0 0 10px}
+  .stuck-card textarea{width:100%;font:11px/1.5 monospace;border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--ink-soft);background:transparent}
+  .inapp-warn{background:#fff7ea;border:1px solid #e8cfa0;border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.7;color:#7a5b22;margin-bottom:14px}
   .qdot{width:11px;height:11px;border-radius:50%;background:var(--red);transition:.3s;box-shadow:0 0 0 0 rgba(255,255,255,.0)}
   .qdot.green{background:var(--green)} .qdot.yellow{background:var(--yellow)} .qdot.red{background:var(--red)}
   .hr-live{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px}
@@ -276,6 +292,7 @@ const MEASURE_SEC=180;      // 固定 3 分鐘：HR/RMSSD 涵蓋，且頻域面�
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return MEASURE_SEC; }
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
+const STUCK_SEC=40;      // 擷取超過這麼久還沒開始倒數 → 顯示「好像不太順？」出口（換地方/複製診斷回報）
 
 const session={ mode:'intro', stream:null, track:null, raf:null,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null, lockSince:null };
@@ -298,6 +315,19 @@ const ENERGY_DISCLAIMER='「身體能量」是跟你自己平常的數值比出�
   '相機量測受光線與晃動影響，數值會浮動。';
 
 /* —— 入口／說明 —— */
+// LINE/FB 等內嵌瀏覽器常開不了相機：進場就提醒改用 Safari/Chrome（等相機失敗才講太晚）。
+// hrv-acquire.js 是 defer，首次 renderIntro 時可能還沒載 → window load 後再補插一次。
+function injectInAppWarn(){
+  if(session.mode!=='intro') return;
+  if(document.getElementById('inappWarn')) return;
+  const inApp=(window.HrvAcquire&&HrvAcquire.detectInApp)?HrvAcquire.detectInApp(navigator.userAgent):null;
+  if(!inApp) return;
+  const host=app.querySelector('.step'); if(!host) return;
+  const w=document.createElement('div'); w.className='inapp-warn'; w.id='inappWarn';
+  w.textContent=jteT('inapp.warn','你現在是用 App 內建的瀏覽器打開的，相機常常開不起來。建議用選單裡的「以瀏覽器開啟」改用 Safari 或 Chrome 開這個頁面。');
+  host.insertBefore(w, host.children[1]||null); // 放返回鈕之後、第一張卡之前
+}
+window.addEventListener('load', injectInAppWarn);
 function renderIntro(){
   session.mode='intro'; stopCamera(); clearAll();
   const d=document.createElement('div');d.className='step';
@@ -340,6 +370,7 @@ function renderIntro(){
   hist.onclick=function(){ renderTrend(); };
   inner.appendChild(hist);inner.appendChild(start);
   bar.appendChild(inner);
+  injectInAppWarn(); // load 後的重繪（語言切換/返回）在這裡補插
 }
 
 /* —— 量測（相機 + 即時回饋）—— */
@@ -363,6 +394,11 @@ function renderMeasure(){
           '<div class="ring-num"><span class="n" id="ringSec">'+measureSec()+'</span><span class="u">'+jteT('unit.sec','秒')+'</span></div>'+
         '</div>'+
         '<div class="quality"><span class="qdot red" id="qdot"></span><span id="qlabel">'+jteT('quality.red','偵測訊號中…')+'</span></div>'+
+        '<div class="acq-list" id="acqList">'+
+          '<div class="acq-item" id="acqCover"><span class="acq-dot"></span><span>'+_h(jteT('acq.cover','手指蓋住鏡頭'))+'</span></div>'+
+          '<div class="acq-item" id="acqLight"><span class="acq-dot"></span><span>'+_h(jteT('acq.light','光線足夠'))+'</span></div>'+
+          '<div class="acq-item" id="acqPulse"><span class="acq-dot"></span><span>'+_h(jteT('acq.pulse','抓到脈搏'))+'</span></div>'+
+        '</div>'+
         '<div class="hr-live"><span class="hb">♥</span><span class="v" id="hrLive">--</span><span class="u">bpm</span></div>'+
       '</div>'+
     '</div>');
@@ -429,6 +465,7 @@ async function startCamera(){
   try{
     const devs=await navigator.mediaDevices.enumerateDevices();
     const cams=devs.filter(function(d){ return d.kind==='videoinput'; });
+    session.camList=cams.map(function(d){ return d.label||'(空)'; });
     const isBack=function(l){ return /back|rear|environment|後置|後|背/i.test(l||''); };
     const isVirtual=function(l){ return /dual|triple|雙|三/i.test(l||''); }; // 含「雙/三」＝自動切換虛擬鏡頭
     const isUltra=function(l){ return /超廣角|ultra[\s-]*wide/i.test(l||''); };
@@ -481,9 +518,13 @@ async function startCamera(){
   // 多數手機（含 iPhone）可開閃光燈（torch）；少數裝置/瀏覽器不支援，applyConstraints 會丟例外 → 吞掉、改靠環境光。
   try{
     if(track&&track.applyConstraints){
+      // torch 支援與否以 getCapabilities 為準：iOS Safari 對不支援的約束常「默默不生效」而非丟例外，
+      // 不能只憑沒丟例外就記「有開」（診斷報告會誤導）。caps 沒報 torch → 記 undefined（報告印 '?'）。
+      var _tcaps=(track.getCapabilities?track.getCapabilities():{})||{};
       await track.applyConstraints({ advanced:[{ torch:true }] });
+      session.torchOk = _tcaps.torch ? true : undefined;
     }
-  }catch(e){ /* 無閃光燈，靠環境光；說明已引導到亮的地方 */ }
+  }catch(e){ session.torchOk=false; /* 無閃光燈，靠環境光；分關引導會請使用者補光 */ }
 
   _video=document.getElementById('cam');
   if(!_video){ return; }
@@ -507,10 +548,13 @@ function loopGrab(){
       _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
       // 取中央 ~50x50（7..57）：紅光平均（訊號）＋綠光平均＋紅光飽和比例（診斷用）
       const img=_grabCtx.getImageData(7,7,50,50).data, px=img.length/4;
-      let r=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
+      let r=0,r2=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; r2+=img[i]*img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
       const redMean=r/px, greenMean=g/px;
+      // 紅通道空間變異係數（cv）：整片均勻＝蓋住的特徵之一，給擷取分關（HrvAcquire.checks）用
+      const redVar=Math.max(0, r2/px - redMean*redMean);
+      const redCv=redMean>0 ? Math.sqrt(redVar)/redMean : 1;
       session.samples.push({ t:now, v:redMean, g:greenMean });
-      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px };
+      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv };
       // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
       if(!session.measuring){
         const cutoff=now-KEEP_SEC*1000;
@@ -585,6 +629,7 @@ function updateLiveUi(now){
       session.measuring=true; session.countdownStart=now; session.samples=[];
       stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
+      const list=document.getElementById('acqList'); if(list)list.style.display='none'; // 三關已過，收起清單
     }
   }
   if(session.measuring){
@@ -602,21 +647,66 @@ function updateLiveUi(now){
     }
     if(remain<=0){ finishMeasure(); }
   }else{
-    if(hint && !hint.classList.contains('warn')){
-      const waited=(now-session.measureStart)/1000;
-      if(q==='red' && waited>=8){
-        // 久久抓不到 → 給可操作的檢查清單
-        hint.textContent=jteT('hint.acquiring.late','還抓不到：請確認 ① 整個指腹蓋滿鏡頭和閃光燈（畫面要紅紅一片）② 別壓太用力 ③ 在亮一點的地方，放鬆再等幾秒。');
-      }else{
-        // 分段引導：跟著一步步做，走完差不多也偵測完了（體驗順暢）
-        var cut=jteT('cut.1','① 用整個指腹蓋滿後鏡頭（連旁邊的閃光燈）—— 畫面變成紅紅一片就對了');
-        if(waited>=13)      cut=jteT('cut.4','很好，正在抓你的心跳…快好了，穩住');
-        else if(waited>=9)  cut=jteT('cut.3','③ 手和身體放鬆、保持靜止，正常呼吸');
-        else if(waited>=4.5)cut=jteT('cut.2','② 輕輕貼著就好，別壓太用力');
-        hint.textContent=cut;
-      }
+    // 狀態驅動引導：依「現在卡在哪一關」給指示（取代原本照秒數輪播的分段引導——
+    // 新手做錯時輪播只會愈走愈遠；狀態驅動則是他一做對，下一關的指示立刻接上）。
+    const waited=(now-session.measureStart)/1000;
+    const ck=(window.HrvAcquire&&HrvAcquire.checks)?HrvAcquire.checks(session.lastDiag,q):null;
+    session._lastQ=q;
+    updateAcqList(ck);
+    if(hint && ck){
+      if(ck.focus==='cover')      hint.textContent=jteT('acq.hint.cover','用整個指腹蓋滿後鏡頭（連旁邊的閃光燈）—— 畫面變成紅紅一片就對了');
+      else if(ck.focus==='light') hint.textContent=jteT('acq.hint.light','手指蓋對了，但光不夠——面向檯燈或窗戶，或到亮一點的地方再試');
+      else                        hint.textContent=jteT('acq.hint.pulse','很好，正在抓你的心跳…輕輕貼著、別壓太用力，保持不動');
     }
+    if(waited>=STUCK_SEC) showStuckPanel();
   }
+}
+
+// 擷取分關清單：過了打勾、卡住的那關高亮呼吸提示
+function updateAcqList(ck){
+  const list=document.getElementById('acqList'); if(!list)return;
+  if(session.measuring){ list.style.display='none'; return; }
+  const map={ acqCover:'cover', acqLight:'light', acqPulse:'pulse' };
+  for(const id in map){
+    const el=document.getElementById(id); if(!el)continue;
+    const key=map[id];
+    el.className='acq-item'+(ck&&ck[key]?' ok':(ck&&ck.focus===key?' now':''));
+  }
+}
+
+// 「好像不太順？」出口：擷取超過 STUCK_SEC 仍沒開始 → 給換法＋一鍵複製診斷（純本機、無個資）。
+// 只出現一次；診斷內容在按下當下才組（拿最新的訊號值）。
+function showStuckPanel(){
+  if(session._stuckShown)return; session._stuckShown=true;
+  const box=document.getElementById('camErr'); if(!box)return;
+  const card=document.createElement('div'); card.className='stuck-card';
+  card.innerHTML='<h3>'+_h(jteT('stuck.title','好像不太順？'))+'</h3>'+
+    '<p>'+_h(jteT('stuck.body','別擔心，有些手機要多試一下。可以先到亮一點的地方、換一根手指、或把手機和手都靠在桌上再試。還是不行的話，按下面的按鈕複製診斷資訊，傳給練息場，我們來查。'))+'</p>'+
+    '<button class="btn btn-primary" id="stuckCopy" style="width:100%">'+_h(jteT('stuck.copy','複製診斷資訊'))+'</button>'+
+    '<textarea id="stuckTxt" rows="8" readonly style="display:none;margin-top:10px"></textarea>';
+  box.appendChild(card);
+  const btn=document.getElementById('stuckCopy');
+  btn.onclick=function(){
+    const d=session.lastDiag||{};
+    const A2=window.HrvAcquire;
+    const ck=A2?A2.checks(d, session._lastQ||'red'):null;
+    const txt=A2?A2.buildReport({
+      when:(new Date()).toISOString(), ua:navigator.userAgent,
+      screenW:(window.screen&&screen.width)||null, screenH:(window.screen&&screen.height)||null,
+      dpr:window.devicePixelRatio||null, lang:navigator.language||null,
+      inApp:A2.detectInApp(navigator.userAgent),
+      cams:session.camList||null, picked:session.camPick||null, reacq:!!session.camReacq,
+      torchOk:session.torchOk, stab:session._stab||null,
+      R:(d.R!=null)?d.R.toFixed(1):null, G:(d.G!=null)?d.G.toFixed(1):null,
+      cv:(d.cv!=null)?d.cv.toFixed(2):null, sat:(d.sat!=null)?d.sat.toFixed(2):null,
+      quality:session._lastQ||'?', focus:ck?ck.focus:'?',
+      waitedSec:session.measureStart!=null?Math.round(((typeof performance!=='undefined'&&performance.now?performance.now():Date.now())-session.measureStart)/1000):null
+    }):'(診斷模組未載入)';
+    const ta=document.getElementById('stuckTxt');
+    if(ta){ ta.value=txt; ta.style.display='block'; try{ ta.select(); }catch(e){} }
+    // clipboard 可能因權限/協定失敗 → textarea 常駐顯示，長按也複製得到
+    try{ navigator.clipboard.writeText(txt).then(function(){ btn.textContent=jteT('stuck.copied','已複製，貼給練息場即可'); }); }catch(e){}
+  };
 }
 
 function drawWave(samples){
@@ -1366,6 +1456,8 @@ renderIntro();
 
 <!-- 訊號處理純模組 -->
 <script defer src="hrv-analyze.js"></script>
+<!-- 擷取引導（分關檢查/診斷報告/內嵌瀏覽器偵測）純邏輯 -->
+<script defer src="hrv-acquire.js"></script>
 <!-- 身體能量分數純模組（baselineFrom/energyScore） -->
 <script defer src="hrv-energy.js"></script>
 <!-- 頻域四面相純模組（放鬆/壓力/活力/彈性 indices） -->
@@ -1403,9 +1495,17 @@ window.JTE_I18N = {
     'quality.yellow': 'Weak signal — stay still',
     'quality.red': 'Acquiring signal…',
     'hint.initial': 'Gently cover the rear camera with your finger and stay still…',
-    'hint.acquiring.early': 'Relax — hold your finger steady over the rear camera and wait a few seconds…',
-    'hint.acquiring.late': 'Still can\'t get a stable heartbeat. Try: cover the full lens (including flash), find a brighter spot, relax and wait.',
-    'hint.yellow': 'Almost there — hold steady, wait for the signal to turn green…',
+    'acq.cover': 'Finger covering the lens',
+    'acq.light': 'Enough light',
+    'acq.pulse': 'Pulse detected',
+    'acq.hint.cover': 'Cover the whole rear lens (and the flash next to it) with your fingertip — the screen should turn solid red',
+    'acq.hint.light': 'Finger placement is right, but it\'s too dark — face a lamp or window, or move somewhere brighter',
+    'acq.hint.pulse': 'Great, reading your pulse… keep a light touch, don\'t press hard, and stay still',
+    'stuck.title': 'Not working?',
+    'stuck.body': 'Don\'t worry — some phones take a few tries. Move somewhere brighter, try another finger, or rest your phone and hand on a table. Still stuck? Tap the button below to copy the diagnostic info and send it to Join to Enjoy — we\'ll look into it.',
+    'stuck.copy': 'Copy diagnostic info',
+    'stuck.copied': 'Copied — just paste and send it to us',
+    'inapp.warn': 'You\'re viewing this inside an app\'s built-in browser, where the camera often won\'t start. Please use "Open in browser" from the menu to open this page in Safari or Chrome.',
     'hint.started': 'Measuring — stay still and breathe normally…',
     'hint.warn': 'Signal dropped — keep your finger in place and relax…',
     'hint.recovering': 'Good — hold it…',
@@ -1475,9 +1575,17 @@ window.JTE_I18N = {
     'quality.yellow': '信号弱め — 動かないで',
     'quality.red': '信号取得中…',
     'hint.initial': '背面カメラに指を軽く当てて、そのまま静止してください…',
-    'hint.acquiring.early': 'リラックスして — 指をカメラにしっかり当てて、数秒待ちましょう…',
-    'hint.acquiring.late': '安定した心拍が検出できません。カメラ全体（フラッシュも）を覆い、明るい場所でリラックスして待ってみてください。',
-    'hint.yellow': 'もう少し — そのまま、シグナルが緑になるまで待って…',
+    'acq.cover': '指でレンズを覆う',
+    'acq.light': '光は十分',
+    'acq.pulse': '脈拍を検出',
+    'acq.hint.cover': '指の腹で背面レンズ全体（横のフラッシュも）を覆ってください — 画面が真っ赤になればOK',
+    'acq.hint.light': '指の位置は合っていますが、暗すぎます — ライトや窓の方を向くか、明るい場所でお試しください',
+    'acq.hint.pulse': 'いいですね、脈拍を読み取っています…軽く当てたまま、押しすぎず、動かないでください',
+    'stuck.title': 'うまくいきませんか？',
+    'stuck.body': 'ご心配なく — 機種によっては何度か試す必要があります。明るい場所に移動する、別の指で試す、スマホと手を机に置いて安定させる、などをお試しください。それでもダメな場合は、下のボタンで診断情報をコピーして練息場までお送りください。',
+    'stuck.copy': '診断情報をコピー',
+    'stuck.copied': 'コピーしました — そのまま貼り付けて送ってください',
+    'inapp.warn': 'アプリ内ブラウザで開いているため、カメラが起動できない場合があります。メニューの「ブラウザで開く」から Safari または Chrome でこのページを開いてください。',
     'hint.started': '測定中 — 静止して、普通に呼吸してください…',
     'hint.warn': '信号が乱れています — 指を離さず、リラックスして…',
     'hint.recovering': 'いいです、そのまま…',

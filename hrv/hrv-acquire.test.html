@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-acquire tests</title>
+<script src="hrv-acquire.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+const out = document.getElementById('out');
+let pass = 0, fail = 0;
+const lines = [];
+function log(s){ lines.push(s); out.textContent = lines.join('\n'); }
+function assert(c, m){ if(!c) throw new Error(m || 'assert failed'); }
+function eq(a, b, m){ if(a !== b) throw new Error((m||'eq') + ' got['+a+'] want['+b+']'); }
+async function check(name, fn){
+  try { await fn(); pass++; log('PASS ' + name); }
+  catch (e){ fail++; log('FAIL ' + name + ' :: ' + (e && e.message || e)); }
+}
+
+async function run(){
+  await check('HrvAcquire 應載入', async () => {
+    assert(typeof HrvAcquire === 'object', 'HrvAcquire 應載入');
+  });
+
+  // === checks(diag, quality)：分關即時檢查（狀態驅動引導的核心） ===
+  // diag = { R,G:中央區紅/綠平均(0~255), cv:紅通道空間變異係數, sat:紅飽和比例 }
+  // quality = HrvAnalyze.signalQuality 的 'red'|'yellow'|'green'
+  await check('checks：沒蓋鏡頭（室內場景）→ cover 未過、focus=cover', async () => {
+    const c = HrvAcquire.checks({ R:120, G:110, cv:0.5, sat:0 }, 'red');
+    eq(c.cover, false, 'cover');
+    eq(c.focus, 'cover', 'focus');
+  });
+  await check('checks：蓋住＋閃光燈（紅亮均勻）→ cover/light 過、缺脈搏 focus=pulse', async () => {
+    const c = HrvAcquire.checks({ R:200, G:40, cv:0.08, sat:0.1 }, 'red');
+    eq(c.cover, true, 'cover');
+    eq(c.light, true, 'light');
+    eq(c.pulse, false, 'pulse');
+    eq(c.focus, 'pulse', 'focus');
+  });
+  await check('checks：蓋住但太暗（無燈暗處）→ cover 過、light 未過、focus=light', async () => {
+    const c = HrvAcquire.checks({ R:12, G:6, cv:0.2, sat:0 }, 'red');
+    eq(c.cover, true, 'cover');
+    eq(c.light, false, 'light');
+    eq(c.focus, 'light', 'focus');
+  });
+  await check('checks：全飽和一片紅（sat 高、rg 比失效）也算蓋住', async () => {
+    // 開了閃光燈、指腹壓滿：R≈255 全飽和，G 也被撐高 → rg 比可能不高，靠 sat 認定
+    const c = HrvAcquire.checks({ R:254, G:230, cv:0.02, sat:0.97 }, 'red');
+    eq(c.cover, true, 'cover');
+    eq(c.light, true, 'light');
+  });
+  await check('checks：品質非紅＝抓到脈搏 → 全過、focus=ok', async () => {
+    const c1 = HrvAcquire.checks({ R:200, G:40, cv:0.08, sat:0.1 }, 'yellow');
+    eq(c1.pulse, true, 'pulse yellow');
+    eq(c1.focus, 'ok', 'focus yellow');
+    const c2 = HrvAcquire.checks({ R:200, G:40, cv:0.08, sat:0.1 }, 'green');
+    eq(c2.focus, 'ok', 'focus green');
+  });
+  await check('checks：diag 缺漏/非數字不丟例外，一律當未過', async () => {
+    const c = HrvAcquire.checks(null, 'red');
+    eq(c.cover, false, 'cover');
+    eq(c.focus, 'cover', 'focus');
+  });
+
+  // === detectInApp(ua)：內嵌瀏覽器偵測（相機常開不了的大宗） ===
+  await check('detectInApp：LINE / FB / IG / WeChat 內嵌瀏覽器都認得', async () => {
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 ... Line/13.5.0'), 'line', 'line');
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 ... [FBAN/FBIOS;FBAV/430]'), 'facebook', 'fb');
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 ... Instagram 300.0'), 'instagram', 'ig');
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 ... MicroMessenger/8.0'), 'wechat', 'wechat');
+  });
+  await check('detectInApp：Safari / Chrome 回 null', async () => {
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'), null, 'safari');
+    eq(HrvAcquire.detectInApp('Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36'), null, 'chrome');
+  });
+
+  // === buildReport(info)：一鍵複製的診斷摘要（純文字、無個資） ===
+  await check('buildReport：含關鍵欄位（機況/鏡頭/torch/訊號/卡關）', async () => {
+    const txt = HrvAcquire.buildReport({
+      ua:'TestUA/1.0', screenW:390, screenH:844, dpr:3, lang:'zh-TW',
+      inApp:null, cams:['超廣角相機','後置相機','前置相機'], picked:'超廣角相機',
+      reacq:true, torchOk:false, stab:'(無可鎖)',
+      R:18.4, G:9.2, cv:0.21, sat:0, quality:'red', focus:'light', waitedSec:42
+    });
+    assert(txt.indexOf('TestUA/1.0')>=0, '應含 UA');
+    assert(txt.indexOf('390x844')>=0, '應含螢幕尺寸');
+    assert(txt.indexOf('超廣角相機')>=0, '應含選中鏡頭');
+    assert(txt.indexOf('torch')>=0 && txt.indexOf('不支援')>=0, '應含 torch 狀態');
+    assert(txt.indexOf('R=18')>=0, '應含紅光均值');
+    assert(txt.indexOf('light')>=0, '應含卡住關卡');
+    assert(txt.indexOf('42')>=0, '應含等待秒數');
+  });
+  await check('buildReport：欄位缺漏不丟例外、標示未知', async () => {
+    const txt = HrvAcquire.buildReport({});
+    assert(typeof txt==='string' && txt.length>0, '應回非空字串');
+    assert(txt.indexOf('?')>=0 || txt.indexOf('未知')>=0, '缺漏欄位應標示');
+  });
+  await check('buildReport：內嵌瀏覽器要標出來', async () => {
+    const txt = HrvAcquire.buildReport({ ua:'x', inApp:'line' });
+    assert(txt.indexOf('line')>=0, '應標 in-app 瀏覽器');
+  });
+
+  log('---'); log('DONE pass=' + pass + ' fail=' + fail);
+  document.title = fail ? ('FAIL ' + fail) : 'OK';
+  window.__done = true;
+  try { await fetch('/__result', { method: 'POST', body: lines.join('\n') }); } catch (e) {}
+}
+window.__done = false;
+run();
+</script>
+</body></html>
