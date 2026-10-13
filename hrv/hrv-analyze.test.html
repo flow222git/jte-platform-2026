@@ -197,6 +197,112 @@ async function run(){
     assert(typeof HrvAnalyze.COV_CFG.min==='number', 'COV_CFG.min 應可讀（集中門檻）');
   });
 
+  // === 準確度：已知 RR → 相機式 PPG（出幀抖動＋重複幀）→ 完整結果頁管線 ===
+  // 固定種子 PRNG，測試可重現
+  function rng(seed){ var s=seed>>>0; return function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+  function gauss(R){ var u=R()||1e-9, v=R(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function rmssdOf(rr){ var sq=0; for(var i=1;i<rr.length;i++){ var d=rr[i]-rr[i-1]; sq+=d*d; } return Math.sqrt(sq/(rr.length-1)); }
+  function meanOf(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return s/a.length; }
+  // 平均 800ms、逐拍獨立高斯，再把偏差縮放到 RMSSD 恰為 target（預設 40ms）
+  function makeRr(n, R, target){
+    target=target||40; var dev=[]; for(var i=0;i<n;i++) dev.push(28*gauss(R));
+    var k=target/rmssdOf(dev); return dev.map(function(d){ return 800+d*k; });
+  }
+  // 由 RR 產生 PPG 並模擬相機取樣：fs 標稱 30；記錄時間＝真實出幀時間＋U(±jit)ms；
+  // dupP 機率重複上一張影格（值相同、時間戳是新的，＝rAF 重複讀到同一幀）。
+  // opt.redSat：紅通道飽和（平頂 254.5＋雜訊、無脈搏），只有綠通道有脈搏。
+  function synthCam(rr, R, opt){
+    opt=opt||{}; var fs=30, jit=opt.jit==null?3:opt.jit, dupP=opt.dupP==null?0.1:opt.dupP;
+    var beats=[], tb=600; for(var i=0;i<rr.length;i++){ beats.push(tb); tb+=rr[i]; } beats.push(tb);
+    var dur=tb+600, out=[], prev=null, j0=0;
+    for(var k=0; k*1000/fs<dur; k++){
+      var tt=k*1000/fs, p=0;
+      while(j0<beats.length-1 && beats[j0]<tt-1200) j0++;
+      for(var j=j0;j<beats.length && beats[j]<tt+400;j++){
+        var dt=tt-beats[j];
+        p+=Math.exp(-Math.pow(dt/70,2)) + 0.35*Math.exp(-Math.pow((dt-320)/90,2)); // 收縮峰＋重搏波
+      }
+      var drift=2*Math.sin(2*Math.PI*0.07*tt/1000);                                    // 慢漂移（壓力/呼吸）
+      var red=opt.redSat ? 254.5+(R()-0.5)*1.0 : 150+drift+3*p+(R()-0.5)*0.15;
+      var green=60+drift*0.5+1.5*p+(R()-0.5)*0.15;
+      var trec=tt+(R()*2-1)*jit;
+      if(prev && R()<dupP) out.push({ t:trec, v:prev.v, g:prev.g });                  // 重複幀
+      else { prev={ t:trec, v:red, g:green }; out.push(prev); }
+    }
+    for(var z=1;z<out.length;z++){ if(out[z].t<=out[z-1].t) out[z].t=out[z-1].t+0.5; } // 抖動不致時間倒退
+    return { samples:out, beats:beats };
+  }
+  // 與 index.html 結果頁相同的管線：去重複幀 → 選通道 → 標記版好窗 → metricsFromMarked
+  function pipeline(raw){
+    var A=HrvAnalyze, ded=A.dropDuplicateFrames(raw), ch=A.pickChannel(ded);
+    var mk=A.rrMarkedFromGoodWindows(ch.samples,15);
+    return { ch:ch, ded:ded, mk:mk, m:A.metricsFromMarked(mk.rr, mk.valid) };
+  }
+  function oldPipeline(raw){ var A=HrvAnalyze, gw=A.rrFromGoodWindows(raw,15); return A.metricsFromRr(A.cleanRr(gw.rr)); }
+
+  await check('準確度：已知 RR（800ms/RMSSD≈40）＋±3ms 抖動＋10% 重複幀 → 拍數±1、HR±1、RMSSD±3', async () => {
+    var R=rng(12345), rr=makeRr(150,R), truth=rmssdOf(rr), hrTrue=60000/meanOf(rr);
+    var sy=synthCam(rr,R), res=pipeline(sy.samples);
+    eq(res.ch.channel,'r','未飽和應選紅');
+    // 拍數：detectBeats 會修掉開頭 1.5 秒 → 真值只數修剪後到結尾前的拍
+    var d=HrvAnalyze.detectBeats(res.ch.samples), t0=res.ch.samples[0].t, tE=res.ch.samples[res.ch.samples.length-1].t;
+    var nTrue=sy.beats.filter(function(b){ return b>=t0+1500 && b<=tE; }).length;
+    var old=oldPipeline(HrvAnalyze.dropDuplicateFrames(sy.samples));
+    log('    真值 RMSSD '+truth.toFixed(1)+' HR '+hrTrue.toFixed(1)+' 拍 '+nTrue+
+        ' | 新 RMSSD '+res.m.rmssd.toFixed(1)+' HR '+res.m.hr.toFixed(1)+' 拍 '+d.length+' art '+(res.m.artifactRate*100).toFixed(1)+'% pairs '+res.m.pairs+
+        ' | 舊管線 RMSSD '+old.rmssd.toFixed(1));
+    assert(Math.abs(d.length-nTrue)<=1, '拍數誤差應 ≤1：偵測 '+d.length+' 真值 '+nTrue);
+    near(res.m.hr, hrTrue, 1, 'HR');
+    near(res.m.rmssd, truth, 3, 'RMSSD');
+  });
+  await check('準確度：RR 中插入 2 個漏拍（倍長間隔）→ RMSSD±5、artifactRate>0', async () => {
+    var R=rng(777), base=makeRr(152,R), truth=rmssdOf(base);
+    var rr=base.slice(); rr.splice(100,2,rr[100]+rr[101]); rr.splice(40,2,rr[40]+rr[41]); // 兩處兩拍併一拍
+    var sy=synthCam(rr,R), res=pipeline(sy.samples);
+    var old=oldPipeline(HrvAnalyze.dropDuplicateFrames(sy.samples));
+    log('    真值 RMSSD '+truth.toFixed(1)+' | 新 RMSSD '+res.m.rmssd.toFixed(1)+' art '+(res.m.artifactRate*100).toFixed(1)+'% pairs '+res.m.pairs+' | 舊管線 RMSSD '+old.rmssd.toFixed(1));
+    near(res.m.rmssd, truth, 5, 'RMSSD');
+    assert(res.m.artifactRate>0, 'artifactRate 應 >0，實得 '+res.m.artifactRate);
+  });
+  await check('pickChannel：紅光飽和（平坦＋雜訊）、綠光有脈搏 → 選 g', async () => {
+    var R=rng(4242), rr=makeRr(40,R), sy=synthCam(rr,R,{redSat:true});
+    var ch=HrvAnalyze.pickChannel(HrvAnalyze.dropDuplicateFrames(sy.samples));
+    log('    scoreR '+ch.scoreR.toFixed(2)+' scoreG '+ch.scoreG.toFixed(2));
+    eq(ch.channel,'g','應選綠');
+    assert(ch.samples.length && ch.samples[0].v>50 && ch.samples[0].v<80, '回傳的 v 應為綠通道值');
+  });
+  await check('pickChannel：兩通道都好（分數相近）→ 選 r', async () => {
+    var R=rng(99), sy=synthCam(makeRr(40,R),R,{dupP:0});
+    eq(HrvAnalyze.pickChannel(sy.samples).channel,'r');
+  });
+  await check('markRr/metricsFromMarked：漏拍標無效、RMSSD 只算相鄰皆有效的連續差', async () => {
+    var beats=[0,800,1620,3220,4030,4830,5640]; // 第 3 個間隔 1600＝漏拍
+    var mk=HrvAnalyze.markRr(beats);
+    eq(mk.rr.length,6,'rr 長度保留'); eq(mk.valid[2],false,'倍長應無效');
+    var m=HrvAnalyze.metricsFromMarked(mk.rr, mk.valid);
+    eq(m.n,5,'有效數'); eq(m.pairs,3,'跨漏拍的兩組連續差不算');
+    near(m.artifactRate,1/6,1e-9,'artifactRate');
+    near(m.rmssd, Math.sqrt((20*20+10*10+10*10)/3), 1e-9, 'RMSSD');
+  });
+  await check('metricsFromMarked：NaN 斷點切斷相鄰但不算偽差', async () => {
+    var m=HrvAnalyze.metricsFromMarked([800,820,NaN,900,880],[true,true,false,true,true]);
+    eq(m.pairs,2); eq(m.artifactRate,0); eq(m.n,4);
+  });
+  await check('interpolateMarked：無效間隔以前後有效值線性內插、兩端取最近值', async () => {
+    var out=HrvAnalyze.interpolateMarked([1600,800,1600,1000,300],[false,true,false,true,false]);
+    eq(out.join(','),'800,800,900,1000,1000');
+  });
+  await check('markRr：錨點偏掉時連續 3 次擋下後重新起錨，不整串誤殺', async () => {
+    var rr=[1000]; for(var i=0;i<20;i++) rr.push(800); // 首拍偏長（仍在中位數 ±30% 內）
+    var beats=[0]; rr.forEach(function(x){ beats.push(beats[beats.length-1]+x); });
+    var m=HrvAnalyze.metricsFromMarked.apply(null,(function(k){ return [k.rr,k.valid]; })(HrvAnalyze.markRr(beats)));
+    assert(m.n>=17, '應保留大部分 800ms 間隔，實得有效 '+m.n);
+  });
+  await check('dropDuplicateFrames：值完全相同或時間不遞增的幀被丟棄', async () => {
+    var s=[{t:0,v:1,g:2},{t:33,v:1,g:2},{t:66,v:1.1,g:2},{t:60,v:3,g:3},{t:99,v:1.1,g:2.1}];
+    eq(HrvAnalyze.dropDuplicateFrames(s).map(function(x){return x.t;}).join(','),'0,66,99');
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;

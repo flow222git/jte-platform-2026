@@ -62,23 +62,66 @@
     return STATES[key];
   }
 
-  // 修剪開頭約 1.5 秒手指安定期 + 移動平均去基線 → 回傳 { ac, t, fs }
+  // 二階 Butterworth biquad 係數（RBJ cookbook，Q=1/√2）。type 'lp'|'hp'；fc 逼近 Nyquist 時回 null（略過該級）。
+  function _biquad(type, fc, fs){
+    if (!(fs>0) || !(fc>0) || fc >= fs*0.5*0.95) return null;
+    var w0=2*Math.PI*fc/fs, cs=Math.cos(w0), al=Math.sin(w0)/(2*Math.SQRT1_2), a0=1+al, b0, b1, b2;
+    if (type==='lp'){ b0=(1-cs)/2; b1=1-cs; b2=(1-cs)/2; }
+    else { b0=(1+cs)/2; b1=-(1+cs); b2=(1+cs)/2; }
+    return { b0:b0/a0, b1:b1/a0, b2:b2/a0, a1:-2*cs/a0, a2:(1-al)/a0 };
+  }
+  // 單向 biquad（直接 II 型轉置）；狀態以 x[0] 的穩態初始化，壓低起始暫態（同 scipy lfilter_zi）。
+  function _biquadRun(c, x){
+    var n=x.length, y=new Array(n); if(!n) return y;
+    var x0=x[0], den=1+c.a1+c.a2, y0=den!==0 ? x0*(c.b0+c.b1+c.b2)/den : 0;
+    var z2=c.b2*x0 - c.a2*y0, z1=y0 - c.b0*x0;
+    for (var i=0;i<n;i++){
+      var xi=x[i], yi=c.b0*xi + z1;
+      z1 = c.b1*xi - c.a1*yi + z2;
+      z2 = c.b2*xi - c.a2*yi;
+      y[i]=yi;
+    }
+    return y;
+  }
+  // 零相位濾波（filtfilt）：前向＋反向各跑一次，相位抵消、波峰時間不偏移。
+  // 兩端做奇對稱延伸（padLen 點）吸收邊界暫態，濾完再切掉。
+  function _filtfilt(c, x, padLen){
+    var n=x.length; if (!c || n<3) return x.slice();
+    padLen=Math.max(0, Math.min(n-1, padLen|0));
+    var ext=[], i;
+    for (i=padLen;i>=1;i--) ext.push(2*x[0]-x[i]);
+    for (i=0;i<n;i++) ext.push(x[i]);
+    for (i=n-2;i>=n-1-padLen;i--) ext.push(2*x[n-1]-x[i]);
+    var y=_biquadRun(c, ext).reverse();
+    y=_biquadRun(c, y).reverse();
+    return y.slice(padLen, padLen+n);
+  }
+  // 修剪開頭約 1.5 秒手指安定期 + 零相位帶通（0.5–4 Hz）去基線 → 回傳 { ac, t, fs }
   function _prep(samples){
     samples = samples||[];
     if (samples.length < 10) return null;
     var t0 = samples[0].t, trimmed = [];
     for (var z=0;z<samples.length;z++){ if (samples[z].t - t0 >= 1500) trimmed.push(samples[z]); }
     if (trimmed.length < 10) trimmed = samples; // 資料太短就不修剪
-    var v = trimmed.map(function(s){ return s.v; }), t = trimmed.map(function(s){ return s.t; });
-    var dur = t[t.length-1]-t[0], fs = dur>0 ? (v.length-1)/(dur/1000) : 30;
-    // 去趨勢視窗 ~2 秒（約 2 個心跳週期）：移動平均近乎為零→保留脈搏、只去掉慢漂移。
-    // 原本 0.6 秒太短，會把脈搏一起平均掉、削弱振幅導致漏拍。
-    var win = Math.max(5, Math.round(fs*1.0)), ac = [];
-    for (var i=0;i<v.length;i++){
-      var a=Math.max(0,i-win), b=Math.min(v.length-1,i+win), s=0,c=0;
-      for(var k=a;k<=b;k++){ s+=v[k]; c++; }
-      ac.push(v[i]-s/c);
+    var v0 = trimmed.map(function(s){ return s.v; }), t0s = trimmed.map(function(s){ return s.t; });
+    var dur = t0s[t0s.length-1]-t0s[0], fs = dur>0 ? (v0.length-1)/(dur/1000) : 30;
+    // IIR 假設等間隔取樣：去重複幀後時間軸會有空洞、出幀也有抖動 → 先線性內插到 fs 的等間隔網格。
+    var v=v0, t=t0s;
+    if (dur>0){
+      var N=v0.length, step=dur/(N-1), j=0; v=new Array(N); t=new Array(N);
+      for (var k=0;k<N;k++){
+        var tt=t0s[0]+k*step;
+        while (j<N-2 && t0s[j+1]<tt) j++;
+        var ta=t0s[j], tb=t0s[j+1];
+        v[k]= tb>ta ? v0[j]+(v0[j+1]-v0[j])*(tt-ta)/(tb-ta) : v0[j];
+        t[k]=tt;
+      }
     }
+    // 二階 Butterworth 高通 0.5 Hz（去呼吸/手指壓力慢漂移）＋低通 4 Hz（去高頻雜訊），各跑 filtfilt。
+    // 取代原本 ±1 秒移動平均：移動平均的頻率響應有大旁瓣、壓不掉高頻雜訊，波峰較毛。
+    var pad=Math.round(fs*2);
+    var ac=_filtfilt(_biquad('hp', 0.5, fs), v, pad);
+    ac=_filtfilt(_biquad('lp', 4.0, fs), ac, pad);
     return { ac:ac, t:t, fs:fs };
   }
   // 找脈搏峰：穩健門檻＝正向 AC 的 90 百分位之半（單一動作尖峰拉不動百分位、雜訊也壓不低它，
@@ -243,10 +286,166 @@
     return { rr:bestRr, spanMs:bestSpan, good:good, bad:bad };
   }
 
+  // —— 取樣前處理 ——
+  // 去重複幀（rAF 備援路徑用）：紅綠平均與上一幀完全相同＝同一張相機影格被重複讀取；時間不遞增也丟。
+  function dropDuplicateFrames(samples){
+    samples=samples||[]; var out=[];
+    for (var i=0;i<samples.length;i++){
+      var s=samples[i], p=out.length ? out[out.length-1] : null;
+      if (p && (s.t<=p.t || (s.v===p.v && s.g===p.g))) continue;
+      out.push(s);
+    }
+    return out;
+  }
+  // 通道選擇：閃光燈下紅光常飽和（平頂、脈搏被削掉），此時綠光反而有脈搏。
+  // 紅、綠各跑 _prep＋_periodicity，取週期性分數高者；差 <0.05 視為相近→選紅（沿用既有校準）。
+  // 回 { channel:'r'|'g', samples:[{t,v}], scoreR, scoreG }。
+  function pickChannel(samples){
+    samples=samples||[];
+    var r=[], g=[], hasG=samples.length>0;
+    for (var i=0;i<samples.length;i++){
+      var s=samples[i]; r.push({ t:s.t, v:s.v });
+      if (typeof s.g==='number' && isFinite(s.g)) g.push({ t:s.t, v:s.g }); else hasG=false;
+    }
+    var pr=_prep(r), sr=pr ? _periodicity(pr.ac, pr.fs).r : 0;
+    if (!hasG) return { channel:'r', samples:r, scoreR:sr, scoreG:0 };
+    var pg=_prep(g), sg=pg ? _periodicity(pg.ac, pg.fs).r : 0;
+    return (sg - sr >= 0.05) ? { channel:'g', samples:g, scoreR:sr, scoreG:sg }
+                             : { channel:'r', samples:r, scoreR:sr, scoreG:sg };
+  }
+
+  // —— 偽差「標記」而非「刪除」——
+  // 刪掉異常間隔再串接，會讓 RMSSD 把原本不相鄰的兩拍當相鄰比較；改為保留完整序列＋valid 旗標。
+  // rr 中的 NaN＝結構性斷點（壞窗缺口）：不算偽差（不進 artifactRate 分母），但切斷相鄰關係。
+  var SUCC_RESET=3; // 連續被「相鄰差 >20%」擋下這麼多次就重設錨點，避免錨點偏掉後整串誤殺
+  function _markIntervals(rr){
+    var n=rr.length, valid=new Array(n), inRange=[], i;
+    for (i=0;i<n;i++){ valid[i]=isFinite(rr[i]) && rr[i]>=300 && rr[i]<=2000; if (valid[i]) inRange.push(rr[i]); }
+    if (inRange.length){
+      var med=_median(inRange), lo=med*0.7, hi=med*1.3;
+      for (i=0;i<n;i++){ if (valid[i] && (rr[i]<lo || rr[i]>hi)) valid[i]=false; }
+    }
+    var prev=null, rej=0;
+    for (i=0;i<n;i++){
+      if (!isFinite(rr[i])){ prev=null; rej=0; continue; }   // 斷點後重新起錨
+      if (!valid[i]) continue;
+      if (prev!=null && Math.abs(rr[i]-prev)/prev > 0.20){
+        valid[i]=false;
+        if (++rej>=SUCC_RESET){ prev=null; rej=0; }
+        continue;
+      }
+      prev=rr[i]; rej=0;
+    }
+    return { rr:rr, valid:valid };
+  }
+  // 由 beats（ms 時間點）產生完整 RR 與 valid：<300/>2000ms、偏離中位數 ±30%、與前一有效間隔差 >20% → 無效。
+  function markRr(beats){
+    beats=beats||[]; var rr=[];
+    for (var i=1;i<beats.length;i++) rr.push(beats[i]-beats[i-1]);
+    return _markIntervals(rr);
+  }
+  // HR/SDNN 只用有效間隔；RMSSD 只算「相鄰兩間隔皆有效」的連續差。
+  // 回 { hr, rmssd, sdnn, n(有效數), artifactRate(無效比例), pairs(RMSSD 用到的連續差數) }。
+  function metricsFromMarked(rr, valid){
+    rr=rr||[]; valid=valid||[];
+    var vals=[], total=0, bad=0, sq=0, pairs=0;
+    for (var i=0;i<rr.length;i++){
+      if (!isFinite(rr[i])) continue;
+      total++;
+      if (valid[i]) vals.push(rr[i]); else bad++;
+      if (i>0 && valid[i] && valid[i-1]){ var d=rr[i]-rr[i-1]; sq+=d*d; pairs++; }
+    }
+    var art = total ? bad/total : 0;
+    if (vals.length < 2) return { hr:0, rmssd:0, sdnn:0, n:vals.length, artifactRate:art, pairs:pairs };
+    var mr=mean(vals), vs=0;
+    for (var j=0;j<vals.length;j++){ var dv=vals[j]-mr; vs+=dv*dv; }
+    return { hr:60000/mr, rmssd: pairs ? Math.sqrt(sq/pairs) : 0, sdnn:Math.sqrt(vs/vals.length),
+             n:vals.length, artifactRate:art, pairs:pairs };
+  }
+  // 頻域用：無效間隔（含斷點）以前後最近有效值線性內插補上（兩端取最近有效值），不刪除→時間軸不被壓縮。
+  function interpolateMarked(rr, valid){
+    rr=rr||[]; valid=valid||[];
+    var n=rr.length, out=new Array(n), idx=[], i;
+    for (i=0;i<n;i++){ if (valid[i] && isFinite(rr[i])) idx.push(i); }
+    if (!idx.length) return [];
+    var k=0;
+    for (i=0;i<n;i++){
+      while (k<idx.length-1 && idx[k+1]<=i) k++;
+      if (valid[i] && isFinite(rr[i])){ out[i]=rr[i]; continue; }
+      var a=idx[k], b=idx[k+1];
+      if (i<a || b==null) out[i]=rr[i<a ? a : idx[idx.length-1]];
+      else out[i]=rr[a]+(rr[b]-rr[a])*(i-a)/(b-a);
+    }
+    return out;
+  }
+  // 逐窗掃描（標記版共用）：品質判定與 rrFromGoodWindows 相同；好窗的心跳在「前延 1.5 秒＋後延 1 秒」
+  // 的擴充段上偵測，只收落在本窗 [start,end) 的拍——_prep 修掉的是前延那段，接縫兩拍的間隔就是真實 RR，
+  // 窗界附近的峰也不會因缺鄰點而漏掉。回 [{ ok, empty, beats }]。
+  function _scanWindows(samples, winSec){
+    winSec=winSec||15; samples=samples||[];
+    var wins=[]; if (samples.length<10) return wins;
+    var t0=samples[0].t, tEnd=samples[samples.length-1].t, start=t0;
+    while (start < tEnd){
+      var end=start+winSec*1000, seg=[], ext=[];
+      for (var i=0;i<samples.length;i++){
+        var tt=samples[i].t;
+        if (tt>=start && tt<end) seg.push(samples[i]);
+        if (tt>=start-1500 && tt<end+1000) ext.push(samples[i]);
+      }
+      var w={ ok:false, empty:seg.length<10, beats:[] };
+      if (!w.empty && signalQuality(seg)!=='red'){
+        var rr=cleanRrGentle(rrFromBeats(detectBeats(seg)));
+        var hr=rr.length ? 60000/mean(rr) : 0;
+        if (hr>=40 && hr<=150){
+          w.ok=true;
+          var b=detectBeats(ext);
+          for (var j=0;j<b.length;j++){ if (b[j]>=start && b[j]<end) w.beats.push(b[j]); }
+        }
+      }
+      wins.push(w); start=end;
+    }
+    return wins;
+  }
+  // 標記版好窗聚合（結果頁 HR/RMSSD 用）：只收好窗的拍；中間隔著壞窗/空窗處插 NaN 斷點（不跨缺口相鄰）。
+  // 回 { rr, valid, good, bad }。
+  function rrMarkedFromGoodWindows(samples, winSec){
+    var wins=_scanWindows(samples, winSec), rr=[], good=0, bad=0, last=null, brk=false;
+    for (var i=0;i<wins.length;i++){
+      var w=wins[i];
+      if (!w.ok){ if (!w.empty) bad++; brk=true; continue; }
+      good++;
+      for (var j=0;j<w.beats.length;j++){
+        var b=w.beats[j];
+        if (last!=null) rr.push(brk ? NaN : b-last);
+        brk=false; last=b;
+      }
+    }
+    var mk=_markIntervals(rr);
+    return { rr:mk.rr, valid:mk.valid, good:good, bad:bad };
+  }
+  // 標記版最長連續好窗（頻域用）：連續好窗的拍串成一段，取時間跨度最長者。回 { rr, valid, spanMs, good, bad }。
+  function rrMarkedFromLongestGoodRun(samples, winSec){
+    var wins=_scanWindows(samples, winSec), good=0, bad=0, cur=[], best=[], bestSpan=0;
+    for (var i=0;i<wins.length;i++){
+      var w=wins[i];
+      if (w.ok){
+        good++;
+        for (var j=0;j<w.beats.length;j++) cur.push(w.beats[j]);
+        var span=cur.length>1 ? cur[cur.length-1]-cur[0] : 0;
+        if (span>bestSpan){ bestSpan=span; best=cur.slice(); }
+      } else { if (!w.empty) bad++; cur=[]; }
+    }
+    var mk=markRr(best);
+    return { rr:mk.rr, valid:mk.valid, spanMs:bestSpan, good:good, bad:bad };
+  }
+
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
     detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromLongestGoodRun: rrFromLongestGoodRun, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
     coverageScore: coverageScore, COV_CFG: COV_CFG,
+    dropDuplicateFrames: dropDuplicateFrames, pickChannel: pickChannel,
+    markRr: markRr, metricsFromMarked: metricsFromMarked, interpolateMarked: interpolateMarked,
+    rrMarkedFromGoodWindows: rrMarkedFromGoodWindows, rrMarkedFromLongestGoodRun: rrMarkedFromLongestGoodRun,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);

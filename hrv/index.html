@@ -301,7 +301,7 @@ function measureSec(){ return session.measureMode==='deep' ? DEEP_SEC : QUICK_SE
 const LOCK_HOLD_MS=2500; // 偵測到真脈搏（非紅）持穩這麼久就開始倒數，不必等品質燈轉綠（真人訊號常停在 yellow）
 const STUCK_SEC=40;      // 擷取超過這麼久還沒開始倒數 → 顯示「好像不太順？」出口（換地方/複製診斷回報）
 
-const session={ mode:'intro', measureMode:'quick', stream:null, track:null, raf:null,
+const session={ mode:'intro', measureMode:'quick', stream:null, track:null, raf:null, vfc:null, tsSource:null, diag:null,
   samples:[], measuring:false, countdownStart:0, lastUi:0, lastResult:null, hrSmooth:null, measureStart:null, lockSince:null };
 var _lastResultSamples=null; // stored for jteI18nApply re-render on lang switch
 
@@ -553,31 +553,81 @@ async function startCamera(){
   loopGrab();
 }
 
+// 取樣排程：支援 requestVideoFrameCallback（rVFC）就跟著「相機出幀」走，否則退回 rAF。
+// rAF 跟螢幕刷新率走（60/120Hz），30fps 相機會被重複讀到同一幀、時間戳也帶顯示抖動 → 直接灌大 RMSSD。
 function loopGrab(){
-  session.raf=requestAnimationFrame(loopGrab);
-  const now=(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
-  if(_video&&_grabCtx&&_video.videoWidth){
-    const vw=_video.videoWidth, vh=_video.videoHeight;
-    const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
-    try{
-      _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
-      // 取中央 ~50x50（7..57）：紅光平均（訊號）＋綠光平均＋紅光飽和比例（診斷用）
-      const img=_grabCtx.getImageData(7,7,50,50).data, px=img.length/4;
-      let r=0,r2=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; r2+=img[i]*img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
-      const redMean=r/px, greenMean=g/px;
-      // 紅通道空間變異係數（cv）：整片均勻＝蓋住的特徵之一，給擷取分關（HrvAcquire.checks）用
-      const redVar=Math.max(0, r2/px - redMean*redMean);
-      const redCv=redMean>0 ? Math.sqrt(redVar)/redMean : 1;
-      session.samples.push({ t:now, v:redMean, g:greenMean });
-      session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv };
-      // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
-      if(!session.measuring){
-        const cutoff=now-KEEP_SEC*1000;
-        while(session.samples.length && session.samples[0].t<cutoff) session.samples.shift();
-      }
-    }catch(e){ /* 影格未就緒/跨域，忽略此格 */ }
+  cancelGrab();
+  session.lastFrameKey=null; session.lastFrameT=null; session.grabN=0; session.dupN=0; session.tsCapture=false;
+  if(_video && typeof _video.requestVideoFrameCallback==='function'){
+    session.tsSource='vfc';
+    session.vfc=_video.requestVideoFrameCallback(onVideoFrame);
+  }else{
+    session.tsSource='raf';
+    session.raf=requestAnimationFrame(onAnimFrame);
   }
+}
+function cancelGrab(){
+  if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
+  if(session.vfc!=null){ try{ if(_video&&_video.cancelVideoFrameCallback) _video.cancelVideoFrameCallback(session.vfc); }catch(e){} session.vfc=null; }
+}
+function _perfNow(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); }
+// rVFC 路徑：樣本時間優先用 metadata.captureTime（相機實際曝光時間，performance.now 時基），
+// 沒有就用回呼參數 now。不用 mediaTime（媒體時基，與 KEEP_SEC/倒數用的 performance.now 不同）。
+// presentedFrames 沒前進＝同一幀，跳過。
+function onVideoFrame(now, meta){
+  if(!_video) return;
+  const v=_video;
+  session.vfc=v.requestVideoFrameCallback(onVideoFrame);
+  meta=meta||{};
+  let t=now;
+  if(typeof meta.captureTime==='number' && meta.captureTime>0 && Math.abs(meta.captureTime-now)<1000){ t=meta.captureTime; session.tsCapture=true; }
+  const key=(typeof meta.presentedFrames==='number')?meta.presentedFrames:null;
+  if(key!=null && key===session.lastFrameKey){ session.dupN++; }
+  else{ session.lastFrameKey=key; grabFrame(t, false); }
+  tickUi(_perfNow());
+}
+// rAF 備援路徑：紅綠平均與上一幀完全相同＝重複幀，跳過（同 HrvAnalyze.dropDuplicateFrames 規則）。
+function onAnimFrame(){
+  session.raf=requestAnimationFrame(onAnimFrame);
+  const now=_perfNow();
+  grabFrame(now, true);
+  tickUi(now);
+}
+function tickUi(now){
   if(now-session.lastUi>=500){ session.lastUi=now; updateLiveUi(now); }
+}
+// 讀一幀：中央 ~50x50 紅/綠平均 → session.samples。dedupByValue＝rAF 路徑以數值去重。
+function grabFrame(t, dedupByValue){
+  if(!(_video&&_grabCtx&&_video.videoWidth)) return;
+  if(session.lastFrameT!=null && t<=session.lastFrameT) return;   // 時間不遞增（captureTime 偶發回跳）
+  const vw=_video.videoWidth, vh=_video.videoHeight;
+  const side=Math.min(vw,vh), sx=(vw-side)/2, sy=(vh-side)/2;
+  try{
+    _grabCtx.drawImage(_video, sx,sy,side,side, 0,0,64,64);
+    // 取中央 ~50x50（7..57）：紅光平均（訊號）＋綠光平均＋紅光飽和比例（診斷用）
+    const img=_grabCtx.getImageData(7,7,50,50).data, px=img.length/4;
+    let r=0,r2=0,g=0,sat=0; for(let i=0;i<img.length;i+=4){ r+=img[i]; r2+=img[i]*img[i]; g+=img[i+1]; if(img[i]>=250)sat++; }
+    const redMean=r/px, greenMean=g/px;
+    // 紅通道空間變異係數（cv）：整片均勻＝蓋住的特徵之一，給擷取分關（HrvAcquire.checks）用
+    const redVar=Math.max(0, r2/px - redMean*redMean);
+    const redCv=redMean>0 ? Math.sqrt(redVar)/redMean : 1;
+    const last=session.samples.length?session.samples[session.samples.length-1]:null;
+    if(dedupByValue && last && last.v===redMean && last.g===greenMean){ session.dupN++; return; }
+    session.samples.push({ t:t, v:redMean, g:greenMean });
+    session.lastFrameT=t; session.grabN++;
+    session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv };
+    // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
+    if(!session.measuring){
+      const cutoff=t-KEEP_SEC*1000;
+      while(session.samples.length && session.samples[0].t<cutoff) session.samples.shift();
+    }
+  }catch(e){ /* 影格未就緒/跨域，忽略此格 */ }
+}
+// 實際有效 fps（去重後樣本數 / 時間跨度）
+function effectiveFps(samples){
+  if(!samples||samples.length<2) return 0;
+  const dur=samples[samples.length-1].t-samples[0].t;
+  return dur>0?(samples.length-1)/(dur/1000):0;
 }
 
 function recentSamples(now,sec){
@@ -611,6 +661,7 @@ function updateDebug(recent, beats, rr, q){
     '\nfs '+fs.toFixed(0)+'  acN '+acn+
     '\nper '+per.toFixed(2)+'   hr '+Math.round(mm.hr)+
     '\nbeats '+beats.length+'  rr '+rr.length+'  ['+q+']\nstab '+(session._stab||'-')+'\nsamples '+recent.length+
+    '\nts '+(session.tsSource||'-')+(session.tsCapture?'+cap':'')+'  efps '+effectiveFps(recent).toFixed(1)+'  dup '+(session.dupN||0)+'/'+((session.dupN||0)+(session.grabN||0))+
     '\n(點我複製原始資料)';
 }
 
@@ -717,10 +768,14 @@ function showStuckPanel(){
       quality:session._lastQ||'?', focus:ck?ck.focus:'?',
       waitedSec:session.measureStart!=null?Math.round(((typeof performance!=='undefined'&&performance.now?performance.now():Date.now())-session.measureStart)/1000):null
     }):'(診斷模組未載入)';
+    // 取樣診斷：buildReport 只印固定欄位，在呼叫端補（時間來源 vfc/raf、是否有 captureTime、有效 fps、重複幀）
+    const _rs=recentSamples(_perfNow(), KEEP_SEC);
+    const txtFull=txt+'\n取樣: 時間源='+(session.tsSource||'?')+(session.tsCapture?'+captureTime':'')+
+      '  有效fps='+effectiveFps(_rs).toFixed(1)+'  重複幀='+(session.dupN||0)+'/'+((session.dupN||0)+(session.grabN||0));
     const ta=document.getElementById('stuckTxt');
-    if(ta){ ta.value=txt; ta.style.display='block'; try{ ta.select(); }catch(e){} }
+    if(ta){ ta.value=txtFull; ta.style.display='block'; try{ ta.select(); }catch(e){} }
     // clipboard 可能因權限/協定失敗 → textarea 常駐顯示，長按也複製得到
-    try{ navigator.clipboard.writeText(txt).then(function(){ btn.textContent=jteT('stuck.copied','已複製，貼給練息場即可'); }); }catch(e){}
+    try{ navigator.clipboard.writeText(txtFull).then(function(){ btn.textContent=jteT('stuck.copied','已複製，貼給練息場即可'); }); }catch(e){}
   };
 }
 
@@ -745,13 +800,16 @@ function drawWave(samples){
 function finishMeasure(){
   const collected=session.samples.slice();
   _lastResultSamples=collected;
+  // 量測診斷（無 HrvAcquire.buildReport → 記在 session.diag，?debug 時印到 console；不寫入記錄）
+  session.diag={ tsSource:session.tsSource, captureTime:!!session.tsCapture,
+    fps:Math.round(effectiveFps(collected)*10)/10, samples:collected.length, dupFrames:session.dupN||0 };
   stopCamera();
   session.mode='result';
   renderResult(collected);
 }
 
 function stopCamera(){
-  if(session.raf){ cancelAnimationFrame(session.raf); session.raf=null; }
+  cancelGrab();
   if(session.track){ try{ session.track.applyConstraints({ advanced:[{ torch:false }] }); }catch(e){} }
   if(session.stream){ try{ session.stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} session.stream=null; }
   session.track=null; _video=null; _grabCtx=null; _grabCanvas=null; session.measuring=false;
@@ -773,29 +831,46 @@ async function stabilizeCamera(){
   }catch(e){ session._stab='err:'+((e&&e.name)||'?'); }
 }
 
-// ① 穩健 RR 聚合（結果頁與面相重算共用）：切 15 秒窗、逐窗品質把關，只收「好窗」的 RR，
-//    鏡頭自動切換/亂動弄壞的高振幅壞段整窗丟棄。好窗撿不到 3 個 RR 才退回全域偵測。
-function robustRr(samples){
-  var A=window.HrvAnalyze; if(!A) return { rr:[], good:0, bad:0, mode:'none' };
-  var gw=A.rrFromGoodWindows(samples,15);
-  var rr=A.cleanRr(gw.rr);
-  if(rr.length<3){ return { rr:A.cleanRr(A.rrFromBeats(A.detectBeats(samples))), good:gw.good, bad:gw.bad, mode:'global' }; }
-  return { rr:rr, good:gw.good, bad:gw.bad, mode:'good15' };
+// 分析通道：紅光飽和時改用綠光（HrvAnalyze.pickChannel）。以原始樣本陣列為 key 快取，
+// 結果頁、面相重算、切語言重繪共用同一個選擇。即時品質燈號仍用紅光（不經這裡）。
+var _chCache={ raw:null, ch:null };
+function analysisChannel(raw){
+  var A=window.HrvAnalyze; raw=raw||[];
+  if(!A) return { channel:'r', samples:raw };
+  if(_chCache.raw!==raw){ _chCache={ raw:raw, ch:A.pickChannel(raw) }; }
+  return _chCache.ch;
 }
+// ① 穩健 RR 聚合（結果頁與面相重算共用）：切 15 秒窗、逐窗品質把關，只收「好窗」的拍，
+//    鏡頭自動切換/亂動弄壞的高振幅壞段整窗丟棄。偽差「標記」不刪除（RMSSD 不跨偽差/缺口相鄰）。
+//    好窗撿不到 3 個有效 RR 才退回全域偵測。samples＝已選好通道的 [{t,v}]。
+function robustMarked(samples){
+  var A=window.HrvAnalyze; if(!A) return { rr:[], valid:[], good:0, bad:0, mode:'none' };
+  var gw=A.rrMarkedFromGoodWindows(samples,15);
+  if(A.metricsFromMarked(gw.rr, gw.valid).n<3){
+    var g=A.markRr(A.detectBeats(samples));
+    return { rr:g.rr, valid:g.valid, good:gw.good, bad:gw.bad, mode:'global' };
+  }
+  return { rr:gw.rr, valid:gw.valid, good:gw.good, bad:gw.bad, mode:'good15' };
+}
+const ARTIFACT_HINT=0.05, ARTIFACT_MAX=0.20; // 偽差率 >5% 提示重量；>20% 整筆視為沒量好（能量 75% 權重來自 RMSSD，不可信就一起擋）
 
 /* —— 結果頁 —— */
 function renderResult(samples){
   session.mode='result'; clearAll();
   samples=samples||[];
   const A=window.HrvAnalyze;
-  // 用既有純函式算指標與品質
-  const agg=A?robustRr(samples):{rr:[],good:0,bad:0,mode:'none'}; // ① 逐窗只收好窗
+  // 先選通道（紅光飽和→綠光），後續偵測/聚合/品質都吃選定通道
+  const ch=analysisChannel(samples), cs=ch.samples;
+  const agg=A?robustMarked(cs):{rr:[],valid:[],good:0,bad:0,mode:'none'}; // ① 逐窗只收好窗
   const rr=agg.rr;
-  const m=A?A.metricsFromRr(rr):{hr:0,rmssd:0,sdnn:0,n:0};
-  const quality=A?A.signalQuality(samples):'red';
+  const m=A?A.metricsFromMarked(agg.rr, agg.valid):{hr:0,rmssd:0,sdnn:0,n:0,artifactRate:0,pairs:0};
+  const quality=A?A.signalQuality(cs):'red';
+  if(session.diag){ session.diag.channel=ch.channel; session.diag.artifactRate=Math.round((m.artifactRate||0)*1000)/1000; session.diag.pairs=m.pairs; session.diag.mode=agg.mode; }
+  if(isDebug()){ try{ console.log('[HRV diag]', JSON.stringify(session.diag)); }catch(e){} }
   // 誠實降級：訊號太差→不顯示數字、不存記錄、引導重量。
   // 全域雖判紅，但只要撿得到 ≥2 個好窗且拍數/心率合理，就視為可用（別誤殺被壞段拉紅的好量測）。
-  const tooNoisy = !A || m.n<8 || !(m.hr>=30&&m.hr<=220) || (quality==='red' && agg.good<2);
+  // 偽差率 >ARTIFACT_MAX：RMSSD 不可信 → 身體能量、建議、面相都跟著不可信，整筆不顯示、不存。
+  const tooNoisy = !A || m.n<8 || !(m.hr>=30&&m.hr<=220) || (quality==='red' && agg.good<2) || (Number(m.artifactRate)||0)>ARTIFACT_MAX;
 
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
@@ -1064,9 +1139,10 @@ function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).get
 function computeFreqFacets(samples, sdnn){
   var F=window.HrvFreq, A=window.HrvAnalyze;
   if(!F||!A||!samples) return null;
-  var run=A.rrFromLongestGoodRun(samples,15);               // 最長連續好窗（頻域不拼接碎段）
-  var rr=run.rr, span=run.spanMs||0;
-  if(rr.length<8 || span<60000) return null;                // 連續好資料 <60 秒 → 頻域全不出
+  var run=A.rrMarkedFromLongestGoodRun(analysisChannel(samples).samples,15); // 最長連續好窗（頻域不拼接碎段）
+  var nValid=run.valid.filter(Boolean).length, span=run.spanMs||0;
+  if(nValid<8 || span<60000) return null;                   // 連續好資料 <60 秒 → 頻域全不出
+  var rr=A.interpolateMarked(run.rr, run.valid);            // 偽差以前後有效值內插補上，不刪除（時間軸不被壓縮）
   try{
     var rs=F.resampleRr(rr,4); if(!rs.series||rs.series.length<16) return null;
     var bp=F.bandPowers(rs.series, rs.fs);
@@ -1079,7 +1155,7 @@ function computeFreqFacets(samples, sdnn){
 // 只重繪面相卡（避免重跑 renderResult 重複存檔）；用 _lastResultSamples 重算
 function refreshFacets(){
   var A=window.HrvAnalyze; if(!A||!_lastResultSamples) return false;
-  var rr=robustRr(_lastResultSamples).rr, m=A.metricsFromRr(rr);
+  var agg=robustMarked(analysisChannel(_lastResultSamples).samples), m=A.metricsFromMarked(agg.rr, agg.valid);
   var old=document.querySelector('.facets');
   if(old){ var fresh=buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)); old.parentNode.replaceChild(fresh, old); }
   return false;
@@ -1149,6 +1225,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
 
   // —— 儲存（只在通過誠實把關才到這裡）：能量/等級＋空標記，下面可即時補貼 ——
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
+  const art=Number(m.artifactRate)||0; // 走到這裡必 ≤ARTIFACT_MAX（更高者已在 renderResult 擋下）
   const now=new Date();
   const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
   jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
@@ -1172,6 +1249,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
       '<div class="metric-row"><span class="mt">'+jteT('result.hr','心率')+' <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
       '<div class="metric-row"><span class="mt">'+jteT('result.rmssd','心率變異')+' <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
       '<div class="metric-note">'+jteT('result.rmssd.note','RMSSD 單筆本來就會起伏（量到的數字會跳很正常）——別跟單一數字較真，多量幾次、看自己的<b>基準與趨勢</b>才準。心率則較穩定。')+'</div>'+
+      (art>ARTIFACT_HINT?'<div class="metric-note">'+_h(jteT('result.artifact.hint','這次訊號中斷較多，建議靜止再量一次'))+'</div>':'')+
     '</div>';
   d.appendChild(det);
   // 細項膠囊（顏色用既有 idx-lv high/mid/low）
@@ -1372,7 +1450,7 @@ function drawTrend(list){
     badge.textContent=hasEn?('能量 '+String(Number(r.energy))+(lvZh?(' · '+lvZh):'')):lvZh;
     const hr=document.createElement('span');hr.className='hist-hr';hr.textContent=String(Number(r.hr))+' bpm';
     const small=document.createElement('span');small.style.fontSize='12px';small.style.color='var(--ink-soft)';
-    small.textContent='RMSSD '+String(Number(r.rmssd))+' ms';
+    small.textContent='RMSSD '+(Number(r.rmssd)>0?(String(Number(r.rmssd))+' ms'):'—'); // 偽差過多的記錄不存 RMSSD
     const whenEl=document.createElement('span');whenEl.className='hist-when';whenEl.textContent=when;
     head.appendChild(badge);head.appendChild(hr);head.appendChild(small);head.appendChild(whenEl);
     card.appendChild(head);
