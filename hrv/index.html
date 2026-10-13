@@ -654,7 +654,7 @@ function updateDebug(recent, beats, rr, q){
   for(let i=0;i<recent.length;i++){ const s=recent[i]; if(s.v<rmn)rmn=s.v; if(s.v>rmx)rmx=s.v; const gv=s.g||0; if(gv<gmn)gmn=gv; if(gv>gmx)gmx=gv; }
   const d=session.lastDiag||{R:0,G:0,sat:0};
   const acR=(rmx===-Infinity)?0:(rmx-rmn), acG=(gmx===-Infinity)?0:(gmx-gmn);
-  let per=0, fs=0, acn=0; try{ const pr=HrvAnalyze._prep(recent); if(pr){ per=HrvAnalyze._periodicity(pr.ac, pr.fs); fs=pr.fs; acn=pr.ac.length; } }catch(e){}
+  let per=0, fs=0, acn=0; try{ const pr=HrvAnalyze._prep(recent); if(pr){ per=HrvAnalyze._periodicity(pr.ac, pr.fs).r; fs=pr.fs; acn=pr.ac.length; } }catch(e){}
   const mm=HrvAnalyze.metricsFromRr(rr);
   el.textContent='R '+d.R.toFixed(0)+'   sat '+(d.sat*100).toFixed(0)+'%\nG '+d.G.toFixed(0)+
     '\nACr '+acR.toFixed(1)+'   ACg '+acG.toFixed(1)+
@@ -683,7 +683,8 @@ function updateLiveUi(now){
   const hrOk = q==='green' && m.hr>=40 && m.hr<=180;
   if(hrOk){ session.hrSmooth = (session.hrSmooth==null) ? m.hr : (session.hrSmooth*0.7 + m.hr*0.3); }
   if(hrEl) hrEl.textContent = (session.hrSmooth!=null) ? String(Math.round(session.hrSmooth)) : '--';
-  if(isDebug()) updateDebug(recent, beats, rr, q);
+  // 診斷面板只觀測：出錯也不可中斷量測（曾因面板例外導致 ?debug 下永遠不鎖定、不倒數）
+  if(isDebug()){ try{ updateDebug(recent, beats, rr, q); }catch(e){} }
 
   const hint=document.getElementById('camHint');
   // 鎖定放寬：green 立即開始；或偵測到真脈搏（非紅）持穩 LOCK_HOLD_MS 也開始

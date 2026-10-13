@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-debug tests</title>
+<style>body{font-family:monospace;padding:16px}iframe{display:none}pre{white-space:pre-wrap}</style>
+</head><body>
+<h2>hrv-debug.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html?debug"></iframe>
+<script>
+// ?debug 診斷面板不可打斷量測流程：面板丟例外會中斷 updateLiveUi → 永遠不鎖定、不倒數（2026-10 iPhone 實測回報）
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function assert(c,m){if(!c)throw new Error(m||'assert failed');}
+const fr=document.getElementById('fr');
+function finish(){ log('---'); log('DONE pass='+pass+' fail='+fail); document.title=fail?('FAIL '+fail):'OK'; }
+fr.addEventListener('load',function(){
+  const iw=fr.contentWindow; let n=0;
+  const t=setInterval(function(){
+    n++;
+    if(typeof iw.updateLiveUi==='function' && iw.HrvAnalyze){ clearInterval(t); run(iw); }
+    else if(n>120){ clearInterval(t); fail++; log('FAIL 逾時：index.html 全域函式未就緒'); finish(); }
+  },150);
+});
+function run(iw){
+  // 12 秒乾淨 72bpm 脈搏，時間軸對齊 performance.now；lastDiag＝手指蓋好的畫面
+  iw.eval("session.mode='measure'; session.measuring=false; session.measureStart=null; session.lockSince=null; session.samples=[];"+
+    "(function(){var n=performance.now(); for(var i=0;i<360;i++){var t=n-12000+i*33.3, p=Math.sin(2*Math.PI*1.2*t/1000);"+
+    " session.samples.push({t:t,v:150+3*p,g:60+1.5*p});} session.lastDiag={R:150,G:60,sat:0.05,cv:0.05};})()");
+  let err=null; try{ iw.updateLiveUi(iw.performance.now()); }catch(e){ err=e.message; }
+  check('?debug 下 updateLiveUi 不丟例外', function(){ assert(err===null, '例外：'+err); });
+  check('?debug 下乾淨脈搏會鎖定開始倒數', function(){ assert(iw.eval('session.measuring')===true, 'measuring 應為 true'); });
+  check('debug 面板顯示週期性數值（非 NaN/物件）', function(){
+    const el=iw.document.getElementById('hrvDbg'); assert(el, '應有 debug 面板');
+    assert(/per \d\.\d\d/.test(el.textContent), '面板內容：'+el.textContent.replace(/\n/g,' | '));
+  });
+  try{ iw.stopCamera(); }catch(e){}
+  finish();
+}
+</script>
+</body></html>
