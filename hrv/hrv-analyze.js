@@ -439,6 +439,116 @@
     return { rr:mk.rr, valid:mk.valid, spanMs:bestSpan, good:good, bad:bad };
   }
 
+  // —— 呼吸的樣貌：從心跳起伏（呼吸性竇性心律不整，RSA）推算 ——
+  // 吸氣時心跳加快、吐氣時變慢 → 逐拍心率是一條跟著呼吸起伏的波。
+  // 帶通 0.05–0.6 Hz（3–36 次/分）：要涵蓋練息場常見的 ≤6 次/分慢呼吸，不能只用頻域 HF（0.15–0.4 Hz）。
+  // 照不出來（太短、沒有週期性、心率不到呼吸率兩倍）就回 null，不硬給數字。
+  var BREATH_CFG={ fs:4, lo:0.05, hi:0.6, minSec:40, minCycles:3, minR:0.4, lagMinSec:1.6, lagMaxSec:20,
+                   maxPeriodMismatch:0.2, maxCv:0.5, halfRatio:0.5, rivalRatio:0.3, rivalRatioSlow:0.15, sameBand:0.35, minRsa:0.8 };
+  function _localPeaks(y, refr, sign){
+    var cand=[], i, k;
+    for (i=1;i<y.length-1;i++){ var v=sign*y[i]; if (v>sign*y[i-1] && v>=sign*y[i+1]) cand.push(i); }
+    cand.sort(function(a,b){ return sign*y[b]-sign*y[a]; });                 // 高→低，不應期內只留最高
+    var picked=[];
+    for (i=0;i<cand.length;i++){
+      var ok=true; for (k=0;k<picked.length;k++){ if (Math.abs(cand[i]-picked[k])<refr){ ok=false; break; } }
+      if (ok) picked.push(cand[i]);
+    }
+    return picked.sort(function(a,b){ return a-b; });
+  }
+  // rr/valid＝標記版 RR（無效間隔會先內插補值）。
+  // 回 { rate:次/分, rsa:±次/分（帶動心跳，峰谷差的一半）, cv:週期長度變異係數, cycles, r:週期性,
+  //      durationSec, curve:{ t:[秒], v:[心率偏移 次/分] } } 或 null。
+  function breathFromRr(rr, valid, cfg){
+    cfg=cfg||BREATH_CFG;
+    var x=interpolateMarked(rr||[], valid||[]); if (x.length<10) return null;
+    var bt=[], hr=[], t=0, i, k;
+    for (i=0;i<x.length;i++){ t+=x[i]/1000; bt.push(t); hr.push(60000/x[i]); }
+    var dur=bt[bt.length-1]-bt[0]; if (dur<cfg.minSec) return null;
+    // 逐拍心率 → fs Hz 等間隔
+    var fs=cfg.fs, n=Math.floor(dur*fs)+1, s=new Array(n), j=0;
+    for (k=0;k<n;k++){
+      var tt=bt[0]+k/fs;
+      while (j<bt.length-2 && bt[j+1]<tt) j++;
+      var a=bt[j], b=bt[j+1];
+      s[k]= b>a ? hr[j]+(hr[j+1]-hr[j])*(tt-a)/(b-a) : hr[j];
+    }
+    var pad=Math.round(fs*20);
+    var y=_filtfilt(_biquad('hp', cfg.lo, fs), s, pad);
+    y=_filtfilt(_biquad('lp', cfg.hi, fs), y, pad);
+    // 自相關（無偏）找主週期：取第一個夠高的區域極大，避免挑到兩倍週期
+    var m=mean(y), c0=0; for (i=0;i<n;i++){ y[i]-=m; c0+=y[i]*y[i]; }
+    if (c0<=0) return null; c0/=n;
+    var lagMin=Math.round(cfg.lagMinSec*fs), lagMax=Math.min(Math.round(cfg.lagMaxSec*fs), Math.floor(n/2)), ac=[];
+    for (var lag=0; lag<=lagMax+1; lag++){
+      var cc=0; for (i=0;i+lag<n;i++) cc+=y[i]*y[i+lag];
+      ac.push(lag<n ? cc/(n-lag)/c0 : 0);
+    }
+    var gmax=0; for (lag=lagMin; lag<=lagMax; lag++) if (ac[lag]>gmax) gmax=ac[lag];
+    var best=0;
+    for (lag=Math.max(lagMin,1); lag<=lagMax; lag++){
+      if (ac[lag]>=ac[lag-1] && ac[lag]>=ac[lag+1] && ac[lag]>=0.75*gmax){ best=lag; break; }
+    }
+    if (!best || ac[best]<cfg.minR) return null;
+    // 倍頻檢查：心率另有約 10 秒的慢波動（Mayer 波）時，「隔兩口氣」的相關性可能高過「隔一口氣」，
+    // 會把呼吸次數算成一半。若一半週期處也有夠明顯的峰，真正的週期就是那一半。
+    // （真的慢呼吸時，一半週期處是反相、相關性約 -1，不會誤判。）
+    for (;;){
+      var half=best/2, hb=0;
+      for (lag=Math.max(lagMin,Math.floor(half*0.85)); lag<=Math.ceil(half*1.15) && lag<best; lag++){
+        if (ac[lag]>=ac[lag-1] && ac[lag]>=ac[lag+1] && (!hb || ac[lag]>ac[hb])) hb=lag;
+      }
+      if (hb && ac[hb]>=cfg.minR && ac[hb]>=cfg.halfRatio*ac[best]) best=hb; else break;
+    }
+    var A0=ac[best-1], B0=ac[best], C0=ac[best+1], den=A0-2*B0+C0, lagF=best;
+    if (den!==0){ var dl=0.5*(A0-C0)/den; if (dl>-1 && dl<1) lagF=best+dl; }
+    var periodSec=lagF/fs, rate=60/periodSec;
+    // 頻譜把關（Hann 窗週期圖，0.05–0.6 Hz）：主峰要跟自相關的週期一致；
+    // 若另有一個強度相近、又不是倍頻關係的起伏（常見是心率本身約 10 秒的 Mayer 慢波），
+    // 單從心跳分不出哪個才是呼吸 → 回 null，不硬挑一個。
+    var fr=[], pw=[], f0=rate/60, fq;
+    for (fq=cfg.lo; fq<=cfg.hi+1e-9; fq+=0.005){
+      var re=0, im=0;
+      for (i=0;i<n;i++){ var w=0.5-0.5*Math.cos(2*Math.PI*i/(n-1)), ang=2*Math.PI*fq*i/fs; re+=w*y[i]*Math.cos(ang); im-=w*y[i]*Math.sin(ang); }
+      fr.push(fq); pw.push(re*re+im*im);
+    }
+    var pkI=[]; for (i=1;i<pw.length-1;i++){ if (pw[i]>=pw[i-1] && pw[i]>=pw[i+1]) pkI.push(i); }
+    if (!pkI.length) return null;
+    pkI.sort(function(a2,b2){ return pw[b2]-pw[a2]; });
+    var fMain=fr[pkI[0]];
+    if (Math.abs(fMain-f0)/f0 > cfg.maxPeriodMismatch) return null;
+    // 主峰落在慢呼吸區（<8 次/分）時最容易跟 Mayer 慢波混淆 → 用更嚴的門檻。
+    var rivalTh = fMain < 8/60 ? cfg.rivalRatioSlow : cfg.rivalRatio;
+    for (i=1;i<pkI.length;i++){
+      var fo=fr[pkI[i]], same=false;
+      if (pw[pkI[i]] < rivalTh*pw[pkI[0]]) break;                            // 依強度排序，後面只會更弱
+      if (Math.abs(fo-fMain)/fMain < cfg.sameBand) continue;                 // 主峰旁的小峰＝不規律呼吸讓峰散開，不是對手
+      [0.5,2,3].forEach(function(h){ if (Math.abs(fo-h*fMain)/(h*fMain) < 0.12) same=true; });
+      if (!same) return null;
+    }
+    if (60000/mean(x) <= 2*rate) return null;                                // 每口氣至少要兩拍才分得出起伏
+    // 波峰／波谷 → 每週期長度與峰谷差
+    var refr=Math.max(1, Math.round(0.6*lagF));
+    var pk=_localPeaks(y, refr, 1), tr=_localPeaks(y, refr, -1);
+    if (pk.length-1 < cfg.minCycles) return null;
+    var cyc=[], sw=[];
+    for (i=1;i<pk.length;i++){
+      cyc.push((pk[i]-pk[i-1])/fs);
+      var lo=null; for (k=0;k<tr.length;k++){ if (tr[k]>pk[i-1] && tr[k]<pk[i]){ if (lo==null || y[tr[k]]<y[lo]) lo=tr[k]; } }
+      if (lo!=null) sw.push((y[pk[i-1]]+y[pk[i]])/2 - y[lo]);
+    }
+    var cm=mean(cyc), cvs=0; for (i=0;i<cyc.length;i++){ var dc=cyc[i]-cm; cvs+=dc*dc; }
+    var cv=cm>0 ? Math.sqrt(cvs/cyc.length)/cm : 1;
+    // 一致性把關：自相關的主週期要跟逐一數出的週期吻合，且週期長短不能亂到不像呼吸——
+    // 起伏太小被雜訊蓋過時，兩者會對不上；此時回 null，不硬給一個錯的呼吸次數。
+    if (Math.abs(_median(cyc)-periodSec)/periodSec > cfg.maxPeriodMismatch || cv > cfg.maxCv) return null;
+    var rsa=sw.length ? _median(sw)/2 : 0;
+    if (rsa < cfg.minRsa) return null;                                      // 起伏小到跟雜訊同級，照不準
+    var ct=new Array(n); for (k=0;k<n;k++) ct[k]=k/fs;
+    return { rate:rate, rsa:rsa, cv:cv, cycles:cyc.length, r:ac[best],
+             durationSec:dur, curve:{ t:ct, v:y } };
+  }
+
   root.HrvAnalyze = {
     metricsFromRr: metricsFromRr, classify: classify, cleanRr: cleanRr, cleanRrGentle: cleanRrGentle,
     detectBeats: detectBeats, detectBeatsWindowed: detectBeatsWindowed, rrFromGoodWindows: rrFromGoodWindows, rrFromLongestGoodRun: rrFromLongestGoodRun, rrFromBeats: rrFromBeats, signalQuality: signalQuality,
@@ -446,6 +556,7 @@
     dropDuplicateFrames: dropDuplicateFrames, pickChannel: pickChannel,
     markRr: markRr, metricsFromMarked: metricsFromMarked, interpolateMarked: interpolateMarked,
     rrMarkedFromGoodWindows: rrMarkedFromGoodWindows, rrMarkedFromLongestGoodRun: rrMarkedFromLongestGoodRun,
+    breathFromRr: breathFromRr, BREATH_CFG: BREATH_CFG,
     _mean: mean, _prep: _prep, _periodicity: _periodicity
   };
 })(typeof window !== 'undefined' ? window : this);
