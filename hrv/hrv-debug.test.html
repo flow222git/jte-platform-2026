@@ -27,12 +27,35 @@ function run(iw){
   iw.eval("session.mode='measure'; session.measuring=false; session.measureStart=null; session.lockSince=null; session.samples=[];"+
     "(function(){var n=performance.now(); for(var i=0;i<360;i++){var t=n-12000+i*33.3, p=Math.sin(2*Math.PI*1.2*t/1000);"+
     " session.samples.push({t:t,v:150+3*p,g:60+1.5*p});} session.lastDiag={R:150,G:60,sat:0.05,cv:0.05};})()");
+  iw.startRecording();
   let err=null; try{ iw.updateLiveUi(iw.performance.now()); }catch(e){ err=e.message; }
   check('?debug 下 updateLiveUi 不丟例外', function(){ assert(err===null, '例外：'+err); });
   check('?debug 下乾淨脈搏會鎖定開始倒數', function(){ assert(iw.eval('session.measuring')===true, 'measuring 應為 true'); });
   check('debug 面板顯示週期性數值（非 NaN/物件）', function(){
     const el=iw.document.getElementById('hrvDbg'); assert(el, '應有 debug 面板');
     assert(/per \d\.\d\d/.test(el.textContent), '面板內容：'+el.textContent.replace(/\n/g,' | '));
+  });
+  check('錄製：鎖定時記下 lockT', function(){ assert(typeof iw.eval('session.rec&&session.rec.lockT')==='number', 'lockT 應為數字'); });
+  check('blockStats：5x5 格的紅/綠平均與飽和比例正確', function(){
+    // 50x50：左半 R=255(飽和)、右半 R=100；G 全 40
+    const img=new Uint8ClampedArray(50*50*4);
+    for(let y=0;y<50;y++) for(let x=0;x<50;x++){ const i=(y*50+x)*4; img[i]=x<25?255:100; img[i+1]=40; img[i+3]=255; }
+    const b=iw.blockStats(img,50,5);
+    assert(b.R.length===25, '25 格');
+    assert(b.R[0]===255 && b.S[0]===1, '左上格全飽和 R=255 sat=1，實得 '+b.R[0]+'/'+b.S[0]);
+    assert(b.R[4]===100 && b.S[4]===0, '右上格 R=100 sat=0');
+    assert(Math.abs(b.R[2]-177.5)<1e-9 && b.S[2]===0.5, '中間格（跨分界）R=177.5 sat=0.5，實得 '+b.R[2]+'/'+b.S[2]);
+    assert(b.G.every(function(g){ return g===40; }), 'G 全 40');
+  });
+  check('錄製：每幀 4+75 欄，超過上限不再收', function(){
+    iw.startRecording();
+    const img=new Uint8ClampedArray(50*50*4).fill(120);
+    iw.recordFrame(1000,120,120,0,img); iw.recordFrame(1033,120,120,0,img);
+    const f=iw.eval('session.rec.frames');
+    assert(f.length===2 && f[0].length===79, '欄數 '+(f[0]&&f[0].length));
+    iw.recordFrame(1000+iw.eval('REC_MAX_SEC')*1000+1,120,120,0,img);
+    assert(iw.eval('session.rec.frames.length')===2, '超過上限應丟棄');
+    assert(iw.document.getElementById('hrvRecBtn'), '應有下載按鈕');
   });
   try{ iw.stopCamera(); }catch(e){}
   finish();
