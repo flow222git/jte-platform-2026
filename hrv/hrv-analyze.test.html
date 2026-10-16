@@ -303,6 +303,90 @@ async function run(){
     eq(HrvAnalyze.dropDuplicateFrames(s).map(function(x){return x.t;}).join(','),'0,66,99');
   });
 
+  // === 呼吸的樣貌：從心跳起伏（RSA）推算呼吸 ===
+  // 已知呼吸率 bpmBreath 調變的逐拍心率：HR(t)=hr0+amp·sin(2π·f·t)+雜訊；拍點依瞬時心率逐拍積分。
+  // opt.jitter：每個呼吸週期長度的隨機變異比例（模擬不規律呼吸）
+  function rsaRr(breathPerMin, durSec, amp, R, opt){
+    opt=opt||{}; var hr0=opt.hr0||68, rr=[], t=0, ph=0, f=breathPerMin/60, fNow=f;
+    while(t<durSec){
+      var hr=hr0+amp*Math.sin(ph)+(R?gauss(R)*0.8:0), dt=60/hr;
+      rr.push(dt*1000); t+=dt;
+      var before=ph; ph+=2*Math.PI*fNow*dt;
+      if(opt.jitter && Math.floor(before/(2*Math.PI))!==Math.floor(ph/(2*Math.PI))) fNow=f*(1+(R()*2-1)*opt.jitter);
+    }
+    return rr;
+  }
+  function allValid(rr){ return rr.map(function(){ return true; }); }
+  await check('breathFromRr：6 次/分、180 秒、±6 bpm → 呼吸率±0.5、帶動心跳≈6、節奏穩定', async () => {
+    var R=rng(61), rr=rsaRr(6,180,6,R), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+    assert(b, '應照得出呼吸');
+    log('    rate '+b.rate.toFixed(2)+' rsa '+b.rsa.toFixed(1)+' cv '+b.cv.toFixed(3)+' cycles '+b.cycles+' r '+b.r.toFixed(2));
+    near(b.rate, 6, 0.5, '呼吸率'); near(b.rsa, 6, 1.5, '帶動心跳'); assert(b.cv<0.15, '節奏應穩定，cv='+b.cv);
+    assert(b.curve && b.curve.t.length===b.curve.v.length && b.curve.t.length>100, '應附呼吸曲線');
+  });
+  await check('breathFromRr：9 次/分、60 秒快測 → 呼吸率±0.7', async () => {
+    var R=rng(62), rr=rsaRr(9,60,4,R), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+    assert(b, '應照得出呼吸'); log('    rate '+b.rate.toFixed(2)+' rsa '+b.rsa.toFixed(1)+' cycles '+b.cycles);
+    near(b.rate, 9, 0.7, '呼吸率');
+  });
+  await check('breathFromRr：15 次/分、60 秒 → 呼吸率±1', async () => {
+    var R=rng(63), rr=rsaRr(15,60,3,R), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+    assert(b, '應照得出呼吸'); log('    rate '+b.rate.toFixed(2)+' rsa '+b.rsa.toFixed(1));
+    near(b.rate, 15, 1, '呼吸率');
+  });
+  await check('breathFromRr：不規律呼吸 → 節奏不是「穩定」', async () => {
+    var R=rng(64), rr=rsaRr(9,180,5,R,{jitter:0.45}), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+    assert(b, '應照得出呼吸'); log('    cv '+b.cv.toFixed(3));
+    assert(b.cv>=0.15, '不規律時 cv 應 ≥0.15，實得 '+b.cv.toFixed(3));
+  });
+  await check('breathFromRr：沒有呼吸起伏（純雜訊）→ null（照不出就不顯示）', async () => {
+    var R=rng(65), rr=rsaRr(9,120,0,R);
+    eq(HrvAnalyze.breathFromRr(rr, allValid(rr)), null);
+  });
+  await check('breathFromRr：資料太短（30 秒）→ null', async () => {
+    var R=rng(66), rr=rsaRr(9,30,5,R);
+    eq(HrvAnalyze.breathFromRr(rr, allValid(rr)), null);
+  });
+  await check('breathFromRr：含無效間隔（漏拍）仍照得出', async () => {
+    var R=rng(67), rr=rsaRr(6,120,6,R), valid=allValid(rr);
+    rr[40]=rr[40]+rr[41]; rr.splice(41,1); valid.splice(41,1); valid[40]=false;   // 一個漏拍
+    var b=HrvAnalyze.breathFromRr(rr, valid);
+    assert(b, '應照得出呼吸'); near(b.rate, 6, 0.6, '呼吸率');
+  });
+  // 心率本身約 10 秒一次的慢波動（Mayer 波）會跟慢呼吸混淆：分不出來時必須不顯示，不能算錯
+  function mayerRr(breath, bAmp, mAmp, durSec, R, phase){
+    var rr=[], t=0, ph=0;
+    while(t<durSec){ var hr=68+bAmp*Math.sin(ph)+mAmp*Math.sin(2*Math.PI*0.1*t+phase)+gauss(R)*0.8, dt=60/hr; rr.push(dt*1000); t+=dt; ph+=2*Math.PI*breath/60*dt; }
+    return rr;
+  }
+  await check('breathFromRr：呼吸 14 次/分疊上 Mayer 慢波 → 不是算對就是不顯示，絕不算錯（各 10 次）', async () => {
+    [1,2,3].forEach(function(mAmp){
+      var wrong=0, shown=0;
+      for(var s=1;s<=10;s++){ var R=rng(5000+s+mAmp*100), rr=mayerRr(14,2,mAmp,120,R,s), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+        if(b){ shown++; if(Math.abs(b.rate-14)>1.5) wrong++; } }
+      log('    Mayer ±'+mAmp+'：顯示 '+shown+'/10、算錯 '+wrong);
+      assert(wrong===0, 'Mayer ±'+mAmp+' 時不可算錯，算錯 '+wrong+' 次');
+    });
+  });
+  await check('breathFromRr：起伏極小（±0.5）→ 不顯示或算對，絕不算錯（各 10 次）', async () => {
+    [6,9,15].forEach(function(br){
+      var wrong=0;
+      for(var s=1;s<=10;s++){ var R=rng(6000+s*7+br), rr=rsaRr(br,60,0.5,R), b=HrvAnalyze.breathFromRr(rr, allValid(rr));
+        if(b && Math.abs(b.rate-br)>1.5) wrong++; }
+      assert(wrong===0, br+' 次/分 ±0.5 算錯 '+wrong+' 次');
+    });
+  });
+  await check('端到端：相機式 PPG（抖動＋重複幀）→ 呼吸 6 次/分（180 秒）與 9 次/分（60 秒）±1', async () => {
+    [[6,180,6,71],[9,60,4,72]].forEach(function(c){
+      var R=rng(c[3]), rr=rsaRr(c[0],c[1],c[2],R), sy=synthCam(rr,R);
+      var A=HrvAnalyze, ch=A.pickChannel(A.dropDuplicateFrames(sy.samples));
+      var run=A.rrMarkedFromLongestGoodRun(ch.samples,15), b=A.breathFromRr(run.rr, run.valid);
+      assert(b, c[0]+' 次/分應照得出呼吸');
+      log('    '+c[0]+'/分 '+c[1]+'s → rate '+b.rate.toFixed(2)+' rsa '+b.rsa.toFixed(1)+' cv '+b.cv.toFixed(3));
+      near(b.rate, c[0], 1, c[0]+' 次/分');
+    });
+  });
+
   log('---'); log('DONE pass=' + pass + ' fail=' + fail);
   document.title = fail ? ('FAIL ' + fail) : 'OK';
   window.__done = true;

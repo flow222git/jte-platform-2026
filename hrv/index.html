@@ -196,6 +196,23 @@
   .facets{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .facets-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .facets-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
   .facet-na{font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.7}
+  /* 呼吸的樣貌 */
+  .breath{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
+  .breath-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .breath-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)}
+  .breath-trial{font-size:11px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px}
+  .breath-sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px;width:100%}
+  .breath-curve{margin-top:10px}
+  .breath-curve svg{width:100%;height:auto;display:block}
+  .breath-cap{font-size:12px;color:var(--ink-faint);line-height:1.7;margin-top:4px}
+  .breath-item{padding:10px 0;border-top:1px solid var(--line)}
+  .breath-item:first-of-type{margin-top:8px}
+  .breath-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .breath-row .bn{font-size:13.5px;color:var(--ink-soft)}
+  .breath-row .bv{font-family:"Noto Serif TC",serif;color:var(--accent);font-size:17px;font-weight:600;white-space:nowrap}
+  .breath-row .bv small{font-size:12px;font-weight:500;color:var(--ink-faint);margin-left:2px}
+  .breath-row .bw{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:6px;font-family:"Noto Sans TC",sans-serif;font-weight:500}
+  .breath-mean{font-size:12.5px;color:var(--ink-soft);line-height:1.75;margin-top:3px}
   .facet-cell{border-top:1px solid var(--line);padding:11px 0 9px}
   .facet-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .facet-l{display:flex;flex-direction:column;gap:1px}
@@ -1052,7 +1069,10 @@ var METRIC_EXPL={
   vitality:'自律神經整體的活躍量，可想成今天身體的「電量大小」。高＝活力足；低＝可能累了或需要休息。會隨年齡自然下降，所以跟自己比最準。',
   flexibility:'心跳節奏變化的豐富度＝身體應變、調節的彈性。高＝能屈能伸、適應力好；低＝變化較小、較緊。也會隨年齡下降，看自己的變化為主。',
   recovery:'跟你自己平常比，今天的修復力（副交感、RMSSD）偏高還是偏低。連續量幾天最能看出來。',
-  calm:'從靜息心率看你現在偏安定還是偏亢奮——心率較低通常代表比較平靜。'
+  calm:'從靜息心率看你現在偏安定還是偏亢奮——心率較低通常代表比較平靜。',
+  breathRate:'從心跳的起伏推算的呼吸次數，不需要你另外做什麼。一般人安靜時大約每分鐘 12–18 次；慢而深的呼吸（例如每分鐘 6 次左右）常用在放鬆練習。這是參考值，不是醫療量測。',
+  breathRhythm:'看每一口氣的長短一不一致。專注、放鬆時通常比較規律；說話、分心或身體在動時會比較亂。',
+  breathRsa:'吸氣時身體的煞車（副交感）稍微放開，心跳變快；吐氣時煞車踩回來，心跳變慢。起伏越大，代表心跳越跟得上呼吸，通常在慢而深的呼吸時最明顯。'
 };
 function metricInfo(key){
   return METRIC_EXPL[key] ? '<details class="minfo"><summary>'+jteT('metric.more','這是什麼？')+'</summary><p>'+_h(METRIC_EXPL[key])+'</p></details>' : '';
@@ -1191,6 +1211,61 @@ function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).get
 //   ≥150 秒連續：四面相全出（LF 可信）。
 //   60–150 秒：只出放鬆(HF)＋彈性(SDNN)；壓力/活力(吃 LF 0.04Hz=週期25秒)不可信 → 不出，標 partial。
 //   <60 秒：頻域全不出（退回 HR/RMSSD/能量）。
+// 呼吸的樣貌：從最長連續好窗的心跳起伏推算（照不出來回 null）。規格：docs/superpowers/specs/2026-10-16-hrv-breath-mirror-design.md
+function computeBreath(samples){
+  var A=window.HrvAnalyze; if(!A||!A.breathFromRr||!samples) return null;
+  try{
+    var run=A.rrMarkedFromLongestGoodRun(analysisChannel(samples).samples,15);
+    return A.breathFromRr(run.rr, run.valid);
+  }catch(e){ return null; }
+}
+// 描述詞（只說落在哪裡，不評好壞；用詞與 Breeeeeathe~ 一致：慢速、穩定）
+function breathRateWord(r){ return r<8?jteT('breath.lv.slow','慢速'):(r<12?jteT('breath.lv.calm','平緩'):(r<=18?jteT('breath.lv.normal','一般'):jteT('breath.lv.fast','偏快'))); }
+function breathRhythm(cv){
+  if(cv<0.15) return { w:jteT('breath.rh.stable','穩定'), m:jteT('breath.rh.stable.m','每一口氣的長短很接近。') };
+  if(cv<0.30) return { w:jteT('breath.rh.some','有些起伏'), m:jteT('breath.rh.some.m','每一口氣有長有短，起伏不大。') };
+  return { w:jteT('breath.rh.irregular','不規律'), m:jteT('breath.rh.irregular.m','每一口氣的長短差異比較大。') };
+}
+function breathRsaWord(a){ return a>=5?jteT('breath.rsa.big','起伏明顯'):(a>=2.5?jteT('breath.rsa.mid','起伏中等'):jteT('breath.rsa.small','起伏較小')); }
+function breathCurveSvg(c){
+  var W=320,H=96,pad=16,mid=44,n=c.v.length; if(n<2) return '';
+  var mx=0; for(var i=0;i<n;i++) mx=Math.max(mx,Math.abs(c.v[i])); mx=mx||1;
+  var T=c.t[n-1]||1, d='';
+  for(i=0;i<n;i++){ var x=pad+(W-2*pad)*c.t[i]/T, y=mid-34*c.v[i]/mx; d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1); }
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+_h(jteT('breath.curve.aria','從心跳推算的呼吸曲線'))+'">'+
+    '<line x1="'+pad+'" y1="'+mid+'" x2="'+(W-pad)+'" y2="'+mid+'" stroke="var(--line)" stroke-dasharray="3 4"/>'+
+    '<path d="'+d+'" fill="none" stroke="var(--relaxed)" stroke-width="2" stroke-linejoin="round"/>'+
+    '<text x="2" y="14" font-size="10" fill="var(--ink-faint)">'+_h(jteT('breath.in','吸'))+'</text>'+
+    '<text x="2" y="84" font-size="10" fill="var(--ink-faint)">'+_h(jteT('breath.out','吐'))+'</text>'+
+    '<text x="'+pad+'" y="'+(H-1)+'" font-size="10" fill="var(--ink-faint)">0</text>'+
+    '<text x="'+(W-pad)+'" y="'+(H-1)+'" font-size="10" fill="var(--ink-faint)" text-anchor="end">'+Math.round(T)+' '+_h(jteT('unit.sec','秒'))+'</text></svg>';
+}
+// 呼吸的樣貌卡：每個數字都附一句白話意義＋「這是什麼？」詳解（Simon 2026-10-16：數值要給意義）
+function buildBreath(b){
+  const wrap=document.createElement('div'); wrap.className='breath';
+  wrap.innerHTML='<div class="breath-head"><b>'+_h(jteT('breath.head','你的呼吸樣貌'))+'</b><span class="breath-trial">'+_h(jteT('breath.trial','試驗中'))+'</span>'+
+    '<span class="breath-sub">'+_h(jteT('breath.sub','從這次的心跳起伏推算，不需要另外操作 · 參考非診斷'))+'</span></div>';
+  if(!b){
+    const na=document.createElement('div'); na.className='facet-na';
+    na.textContent=jteT('breath.na','這次心跳的起伏不夠清楚，照不出呼吸的樣貌。坐穩、正常呼吸再量一次，通常就看得到。');
+    wrap.appendChild(na); return wrap;
+  }
+  const rate=Math.round(b.rate*10)/10, secPer=Math.round(60/b.rate*2)/2, swing=Math.round(b.rsa*2), rh=breathRhythm(b.cv);
+  wrap.insertAdjacentHTML('beforeend','<div class="breath-curve">'+breathCurveSvg(b.curve)+'</div>'+
+    '<div class="breath-cap">'+_h(jteT('breath.cap','往上大致是吸氣、往下是吐氣。這條線從心跳推算，看的是節奏，形狀不是呼吸的精確翻版。'))+'</div>');
+  function item(name, val, unit, word, mean, key){
+    return '<div class="breath-item"><div class="breath-row"><span class="bn">'+_h(name)+'</span>'+
+      '<span class="bv">'+_h(val)+(unit?'<small>'+_h(unit)+'</small>':'')+(word?'<span class="bw">'+_h(word)+'</span>':'')+'</span></div>'+
+      '<div class="breath-mean">'+_h(mean)+'</div>'+metricInfo(key)+'</div>';
+  }
+  wrap.insertAdjacentHTML('beforeend',
+    item(jteT('breath.rate','呼吸快慢'), String(rate), jteT('breath.unit','次/分'), breathRateWord(b.rate),
+      jteT('breath.rate.m','這段時間你大約每 %1 秒呼吸一次。').replace('%1',String(secPer)), 'breathRate')+
+    item(jteT('breath.rhythm','節奏'), rh.w, '', '', rh.m, 'breathRhythm')+
+    item(jteT('breath.rsa','帶動心跳'), '±'+(Math.round(b.rsa*10)/10), jteT('breath.unit','次/分'), breathRsaWord(b.rsa),
+      jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa'));
+  return wrap;
+}
 function computeFreqFacets(samples, sdnn){
   var F=window.HrvFreq, A=window.HrvAnalyze;
   if(!F||!A||!samples) return null;
@@ -1283,9 +1358,14 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   const art=Number(m.artifactRate)||0; // 走到這裡必 ≤ARTIFACT_MAX（更高者已在 renderResult 擋下）
   const now=new Date();
   const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
-  jteWriteRecord({ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' });
+  const br=computeBreath(_lastResultSamples);  // 呼吸的樣貌（照不出來為 null，不寫入）
+  const recObj={ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
+    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' };
+  if(br){ recObj.breathRate=Math.round(br.rate*10)/10; recObj.rsa=Math.round(br.rsa*10)/10; }
+  jteWriteRecord(recObj);
 
+  // —— 呼吸的樣貌（從心跳起伏推算；每個數字附白話意義）——
+  d.appendChild(buildBreath(br));
   // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
   d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
@@ -1719,7 +1799,24 @@ window.JTE_I18N = {
     'trend.no.tag.records': 'No records with this tag yet.',
     'trend.filter.all': 'All',
     'trend.filter.note': '%1 times%2',
-    'trend.filter.avg': ', avg Body Energy '
+    'trend.filter.avg': ', avg Body Energy ',
+    'breath.head': 'Your breathing',
+    'breath.trial': 'Beta',
+    'breath.sub': 'Estimated from your heartbeat rhythm in this measurement — nothing extra to do · for reference, not diagnosis',
+    'breath.na': 'Your heartbeat rhythm was not clear enough this time to show your breathing. Sit still, breathe normally and measure again.',
+    'breath.cap': 'Up is roughly inhaling, down is exhaling. This line is estimated from your heartbeat: read it for rhythm, not exact shape.',
+    'breath.curve.aria': 'Breathing curve estimated from heartbeat',
+    'breath.in': 'in', 'breath.out': 'out',
+    'breath.rate': 'Breathing rate', 'breath.unit': '/min',
+    'breath.rate.m': 'During this time you took about one breath every %1 seconds.',
+    'breath.lv.slow': 'Slow', 'breath.lv.calm': 'Gentle', 'breath.lv.normal': 'Typical', 'breath.lv.fast': 'Fast',
+    'breath.rhythm': 'Rhythm',
+    'breath.rh.stable': 'Steady', 'breath.rh.stable.m': 'Each breath was about the same length.',
+    'breath.rh.some': 'Some variation', 'breath.rh.some.m': 'Breaths varied a little in length.',
+    'breath.rh.irregular': 'Irregular', 'breath.rh.irregular.m': 'Breath lengths varied quite a lot.',
+    'breath.rsa': 'Heart response',
+    'breath.rsa.m': 'Your heart sped up on the in-breath and slowed on the out-breath, by about %1 beats per minute.',
+    'breath.rsa.big': 'Clear swing', 'breath.rsa.mid': 'Moderate swing', 'breath.rsa.small': 'Small swing'
   },
   ja: {
     'intro.what.title': 'これは何を測っているの？',
@@ -1803,7 +1900,24 @@ window.JTE_I18N = {
     'trend.no.tag.records': 'このタグの記録はまだありません。',
     'trend.filter.all': 'すべて',
     'trend.filter.note': '%1 回%2',
-    'trend.filter.avg': '、平均エネルギー '
+    'trend.filter.avg': '、平均エネルギー ',
+    'breath.head': 'あなたの呼吸',
+    'breath.trial': '試験中',
+    'breath.sub': '今回の心拍のゆらぎから推定。追加の操作は不要 · 参考値であり診断ではありません',
+    'breath.na': '今回は心拍のゆらぎがはっきりせず、呼吸を映し出せませんでした。座って普段どおり呼吸し、もう一度測ってみてください。',
+    'breath.cap': '上がおおよそ吸う、下が吐く。心拍から推定した線なので、形ではなくリズムを見てください。',
+    'breath.curve.aria': '心拍から推定した呼吸の曲線',
+    'breath.in': '吸', 'breath.out': '吐',
+    'breath.rate': '呼吸の速さ', 'breath.unit': '回/分',
+    'breath.rate.m': 'この間、およそ %1 秒に 1 回呼吸していました。',
+    'breath.lv.slow': 'ゆっくり', 'breath.lv.calm': 'おだやか', 'breath.lv.normal': 'ふつう', 'breath.lv.fast': '速め',
+    'breath.rhythm': 'リズム',
+    'breath.rh.stable': '安定', 'breath.rh.stable.m': '一息ごとの長さがほぼそろっていました。',
+    'breath.rh.some': 'ややゆらぎ', 'breath.rh.some.m': '一息ごとに長短があり、少しゆらいでいました。',
+    'breath.rh.irregular': '不規則', 'breath.rh.irregular.m': '一息ごとの長さの差が大きめでした。',
+    'breath.rsa': '心拍への影響',
+    'breath.rsa.m': '吸うと心拍が速まり、吐くと遅くなり、その差はおよそ %1 拍/分でした。',
+    'breath.rsa.big': 'ゆらぎ大', 'breath.rsa.mid': 'ゆらぎ中', 'breath.rsa.small': 'ゆらぎ小'
   }
 };
 </script>

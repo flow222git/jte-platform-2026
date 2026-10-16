@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-breath tests</title>
+<style>body{font-family:monospace;padding:16px}iframe{display:none}pre{white-space:pre-wrap}</style>
+</head><body>
+<h2>hrv-breath.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html"></iframe>
+<script>
+// 結果頁「呼吸的樣貌」：照不出來不給數字；照得出來每個數字都有白話意義＋詳解；端到端寫入記錄
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function assert(c,m){if(!c)throw new Error(m||'assert failed');}
+function finish(){ log('---'); log('DONE pass='+pass+' fail='+fail); document.title=fail?('FAIL '+fail):'OK'; }
+const fr=document.getElementById('fr');
+
+// 合成相機樣本：逐拍心率帶呼吸起伏（breath 次/分、±amp bpm），30fps、紅綠通道
+function synthBreathSamples(breath, amp, durSec){
+  var s=0x2468ace, rnd=function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296-0.5; };
+  var beats=[], t=0.6, ph=0;
+  while(t<durSec+1){ beats.push(t*1000); var hr=68+amp*Math.sin(ph)+rnd()*1.2, dt=60/hr; t+=dt; ph+=2*Math.PI*breath/60*dt; }
+  var out=[], j0=0, t0=performance.now()-durSec*1000;
+  for(var k=0;k*1000/30<durSec*1000;k++){
+    var tt=k*1000/30, p=0;
+    while(j0<beats.length-1 && beats[j0]<tt-1200) j0++;
+    for(var j=j0;j<beats.length && beats[j]<tt+400;j++){ var d=tt-beats[j]; p+=Math.exp(-Math.pow(d/70,2))+0.35*Math.exp(-Math.pow((d-320)/90,2)); }
+    out.push({ t:t0+tt, v:150+3*p+rnd()*0.15, g:60+1.5*p+rnd()*0.15 });
+  }
+  return out;
+}
+
+fr.addEventListener('load',function(){
+  const iw=fr.contentWindow; let n=0;
+  const t=setInterval(function(){
+    n++;
+    if(typeof iw.buildBreath==='function' && iw.HrvAnalyze && iw.HrvAnalyze.breathFromRr){ clearInterval(t); run(iw).then(finish); }
+    else if(n>120){ clearInterval(t); fail++; log('FAIL 逾時：index.html 全域函式未就緒'); finish(); }
+  },150);
+});
+
+async function run(iw){
+  check('照不出來（null）→ 顯示說明，不顯示數字', function(){
+    const el=iw.buildBreath(null);
+    assert(el.querySelector('.facet-na'), '應有說明文字');
+    assert(!el.querySelector('.breath-item'), '不應有數字列');
+  });
+  check('照得出來 → 三個數字各附白話意義與「這是什麼？」', function(){
+    const curve={ t:[], v:[] }; for(let i=0;i<240;i++){ curve.t.push(i/4); curve.v.push(Math.sin(2*Math.PI*9/60*i/4)*4); }
+    const el=iw.buildBreath({ rate:9.04, rsa:4.2, cv:0.08, cycles:8, r:0.9, durationSec:60, curve:curve });
+    const items=el.querySelectorAll('.breath-item');
+    assert(items.length===3, '應有 3 列，實得 '+items.length);
+    items.forEach(function(it){
+      assert(it.querySelector('.breath-mean') && it.querySelector('.breath-mean').textContent.length>4, '每列要有意義說明');
+      assert(it.querySelector('details.minfo'), '每列要有「這是什麼？」');
+    });
+    const txt=el.textContent;
+    assert(/9(\.0)?次\/分/.test(txt.replace(/\s/g,'')), '呼吸次數 9.0：'+txt);
+    assert(txt.indexOf('每 6.5 秒呼吸一次')>=0, '換算成每口氣秒數：'+txt);
+    assert(txt.indexOf('穩定')>=0, '節奏穩定');
+    assert(txt.indexOf('±4.2')>=0 && txt.indexOf('相差 8 下')>=0, '帶動心跳 ±4.2、相差 8 下');
+    assert(el.querySelector('.breath-curve svg path'), '應畫出呼吸曲線');
+    assert(txt.indexOf('試驗中')>=0, '應標試驗中');
+  });
+  check('描述詞分段：慢速／平緩／一般／偏快', function(){
+    assert(iw.breathRateWord(6)==='慢速' && iw.breathRateWord(10)==='平緩' && iw.breathRateWord(15)==='一般' && iw.breathRateWord(22)==='偏快');
+  });
+  // 端到端：合成量測 → 結果頁 → 呼吸卡出現、記錄含 breathRate
+  try{ iw.localStorage.clear(); }catch(e){}
+  const samples=synthBreathSamples(9, 5, 62);
+  iw._lastResultSamples=samples; iw.eval('session.diag={tsSource:"test"}');
+  iw.renderResult(samples);
+  await new Promise(function(r){ setTimeout(r,1500); });
+  check('端到端：結果頁出現呼吸卡，呼吸次數約 9', function(){
+    const card=iw.document.querySelector('.breath');
+    assert(card, '應有呼吸卡');
+    assert(card.querySelectorAll('.breath-item').length===3, '應照得出呼吸：'+card.textContent.slice(0,80));
+    const m=card.textContent.replace(/\s/g,'').match(/呼吸快慢([\d.]+)次\/分/);
+    assert(m && Math.abs(parseFloat(m[1])-9)<=1, '呼吸次數應約 9，實得 '+(m&&m[1]));
+  });
+  check('端到端：記錄寫入 breathRate 與 rsa', function(){
+    const raw=iw.localStorage.getItem('jte_daily_v1')||'';
+    const m=raw.match(/"breathRate":([\d.]+)/), r=raw.match(/"rsa":([\d.]+)/);
+    assert(m && Math.abs(parseFloat(m[1])-9)<=1, 'breathRate 約 9，實得 '+(m&&m[1]));
+    assert(r && parseFloat(r[1])>0, 'rsa 應寫入');
+  });
+}
+</script>
+</body></html>
