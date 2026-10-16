@@ -1072,7 +1072,8 @@ var METRIC_EXPL={
   calm:'從靜息心率看你現在偏安定還是偏亢奮——心率較低通常代表比較平靜。',
   breathRate:'從心跳的起伏推算的呼吸次數，不需要你另外做什麼。一般人安靜時大約每分鐘 12–18 次；慢而深的呼吸（例如每分鐘 6 次左右）常用在放鬆練習。這是參考值，不是醫療量測。',
   breathRhythm:'看每一口氣的長短一不一致。專注、放鬆時通常比較規律；說話、分心或身體在動時會比較亂。',
-  breathRsa:'吸氣時身體的煞車（副交感）稍微放開，心跳變快；吐氣時煞車踩回來，心跳變慢。起伏越大，代表心跳越跟得上呼吸，通常在慢而深的呼吸時最明顯。'
+  breathRsa:'吸氣時身體的煞車（副交感）稍微放開，心跳變快；吐氣時煞車踩回來，心跳變慢。起伏越大，代表心跳越跟得上呼吸，通常在慢而深的呼吸時最明顯。',
+  prq:'心跳次數 ÷ 呼吸次數，也就是一口氣之間心跳幾下。研究中多數人安靜、沒在注意呼吸時大約 4 下；呼吸越慢，這個數字越大，例如每分鐘呼吸 6 次時常在 10 下以上。人一注意呼吸，呼吸常會自然變慢，所以專心量測時數字偏高很常見。《素問・平人氣象論》也有「呼吸定息脈五動」的說法。這是描述，不是標準答案，相關研究仍在發展中。'
 };
 function metricInfo(key){
   return METRIC_EXPL[key] ? '<details class="minfo"><summary>'+jteT('metric.more','這是什麼？')+'</summary><p>'+_h(METRIC_EXPL[key])+'</p></details>' : '';
@@ -1241,7 +1242,7 @@ function breathCurveSvg(c){
     '<text x="'+(W-pad)+'" y="'+(H-1)+'" font-size="10" fill="var(--ink-faint)" text-anchor="end">'+Math.round(T)+' '+_h(jteT('unit.sec','秒'))+'</text></svg>';
 }
 // 呼吸的樣貌卡：每個數字都附一句白話意義＋「這是什麼？」詳解（Simon 2026-10-16：數值要給意義）
-function buildBreath(b){
+function buildBreath(b, hr){
   const wrap=document.createElement('div'); wrap.className='breath';
   wrap.innerHTML='<div class="breath-head"><b>'+_h(jteT('breath.head','你的呼吸樣貌'))+'</b><span class="breath-trial">'+_h(jteT('breath.trial','試驗中'))+'</span>'+
     '<span class="breath-sub">'+_h(jteT('breath.sub','從這次的心跳起伏推算，不需要另外操作 · 參考非診斷'))+'</span></div>';
@@ -1263,7 +1264,9 @@ function buildBreath(b){
       jteT('breath.rate.m','這段時間你大約每 %1 秒呼吸一次。').replace('%1',String(secPer)), 'breathRate')+
     item(jteT('breath.rhythm','節奏'), rh.w, '', '', rh.m, 'breathRhythm')+
     item(jteT('breath.rsa','帶動心跳'), '±'+(Math.round(b.rsa*10)/10), jteT('breath.unit','次/分'), breathRsaWord(b.rsa),
-      jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa'));
+      jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa')+
+    (hr>0 ? item(jteT('breath.prq','心跳呼吸比'), String(Math.round(hr/b.rate*10)/10), jteT('breath.prq.unit','下／口氣'), '',
+      jteT('breath.prq.m','每一口氣之間，心跳大約 %1 下。呼吸越慢，這個數字越大。').replace('%1',String(Math.round(hr/b.rate))), 'prq') : ''));
   return wrap;
 }
 function computeFreqFacets(samples, sdnn){
@@ -1361,11 +1364,11 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   const br=computeBreath(_lastResultSamples);  // 呼吸的樣貌（照不出來為 null，不寫入）
   const recObj={ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
     hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' };
-  if(br){ recObj.breathRate=Math.round(br.rate*10)/10; recObj.rsa=Math.round(br.rsa*10)/10; }
+  if(br){ recObj.breathRate=Math.round(br.rate*10)/10; recObj.rsa=Math.round(br.rsa*10)/10; if(m.hr>0) recObj.prq=Math.round(m.hr/br.rate*10)/10; }
   jteWriteRecord(recObj);
 
   // —— 呼吸的樣貌（從心跳起伏推算；每個數字附白話意義）——
-  d.appendChild(buildBreath(br));
+  d.appendChild(buildBreath(br, m.hr));
   // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
   d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
   // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
@@ -1816,7 +1819,9 @@ window.JTE_I18N = {
     'breath.rh.irregular': 'Irregular', 'breath.rh.irregular.m': 'Breath lengths varied quite a lot.',
     'breath.rsa': 'Heart response',
     'breath.rsa.m': 'Your heart sped up on the in-breath and slowed on the out-breath, by about %1 beats per minute.',
-    'breath.rsa.big': 'Clear swing', 'breath.rsa.mid': 'Moderate swing', 'breath.rsa.small': 'Small swing'
+    'breath.rsa.big': 'Clear swing', 'breath.rsa.mid': 'Moderate swing', 'breath.rsa.small': 'Small swing',
+    'breath.prq': 'Beats per breath', 'breath.prq.unit': 'beats',
+    'breath.prq.m': 'About %1 heartbeats fit into each breath. The slower you breathe, the larger this number.'
   },
   ja: {
     'intro.what.title': 'これは何を測っているの？',
@@ -1917,7 +1922,9 @@ window.JTE_I18N = {
     'breath.rh.irregular': '不規則', 'breath.rh.irregular.m': '一息ごとの長さの差が大きめでした。',
     'breath.rsa': '心拍への影響',
     'breath.rsa.m': '吸うと心拍が速まり、吐くと遅くなり、その差はおよそ %1 拍/分でした。',
-    'breath.rsa.big': 'ゆらぎ大', 'breath.rsa.mid': 'ゆらぎ中', 'breath.rsa.small': 'ゆらぎ小'
+    'breath.rsa.big': 'ゆらぎ大', 'breath.rsa.mid': 'ゆらぎ中', 'breath.rsa.small': 'ゆらぎ小',
+    'breath.prq': '脈拍呼吸比', 'breath.prq.unit': '拍/呼吸',
+    'breath.prq.m': '一呼吸のあいだに、心拍はおよそ %1 回。呼吸がゆっくりなほど、この数は大きくなります。'
   }
 };
 </script>
