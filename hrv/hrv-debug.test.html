@@ -57,6 +57,12 @@ function run(iw){
     assert(iw.eval('session.rec.frames.length')===2, '超過上限應丟棄');
     assert(iw.document.getElementById('hrvRecBtn'), '應有下載按鈕');
   });
+  check('?debug 呼吸卡顯示照不出來的原因', function(){
+    iw.eval("_breathDiag={reason:'short',durationSec:32.4,need:40,runSec:32,goodWin:2,badWin:2}");
+    const el=iw.buildBreath(null);
+    const dbg=el.querySelector('.breath-debug');
+    assert(dbg && dbg.textContent.indexOf('連續資料 32 秒，需要 40 秒')>=0, '應顯示原因：'+(dbg&&dbg.textContent));
+  });
   try{ iw.stopCamera(); }catch(e){}
   finish();
 }
