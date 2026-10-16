@@ -68,6 +68,16 @@ async function run(iw){
     const el=iw.buildBreath({ rate:9, rsa:4, cv:0.1, cycles:8, r:0.9, durationSec:60, curve:curve });
     assert(el.querySelectorAll('.breath-item').length===3, '應只有 3 列');
   });
+  check('非 debug 模式不顯示診斷', function(){
+    iw.eval("_breathDiag={reason:'short',durationSec:32,need:40}");
+    assert(!iw.buildBreath(null).querySelector('.breath-debug'), '一般使用者不應看到 debug 原因');
+  });
+  check('說明頁提到呼吸與心跳呼吸比', function(){
+    iw.renderIntro();
+    const t=iw.document.getElementById('app').textContent;
+    assert(t.indexOf('呼吸的快慢和節奏')>=0, '這是在量什麼？應提到呼吸');
+    assert(t.indexOf('心跳呼吸比')>=0 && t.indexOf('呼吸也比較容易照出來')>=0, '量完看得到應提到心跳呼吸比與深度測');
+  });
   check('描述詞分段：慢速／平緩／一般／偏快', function(){
     assert(iw.breathRateWord(6)==='慢速' && iw.breathRateWord(10)==='平緩' && iw.breathRateWord(15)==='一般' && iw.breathRateWord(22)==='偏快');
   });

@@ -360,7 +360,7 @@ function renderIntro(){
   const lead=document.createElement('div');lead.className='intro-lead';
   const leadH=document.createElement('h3');leadH.textContent=jteT('intro.what.title','這是在量什麼？');
   const leadP=document.createElement('p');
-  leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>——也就是你現在的恢復與放鬆程度。分數是跟你<b>自己平常</b>比，看趨勢就好。');
+  leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>，也就是你現在的恢復與放鬆程度。還能從心跳的起伏，照出你這段時間<b>呼吸的快慢和節奏</b>。分數是跟你<b>自己平常</b>比，看趨勢就好。');
   const leadTag=document.createElement('div');leadTag.className='tag';
   leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
   lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
@@ -373,7 +373,7 @@ function renderIntro(){
     {t:jteT('hrv.p1.t','什麼是 HRV？'),d:jteT('hrv.p1.d','心率變異＝每次心跳間隔的細微變化。變化越豐富，通常代表身體越能放鬆、恢復力越好。'),icon:'ti-heartbeat'},
     {t:jteT('hrv.p2.t','它反映什麼？'),d:jteT('hrv.p2.d','你的自律神經狀態——交感（油門·備戰）和副交感（剎車·休息）的平衡。'),icon:'ti-activity'},
     {t:jteT('hrv.p3.t','怎麼看才準？'),d:jteT('hrv.p3.d','跟自己平常比、看趨勢就好，不是跟別人比；多量幾次會越來越貼近你。'),icon:'ti-trending-up'},
-    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','快測（1 分鐘）看身體能量與心率；深度測（3 分鐘）再加上放鬆、壓力、活力、彈性四面相。'),icon:'ti-eye'}
+    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','快測（1 分鐘）看身體能量、心率、呼吸快慢與心跳呼吸比。深度測（3 分鐘）再加上放鬆、壓力、活力、彈性四面相，資料比較多，呼吸也比較容易照出來。'),icon:'ti-eye'}
   ];
   let gh='<h3><i class="ti ti-bulb"></i>'+_h(jteT('hrv.title','認識 HRV'))+'</h3><div class="steps">';
   hrvPts.forEach(function(s){
@@ -1213,12 +1213,35 @@ function getAge(){ var y=getBirthYear(); if(!y) return 0; var a=(new Date()).get
 //   60–150 秒：只出放鬆(HF)＋彈性(SDNN)；壓力/活力(吃 LF 0.04Hz=週期25秒)不可信 → 不出，標 partial。
 //   <60 秒：頻域全不出（退回 HR/RMSSD/能量）。
 // 呼吸的樣貌：從最長連續好窗的心跳起伏推算（照不出來回 null）。規格：docs/superpowers/specs/2026-10-16-hrv-breath-mirror-design.md
+var _breathDiag=null; // 最近一次呼吸推算的診斷（?debug 顯示「照不出來的原因」）
 function computeBreath(samples){
   var A=window.HrvAnalyze; if(!A||!A.breathFromRr||!samples) return null;
+  _breathDiag={ reason:'noData' };
   try{
     var run=A.rrMarkedFromLongestGoodRun(analysisChannel(samples).samples,15);
-    return A.breathFromRr(run.rr, run.valid);
-  }catch(e){ return null; }
+    _breathDiag.runSec=Math.round((run.spanMs||0)/1000); _breathDiag.goodWin=run.good; _breathDiag.badWin=run.bad;
+    return A.breathFromRr(run.rr, run.valid, null, _breathDiag);
+  }catch(e){ _breathDiag.reason='error'; _breathDiag.msg=String(e&&e.message||e); return null; }
+}
+// ?debug：把診斷翻成一句話（只給開發／測試看，不進 i18n）
+function breathDiagText(dg){
+  if(!dg) return '';
+  var f=function(x,d){ return (Math.round(x*Math.pow(10,d||0))/Math.pow(10,d||0)); };
+  var head='可用連續段 '+(dg.runSec||0)+' 秒（好窗 '+(dg.goodWin||0)+'、壞窗 '+(dg.badWin||0)+'）';
+  var why={
+    ok:'照得出來（r '+f(dg.r||0,2)+'）',
+    noData:'資料不足（拍數 '+(dg.beats||0)+'）',
+    short:'連續資料 '+f(dg.durationSec||0)+' 秒，需要 '+dg.need+' 秒',
+    noPeriod:'看不出規律週期（週期性 '+f(dg.r||0,2)+'，需要 ≥ '+dg.need+'）',
+    specMismatch:'頻譜主峰 '+f(dg.specRate||0,1)+' 次/分與週期 '+f(dg.rate||0,1)+' 次/分不一致',
+    rival:'另有起伏約 '+f(dg.rivalRate||0,1)+' 次/分（強度為主峰 '+dg.rivalPct+'%），分不出哪個是呼吸；主峰 '+f(dg.rate||0,1)+' 次/分',
+    hrRatio:'心率 '+f(dg.hr||0)+' 不到呼吸率 '+f(dg.rate||0,1)+' 的兩倍',
+    fewCycles:'完整呼吸週期只有 '+dg.cycles+' 個，需要 '+dg.need+' 個',
+    inconsistent:'每口氣長短差太多或週期對不上（cv '+f(dg.cv||0,2)+'、差 '+dg.mismatchPct+'%）',
+    smallRsa:'呼吸帶動心跳只有 ±'+f(dg.rsa||0,1)+'，需要 ±'+dg.need,
+    error:'計算錯誤：'+(dg.msg||'')
+  }[dg.reason]||dg.reason;
+  return '[debug] '+head+'｜'+why;
 }
 // 描述詞（只說落在哪裡，不評好壞；用詞與 Breeeeeathe~ 一致：慢速、穩定）
 function breathRateWord(r){ return r<8?jteT('breath.lv.slow','慢速'):(r<12?jteT('breath.lv.calm','平緩'):(r<=18?jteT('breath.lv.normal','一般'):jteT('breath.lv.fast','偏快'))); }
@@ -1242,6 +1265,12 @@ function breathCurveSvg(c){
     '<text x="'+(W-pad)+'" y="'+(H-1)+'" font-size="10" fill="var(--ink-faint)" text-anchor="end">'+Math.round(T)+' '+_h(jteT('unit.sec','秒'))+'</text></svg>';
 }
 // 呼吸的樣貌卡：每個數字都附一句白話意義＋「這是什麼？」詳解（Simon 2026-10-16：數值要給意義）
+function appendBreathDebug(wrap){
+  if(!isDebug()||!_breathDiag) return;
+  const dbg=document.createElement('div'); dbg.className='breath-debug';
+  dbg.style.cssText='font:11.5px/1.6 monospace;color:#7a4fb0;background:#f3eefa;border-radius:8px;padding:6px 8px;margin-top:10px;word-break:break-all';
+  dbg.textContent=breathDiagText(_breathDiag); wrap.appendChild(dbg);
+}
 function buildBreath(b, hr){
   const wrap=document.createElement('div'); wrap.className='breath';
   wrap.innerHTML='<div class="breath-head"><b>'+_h(jteT('breath.head','你的呼吸樣貌'))+'</b><span class="breath-trial">'+_h(jteT('breath.trial','試驗中'))+'</span>'+
@@ -1249,7 +1278,7 @@ function buildBreath(b, hr){
   if(!b){
     const na=document.createElement('div'); na.className='facet-na';
     na.textContent=jteT('breath.na','這次心跳的起伏不夠清楚，照不出呼吸的樣貌。坐穩、正常呼吸再量一次，通常就看得到。');
-    wrap.appendChild(na); return wrap;
+    wrap.appendChild(na); appendBreathDebug(wrap); return wrap;
   }
   const rate=Math.round(b.rate*10)/10, secPer=Math.round(60/b.rate*2)/2, swing=Math.round(b.rsa*2), rh=breathRhythm(b.cv);
   wrap.insertAdjacentHTML('beforeend','<div class="breath-curve">'+breathCurveSvg(b.curve)+'</div>'+
@@ -1267,6 +1296,7 @@ function buildBreath(b, hr){
       jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa')+
     (hr>0 ? item(jteT('breath.prq','心跳呼吸比'), String(Math.round(hr/b.rate*10)/10), jteT('breath.prq.unit','下／口氣'), '',
       jteT('breath.prq.m','每一口氣之間，心跳大約 %1 下。呼吸越慢，這個數字越大。').replace('%1',String(Math.round(hr/b.rate))), 'prq') : ''));
+  appendBreathDebug(wrap);
   return wrap;
 }
 function computeFreqFacets(samples, sdnn){
@@ -1722,7 +1752,7 @@ renderIntro();
 window.JTE_I18N = {
   en: {
     'intro.what.title': 'What is this measuring?',
-    'intro.what.body': 'Your phone\'s rear camera reads your <b>heart rhythm variations</b> (HRV) and converts them into today\'s <b>Body Energy</b>—your current recovery and relaxation level. The score is compared to <b>your own baseline</b>, so focus on your trend.',
+    'intro.what.body': 'Your phone\'s rear camera reads your <b>heart rhythm variations</b> (HRV) and converts them into today\'s <b>Body Energy</b>, your current recovery and relaxation level. It can also show <b>how fast and how evenly you were breathing</b>, read from the rise and fall of your heartbeat. The score is compared with <b>your own usual</b>, so watch your trend.',
     'intro.what.tag': 'About 1 minute · Find a place to sit still and relax',
     'intro.steps.title': 'How to measure',
     'intro.step1.title': 'Cover the rear camera with your finger',
@@ -1735,7 +1765,7 @@ window.JTE_I18N = {
     'intro.step4.desc': 'A ~1 minute countdown begins, and results appear automatically.',
     'btn.start': 'Start Measuring',
     'btn.deep': 'Deep Measure · 3 min · All four facets',
-    'hrv.p4.d': 'Quick measure (1 min) shows Body Energy and heart rate; Deep measure (3 min) adds the four facets: relaxation, stress, vitality, flexibility.',
+    'hrv.p4.d': 'Quick measure (1 min) shows Body Energy, heart rate, breathing rate and beats per breath. Deep measure (3 min) adds the four facets: relaxation, stress, vitality, flexibility. With more data, your breathing is also easier to show.',
     'facets.quick': 'Quick measure covers Body Energy and heart rate. The four facets (relaxation / stress / vitality / flexibility) need a longer signal — take one 3-minute Deep measure to see them.',
     'facets.partial.quick': 'Quick measure supports relaxation and flexibility; stress and vitality need a longer stable signal. Take a 3-minute Deep measure to see all four facets.',
     'btn.trend': 'View Trend',
@@ -1825,7 +1855,7 @@ window.JTE_I18N = {
   },
   ja: {
     'intro.what.title': 'これは何を測っているの？',
-    'intro.what.body': 'スマホの背面カメラで<b>心拍リズムの変動</b>（HRV）を読み取り、今日の<b>からだのエネルギー</b>に換算します。スコアは<b>あなた自身の平均値</b>との比較なので、自分のトレンドを見ることが大切です。',
+    'intro.what.body': 'スマホの背面カメラで<b>心拍リズムの変動</b>（HRV）を読み取り、今日の<b>からだのエネルギー</b>（いまの回復とリラックスの度合い）に換算します。心拍のゆらぎから、この間の<b>呼吸の速さとリズム</b>も映し出せます。スコアは<b>あなた自身の平均値</b>との比較なので、自分のトレンドを見ることが大切です。',
     'intro.what.tag': '約1分 ・ 落ち着いて座れる場所で',
     'intro.steps.title': '測り方',
     'intro.step1.title': '背面カメラに指を軽く当てる',
@@ -1838,7 +1868,7 @@ window.JTE_I18N = {
     'intro.step4.desc': '約1分のカウントダウンが始まり、自動的に結果が表示されます。',
     'btn.start': '測定を開始',
     'btn.deep': 'じっくり測定 · 3分 · 4つの側面すべて',
-    'hrv.p4.d': 'クイック測定（1分）ではからだのエネルギーと心拍数を、じっくり測定（3分）ではさらにリラックス・ストレス・活力・柔軟性の4側面を確認できます。',
+    'hrv.p4.d': 'クイック測定（1分）ではからだのエネルギー、心拍数、呼吸の速さ、脈拍呼吸比を確認できます。じっくり測定（3分）ではさらにリラックス・ストレス・活力・柔軟性の4側面が加わり、データが多いぶん呼吸も映し出しやすくなります。',
     'facets.quick': 'クイック測定で見られるのは、からだのエネルギーと心拍数です。4つの側面（リラックス／ストレス／活力／柔軟性）にはより長い信号が必要です — 3分のじっくり測定でご覧いただけます。',
     'facets.partial.quick': 'クイック測定ではリラックスと柔軟性まで算出できます。ストレス／活力にはより長い安定した信号が必要です — 4側面すべては3分のじっくり測定で。',
     'btn.trend': 'トレンドを見る',

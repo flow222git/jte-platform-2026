@@ -459,12 +459,14 @@
   // rr/valid＝標記版 RR（無效間隔會先內插補值）。
   // 回 { rate:次/分, rsa:±次/分（帶動心跳，峰谷差的一半）, cv:週期長度變異係數, cycles, r:週期性,
   //      durationSec, curve:{ t:[秒], v:[心率偏移 次/分] } } 或 null。
-  function breathFromRr(rr, valid, cfg){
-    cfg=cfg||BREATH_CFG;
-    var x=interpolateMarked(rr||[], valid||[]); if (x.length<10) return null;
+  // diag（選填物件）：回 null 時寫入 reason 與相關數值，供 ?debug 顯示「照不出來的原因」。
+  function breathFromRr(rr, valid, cfg, diag){
+    cfg=cfg||BREATH_CFG; diag=diag||{};
+    function no(reason, info){ diag.reason=reason; for (var key in (info||{})) diag[key]=info[key]; return null; }
+    var x=interpolateMarked(rr||[], valid||[]); if (x.length<10) return no('noData', { beats:x.length });
     var bt=[], hr=[], t=0, i, k;
     for (i=0;i<x.length;i++){ t+=x[i]/1000; bt.push(t); hr.push(60000/x[i]); }
-    var dur=bt[bt.length-1]-bt[0]; if (dur<cfg.minSec) return null;
+    var dur=bt[bt.length-1]-bt[0]; diag.durationSec=dur; if (dur<cfg.minSec) return no('short', { need:cfg.minSec });
     // 逐拍心率 → fs Hz 等間隔
     var fs=cfg.fs, n=Math.floor(dur*fs)+1, s=new Array(n), j=0;
     for (k=0;k<n;k++){
@@ -478,7 +480,7 @@
     y=_filtfilt(_biquad('lp', cfg.hi, fs), y, pad);
     // 自相關（無偏）找主週期：取第一個夠高的區域極大，避免挑到兩倍週期
     var m=mean(y), c0=0; for (i=0;i<n;i++){ y[i]-=m; c0+=y[i]*y[i]; }
-    if (c0<=0) return null; c0/=n;
+    if (c0<=0) return no('noData'); c0/=n;
     var lagMin=Math.round(cfg.lagMinSec*fs), lagMax=Math.min(Math.round(cfg.lagMaxSec*fs), Math.floor(n/2)), ac=[];
     for (var lag=0; lag<=lagMax+1; lag++){
       var cc=0; for (i=0;i+lag<n;i++) cc+=y[i]*y[i+lag];
@@ -489,7 +491,7 @@
     for (lag=Math.max(lagMin,1); lag<=lagMax; lag++){
       if (ac[lag]>=ac[lag-1] && ac[lag]>=ac[lag+1] && ac[lag]>=0.75*gmax){ best=lag; break; }
     }
-    if (!best || ac[best]<cfg.minR) return null;
+    if (!best || ac[best]<cfg.minR) return no('noPeriod', { r: best ? ac[best] : gmax, need:cfg.minR });
     // 倍頻檢查：心率另有約 10 秒的慢波動（Mayer 波）時，「隔兩口氣」的相關性可能高過「隔一口氣」，
     // 會把呼吸次數算成一半。若一半週期處也有夠明顯的峰，真正的週期就是那一半。
     // （真的慢呼吸時，一半週期處是反相、相關性約 -1，不會誤判。）
@@ -513,10 +515,10 @@
       fr.push(fq); pw.push(re*re+im*im);
     }
     var pkI=[]; for (i=1;i<pw.length-1;i++){ if (pw[i]>=pw[i-1] && pw[i]>=pw[i+1]) pkI.push(i); }
-    if (!pkI.length) return null;
+    if (!pkI.length) return no('noPeriod', { r:ac[best], need:cfg.minR });
     pkI.sort(function(a2,b2){ return pw[b2]-pw[a2]; });
     var fMain=fr[pkI[0]];
-    if (Math.abs(fMain-f0)/f0 > cfg.maxPeriodMismatch) return null;
+    if (Math.abs(fMain-f0)/f0 > cfg.maxPeriodMismatch) return no('specMismatch', { rate:rate, specRate:fMain*60 });
     // 主峰落在慢呼吸區（<8 次/分）時最容易跟 Mayer 慢波混淆 → 用更嚴的門檻。
     var rivalTh = fMain < 8/60 ? cfg.rivalRatioSlow : cfg.rivalRatio;
     for (i=1;i<pkI.length;i++){
@@ -524,13 +526,13 @@
       if (pw[pkI[i]] < rivalTh*pw[pkI[0]]) break;                            // 依強度排序，後面只會更弱
       if (Math.abs(fo-fMain)/fMain < cfg.sameBand) continue;                 // 主峰旁的小峰＝不規律呼吸讓峰散開，不是對手
       [0.5,2,3].forEach(function(h){ if (Math.abs(fo-h*fMain)/(h*fMain) < 0.12) same=true; });
-      if (!same) return null;
+      if (!same) return no('rival', { rate:fMain*60, rivalRate:fo*60, rivalPct:Math.round(100*pw[pkI[i]]/pw[pkI[0]]) });
     }
-    if (60000/mean(x) <= 2*rate) return null;                                // 每口氣至少要兩拍才分得出起伏
+    if (60000/mean(x) <= 2*rate) return no('hrRatio', { rate:rate, hr:60000/mean(x) });    // 每口氣至少要兩拍才分得出起伏
     // 波峰／波谷 → 每週期長度與峰谷差
     var refr=Math.max(1, Math.round(0.6*lagF));
     var pk=_localPeaks(y, refr, 1), tr=_localPeaks(y, refr, -1);
-    if (pk.length-1 < cfg.minCycles) return null;
+    if (pk.length-1 < cfg.minCycles) return no('fewCycles', { cycles:Math.max(0,pk.length-1), need:cfg.minCycles });
     var cyc=[], sw=[];
     for (i=1;i<pk.length;i++){
       cyc.push((pk[i]-pk[i-1])/fs);
@@ -541,9 +543,10 @@
     var cv=cm>0 ? Math.sqrt(cvs/cyc.length)/cm : 1;
     // 一致性把關：自相關的主週期要跟逐一數出的週期吻合，且週期長短不能亂到不像呼吸——
     // 起伏太小被雜訊蓋過時，兩者會對不上；此時回 null，不硬給一個錯的呼吸次數。
-    if (Math.abs(_median(cyc)-periodSec)/periodSec > cfg.maxPeriodMismatch || cv > cfg.maxCv) return null;
+    if (Math.abs(_median(cyc)-periodSec)/periodSec > cfg.maxPeriodMismatch || cv > cfg.maxCv) return no('inconsistent', { cv:cv, mismatchPct:Math.round(100*Math.abs(_median(cyc)-periodSec)/periodSec) });
     var rsa=sw.length ? _median(sw)/2 : 0;
-    if (rsa < cfg.minRsa) return null;                                      // 起伏小到跟雜訊同級，照不準
+    if (rsa < cfg.minRsa) return no('smallRsa', { rsa:rsa, need:cfg.minRsa });   // 起伏小到跟雜訊同級，照不準
+    diag.reason='ok';
     var ct=new Array(n); for (k=0;k<n;k++) ct[k]=k/fs;
     return { rate:rate, rsa:rsa, cv:cv, cycles:cyc.length, r:ac[best],
              durationSec:dur, curve:{ t:ct, v:y } };

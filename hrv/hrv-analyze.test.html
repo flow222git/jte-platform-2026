@@ -347,6 +347,14 @@ async function run(){
     var R=rng(66), rr=rsaRr(9,30,5,R);
     eq(HrvAnalyze.breathFromRr(rr, allValid(rr)), null);
   });
+  await check('breathFromRr：diag 記下照不出來的原因（太短／純雜訊）與成功', async () => {
+    var R=rng(68), d1={}, d2={}, d3={};
+    var rr1=rsaRr(9,30,5,R); HrvAnalyze.breathFromRr(rr1, allValid(rr1), null, d1);
+    eq(d1.reason,'short','30 秒應為 short'); near(d1.need,40,0,'需要 40 秒');
+    var rr2=rsaRr(9,120,0,R); HrvAnalyze.breathFromRr(rr2, allValid(rr2), null, d2);
+    assert(['noPeriod','rival','inconsistent','smallRsa','specMismatch','fewCycles'].indexOf(d2.reason)>=0, '純雜訊應有失敗原因，實得 '+d2.reason);
+    var rr3=rsaRr(6,120,6,R); assert(HrvAnalyze.breathFromRr(rr3, allValid(rr3), null, d3), '應照得出'); eq(d3.reason,'ok');
+  });
   await check('breathFromRr：含無效間隔（漏拍）仍照得出', async () => {
     var R=rng(67), rr=rsaRr(6,120,6,R), valid=allValid(rr);
     rr[40]=rr[40]+rr[41]; rr.splice(41,1); valid.splice(41,1); valid[40]=false;   // 一個漏拍
