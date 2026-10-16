@@ -47,9 +47,9 @@ async function run(iw){
   });
   check('照得出來 → 三個數字各附白話意義與「這是什麼？」', function(){
     const curve={ t:[], v:[] }; for(let i=0;i<240;i++){ curve.t.push(i/4); curve.v.push(Math.sin(2*Math.PI*9/60*i/4)*4); }
-    const el=iw.buildBreath({ rate:9.04, rsa:4.2, cv:0.08, cycles:8, r:0.9, durationSec:60, curve:curve });
+    const el=iw.buildBreath({ rate:9.04, rsa:4.2, cv:0.08, cycles:8, r:0.9, durationSec:60, curve:curve }, 68);
     const items=el.querySelectorAll('.breath-item');
-    assert(items.length===3, '應有 3 列，實得 '+items.length);
+    assert(items.length===4, '應有 4 列（含心跳呼吸比），實得 '+items.length);
     items.forEach(function(it){
       assert(it.querySelector('.breath-mean') && it.querySelector('.breath-mean').textContent.length>4, '每列要有意義說明');
       assert(it.querySelector('details.minfo'), '每列要有「這是什麼？」');
@@ -61,6 +61,12 @@ async function run(iw){
     assert(txt.indexOf('±4.2')>=0 && txt.indexOf('相差 8 下')>=0, '帶動心跳 ±4.2、相差 8 下');
     assert(el.querySelector('.breath-curve svg path'), '應畫出呼吸曲線');
     assert(txt.indexOf('試驗中')>=0, '應標試驗中');
+    assert(txt.indexOf('7.5')>=0 && txt.indexOf('心跳大約 8 下')>=0, '心跳呼吸比 68/9.04≈7.5、約 8 下：'+txt);
+  });
+  check('沒有心率時不顯示心跳呼吸比', function(){
+    const curve={ t:[0,1,2], v:[0,1,0] };
+    const el=iw.buildBreath({ rate:9, rsa:4, cv:0.1, cycles:8, r:0.9, durationSec:60, curve:curve });
+    assert(el.querySelectorAll('.breath-item').length===3, '應只有 3 列');
   });
   check('描述詞分段：慢速／平緩／一般／偏快', function(){
     assert(iw.breathRateWord(6)==='慢速' && iw.breathRateWord(10)==='平緩' && iw.breathRateWord(15)==='一般' && iw.breathRateWord(22)==='偏快');
@@ -74,7 +80,7 @@ async function run(iw){
   check('端到端：結果頁出現呼吸卡，呼吸次數約 9', function(){
     const card=iw.document.querySelector('.breath');
     assert(card, '應有呼吸卡');
-    assert(card.querySelectorAll('.breath-item').length===3, '應照得出呼吸：'+card.textContent.slice(0,80));
+    assert(card.querySelectorAll('.breath-item').length===4, '應照得出呼吸（4 列）：'+card.textContent.slice(0,80));
     const m=card.textContent.replace(/\s/g,'').match(/呼吸快慢([\d.]+)次\/分/);
     assert(m && Math.abs(parseFloat(m[1])-9)<=1, '呼吸次數應約 9，實得 '+(m&&m[1]));
   });
@@ -83,6 +89,8 @@ async function run(iw){
     const m=raw.match(/"breathRate":([\d.]+)/), r=raw.match(/"rsa":([\d.]+)/);
     assert(m && Math.abs(parseFloat(m[1])-9)<=1, 'breathRate 約 9，實得 '+(m&&m[1]));
     assert(r && parseFloat(r[1])>0, 'rsa 應寫入');
+    const q=raw.match(/"prq":([\d.]+)/);
+    assert(q && parseFloat(q[1])>5 && parseFloat(q[1])<10, 'prq 約 68/9≈7.6，實得 '+(q&&q[1]));
   });
 }
 </script>
