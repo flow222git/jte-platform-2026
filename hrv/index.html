@@ -393,6 +393,7 @@ let waveCanvas=null, waveCtx=null;
 function renderMeasure(mode){
   session.mode='measure'; session.measureMode=(mode==='deep')?'deep':'quick'; clearAll();
   session.samples=[]; session.measuring=false; session.countdownStart=0; session.hrSmooth=null; session.measureStart=null; session.lockSince=null;
+  startRecording(); // ?debug 才錄
   const d=document.createElement('div');d.className='step';
   d.appendChild(backHomeLink());
 
@@ -616,12 +617,64 @@ function grabFrame(t, dedupByValue){
     session.samples.push({ t:t, v:redMean, g:greenMean });
     session.lastFrameT=t; session.grabN++;
     session.lastDiag={ R:redMean, G:greenMean, sat:sat/px, cv:redCv };
+    if(session.rec) recordFrame(t, redMean, greenMean, sat/px, img);
     // 維護最近 KEEP_SEC 秒（量測中保留全部給結果頁；未量測時只留視窗）
     if(!session.measuring){
       const cutoff=t-KEEP_SEC*1000;
       while(session.samples.length && session.samples[0].t<cutoff) session.samples.shift();
     }
   }catch(e){ /* 影格未就緒/跨域，忽略此格 */ }
+}
+// —— ?debug 原始資料錄製（離線評估影像處理用；只存本機、使用者按鈕才下載/分享，不上傳）——
+// 中央 50x50 切 5x5 格（每格 10x10），逐格算紅/綠平均與紅光飽和比例。純函式，供測試。
+const REC_GRID=5, REC_W=50, REC_MAX_SEC=240;
+function blockStats(img, w, n){
+  const bs=w/n, R=new Array(n*n).fill(0), G=new Array(n*n).fill(0), S=new Array(n*n).fill(0), c=bs*bs;
+  for(let y=0;y<w;y++){ const by=Math.floor(y/bs);
+    for(let x=0;x<w;x++){ const i=(y*w+x)*4, b=by*n+Math.floor(x/bs);
+      R[b]+=img[i]; G[b]+=img[i+1]; if(img[i]>=250) S[b]++; } }
+  for(let b=0;b<n*n;b++){ R[b]/=c; G[b]/=c; S[b]/=c; }
+  return { R:R, G:G, S:S };
+}
+function _r2(x){ return Math.round(x*100)/100; }
+// 每幀一列：[t, R, G, sat, 各格R…, 各格G…, 各格sat…]
+function recordFrame(t, R, G, sat, img){
+  const rec=session.rec; if(!rec) return;
+  if(rec.frames.length && t-rec.frames[0][0]>REC_MAX_SEC*1000) return;   // 上限，避免檔案過大
+  const b=blockStats(img, REC_W, REC_GRID);
+  rec.frames.push([_r2(t), _r2(R), _r2(G), _r2(sat)].concat(b.R.map(_r2), b.G.map(_r2), b.S.map(_r2)));
+  updateRecBtn();
+}
+function startRecording(){
+  if(!isDebug()){ session.rec=null; return; }
+  session.rec={ v:1, grid:REC_GRID, w:REC_W, mode:session.measureMode, ua:navigator.userAgent,
+    startedAt:(new Date()).toISOString(), lockT:null, frames:[] };
+  updateRecBtn();
+}
+function updateRecBtn(){
+  let b=document.getElementById('hrvRecBtn');
+  if(!session.rec){ if(b) b.remove(); return; }
+  if(!b){
+    b=document.createElement('button'); b.id='hrvRecBtn'; b.type='button';
+    b.style.cssText='position:fixed;right:6px;bottom:6px;z-index:99999;background:rgba(0,0,0,.82);color:#ff0;font:13px/1.4 monospace;padding:8px 10px;border:0;border-radius:7px';
+    b.onclick=exportRecording; document.body.appendChild(b);
+  }
+  const f=session.rec.frames, sec=f.length>1?Math.round((f[f.length-1][0]-f[0][0])/1000):0;
+  const label='下載錄製 '+sec+'s'+(session.rec.lockT!=null?' ·已鎖定':'');
+  if(b.textContent!==label) b.textContent=label;
+}
+// 匯出：可分享就開分享面板（iPhone 可直接 AirDrop 到 Mac），否則下載檔案
+function exportRecording(){
+  const rec=session.rec; if(!rec) return;
+  rec.tsSource=session.tsSource; rec.captureTime=!!session.tsCapture; rec.dupFrames=session.dupN||0;
+  const name='hrv-raw-'+rec.startedAt.replace(/[-:]/g,'').slice(0,15)+'.json';
+  const json=JSON.stringify(rec);
+  try{
+    const file=new File([json], name, { type:'application/json' });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){ navigator.share({ files:[file], title:name }).catch(function(){}); return; }
+  }catch(e){}
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([json],{type:'application/json'})); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
 }
 // 實際有效 fps（去重後樣本數 / 時間跨度）
 function effectiveFps(samples){
@@ -694,6 +747,7 @@ function updateLiveUi(now){
     else if(session.lockSince==null) session.lockSince=now;
     if(q==='green' || (session.lockSince!=null && (now-session.lockSince)>=LOCK_HOLD_MS)){
       session.measuring=true; session.countdownStart=now; session.samples=[];
+      if(session.rec) session.rec.lockT=_perfNow();
       stabilizeCamera(); // ② 手指已貼、訊號已鎖 → 凍結曝光/白平衡/對焦，防中途亂跳（best-effort）
       if(hint){ hint.className='cam-hint'; hint.textContent=jteT('hint.started','開始量測，保持靜止，正常呼吸…'); }
       const list=document.getElementById('acqList'); if(list)list.style.display='none'; // 三關已過，收起清單
