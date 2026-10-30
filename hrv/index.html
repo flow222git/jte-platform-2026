@@ -1315,7 +1315,7 @@ function buildBreath(b, hr){
   if(rateItem && S){
     const z=S.zones('breath',null,null,jteT), zb=document.createElement('div');
     zb.className='zm'; zb.setAttribute('data-k','breath');
-    zb.innerHTML=zoneBarHtml(z, Math.round(b.rate*10)/10)+'<div class="zm-note">'+_h(jteT('result.zone.breath.note','呼吸沒有好壞，所以用藍色，不用紅綠'))+'</div>';
+    zb.innerHTML=zoneBarHtml(z, Math.round(b.rate*10)/10)+'<div class="zm-note">'+_h(jteT('result.zone.breath.note','呼吸快慢沒有好壞之分，只是不同的狀態。'))+'</div>';
     const mean=rateItem.querySelector('.breath-mean'); rateItem.insertBefore(zb, mean?mean.nextSibling:null);
   }
   appendBreathDebug(wrap);
@@ -1440,7 +1440,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   const nums=document.createElement('div'); nums.className='panel nums';
   nums.innerHTML='<h3>'+_h(jteT('result.nums.head','數字和它的意思'))+'</h3>';
   const list2=document.createElement('div'); list2.className='zm-list'; nums.appendChild(list2);
-  const waitNote=jteT('result.zone.wait','再量 %1 次，就有你自己的分區').replace('%1',String(remain));
+  const waitNote=jteT('result.zone.wait','再量 %1 次，就能看出你的常態範圍').replace('%1',String(remain));
   if(stage!=='first'){
     list2.appendChild(zoneItem('energy', jteT('result.energy.label','身體能量'), Number(en.score), jteT('result.unit.score','分'),
       S.zones('energy',null,null,jteT), 'energy', stage==='building'?jteT('result.prelim','初估'):'', stage==='building'?jteT('result.prelim.note','還在認識你，先跟你前幾次比'):''));
@@ -1460,7 +1460,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
   }
   if(stage==='first'){
     const fn=document.createElement('p'); fn.className='zm-note';
-    fn.textContent=jteT('result.zone.first','第一次還沒有你的常態範圍。量滿 7 次，恢復力和心跳就會有你自己的分區。');
+    fn.textContent=jteT('result.zone.first','第一次還沒有你的常態範圍。量滿 7 次，就能看出你的恢復力和心跳的常態範圍。');
     list2.appendChild(fn);
   }
   if(art>ARTIFACT_HINT){ nums.insertAdjacentHTML('beforeend','<div class="metric-note">'+_h(jteT('result.artifact.hint','這次訊號中斷較多，建議靜止再量一次'))+'</div>'); }
@@ -1471,7 +1471,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
 
   // —— 為什麼這樣說？（這句話背後的數字與訊號品質）——
   const rows=[];
-  if(stage==='first') rows.push([jteT('result.energy.label','身體能量'), jteT('result.why.noscore','第一次不給分數')]);
+  if(stage==='first') rows.push([jteT('result.energy.label','身體能量'), jteT('result.why.noscore','第一次還沒有分數，量幾次之後就會出現')]);
   else rows.push([jteT('result.energy.label','身體能量'), String(Number(en.score))+(stage==='building'?'（'+jteT('result.prelim','初估')+'）':'')]);
   rows.push([rmName+' RMSSD', rmssd+' ms'+(rmRange?jteT('result.why.range','，你的常態 %1–%2').replace('%1',_fmtN(rmRange.lo)).replace('%2',_fmtN(rmRange.hi)):'')]);
   rows.push([jteT('result.why.hr','靜息心率'), hr+' '+jteT('breath.unit','次/分')+(hrRange?jteT('result.why.range','，你的常態 %1–%2').replace('%1',_fmtN(hrRange.lo)).replace('%2',_fmtN(hrRange.hi)):'')]);
@@ -1480,7 +1480,7 @@ function renderEnergyResult(d, card, list, m, rec, rr){
     if(m.hr>0) rows.push([jteT('breath.prq','心跳呼吸比'), (Math.round(m.hr/br.rate*10)/10)+' '+jteT('breath.prq.unit','下／口氣')]);
   } else rows.push([jteT('breath.rate','呼吸快慢'), jteT('result.why.nobreath','這次照不出來')]);
   const pct=Math.round(art*100);
-  rows.push([jteT('result.why.quality','訊號品質'), art>ARTIFACT_HINT ? jteT('result.why.q.bad','中斷較多（%1%）').replace('%1',String(pct)) : jteT('result.why.q.good','良好（中斷 %1%）').replace('%1',String(pct))]);
+  rows.push([jteT('result.why.quality','訊號品質'), art>ARTIFACT_HINT ? jteT('result.why.q.bad','比較不穩（有 %1% 的心跳沒讀清楚）').replace('%1',String(pct)) : jteT('result.why.q.good','良好（只有 %1% 的心跳沒讀清楚）').replace('%1',String(pct))]);
   const why=document.createElement('details'); why.className='panel why-box';
   why.innerHTML='<summary>'+_h(jteT('result.why.head','為什麼這樣說？'))+'</summary><div class="why-rows">'+
     rows.map(function(r){ return '<div class="why-row"><span>'+_h(r[0])+'</span><b>'+_h(r[1])+'</b></div>'; }).join('')+'</div>'+
@@ -1886,12 +1886,12 @@ window.JTE_I18N = {
     'sent.sub.first': 'There is no "usual" to compare with yet, so this time we only describe what this minute showed.',
     'sent.main.slow': 'Your breathing slowed down, and your heartbeat rises and falls with it.',
     'sent.sub.slow': 'That is your body\'s brake at work. You look like you are settling down.',
-    'sent.main.mixed': 'Your body is running down a little, but holding steady.',
+    'sent.main.mixed': 'A little tired, but your heart is still steady.',
     'sent.main.fasthr': 'Good recovery, but your heart is faster than usual.',
     'sent.main.high': 'You look full of energy.',
     'sent.main.mid': 'About the same as %U, steady.',
     'sent.main.low': 'Your body looks a little tired.',
-    'sent.main.recdip': 'Mostly steady, just a little less recovered than %U.',
+    'sent.main.recdip': 'Mostly steady, just not as well recovered as %U.',
     'sent.main.recup': 'Mostly steady, a little better recovered than %U.',
     'sent.rec.above': 'Recovery signals are higher than %U',
     'sent.rec.in': 'Recovery signals are about the same as %U',
@@ -1920,23 +1920,23 @@ window.JTE_I18N = {
     'zone.energy.2': 'Strong',
     'zone.energy.2.d': 'Good recovery, room to spare',
     'zone.rmssd.0': 'Below your usual',
-    'zone.rmssd.0.d': 'Recovery signals lower than usual',
+    'zone.rmssd.0.d': 'Fewer signs of your body resting and repairing than usual',
     'zone.rmssd.1': 'Within your usual',
     'zone.rmssd.1.d': 'Same as usual',
     'zone.rmssd.2': 'Above your usual',
-    'zone.rmssd.2.d': 'Recovery signals higher than usual',
+    'zone.rmssd.2.d': 'More signs of your body resting and repairing than usual',
     'zone.hr.0': 'Slower than usual',
     'zone.hr.0.d': 'Heart on the calm side',
     'zone.hr.1': 'Same as usual',
-    'zone.hr.1.d': 'Within your usual range',
+    'zone.hr.1.d': 'Heart as steady as usual',
     'zone.hr.2': 'Faster than usual',
-    'zone.hr.2.d': 'Heart faster than usual',
+    'zone.hr.2.d': 'Your body has not fully settled yet',
     'zone.breath.0': 'Slow',
     'zone.breath.0.d': 'Very slow and deep, common in breathing practice',
     'zone.breath.1': 'Gentle',
     'zone.breath.1.d': 'A bit slower than most people',
     'zone.breath.2': 'Typical',
-    'zone.breath.2.d': 'The usual pace at rest',
+    'zone.breath.2.d': 'The pace most people breathe at rest',
     'zone.breath.3': 'Fast',
     'zone.breath.3.d': 'Breathing faster',
     'zone.below': 'below %1',
@@ -1944,7 +1944,7 @@ window.JTE_I18N = {
     'result.clues.head': 'What we can see',
     'result.nums.head': 'The numbers and what they mean',
     'result.you.mark': '← you this time',
-    'result.zone.wait': 'Measure %1 more times to get zones of your own',
+    'result.zone.wait': 'Measure %1 more times to see your usual range',
     'result.unit.score': 'pts',
     'result.prelim': 'early estimate',
     'result.prelim.note': 'Still getting to know you, so this compares with your last few measurements',
@@ -1952,16 +1952,16 @@ window.JTE_I18N = {
     'result.hr.name': 'Heart rate',
     'result.zone.usual.rm': 'Your usual is about %1–%2 ms, from your recent measurements',
     'result.zone.usual.hr': 'Your usual is about %1–%2 bpm',
-    'result.zone.breath.note': 'Breathing has no good or bad, so it uses blue instead of red and green',
-    'result.zone.first': 'No usual range yet. After 7 measurements, recovery and heart rate get zones of your own.',
+    'result.zone.breath.note': 'Breathing pace has no good or bad; it just shows different states.',
+    'result.zone.first': 'No usual range yet. After 7 measurements you will see the usual range of your recovery and heart rate.',
     'result.why.head': 'Why we say this',
-    'result.why.noscore': 'No score on the first measurement',
+    'result.why.noscore': 'No score yet on the first measurement; it appears after a few more',
     'result.why.range': ', your usual %1–%2',
     'result.why.hr': 'Resting heart rate',
     'result.why.nobreath': 'Could not be read this time',
     'result.why.quality': 'Signal quality',
-    'result.why.q.bad': 'Frequent dropouts (%1%)',
-    'result.why.q.good': 'Good (%1% dropouts)',
+    'result.why.q.bad': 'Less stable (%1% of heartbeats not read clearly)',
+    'result.why.q.good': 'Good (only %1% of heartbeats not read clearly)',
     'result.rmssd.note': 'A single RMSSD reading naturally jumps around, so don\'t read too much into one number. Measure a few times and watch your own <b>baseline and trend</b>. Heart rate is steadier.',
     'result.artifact.hint': 'The signal dropped out quite a bit this time. Try measuring again while staying still.'
   },
@@ -2059,12 +2059,12 @@ window.JTE_I18N = {
     'sent.sub.first': 'まだ比べる「いつも」がないので、今回はこの1分間に見えたことだけをお伝えします。',
     'sent.main.slow': '呼吸がゆっくりになり、心拍もそれに合わせて大きくゆれています。',
     'sent.sub.slow': 'からだのブレーキが働いているサインで、落ち着いていくように見えます。',
-    'sent.main.mixed': 'エネルギーを使っているけれど、まだ持ちこたえています。',
+    'sent.main.mixed': '少し疲れていますが、心拍はまだ安定しています。',
     'sent.main.fasthr': '回復は良好ですが、心拍がいつもより速めです。',
     'sent.main.high': 'とても元気そうに見えます。',
     'sent.main.mid': '%Uと同じくらい、安定しています。',
     'sent.main.low': 'からだが少し疲れているように見えます。',
-    'sent.main.recdip': 'おおむね安定。ただ、回復は%Uより少し低めです。',
+    'sent.main.recdip': 'おおむね安定。ただ、回復は%Uほどではありません。',
     'sent.main.recup': 'おおむね安定。回復は%Uより少し良好です。',
     'sent.rec.above': '回復のサインが%Uより高め',
     'sent.rec.in': '回復のサインは%Uと同じくらい',
@@ -2093,23 +2093,23 @@ window.JTE_I18N = {
     'zone.energy.2': '充実',
     'zone.energy.2.d': '回復していて余裕がある',
     'zone.rmssd.0': 'いつもの範囲より下',
-    'zone.rmssd.0.d': '回復のサインがいつもより低い',
+    'zone.rmssd.0.d': 'からだが休んで修復しているサインがいつもより少ない',
     'zone.rmssd.1': 'いつもの範囲内',
     'zone.rmssd.1.d': 'いつもと同じ',
     'zone.rmssd.2': 'いつもの範囲より上',
-    'zone.rmssd.2.d': '回復のサインがいつもより高い',
+    'zone.rmssd.2.d': 'からだが休んで修復しているサインがいつもより多い',
     'zone.hr.0': 'いつもより遅い',
     'zone.hr.0.d': '心拍が落ち着いている',
     'zone.hr.1': 'いつもと同じ',
-    'zone.hr.1.d': 'いつもの範囲',
+    'zone.hr.1.d': '心拍はいつもどおり安定',
     'zone.hr.2': 'いつもより速い',
-    'zone.hr.2.d': '心拍がいつもより速い',
+    'zone.hr.2.d': 'からだがまだ落ち着ききっていない',
     'zone.breath.0': 'ゆっくり',
     'zone.breath.0.d': 'とてもゆっくり深い。呼吸練習でよく見られる',
     'zone.breath.1': 'おだやか',
-    'zone.breath.1.d': '一般より少しゆっくり',
+    'zone.breath.1.d': '多くの人より少しゆっくり',
     'zone.breath.2': 'ふつう',
-    'zone.breath.2.d': '安静時の一般的な速さ',
+    'zone.breath.2.d': '多くの人の安静時の速さ',
     'zone.breath.3': '速め',
     'zone.breath.3.d': '呼吸が速め',
     'zone.below': '%1 未満',
@@ -2117,7 +2117,7 @@ window.JTE_I18N = {
     'result.clues.head': '見えてきたこと',
     'result.nums.head': '数字とその意味',
     'result.you.mark': '← 今回',
-    'result.zone.wait': 'あと %1 回測ると、あなた専用の区分ができます',
+    'result.zone.wait': 'あと %1 回測ると、いつもの範囲が見えてきます',
     'result.unit.score': '点',
     'result.prelim': '暫定',
     'result.prelim.note': 'まだあなたを知る途中なので、これまでの数回と比べています',
@@ -2125,16 +2125,16 @@ window.JTE_I18N = {
     'result.hr.name': '心拍',
     'result.zone.usual.rm': 'いつもの範囲は約 %1–%2 ms（最近の測定から算出）',
     'result.zone.usual.hr': 'いつもは約 %1–%2 拍/分',
-    'result.zone.breath.note': '呼吸に良し悪しはないので、赤・緑ではなく青で表しています',
-    'result.zone.first': 'まだいつもの範囲がありません。7回測ると、回復力と心拍にあなた専用の区分ができます。',
+    'result.zone.breath.note': '呼吸の速さに良し悪しはなく、状態の違いを表しています。',
+    'result.zone.first': 'まだいつもの範囲がありません。7回測ると、回復力と心拍のいつもの範囲が見えてきます。',
     'result.why.head': 'なぜそう言えるの？',
-    'result.why.noscore': '初回はスコアなし',
+    'result.why.noscore': '初回はまだスコアがありません。何回か測ると表示されます',
     'result.why.range': '、いつもの範囲 %1–%2',
     'result.why.hr': '安静時心拍',
     'result.why.nobreath': '今回は読み取れませんでした',
     'result.why.quality': '信号の質',
-    'result.why.q.bad': '途切れが多め（%1%）',
-    'result.why.q.good': '良好（途切れ %1%）',
+    'result.why.q.bad': 'やや不安定（%1% の心拍が読み取れませんでした）',
+    'result.why.q.good': '良好（読み取れなかった心拍は %1% だけ）',
     'result.rmssd.note': 'RMSSD は1回ごとに上下するのが普通です。1つの数字にこだわらず、何度か測って自分の<b>基準とトレンド</b>を見るのが確実です。心拍数はより安定しています。',
     'result.artifact.hint': '今回は信号の途切れが多めでした。静止してもう一度測ってみてください。'
   }

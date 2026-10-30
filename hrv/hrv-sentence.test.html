@@ -58,7 +58,7 @@ check('慢呼吸練習：呼吸 <8 且帶動心跳 ≥5 → 慢呼吸主句', fu
   assert(o.clues.join('').indexOf('心跳跟著呼吸明顯起伏')>=0);
 });
 check('累但穩住：恢復力低於、心跳慢於平常', function(){
-  eq(S.compose({ stage:'established', energy:'low', rec:'below', hr:'below', breath:null, remaining:0 }).main, '身體在放電，但還撐得住。');
+  eq(S.compose({ stage:'established', energy:'low', rec:'below', hr:'below', breath:null, remaining:0 }).main, '身體有點累，但心跳還很穩。');
 });
 check('恢復好但心跳快', function(){
   eq(S.compose({ stage:'established', energy:'mid', rec:'above', hr:'above', breath:null, remaining:0 }).main, '恢復得不錯，但心跳比平常快。');
@@ -69,9 +69,9 @@ check('依能量等級：充足／平穩／偏低', function(){
   eq(S.compose({ stage:'established', energy:'low', rec:'below', hr:'above', breath:null }).main, '身體看起來有點累。');
 });
 check('能量平穩但恢復力偏離常態 → 主句跟色帶一致', function(){
-  eq(S.compose({ stage:'established', energy:'mid', rec:'below', hr:'in', breath:null }).main, '大致穩穩的，只是恢復得比你平常少一點。');
+  eq(S.compose({ stage:'established', energy:'mid', rec:'below', hr:'in', breath:null }).main, '大致穩穩的，只是恢復得沒有你平常那麼好。');
   eq(S.compose({ stage:'established', energy:'mid', rec:'above', hr:'in', breath:null }).main, '大致穩穩的，恢復得比你平常好一點。');
-  eq(S.compose({ stage:'building', energy:'mid', rec:'below', hr:'in', breath:null, remaining:2 }).main, '大致穩穩的，只是恢復得比你前幾次少一點。');
+  eq(S.compose({ stage:'building', energy:'mid', rec:'below', hr:'in', breath:null, remaining:2 }).main, '大致穩穩的，只是恢復得沒有你前幾次那麼好。');
 });
 check('副句與線索跟落點一致', function(){
   const o=S.compose({ stage:'established', energy:'low', rec:'below', hr:'above', breath:{ rate:17, rsa:2, cv:0.2 } });
