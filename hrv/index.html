@@ -77,19 +77,6 @@
   .step-desc{font-size:13px;color:var(--ink-soft);line-height:1.65}
   .step-ic{flex:none;font-size:30px;color:var(--accent);opacity:.5}
   /* —— 狀態圖例（結果頁）—— */
-  .legend{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
-  .legend h3{font-family:"Noto Serif TC",serif;font-weight:500;font-size:14.5px;margin:0 0 4px;color:var(--accent)}
-  .legend .sub{font-size:12px;color:var(--ink-faint);margin:0 0 12px;line-height:1.6}
-  .legend-row{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
-  .legend-row:last-child{border-bottom:none}
-  .legend-row.on{background:var(--accent-soft);margin:0 -10px;padding:10px;border-radius:10px;border-bottom:none}
-  .legend-row.on+.legend-row{border-top:1px solid var(--line)}
-  .legend-dot{flex:none;width:13px;height:13px;border-radius:50%;margin-top:4px}
-  .legend-dot.high{background:var(--relaxed)} .legend-dot.mid{background:var(--balanced)} .legend-dot.low{background:var(--tense)}
-  .legend-txt b{font-size:14px;color:var(--ink);font-weight:600}
-  .legend-txt b small{font-weight:400;color:var(--ink-faint);font-size:11.5px;margin-left:7px}
-  .legend-txt p{font-size:12.5px;color:var(--ink-soft);line-height:1.65;margin:3px 0 0}
-  .legend-row.on .legend-txt .you{display:inline-block;font-size:10.5px;color:#fff;background:var(--accent);border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:middle}
 
   /* —— 自覺狀態標記 —— */
   .tagpick{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
@@ -178,10 +165,6 @@
   .metric-row .mt{color:var(--ink-soft)} .metric-row .mt small{color:var(--ink-faint);font-size:11px}
   .metric-note{font-size:11.5px;color:var(--ink-faint);line-height:1.7;padding-top:9px}
   .metric-row .mv{font-family:"Noto Serif TC",serif;color:var(--accent);font-weight:500;font-size:16px}
-  details.metrics summary{cursor:pointer;color:var(--accent);font-size:13.5px;padding:6px 0;list-style:none}
-  details.metrics summary::-webkit-details-marker{display:none}
-  details.metrics summary::before{content:'▸ ';}
-  details.metrics[open] summary::before{content:'▾ ';}
 
   /* —— 細項等級膠囊（恢復力／平靜）—— */
   .idx-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;margin-bottom:12px}
@@ -196,6 +179,38 @@
   .facets{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .facets-head b{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--ink)} .facets-head span{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
   .facet-na{font-size:13px;color:var(--ink-faint);margin-top:10px;line-height:1.7}
+  /* 一句話先行 */
+  .state-card.s-first{background:var(--accent)}
+  .state-card .say-big{font-family:"Noto Serif TC",serif;font-size:24px;font-weight:700;line-height:1.45;margin-top:2px}
+  .clues,.nums,.why-box{margin-bottom:14px}
+  .clues h3,.nums h3{margin-bottom:8px}
+  .clue{display:flex;gap:10px;align-items:baseline;font-size:14.5px;line-height:1.75;padding:2px 0}
+  .clue i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);transform:translateY(-1px)}
+  .zm-list{display:grid;gap:18px}
+  .zm{display:grid;gap:6px}
+  .zm-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .zm-top b{font-size:14px;font-weight:500;color:var(--ink)}
+  .zm-top span{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .zm-top span small{font-family:"Noto Sans TC",sans-serif;font-size:12px;font-weight:400;color:var(--ink-faint);margin-left:3px}
+  .zm-tag{font-family:"Noto Sans TC",sans-serif;font-style:normal;font-size:11.5px;font-weight:500;border-radius:999px;padding:1px 8px;margin-left:6px;color:#fff;vertical-align:2px}
+  .zm-wrap{position:relative;padding-top:3px}
+  .zm-bar{height:12px;border-radius:6px;overflow:hidden;display:flex}
+  .zm-bar i{display:block;height:100%}
+  .zm-mark{position:absolute;top:0;width:4px;height:18px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px var(--card);transform:translateX(-2px)}
+  .zm-legend{display:grid;gap:3px;font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .zm-legend>div{display:flex;gap:7px;align-items:baseline}
+  .zm-legend em{flex:none;width:9px;height:9px;border-radius:2px;display:inline-block;transform:translateY(1px)}
+  .zm-legend b{font-weight:500}
+  .zm-legend .me{color:var(--ink)}
+  .zm-you{color:var(--accent);font-weight:500;margin-left:6px;white-space:nowrap}
+  .zm-note{font-size:12px;color:var(--ink-faint);line-height:1.7;margin:0}
+  .why-box summary{cursor:pointer;color:var(--accent);font-size:14px;list-style:none}
+  .why-box summary::-webkit-details-marker{display:none}
+  .why-box summary::before{content:'▸ '}
+  .why-box[open] summary::before{content:'▾ '}
+  .why-rows{display:grid;gap:6px;margin-top:10px}
+  .why-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:6px}
+  .why-row b{font-weight:500;color:var(--ink);text-align:right}
   /* 呼吸的樣貌 */
   .breath{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
   .breath-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -1059,7 +1074,6 @@ function mBar(score, invert){
     +'<span class="mbar-mark" style="left:'+p+'%"></span></div>'
     +'<div class="mbar-scale"><span>低</span><span>中</span><span>高</span></div></div>';
 }
-function lvlScore(level){ return level==='high'?83:(level==='low'?17:50); } // 三段→落點%
 
 // 每個指標的「這是什麼」詳解（白話、覺察導向、參考非診斷）
 var METRIC_EXPL={
@@ -1296,6 +1310,14 @@ function buildBreath(b, hr){
       jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa')+
     (hr>0 ? item(jteT('breath.prq','心跳呼吸比'), String(Math.round(hr/b.rate*10)/10), jteT('breath.prq.unit','下／口氣'), '',
       jteT('breath.prq.m','每一口氣之間，心跳大約 %1 下。呼吸越慢，這個數字越大。').replace('%1',String(Math.round(hr/b.rate))), 'prq') : ''));
+  // 呼吸快慢的藍色分區直接放在呼吸卡（不在「數字和它的意思」重複一次）
+  const rateItem=wrap.querySelector('.breath-item'), S=window.HrvSentence;
+  if(rateItem && S){
+    const z=S.zones('breath',null,null,jteT), zb=document.createElement('div');
+    zb.className='zm'; zb.setAttribute('data-k','breath');
+    zb.innerHTML=zoneBarHtml(z, Math.round(b.rate*10)/10)+'<div class="zm-note">'+_h(jteT('result.zone.breath.note','呼吸沒有好壞，所以用藍色，不用紅綠'))+'</div>';
+    const mean=rateItem.querySelector('.breath-mean'); rateItem.insertBefore(zb, mean?mean.nextSibling:null);
+  }
   appendBreathDebug(wrap);
   return wrap;
 }
@@ -1339,117 +1361,136 @@ function birthYearRow(){
 }
 // 個人化建議：引用「你自己」的數字與趨勢，取代公版三句。依量測次數分層，
 // 資料太少時誠實說「還在建立基準」而非硬比。hist＝過去 HRV 記錄（{rmssd,hr,ts}）。
-function buildPersonalAdvice(en, m, hist){
-  hist=(hist||[]).filter(function(r){ return r&&r.rmssd>0; });
-  var n=hist.length, rmssd=Math.round(m.rmssd), hr=Math.round(m.hr);
-  if(n===0) return jteT('padv.first','這是你第一次量。先記住現在身體的感覺——多量幾次之後，我就能告訴你「今天這個數字」對你自己算高還是低。');
-  if(n<3) return jteT('padv.few','你已經量了 %1 次，再幾次我就能比出「對你」的高低。今天 RMSSD %2、靜息心率 %3。')
-    .replace('%1',String(n)).replace('%2',String(rmssd)).replace('%3',String(hr));
-  // 你平常的 RMSSD：取中位數（比平均穩健、抗離群）
-  var arr=hist.map(function(r){ return r.rmssd; }).sort(function(a,b){ return a-b; });
-  var usual=Math.round(arr[Math.floor(arr.length/2)])||0;
-  var d=usual>0?(m.rmssd-usual)/usual:0, main;
-  if(d>=0.15) main=jteT('padv.hi','今天 RMSSD %1，比你平常的 %2 高一些——恢復得不錯，好好把握今天。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  else if(d<=-0.15) main=jteT('padv.lo','今天 RMSSD %1，比你平常的 %2 低一些，能量偏低——多留點空間給自己休息和恢復。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  else main=jteT('padv.mid','今天和你平常差不多（RMSSD %1，你平常約 %2）——穩穩的。').replace('%1',String(rmssd)).replace('%2',String(usual));
-  // 恢復（RMSSD）與平靜（HR）分歧時，補一句更有洞察的話
-  var rc=en.recovery&&en.recovery.level, cl=en.calm&&en.calm.level, extra='';
-  if(rc==='low'&&cl==='high') extra=jteT('padv.div1','恢復訊號偏低、但心跳算安定——身體在放電、但還撐得住。');
-  else if(rc==='high'&&cl==='low') extra=jteT('padv.div2','恢復不錯、但心跳偏快——可能有點亢奮，或剛動過。');
-  return extra?(main+' '+extra):main;
+// 一句話先行（規格：docs/superpowers/specs/2026-10-30-hrv-sentence-first-result-design.md）
+// 句子、片語、分區定義都在 hrv-sentence.js（canonical 句庫）；這裡只負責組資料與畫面。
+const ZONE_COLOR={ red:'var(--red)', yellow:'var(--yellow)', green:'var(--green)', blue4:'#1f4f86', blue3:'#3f73ad', blue2:'#6f9ccf', blue1:'#a9c4e2' };
+const HERO_TONE={ first:'first', high:'relaxed', mid:'balanced', low:'tense' };
+function _fmtN(x){ return String(Math.round(x)); }
+// 一個數字＝數值＋區名標籤＋色帶（標記你落在哪）＋每區一行說明（標你這次）＋「這是什麼？」
+function zoneBarHtml(z, val){
+  const S=window.HrvSentence, idx=S.zoneIndex(z, val), span=(z.max-z.min)||1;
+  let bar='', prev=z.min;
+  z.bands.forEach(function(b){ const up=Math.min(isFinite(b.upTo)?b.upTo:z.max, z.max); bar+='<i style="width:'+(Math.max(0,up-prev)/span*100).toFixed(1)+'%;background:'+ZONE_COLOR[b.color]+'"></i>'; prev=up; });
+  const pos=Math.max(1,Math.min(99,(val-z.min)/span*100));
+  let leg=''; prev=null;
+  z.bands.forEach(function(b,i){
+    const last=i===z.bands.length-1, rng= i===0 ? jteT('zone.below','低於 %1').replace('%1',_fmtN(b.upTo))
+      : (last ? jteT('zone.above','%1 以上').replace('%1',_fmtN(prev)) : _fmtN(prev)+'–'+_fmtN(b.upTo));
+    leg+='<div class="'+(i===idx?'me':'')+'"><em style="background:'+ZONE_COLOR[b.color]+'"></em><span><b>'+_h(b.label)+'</b>（'+_h(rng)+'）：'+_h(b.desc)+
+      (i===idx?'<span class="zm-you">'+_h(jteT('result.you.mark','← 你這次'))+'</span>':'')+'</span></div>';
+    prev=b.upTo;
+  });
+  return '<div class="zm-wrap"><div class="zm-bar">'+bar+'</div><div class="zm-mark" style="left:'+pos.toFixed(1)+'%"></div></div>'+
+    '<div class="zm-legend">'+leg+'</div>';
+}
+function zoneItem(key, name, val, unit, z, info, extraTag, note){
+  const cur=z.bands[window.HrvSentence.zoneIndex(z, val)];
+  const el=document.createElement('div'); el.className='zm'; el.setAttribute('data-k',key);
+  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span>'+_h(String(val))+'<small>'+_h(unit)+'</small>'+
+      '<em class="zm-tag" style="background:'+ZONE_COLOR[cur.color]+'">'+_h(cur.label+(extraTag?' · '+extraTag:''))+'</em></span></div>'+
+    zoneBarHtml(z, val)+(note?'<div class="zm-note">'+_h(note)+'</div>':'')+(info?metricInfo(info):'');
+  return el;
+}
+// 還沒有個人分區時：只放數值與說明
+function plainItem(key, name, val, unit, note, info){
+  const el=document.createElement('div'); el.className='zm'; el.setAttribute('data-k',key);
+  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span>'+_h(String(val))+'<small>'+_h(unit)+'</small></span></div>'+
+    (note?'<div class="zm-note">'+_h(note)+'</div>':'')+(info?metricInfo(info):'');
+  return el;
 }
 function renderEnergyResult(d, card, list, m, rec, rr){
-  const E=window.HrvEnergy;
-  // 過去 HRV 記錄（已含本次？本次尚未寫入，故 list 即為「過去」）：過濾 source==='HRV' 且有 rmssd
+  const E=window.HrvEnergy, S=window.HrvSentence;
+  // 過去 HRV 記錄（本次尚未寫入）：有 RMSSD 的才算
   const hist=(list||[]).filter(function(r){ return r&&r.source==='HRV'&&Number(r.rmssd)>0; })
     .map(function(r){ return { rmssd:Number(r.rmssd), hr:Number(r.hr)||0, ts:r.ts }; });
   const base=E?E.baselineFrom(hist):null;
-  const en=E?E.energyScore({rmssd:m.rmssd,hr:m.hr}, base):{score:0,level:'mid',label:'平穩',advice:'',confidence:'building',n:0,recovery:null,calm:null};
-
-  // —— 身體能量 hero 卡（重建，避免閃爍殘留）——
-  card.className='state-card s-'+(ENERGY_TONE[en.level]||'balanced');
-  card.innerHTML='';
-  const lab=document.createElement('div');lab.className='lab';lab.textContent=jteT('result.energy.label','身體能量');
-  const big=document.createElement('div');big.className='big';big.textContent=String(Number(en.score));
-  const labelEl=document.createElement('div');labelEl.className='adv';
-  labelEl.style.cssText='font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;margin-top:4px;opacity:1';
-  const LEVEL_LABEL_MAP={high:jteT('result.level.high','充足'),mid:jteT('result.level.mid','平穩'),low:jteT('result.level.low','偏低')};
-  labelEl.textContent=LEVEL_LABEL_MAP[en.level]||String(en.label);
-  const advEl=document.createElement('div');advEl.className='adv';advEl.textContent=buildPersonalAdvice(en, m, hist);
-  card.appendChild(lab);card.appendChild(big);card.appendChild(labelEl);card.appendChild(advEl);
-  card.insertAdjacentHTML('beforeend', mBar(Number(en.score), false)); // 能量 0–100 落點
-  card.insertAdjacentHTML('beforeend', metricInfo('energy'));
-  if(en.confidence==='building'){
-    const note=document.createElement('div');note.className='adv';
-    note.style.cssText='font-size:12.5px;opacity:.9;margin-top:8px';
-    note.textContent=jteT('result.confidence','信心建立中（%1/%2）— 多量幾次會越來越貼近你自己。').replace('%1',String(Number(en.n))).replace('%2',String(Number(E?E._CONF_N:7)));
-    card.appendChild(note);
-  }
-
-  // —— 儲存（只在通過誠實把關才到這裡）：能量/等級＋空標記，下面可即時補貼 ——
+  const en=E?E.energyScore({rmssd:m.rmssd,hr:m.hr}, base):{score:0,level:'mid',recovery:null,calm:null};
+  const n=hist.length, stage=S.stageOf(n), remain=S.remaining(n);
   const hr=Math.round(m.hr), rmssd=Math.round(m.rmssd), sdnn=Math.round(m.sdnn);
   const art=Number(m.artifactRate)||0; // 走到這裡必 ≤ARTIFACT_MAX（更高者已在 renderResult 擋下）
+  // 第 7 次起：恢復力、心跳以「你的常態範圍」判斷落點；之前沿用能量模型的高中低（建立中＝跟前幾次比）
+  const rmRange= stage==='established' ? S.rangeFrom(hist.map(function(r){ return r.rmssd; }), { rel:0.10 }) : null;
+  const hrRange= stage==='established' ? S.rangeFrom(hist.filter(function(r){ return r.hr>0; }).map(function(r){ return r.hr; }), { abs:3 }) : null;
+  const lv2pos=function(lv, invert){ return lv==='high' ? (invert?'below':'above') : (lv==='low' ? (invert?'above':'below') : 'in'); };
+  const recPos= rmRange ? S.position(m.rmssd, rmRange) : lv2pos(en.recovery&&en.recovery.level, false);
+  const hrPos = hrRange ? S.position(m.hr, hrRange) : lv2pos(en.calm&&en.calm.level, true);
+  const br=computeBreath(_lastResultSamples);  // 呼吸的樣貌（照不出來為 null）
+  const sent=S.compose({ stage:stage, energy:en.level, rec:recPos, hr:hrPos, breath:br, remaining:remain }, jteT);
+
+  // —— 一句話（hero）——
+  card.className='state-card s-'+(HERO_TONE[sent.tone]||'balanced');
+  card.innerHTML='<div class="lab">'+_h(sent.lab)+'</div><div class="say-big">'+_h(sent.main)+'</div><div class="adv">'+_h(sent.sub)+'</div>';
+
+  // —— 儲存：第一次不給分數 → 省略 energy/level（趨勢頁以 isFinite(Number(r.energy)) 過濾，null 會被當成 0）——
   const now=new Date();
   const recId='hrv_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
-  const br=computeBreath(_lastResultSamples);  // 呼吸的樣貌（照不出來為 null，不寫入）
   const recObj={ source:'HRV', id:recId, recordId:recId, ts:now.toISOString(),
-    hr:hr, rmssd:rmssd, sdnn:sdnn, energy:Number(en.score), level:en.level, state:rec.state, tags:[], felt:{}, note:'' };
+    hr:hr, rmssd:rmssd, sdnn:sdnn, state:rec.state, tags:[], felt:{}, note:'' };
+  if(stage!=='first'){ recObj.energy=Number(en.score); recObj.level=en.level; }
   if(br){ recObj.breathRate=Math.round(br.rate*10)/10; recObj.rsa=Math.round(br.rsa*10)/10; if(m.hr>0) recObj.prq=Math.round(m.hr/br.rate*10)/10; }
   jteWriteRecord(recObj);
 
-  // —— 呼吸的樣貌（從心跳起伏推算；每個數字附白話意義）——
+  // —— 看得到的線索 ——
+  const cl=document.createElement('div'); cl.className='panel clues';
+  cl.innerHTML='<h3>'+_h(jteT('result.clues.head','看得到的線索'))+'</h3>'+
+    sent.clues.map(function(c){ return '<div class="clue"><i></i><span>'+_h(c)+'</span></div>'; }).join('');
+  d.appendChild(cl);
+
+  // —— 數字和它的意思 ——
+  const nums=document.createElement('div'); nums.className='panel nums';
+  nums.innerHTML='<h3>'+_h(jteT('result.nums.head','數字和它的意思'))+'</h3>';
+  const list2=document.createElement('div'); list2.className='zm-list'; nums.appendChild(list2);
+  const waitNote=jteT('result.zone.wait','再量 %1 次，就有你自己的分區').replace('%1',String(remain));
+  if(stage!=='first'){
+    list2.appendChild(zoneItem('energy', jteT('result.energy.label','身體能量'), Number(en.score), jteT('result.unit.score','分'),
+      S.zones('energy',null,null,jteT), 'energy', stage==='building'?jteT('result.prelim','初估'):'', stage==='building'?jteT('result.prelim.note','還在認識你，先跟你前幾次比'):''));
+  }
+  const rmName=jteT('result.rmssd.name','恢復力（心率變異）'), hrName=jteT('result.hr.name','心跳');
+  if(rmRange){
+    list2.appendChild(zoneItem('rmssd', rmName, rmssd, 'ms', S.zones('rmssd',rmRange,rmssd,jteT), 'recovery', '',
+      jteT('result.zone.usual.rm','你的常態約 %1–%2 ms，從你最近的量測算出來').replace('%1',_fmtN(rmRange.lo)).replace('%2',_fmtN(rmRange.hi))));
+  } else if(stage==='building'){
+    list2.appendChild(plainItem('rmssd', rmName, rmssd, 'ms', waitNote, 'recovery'));
+  }
+  if(hrRange){
+    list2.appendChild(zoneItem('hr', hrName, hr, jteT('breath.unit','次/分'), S.zones('hr',hrRange,hr,jteT), 'calm', '',
+      jteT('result.zone.usual.hr','你平常約 %1–%2 次/分').replace('%1',_fmtN(hrRange.lo)).replace('%2',_fmtN(hrRange.hi))));
+  } else if(stage==='building'){
+    list2.appendChild(plainItem('hr', hrName, hr, jteT('breath.unit','次/分'), waitNote, 'calm'));
+  }
+  if(stage==='first'){
+    const fn=document.createElement('p'); fn.className='zm-note';
+    fn.textContent=jteT('result.zone.first','第一次還沒有你的常態範圍。量滿 7 次，恢復力和心跳就會有你自己的分區。');
+    list2.appendChild(fn);
+  }
+  if(art>ARTIFACT_HINT){ nums.insertAdjacentHTML('beforeend','<div class="metric-note">'+_h(jteT('result.artifact.hint','這次訊號中斷較多，建議靜止再量一次'))+'</div>'); }
+  d.appendChild(nums);
+
+  // —— 你的呼吸（從心跳起伏推算；每個數字附白話意義）——
   d.appendChild(buildBreath(br, m.hr));
-  // —— 身體面相（頻域面相：放鬆/壓力/活力/彈性；依最長連續好窗長度分層降級）——
+
+  // —— 為什麼這樣說？（這句話背後的數字與訊號品質）——
+  const rows=[];
+  if(stage==='first') rows.push([jteT('result.energy.label','身體能量'), jteT('result.why.noscore','第一次不給分數')]);
+  else rows.push([jteT('result.energy.label','身體能量'), String(Number(en.score))+(stage==='building'?'（'+jteT('result.prelim','初估')+'）':'')]);
+  rows.push([rmName+' RMSSD', rmssd+' ms'+(rmRange?jteT('result.why.range','，你的常態 %1–%2').replace('%1',_fmtN(rmRange.lo)).replace('%2',_fmtN(rmRange.hi)):'')]);
+  rows.push([jteT('result.why.hr','靜息心率'), hr+' '+jteT('breath.unit','次/分')+(hrRange?jteT('result.why.range','，你的常態 %1–%2').replace('%1',_fmtN(hrRange.lo)).replace('%2',_fmtN(hrRange.hi)):'')]);
+  if(br){
+    rows.push([jteT('breath.rate','呼吸快慢'), (Math.round(br.rate*10)/10)+' '+jteT('breath.unit','次/分')]);
+    if(m.hr>0) rows.push([jteT('breath.prq','心跳呼吸比'), (Math.round(m.hr/br.rate*10)/10)+' '+jteT('breath.prq.unit','下／口氣')]);
+  } else rows.push([jteT('breath.rate','呼吸快慢'), jteT('result.why.nobreath','這次照不出來')]);
+  const pct=Math.round(art*100);
+  rows.push([jteT('result.why.quality','訊號品質'), art>ARTIFACT_HINT ? jteT('result.why.q.bad','中斷較多（%1%）').replace('%1',String(pct)) : jteT('result.why.q.good','良好（中斷 %1%）').replace('%1',String(pct))]);
+  const why=document.createElement('details'); why.className='panel why-box';
+  why.innerHTML='<summary>'+_h(jteT('result.why.head','為什麼這樣說？'))+'</summary><div class="why-rows">'+
+    rows.map(function(r){ return '<div class="why-row"><span>'+_h(r[0])+'</span><b>'+_h(r[1])+'</b></div>'; }).join('')+'</div>'+
+    '<div class="metric-note">'+jteT('result.rmssd.note','RMSSD 單筆本來就會起伏（量到的數字會跳很正常）——別跟單一數字較真，多量幾次、看自己的<b>基準與趨勢</b>才準。心率則較穩定。')+'</div>';
+  d.appendChild(why);
+
+  // —— 身體面相、感覺對照、生活記錄（沿用）——
   d.appendChild(buildFacets(computeFreqFacets(_lastResultSamples, m.sdnn)));
-  // —— 事後自我回饋：你現在感覺？→ 對照身體量到的 ——
   d.appendChild(buildSelfReport(recId, rec, list));
-  // —— 生活記錄（標籤＋選填一句，量完即可貼）——
   d.appendChild(buildTagPicker(recId));
-
-  // —— 可展開細項：恢復力／平靜 ＋ 原始 HR/RMSSD ——
-  const det=document.createElement('details');det.className='metrics';
-  det.innerHTML='<summary>'+jteT('result.see.detail','看細項')+'</summary>'+
-    '<div class="idx-card" style="margin-top:8px">'+
-      '<div class="metric-row"><span class="mt">'+jteT('result.recovery','恢復力')+' <small>'+jteT('result.recovery.note','vs 你的常態')+'</small></span><span class="idx-lv" id="enRec"></span></div>'+
-      '<div class="metric-row"><span class="mt">'+jteT('result.calm','平靜')+' <small>'+jteT('result.calm.note','靜息心率')+'</small></span><span class="idx-lv" id="enCalm"></span></div>'+
-    '</div>'+
-    '<div class="panel" style="margin-top:8px">'+
-      '<div class="metric-row"><span class="mt">'+jteT('result.hr','心率')+' <small>HR</small></span><span class="mv" id="mHr"></span></div>'+
-      '<div class="metric-row"><span class="mt">'+jteT('result.rmssd','心率變異')+' <small>RMSSD</small></span><span class="mv" id="mRm"></span></div>'+
-      '<div class="metric-note">'+jteT('result.rmssd.note','RMSSD 單筆本來就會起伏（量到的數字會跳很正常）——別跟單一數字較真，多量幾次、看自己的<b>基準與趨勢</b>才準。心率則較穩定。')+'</div>'+
-      (art>ARTIFACT_HINT?'<div class="metric-note">'+_h(jteT('result.artifact.hint','這次訊號中斷較多，建議靜止再量一次'))+'</div>':'')+
-    '</div>';
-  d.appendChild(det);
-  // 細項膠囊（顏色用既有 idx-lv high/mid/low）
-  function tone3(lv){ return lv==='high'?'high':(lv==='low'?'low':'mid'); }
-  const recEl=det.querySelector('#enRec');
-  if(en.recovery){ recEl.classList.add(tone3(en.recovery.level)); recEl.textContent=String(en.recovery.label);
-    var rrow=recEl.closest('.metric-row'); if(rrow) rrow.insertAdjacentHTML('afterend', mBar(lvlScore(en.recovery.level), false)+metricInfo('recovery')); }
-  else { recEl.classList.add('mid'); recEl.textContent='—'; }
-  const calmEl=det.querySelector('#enCalm');
-  if(en.calm){ calmEl.classList.add(tone3(en.calm.level)); calmEl.textContent=String(en.calm.label);
-    var crow=calmEl.closest('.metric-row'); if(crow) crow.insertAdjacentHTML('afterend', mBar(lvlScore(en.calm.level), false)+metricInfo('calm')); }
-  else { calmEl.classList.add('mid'); calmEl.textContent='—'; }
-  det.querySelector('#mHr').textContent=String(hr)+' bpm';
-  det.querySelector('#mRm').textContent=String(rmssd)+' ms';
-
-  // —— 狀態怎麼分（三段，標出你這次落在哪一段）——
-  const STATES=[
-    {lv:'high',name:jteT('result.legend.high.name','充足'),range:'75–100',desc:jteT('result.legend.high.desc','恢復得不錯、能量飽滿，好好把握今天。')},
-    {lv:'mid', name:jteT('result.legend.mid.name','平穩'), range:'45–74', desc:jteT('result.legend.mid.desc','和你平常差不多，穩穩的。')},
-    {lv:'low', name:jteT('result.legend.low.name','偏低'), range:'0–44',  desc:jteT('result.legend.low.desc','能量偏低，今天多留點空間給自己休息。')}
-  ];
-  const leg=document.createElement('div');leg.className='legend';
-  let lrows='<h3>'+jteT('result.legend.title','身體能量怎麼分')+'</h3><p class="sub">'+jteT('result.legend.sub','分數是你跟自己平常比的相對位置（不是跟別人比），分三段：')+'</p>';
-  STATES.forEach(function(s){
-    lrows+='<div class="legend-row'+(s.lv===en.level?' on':'')+'">'+
-      '<span class="legend-dot '+s.lv+'"></span>'+
-      '<span class="legend-txt"><b>'+_h(s.name)+'<small>'+s.range+' 分</small>'+(s.lv===en.level?'<span class="you">'+jteT('result.you','你這次')+'</span>':'')+'</b>'+
-      '<p>'+_h(s.desc)+'</p></span>'+
-    '</div>';
-  });
-  leg.innerHTML=lrows;
-  d.appendChild(leg);
 
   // —— 常駐免責（相對參考、非醫療）——
   d.insertAdjacentHTML('beforeend','<p class="disclaimer">'+_h(jteT('energy.disclaimer',ENERGY_DISCLAIMER))+'</p>');
@@ -1741,6 +1782,7 @@ renderIntro();
 <script defer src="hrv-acquire.js"></script>
 <!-- 身體能量分數純模組（baselineFrom/energyScore） -->
 <script defer src="hrv-energy.js"></script>
+<script defer src="hrv-sentence.js"></script>
 <!-- 頻域四面相純模組（放鬆/壓力/活力/彈性 indices） -->
 <script defer src="hrv-freq.js"></script>
 
@@ -1797,29 +1839,13 @@ window.JTE_I18N = {
     'unit.sec': 'sec',
     'unit.bpm': 'bpm',
     'result.energy.label': 'Body Energy',
-    'result.level.high': 'Strong',
-    'result.level.mid': 'Steady',
-    'result.level.low': 'Low',
     'advice.high': 'Your recovery is strong today — energy is good. Make the most of it.',
     'advice.mid': 'You\'re about average for you — solid and steady.',
     'advice.low': 'Energy is lower today — give yourself space to rest and recover.',
-    'result.confidence': 'Building confidence (%1/%2) — a few more sessions and it will reflect your personal baseline.',
-    'result.see.detail': 'View Details',
-    'result.recovery': 'Recovery',
     'result.recovery.note': 'vs your baseline',
-    'result.calm': 'Calm',
     'result.calm.note': 'resting heart rate',
     'result.hr': 'Heart Rate',
     'result.rmssd': 'HRV',
-    'result.legend.title': 'How Body Energy is scored',
-    'result.legend.sub': 'The score is your position relative to your own baseline (not compared to others), in three bands:',
-    'result.legend.high.name': 'Strong',
-    'result.legend.high.desc': 'Good recovery, full of energy — make the most of today.',
-    'result.legend.mid.name': 'Steady',
-    'result.legend.mid.desc': 'About your usual level — solid.',
-    'result.legend.low.name': 'Low',
-    'result.legend.low.desc': 'Energy is low today — give yourself some space to rest.',
-    'result.you': 'You',
     'result.err.title': 'Measurement incomplete',
     'result.err.body': 'No worries — this is common. Find a well-lit spot, sit still, gently cover the full rear lens (including flash), relax, and try again.',
     'tag.head': 'How are you feeling?',
@@ -1851,7 +1877,93 @@ window.JTE_I18N = {
     'breath.rsa.m': 'Your heart sped up on the in-breath and slowed on the out-breath, by about %1 beats per minute.',
     'breath.rsa.big': 'Clear swing', 'breath.rsa.mid': 'Moderate swing', 'breath.rsa.small': 'Small swing',
     'breath.prq': 'Beats per breath', 'breath.prq.unit': 'beats',
-    'breath.prq.m': 'About %1 heartbeats fit into each breath. The slower you breathe, the larger this number.'
+    'breath.prq.m': 'About %1 heartbeats fit into each breath. The slower you breathe, the larger this number.',
+    'sent.lab.today': 'You today',
+    'sent.lab.first': 'First measurement',
+    'sent.u.usual': 'your usual',
+    'sent.u.recent': 'your last few',
+    'sent.main.first': 'This is your first time, so let\'s get to know your heartbeat.',
+    'sent.sub.first': 'There is no "usual" to compare with yet, so this time we only describe what this minute showed.',
+    'sent.main.slow': 'Your breathing slowed down, and your heartbeat rises and falls with it.',
+    'sent.sub.slow': 'That is your body\'s brake at work. You look like you are settling down.',
+    'sent.main.mixed': 'Your body is running down a little, but holding steady.',
+    'sent.main.fasthr': 'Good recovery, but your heart is faster than usual.',
+    'sent.main.high': 'You look full of energy.',
+    'sent.main.mid': 'About the same as %U, steady.',
+    'sent.main.low': 'Your body looks a little tired.',
+    'sent.main.recdip': 'Mostly steady, just a little less recovered than %U.',
+    'sent.main.recup': 'Mostly steady, a little better recovered than %U.',
+    'sent.rec.above': 'Recovery signals are higher than %U',
+    'sent.rec.in': 'Recovery signals are about the same as %U',
+    'sent.rec.below': 'Recovery signals are a bit lower than %U',
+    'sent.hr.below': 'Your heart is slower than %U, on the calm side',
+    'sent.hr.in': 'Your heart is the same as %U',
+    'sent.hr.above': 'Your heart is faster than %U',
+    'sent.sub.join': '%A. %B.',
+    'sent.br.slow': 'Breathing is very slow',
+    'sent.br.calm': 'Breathing is gentle',
+    'sent.br.normal': 'Breathing pace is typical',
+    'sent.br.fast': 'Breathing is fast',
+    'sent.rh.stable': 'steady',
+    'sent.rh.some': 'with some variation',
+    'sent.rh.irregular': 'irregular',
+    'sent.br.join': '%A, %B',
+    'sent.rsa.clue': 'Your heart rises and falls clearly with each breath',
+    'sent.first.rsa': 'Your heart speeds up a little on the in-breath and slows on the out-breath',
+    'sent.first.saved': 'Your first record is saved',
+    'sent.first.next': 'Measure %N more times to see your usual',
+    'sent.build.next': 'Measure %N more times to see your usual range',
+    'zone.energy.0': 'Low',
+    'zone.energy.0.d': 'More tired than usual, still recovering',
+    'zone.energy.1': 'Steady',
+    'zone.energy.1.d': 'About your usual',
+    'zone.energy.2': 'Strong',
+    'zone.energy.2.d': 'Good recovery, room to spare',
+    'zone.rmssd.0': 'Below your usual',
+    'zone.rmssd.0.d': 'Recovery signals lower than usual',
+    'zone.rmssd.1': 'Within your usual',
+    'zone.rmssd.1.d': 'Same as usual',
+    'zone.rmssd.2': 'Above your usual',
+    'zone.rmssd.2.d': 'Recovery signals higher than usual',
+    'zone.hr.0': 'Slower than usual',
+    'zone.hr.0.d': 'Heart on the calm side',
+    'zone.hr.1': 'Same as usual',
+    'zone.hr.1.d': 'Within your usual range',
+    'zone.hr.2': 'Faster than usual',
+    'zone.hr.2.d': 'Heart faster than usual',
+    'zone.breath.0': 'Slow',
+    'zone.breath.0.d': 'Very slow and deep, common in breathing practice',
+    'zone.breath.1': 'Gentle',
+    'zone.breath.1.d': 'A bit slower than most people',
+    'zone.breath.2': 'Typical',
+    'zone.breath.2.d': 'The usual pace at rest',
+    'zone.breath.3': 'Fast',
+    'zone.breath.3.d': 'Breathing faster',
+    'zone.below': 'below %1',
+    'zone.above': '%1 and up',
+    'result.clues.head': 'What we can see',
+    'result.nums.head': 'The numbers and what they mean',
+    'result.you.mark': '← you this time',
+    'result.zone.wait': 'Measure %1 more times to get zones of your own',
+    'result.unit.score': 'pts',
+    'result.prelim': 'early estimate',
+    'result.prelim.note': 'Still getting to know you, so this compares with your last few measurements',
+    'result.rmssd.name': 'Recovery (HRV)',
+    'result.hr.name': 'Heart rate',
+    'result.zone.usual.rm': 'Your usual is about %1–%2 ms, from your recent measurements',
+    'result.zone.usual.hr': 'Your usual is about %1–%2 bpm',
+    'result.zone.breath.note': 'Breathing has no good or bad, so it uses blue instead of red and green',
+    'result.zone.first': 'No usual range yet. After 7 measurements, recovery and heart rate get zones of your own.',
+    'result.why.head': 'Why we say this',
+    'result.why.noscore': 'No score on the first measurement',
+    'result.why.range': ', your usual %1–%2',
+    'result.why.hr': 'Resting heart rate',
+    'result.why.nobreath': 'Could not be read this time',
+    'result.why.quality': 'Signal quality',
+    'result.why.q.bad': 'Frequent dropouts (%1%)',
+    'result.why.q.good': 'Good (%1% dropouts)',
+    'result.rmssd.note': 'A single RMSSD reading naturally jumps around, so don\'t read too much into one number. Measure a few times and watch your own <b>baseline and trend</b>. Heart rate is steadier.',
+    'result.artifact.hint': 'The signal dropped out quite a bit this time. Try measuring again while staying still.'
   },
   ja: {
     'intro.what.title': 'これは何を測っているの？',
@@ -1900,29 +2012,13 @@ window.JTE_I18N = {
     'unit.sec': '秒',
     'unit.bpm': 'bpm',
     'result.energy.label': 'からだのエネルギー',
-    'result.level.high': '充実',
-    'result.level.mid': '安定',
-    'result.level.low': '低め',
     'advice.high': '今日の回復は良好です — エネルギーが充実しています。有効に活かしましょう。',
     'advice.mid': 'いつもどおりの状態です — 安定しています。',
     'advice.low': '今日はエネルギーが低めです — 休息と回復の時間を取りましょう。',
-    'result.confidence': '信頼度構築中（%1/%2）— 何度か測るほど、あなた自身に合った値になっていきます。',
-    'result.see.detail': '詳細を見る',
-    'result.recovery': '回復力',
     'result.recovery.note': 'vs あなたの平均',
-    'result.calm': '落ち着き',
     'result.calm.note': '安静心拍数',
     'result.hr': '心拍数',
     'result.rmssd': 'HRV',
-    'result.legend.title': 'エネルギーの分け方',
-    'result.legend.sub': 'スコアはあなた自身の平均値との相対的な位置（他の人との比較ではありません）で3段階に分かれています：',
-    'result.legend.high.name': '充実',
-    'result.legend.high.desc': '回復良好、エネルギー満タン — 今日を活かしましょう。',
-    'result.legend.mid.name': '安定',
-    'result.legend.mid.desc': 'いつもどおりのレベル — 安定しています。',
-    'result.legend.low.name': '低め',
-    'result.legend.low.desc': '今日はエネルギーが低めです — 自分に休息の時間を。',
-    'result.you': 'あなた',
     'result.err.title': '測定が完了しませんでした',
     'result.err.body': '大丈夫です。よくあることです。明るい場所で座り、背面カメラ全体（フラッシュも）に指を当て、リラックスしてもう一度試してみてください。',
     'tag.head': '今の状態は？',
@@ -1954,7 +2050,93 @@ window.JTE_I18N = {
     'breath.rsa.m': '吸うと心拍が速まり、吐くと遅くなり、その差はおよそ %1 拍/分でした。',
     'breath.rsa.big': 'ゆらぎ大', 'breath.rsa.mid': 'ゆらぎ中', 'breath.rsa.small': 'ゆらぎ小',
     'breath.prq': '脈拍呼吸比', 'breath.prq.unit': '拍/呼吸',
-    'breath.prq.m': '一呼吸のあいだに、心拍はおよそ %1 回。呼吸がゆっくりなほど、この数は大きくなります。'
+    'breath.prq.m': '一呼吸のあいだに、心拍はおよそ %1 回。呼吸がゆっくりなほど、この数は大きくなります。',
+    'sent.lab.today': '今日のあなた',
+    'sent.lab.first': '初めての測定',
+    'sent.u.usual': 'いつも',
+    'sent.u.recent': 'これまでの数回',
+    'sent.main.first': '初めての測定です。まずはあなたの心拍を知るところから。',
+    'sent.sub.first': 'まだ比べる「いつも」がないので、今回はこの1分間に見えたことだけをお伝えします。',
+    'sent.main.slow': '呼吸がゆっくりになり、心拍もそれに合わせて大きくゆれています。',
+    'sent.sub.slow': 'からだのブレーキが働いているサインで、落ち着いていくように見えます。',
+    'sent.main.mixed': 'エネルギーを使っているけれど、まだ持ちこたえています。',
+    'sent.main.fasthr': '回復は良好ですが、心拍がいつもより速めです。',
+    'sent.main.high': 'とても元気そうに見えます。',
+    'sent.main.mid': '%Uと同じくらい、安定しています。',
+    'sent.main.low': 'からだが少し疲れているように見えます。',
+    'sent.main.recdip': 'おおむね安定。ただ、回復は%Uより少し低めです。',
+    'sent.main.recup': 'おおむね安定。回復は%Uより少し良好です。',
+    'sent.rec.above': '回復のサインが%Uより高め',
+    'sent.rec.in': '回復のサインは%Uと同じくらい',
+    'sent.rec.below': '回復のサインが%Uより少し低め',
+    'sent.hr.below': '心拍が%Uよりゆっくりで、落ち着いている',
+    'sent.hr.in': '心拍は%Uと同じ',
+    'sent.hr.above': '心拍が%Uより速め',
+    'sent.sub.join': '%A。%B。',
+    'sent.br.slow': '呼吸がとてもゆっくり',
+    'sent.br.calm': '呼吸がおだやか',
+    'sent.br.normal': '呼吸の速さはふつう',
+    'sent.br.fast': '呼吸が速め',
+    'sent.rh.stable': '規則的',
+    'sent.rh.some': 'ややゆらぎあり',
+    'sent.rh.irregular': '不規則',
+    'sent.br.join': '%A・%B',
+    'sent.rsa.clue': '心拍が呼吸に合わせてはっきりゆれている',
+    'sent.first.rsa': '吸うと心拍が少し速まり、吐くと遅くなる',
+    'sent.first.saved': '最初の記録を保存しました',
+    'sent.first.next': 'あと %N 回測ると、あなたの「いつも」が見えてきます',
+    'sent.build.next': 'あと %N 回測ると、いつもの範囲が見えてきます',
+    'zone.energy.0': '低め',
+    'zone.energy.0.d': 'いつもより疲れていて、回復中',
+    'zone.energy.1': '安定',
+    'zone.energy.1.d': 'いつもと同じくらい',
+    'zone.energy.2': '充実',
+    'zone.energy.2.d': '回復していて余裕がある',
+    'zone.rmssd.0': 'いつもの範囲より下',
+    'zone.rmssd.0.d': '回復のサインがいつもより低い',
+    'zone.rmssd.1': 'いつもの範囲内',
+    'zone.rmssd.1.d': 'いつもと同じ',
+    'zone.rmssd.2': 'いつもの範囲より上',
+    'zone.rmssd.2.d': '回復のサインがいつもより高い',
+    'zone.hr.0': 'いつもより遅い',
+    'zone.hr.0.d': '心拍が落ち着いている',
+    'zone.hr.1': 'いつもと同じ',
+    'zone.hr.1.d': 'いつもの範囲',
+    'zone.hr.2': 'いつもより速い',
+    'zone.hr.2.d': '心拍がいつもより速い',
+    'zone.breath.0': 'ゆっくり',
+    'zone.breath.0.d': 'とてもゆっくり深い。呼吸練習でよく見られる',
+    'zone.breath.1': 'おだやか',
+    'zone.breath.1.d': '一般より少しゆっくり',
+    'zone.breath.2': 'ふつう',
+    'zone.breath.2.d': '安静時の一般的な速さ',
+    'zone.breath.3': '速め',
+    'zone.breath.3.d': '呼吸が速め',
+    'zone.below': '%1 未満',
+    'zone.above': '%1 以上',
+    'result.clues.head': '見えてきたこと',
+    'result.nums.head': '数字とその意味',
+    'result.you.mark': '← 今回',
+    'result.zone.wait': 'あと %1 回測ると、あなた専用の区分ができます',
+    'result.unit.score': '点',
+    'result.prelim': '暫定',
+    'result.prelim.note': 'まだあなたを知る途中なので、これまでの数回と比べています',
+    'result.rmssd.name': '回復力（心拍変動）',
+    'result.hr.name': '心拍',
+    'result.zone.usual.rm': 'いつもの範囲は約 %1–%2 ms（最近の測定から算出）',
+    'result.zone.usual.hr': 'いつもは約 %1–%2 拍/分',
+    'result.zone.breath.note': '呼吸に良し悪しはないので、赤・緑ではなく青で表しています',
+    'result.zone.first': 'まだいつもの範囲がありません。7回測ると、回復力と心拍にあなた専用の区分ができます。',
+    'result.why.head': 'なぜそう言えるの？',
+    'result.why.noscore': '初回はスコアなし',
+    'result.why.range': '、いつもの範囲 %1–%2',
+    'result.why.hr': '安静時心拍',
+    'result.why.nobreath': '今回は読み取れませんでした',
+    'result.why.quality': '信号の質',
+    'result.why.q.bad': '途切れが多め（%1%）',
+    'result.why.q.good': '良好（途切れ %1%）',
+    'result.rmssd.note': 'RMSSD は1回ごとに上下するのが普通です。1つの数字にこだわらず、何度か測って自分の<b>基準とトレンド</b>を見るのが確実です。心拍数はより安定しています。',
+    'result.artifact.hint': '今回は信号の途切れが多めでした。静止してもう一度測ってみてください。'
   }
 };
 </script>

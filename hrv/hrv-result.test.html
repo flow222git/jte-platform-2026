@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-result tests</title>
+<style>body{font-family:monospace;padding:16px}iframe{display:none}pre{white-space:pre-wrap}</style>
+</head><body>
+<h2>hrv-result.test.html</h2>
+<pre id="out">loading...</pre>
+<iframe id="fr" src="index.html"></iframe>
+<script>
+// 結果頁「一句話先行」端到端：第一次（不給分數、記錄省略 energy）、建立中（初估、前幾次）、常態建立（個人分區色帶）
+const out=document.getElementById('out');
+let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+function assert(c,m){if(!c)throw new Error(m||'assert failed');}
+function finish(){ log('---'); log('DONE pass='+pass+' fail='+fail); document.title=fail?('FAIL '+fail):'OK'; }
+const fr=document.getElementById('fr');
+const wait=function(ms){ return new Promise(function(r){ setTimeout(r,ms); }); };
+
+// 合成相機樣本：逐拍心率帶呼吸起伏（9 次/分、±5），30fps
+function synthSamples(durSec){
+  var s=0x13579b, rnd=function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296-0.5; };
+  var beats=[], t=0.6, ph=0;
+  while(t<durSec+1){ beats.push(t*1000); var hr=68+5*Math.sin(ph)+rnd()*1.2, dt=60/hr; t+=dt; ph+=2*Math.PI*9/60*dt; }
+  var out=[], j0=0, t0=performance.now()-durSec*1000;
+  for(var k=0;k*1000/30<durSec*1000;k++){
+    var tt=k*1000/30, p=0;
+    while(j0<beats.length-1 && beats[j0]<tt-1200) j0++;
+    for(var j=j0;j<beats.length && beats[j]<tt+400;j++){ var d=tt-beats[j]; p+=Math.exp(-Math.pow(d/70,2))+0.35*Math.exp(-Math.pow((d-320)/90,2)); }
+    out.push({ t:t0+tt, v:150+3*p+rnd()*0.15, g:60+1.5*p+rnd()*0.15 });
+  }
+  return out;
+}
+// 預先放 n 筆過去的 HRV 記錄（不同日期）
+function seed(iw, n){
+  var all={};
+  for(var i=0;i<n;i++){
+    var d=new Date(Date.now()-(n-i+1)*86400000), dk=d.toISOString().slice(0,10);
+    all[dk]={ moods:[], energy:5, linked:[{ source:'HRV', id:'seed'+i, recordId:'seed'+i, ts:d.toISOString(),
+      hr:66+(i%3), rmssd:44+(i%5)*3, sdnn:30, energy:60, level:'mid', state:'balanced', tags:[], felt:{}, note:'' }] };
+  }
+  iw.localStorage.setItem('jte_daily_v1', JSON.stringify(all));
+}
+function savedToday(iw){
+  var all=JSON.parse(iw.localStorage.getItem('jte_daily_v1')||'{}'), recs=[];
+  Object.keys(all).forEach(function(k){ (all[k].linked||[]).forEach(function(l){ if(String(l.id).indexOf('hrv_')===0) recs.push(l); }); });
+  return recs[recs.length-1];
+}
+async function render(iw, n){
+  try{ iw.localStorage.clear(); }catch(e){}
+  if(n) seed(iw, n);
+  const s=synthSamples(62);
+  iw._lastResultSamples=s; iw.eval('session.diag={tsSource:"test"}');
+  iw.renderResult(s);
+  await wait(1500);
+  return iw.document;
+}
+
+fr.addEventListener('load',function(){
+  const iw=fr.contentWindow; let k=0;
+  const t=setInterval(function(){
+    k++;
+    if(typeof iw.renderResult==='function' && iw.HrvSentence && iw.HrvAnalyze){ clearInterval(t); run(iw).then(finish); }
+    else if(k>120){ clearInterval(t); fail++; log('FAIL 逾時：index.html 全域函式未就緒'); finish(); }
+  },150);
+});
+
+async function run(iw){
+  let doc=await render(iw, 0);
+  check('第一次：一句話先行、不給身體能量分數', function(){
+    const main=doc.querySelector('.state-card .say-big');
+    assert(main && main.textContent.indexOf('這是你的第一次')>=0, '主句：'+(main&&main.textContent));
+    assert(!doc.querySelector('.zm[data-k="energy"]'), '第一次不應有身體能量色帶');
+    assert(!doc.querySelector('.zm[data-k="rmssd"] .zm-bar'), '第一次不應畫恢復力個人分區');
+  });
+  check('第一次：線索、數字說明、為什麼這樣說都在；舊的能量分級說明已移除', function(){
+    assert(doc.querySelectorAll('.clues .clue').length>=2, '至少 2 條線索');
+    assert(doc.querySelector('.breath .zm[data-k="breath"] .zm-bar'), '呼吸的藍色分區應在呼吸卡裡');
+    assert(!doc.querySelector('.nums .zm[data-k="breath"]'), '數字區不應重複呼吸快慢');
+    assert(doc.querySelector('details.why-box'), '應有為什麼這樣說');
+    assert(!doc.querySelector('.legend'), '舊的「身體能量怎麼分」應移除');
+  });
+  check('第一次：記錄省略 energy／level（趨勢頁不會多一個 0 分）', function(){
+    const r=savedToday(iw); assert(r, '應寫入記錄');
+    assert(!('energy' in r) && !('level' in r), '第一次記錄不應有 energy/level：'+JSON.stringify(r).slice(0,160));
+    assert(r.rmssd>0 && r.hr>0, '仍存心率與 RMSSD');
+  });
+
+  doc=await render(iw, 3);
+  check('建立中（第 4 次）：分數標初估、提示再量 3 次、不畫個人分區', function(){
+    const en=doc.querySelector('.zm[data-k="energy"]');
+    assert(en && en.textContent.indexOf('初估')>=0, '能量應標初估');
+    assert(doc.querySelector('.clues').textContent.indexOf('再量 3 次')>=0, '線索應提示再量 3 次');
+    const rm=doc.querySelector('.zm[data-k="rmssd"]');
+    assert(rm && !rm.querySelector('.zm-bar') && rm.textContent.indexOf('再量 3 次')>=0, '恢復力不畫分區、提示再量');
+    assert(savedToday(iw).energy>=0, '建立中記錄有 energy');
+  });
+
+  doc=await render(iw, 8);
+  check('常態建立：恢復力與心跳有個人分區色帶，標出你這次', function(){
+    ['rmssd','hr','energy'].forEach(function(k){
+      const z=doc.querySelector('.zm[data-k="'+k+'"]');
+      assert(z && z.querySelector('.zm-bar') && z.querySelector('.zm-mark'), k+' 應有色帶與標記');
+      assert(z.textContent.indexOf('← 你這次')>=0, k+' 應標你這次');
+    });
+    assert(doc.querySelector('.zm[data-k="rmssd"]').textContent.indexOf('你的常態')>=0, '恢復力分區以你的常態命名');
+  });
+  check('常態建立：主句來自句庫、副句與線索一致', function(){
+    const S=iw.HrvSentence, mains=['大致穩穩的，只是恢復得比你平常少一點。','大致穩穩的，恢復得比你平常好一點。','你看起來很有活力。','跟你平常差不多，穩穩的。','身體看起來有點累。','身體在放電，但還撐得住。','恢復得不錯，但心跳比平常快。','你的呼吸慢下來了，心跳也跟著大幅起伏。'];
+    const main=doc.querySelector('.state-card .say-big').textContent;
+    assert(mains.indexOf(main)>=0, '主句應來自句庫：'+main);
+    const why=doc.querySelector('details.why-box').textContent;
+    assert(why.indexOf('你的常態')>=0 && why.indexOf('訊號')>=0, '為什麼這樣說應列常態範圍與訊號品質');
+  });
+}
+</script>
+</body></html>

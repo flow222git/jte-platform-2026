@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>hrv-sentence tests</title>
+<script src="hrv-sentence.js"></script>
+</head>
+<body>
+<pre id="out">running...</pre>
+<script>
+// 結果頁「一句話先行」句庫：常態範圍、落點、階段、組句規則（確定性、可追溯）
+const out=document.getElementById('out');
+let pass=0, fail=0; const lines=[];
+function log(s){ lines.push(s); out.textContent=lines.join('\n'); }
+function assert(c,m){ if(!c) throw new Error(m||'assert failed'); }
+function eq(a,b,m){ if(a!==b) throw new Error((m||'eq')+' got['+a+'] want['+b+']'); }
+function near(a,b,tol,m){ if(Math.abs(a-b)>tol) throw new Error((m||'near')+' got '+a+' want '+b+'±'+tol); }
+function check(name, fn){ try{ fn(); pass++; log('PASS '+name); }catch(e){ fail++; log('FAIL '+name+' :: '+(e&&e.message||e)); } }
+const S=window.HrvSentence;
+
+check('HrvSentence 應載入', function(){ assert(typeof S==='object' && typeof S.compose==='function'); });
+
+check('rangeFrom：中位數為中心、半寬取 P20–P80 與相對下限較大者', function(){
+  const r=S.rangeFrom([40,45,50,52,55,60,70], { rel:0.10, abs:0 });
+  eq(r.mid,52,'中位數');
+  assert(r.lo<52 && r.hi>52, '範圍包住中位數');
+  near(r.hi-r.mid, r.mid-r.lo, 1e-9, '對稱');
+  // 全部一樣 → 半寬取相對下限 10%
+  const flat=S.rangeFrom([50,50,50,50,50,50], { rel:0.10, abs:0 });
+  near(flat.lo,45,1e-9,'下限'); near(flat.hi,55,1e-9,'上限');
+  // 心率用絕對下限 3
+  const hr=S.rangeFrom([68,68,68,68,68,68], { rel:0, abs:3 });
+  near(hr.lo,65,1e-9); near(hr.hi,71,1e-9);
+  eq(S.rangeFrom([], { rel:0.1 }), null, '沒資料回 null');
+});
+check('rangeFrom：只取最近 14 筆', function(){
+  const old=[]; for(let i=0;i<20;i++) old.push(200);
+  const recent=[]; for(let i=0;i<14;i++) recent.push(50);
+  eq(S.rangeFrom(old.concat(recent), { rel:0.1 }).mid, 50);
+});
+check('position：below／in／above', function(){
+  const r={ lo:44, hi:60, mid:52 };
+  eq(S.position(40,r),'below'); eq(S.position(44,r),'in'); eq(S.position(60,r),'in'); eq(S.position(61,r),'above');
+});
+check('stageOf 與 remaining：0 次＝第一次、1–5＝建立中、≥6＝常態建立；再量幾次到第 7 次', function(){
+  eq(S.stageOf(0),'first'); eq(S.stageOf(1),'building'); eq(S.stageOf(5),'building'); eq(S.stageOf(6),'established');
+  eq(S.remaining(0),6); eq(S.remaining(3),3); eq(S.remaining(6),0); eq(S.remaining(10),0);
+});
+
+const BR_CALM={ rate:10, rsa:3, cv:0.08 };
+check('第一次：主句固定、不提平常', function(){
+  const o=S.compose({ stage:'first', energy:'mid', rec:'in', hr:'in', breath:BR_CALM, remaining:6 });
+  eq(o.tone,'first'); eq(o.main,'這是你的第一次，先認識你的心跳。');
+  assert(o.sub.indexOf('還沒有')>=0, '副句說明還沒有平常可比');
+  assert(o.clues.join('').indexOf('再量 6 次')>=0, '線索提示再量 6 次');
+  assert(o.clues.join('').indexOf('平常')<0 || o.clues.join('').indexOf('看出你的平常')>=0, '第一次不拿平常比較');
+});
+check('慢呼吸練習：呼吸 <8 且帶動心跳 ≥5 → 慢呼吸主句', function(){
+  const o=S.compose({ stage:'established', energy:'high', rec:'above', hr:'in', breath:{ rate:6, rsa:7, cv:0.05 }, remaining:0 });
+  eq(o.main,'你的呼吸慢下來了，心跳也跟著大幅起伏。');
+  assert(o.clues.join('').indexOf('心跳跟著呼吸明顯起伏')>=0);
+});
+check('累但穩住：恢復力低於、心跳慢於平常', function(){
+  eq(S.compose({ stage:'established', energy:'low', rec:'below', hr:'below', breath:null, remaining:0 }).main, '身體在放電，但還撐得住。');
+});
+check('恢復好但心跳快', function(){
+  eq(S.compose({ stage:'established', energy:'mid', rec:'above', hr:'above', breath:null, remaining:0 }).main, '恢復得不錯，但心跳比平常快。');
+});
+check('依能量等級：充足／平穩／偏低', function(){
+  eq(S.compose({ stage:'established', energy:'high', rec:'above', hr:'in', breath:null }).main, '你看起來很有活力。');
+  eq(S.compose({ stage:'established', energy:'mid', rec:'in', hr:'in', breath:null }).main, '跟你平常差不多，穩穩的。');
+  eq(S.compose({ stage:'established', energy:'low', rec:'below', hr:'above', breath:null }).main, '身體看起來有點累。');
+});
+check('能量平穩但恢復力偏離常態 → 主句跟色帶一致', function(){
+  eq(S.compose({ stage:'established', energy:'mid', rec:'below', hr:'in', breath:null }).main, '大致穩穩的，只是恢復得比你平常少一點。');
+  eq(S.compose({ stage:'established', energy:'mid', rec:'above', hr:'in', breath:null }).main, '大致穩穩的，恢復得比你平常好一點。');
+  eq(S.compose({ stage:'building', energy:'mid', rec:'below', hr:'in', breath:null, remaining:2 }).main, '大致穩穩的，只是恢復得比你前幾次少一點。');
+});
+check('副句與線索跟落點一致', function(){
+  const o=S.compose({ stage:'established', energy:'low', rec:'below', hr:'above', breath:{ rate:17, rsa:2, cv:0.2 } });
+  eq(o.sub,'恢復的訊號比你平常低一些，心跳比你平常快。');
+  eq(o.clues[0],'恢復的訊號比你平常低一些'); eq(o.clues[1],'心跳比你平常快');
+  eq(o.clues[2],'呼吸速度一般、有些起伏');
+});
+check('建立中：比較對象改成「你前幾次」，並提示還要量幾次', function(){
+  const o=S.compose({ stage:'building', energy:'mid', rec:'in', hr:'in', breath:null, remaining:3 });
+  eq(o.main,'跟你前幾次差不多，穩穩的。');
+  assert(o.sub.indexOf('你前幾次')>=0 && o.sub.indexOf('你平常')<0, '副句用前幾次：'+o.sub);
+  assert(o.clues.join('').indexOf('再量 3 次，就能看出你的常態範圍')>=0);
+});
+check('翻譯函式：用 key 取譯文，沒有就用中文', function(){
+  const t=function(k,zh){ return k==='sent.main.high' ? 'You look full of energy.' : zh; };
+  eq(S.compose({ stage:'established', energy:'high', rec:'above', hr:'in', breath:null }, t).main, 'You look full of energy.');
+});
+check('分區：身體能量 45/75、呼吸 8/12/18、個人分區依常態範圍', function(){
+  const e=S.zones('energy'); eq(S.zoneIndex(e,44),0); eq(S.zoneIndex(e,45),1); eq(S.zoneIndex(e,75),2);
+  const b=S.zones('breath'); eq(S.zoneIndex(b,6),0); eq(S.zoneIndex(b,10),1); eq(S.zoneIndex(b,15),2); eq(S.zoneIndex(b,20),3);
+  const rm=S.zones('rmssd', { lo:44, hi:60, mid:52 }); eq(S.zoneIndex(rm,40),0); eq(S.zoneIndex(rm,50),1); eq(S.zoneIndex(rm,70),2);
+  eq(rm.bands[0].color,'red'); eq(rm.bands[2].color,'green');
+  const hr=S.zones('hr', { lo:64, hi:74, mid:69 }); eq(hr.bands[0].color,'green'); eq(hr.bands[2].color,'red');
+  assert(b.bands.every(function(x){ return /^blue/.test(x.color); }), '呼吸用藍色系');
+});
+
+log('---'); log('DONE pass='+pass+' fail='+fail);
+document.title = fail ? ('FAIL '+fail) : 'OK';
+</script>
+</body></html>
