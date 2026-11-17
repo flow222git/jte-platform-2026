@@ -889,9 +889,9 @@ function keepInsp(v){var ins={key:TODAY,text:v,photos:S.draft.map(function(d){re
   if(DEMO){S.cloud.unshift({id:'ins-demo-'+Date.now(),key:TODAY,text:v,cloud:true,photos:ins.photos.map(function(p,i){return {id:'dp-'+Date.now()+i,data:p.data,caption:p.caption,order:i}})});afterKeep();return}
   if(!S.user){toast(I.needLogin);return}
   if(navigator.onLine===false){toast(I.fail);return}
-  var k=$('#keep');k.disabled=true;k.textContent=I.saving;
+  var k=$('#keep'),uid=S.user.uid;k.disabled=true;k.textContent=I.saving;
   var done=false,tm=setTimeout(function(){if(!done)toast(I.slow)},I.saveTimeoutMs),restore=function(){done=true;clearTimeout(tm);k.disabled=false;k.textContent=D.capture.keep};
-  Promise.resolve().then(function(){return JteCloud.saveInsp(ins)}).then(function(saved){S.cloud.unshift(saved);afterKeep()},function(){toast(I.fail)}).then(restore,restore)}
+  Promise.resolve().then(function(){return JteCloud.saveInsp(ins)}).then(function(saved){if(!(S.user&&S.user.uid===uid))return;S.cloud.unshift(saved);afterKeep()},function(){toast(I.fail)}).then(restore,restore)}
 function afterKeep(){var id=S.cloud[0].id;if(S.capFor){newTri({kind:'state',state:S.capFor},'',id);S.capFor=null;capLabel();save()}
   $('#memo').value='';S.draft=[];renderPics();renderAll();toast(DEMO?I.keptLocal:I.kept)}
 $('#addpic').onclick=function(){if(S.draft.length>=I.maxPhotos){toast(I.full.replace('{n}',I.maxPhotos));return}
