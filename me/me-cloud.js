@@ -1,9 +1,10 @@
 /* 我的練息場 /me — 雲端靈感（Firebase Auth + Firestore）
  * 只有「放了照片的靈感」會進來。路徑以 uid 為鑰：users/{uid}/inspirations、users/{uid}/photos。
+ * Firebase 專案是 lianxichang-me（/me 專用；平台其他工具用的是另一個專案 jointoenjoy，這裡不碰它）。
  * 依賴 vendor/ 的 firebase compat 與 canvas，不進自動測試；驗證方式見計畫 Task 7。 */
 (function (g) {
-  var CFG = { apiKey: 'AIzaSyBRZ1TNVMxOeJfyvGz4HhdlBzlKL0GIAfg', authDomain: 'jointoenjoy.firebaseapp.com', projectId: 'jointoenjoy',
-    storageBucket: 'jointoenjoy.firebasestorage.app', messagingSenderId: '978242729427', appId: '1:978242729427:web:ab31364f21c67c2ab56b26' };
+  var CFG = { apiKey: 'AIzaSyCxogQ_5H43cRGl4QWXvHhWFYgwxM6bLHM', authDomain: 'lianxichang-me.firebaseapp.com', projectId: 'lianxichang-me',
+    storageBucket: 'lianxichang-me.firebasestorage.app', messagingSenderId: '531763902352', appId: '1:531763902352:web:6f995c86625cf2cd4b2515' };
   var auth = null, db = null, user = null;
 
   function init(onUser) {
