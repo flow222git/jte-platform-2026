@@ -198,7 +198,54 @@
       colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
       weeks: 12, months: 12,
       err: { name: '請填項目名稱（30 字以內）', unit: '請填單位（10 字以內）', date: '日期不對', future: '不能選未來的日子', amount: '請填大於 0 的數字', note: '這一句太長了（500 字以內）', title: '請填標題（100 字以內）', body: '內文太長了（20000 字以內）' },
-      t: { title: '我的練習', note: '你自己長期在練的事。項目自己訂，慢慢記。' }
+      t: { title: '我的練習', note: '你自己長期在練的事。項目自己訂，慢慢記。', eyebrow: 'MY PRACTICE',
+        // 我的練習（練習空間最上面）
+        empty: '還沒有項目。太極、靜坐、每天的散步……自己長期在練的事，都可以放進來，練完記一筆。', examples: '例如',
+        add: '新增項目', addTitle: '新增一個練習項目', added: '「{n}」放進來了，練完就可以記一筆',
+        last: '上次 {d}', never: '還沒有紀錄', month: '這個月 {n} 次・共 {s} {u}', monthNone: '這個月還沒有紀錄',
+        archivedN: '已封存（{n}）',
+        // 項目表單
+        name: '名稱', namePh: '例如：太極', unit: '單位', unitOwn: '單位（也可以自己打）', unitPh: '自己打，例如：頁',
+        color: '顏色', colorNames: ['藍', '青綠', '橘', '紫', '深橘', '綠'], save: '存起來', cancel: '取消', saved: '存起來了',
+        // 記一筆
+        log: '記一筆', logFor: '記一筆：{n}', quickTitle: '我的練習', quickNote: '點一下，打數字，就記下了。', quickGo: '看我的練習',
+        amountFor: '數量（{u}）', notePh: '一句（可以不寫）', date: '日期', submit: '記下來',
+        logged: '記下了：{n} {a} {u}', loggedOn: '記下了：{d} {n} {a} {u}', todayDid: '今天 {s} {u}',
+        // 專區
+        back: '回到練習', unitIs: '單位：{u}', archivedTag: '已封存', notFound: '找不到這個項目，可能已經刪掉了。',
+        tabs: { log: '紀錄', insp: '心得靈感', notes: '筆記', set: '設定' }, tabsLabel: '這個項目的內容',
+        // 紀錄分頁
+        thisMonth: '這個月', allTime: '開始到現在', times: '次', total: '共 {s} {u}', since: '從 {d} 開始',
+        noLogs: '還沒有紀錄。練完記一筆，或在月曆上點一天補記，這裡會慢慢長出你自己的月曆和長條圖。',
+        cal: '月曆', ym: '{y} 年 {m} 月', prevMonth: '上個月', nextMonth: '下個月', monthSum: '這個月份 {n} 次・共 {s} {u}', monthEmpty: '這個月份沒有紀錄',
+        wd: ['一', '二', '三', '四', '五', '六', '日'], dayAria: '{m} 月 {d} 日，{x}', dayHas: '{n} 筆，共 {s} {u}', dayNone: '沒有紀錄', todayAria: '（今天）',
+        pickDay: '點一天，看那天記了什麼，也可以補記。', dayEmpty: '這一天沒有紀錄。', addOn: '在這天補記',
+        edit: '修改', del: '刪除', delLogAsk: '確定刪除這一筆？', delYes: '確定刪除', deleted: '刪掉了',
+        trend: '長條圖', byWeek: '每週', byMonth: '每月', chartCap: '每一根是那段時間的合計（{u}），只跟自己的紀錄放在一起看。',
+        chartAltW: '最近 {c} 週，每週的合計：{list}', chartAltM: '最近 {c} 個月，每月的合計：{list}', chartNone: '這段時間沒有紀錄。',
+        barAlt: '{w} {s} {u}', listSep: '、', weekOf: '{d} 那一週', monthOf: '{y} 年 {m} 月', barTip: '{w}：{n} 次，共 {s} {u}', thisWeekShort: '本週', thisMonthShort: '本月', monthShort: '{m}月',
+        // 心得靈感分頁
+        inspLabel: '關於「{n}」，想留下的一句', inspKeep: '留下', inspPhoto: '要放照片', inspKept: '留下了',
+        inspNote: '只有一句話時存在這台裝置。要放照片，會帶你到「今天」的靈感框。', inspNone: '還沒有屬於這個項目的心得靈感。',
+        // 筆記分頁
+        notesNew: '新增筆記', notesNone: '還沒有筆記。招式的順序、老師說的話、自己的體會，都可以寫成一份。',
+        noteTitle: '標題', noteTitlePh: '例如：二十四式的順序', noteBody: '內文', noteClose: '收起來', noteDel: '刪除這份筆記',
+        noteDelAsk: '確定刪除這份筆記？不能復原。', updated: '最後修改 {d}',
+        // 設定分頁
+        setTitle: '名稱、單位、顏色', unitWarn: '改單位不會換算以前記的數字。',
+        archive: '封存', unarchive: '解除封存', archiveNote: '封存之後，「今天」不會出現它的快速鍵；紀錄都留著，隨時可以解除。',
+        archivedDone: '封存了，紀錄都還在', unarchivedDone: '解除封存了',
+        delItem: '刪除這個項目', delItemAsk: '確定刪除「{n}」？它的 {l} 筆紀錄、{k} 份筆記會一起刪掉，不能復原。屬於它的心得靈感會留著，只是不再標記這個項目。',
+        fail: '沒有存到，請再試一次。內容都還在。' },
+      // 示範模式（?demo）的虛構資料；紀錄由 me-practice.js 用固定種子產生
+      demo: {
+        items: [{ id: 'pi-demo-taichi', name: '太極', unit: '分鐘', color: '#34C8A0' }, { id: 'pi-demo-sit', name: '靜坐', unit: '分鐘', color: '#7A6BD8' }],
+        logNotes: { 'pi-demo-taichi': ['雲手比較順了', '下雨，在客廳練', '老師說腰再鬆一點', '練完整個人很安靜', '只練了起勢，也算'], 'pi-demo-sit': ['數息數到一半就亂了，拉回來就好', '腿麻得比上次晚'] },
+        notes: [{ id: 'pn-demo-1', itemId: 'pi-demo-taichi', days: 9, title: '二十四式的順序', body: '起勢\n左右野馬分鬃\n白鶴亮翅\n左右摟膝拗步\n手揮琵琶\n……\n\n（示範筆記）' },
+          { id: 'pn-demo-2', itemId: 'pi-demo-taichi', days: 31, title: '老師說的話', body: '鬆不是軟。\n先站穩，再動手。' },
+          { id: 'pn-demo-3', itemId: 'pi-demo-sit', days: 16, title: '坐之前', body: '手機放到別的房間。\n先喝一口水。' }],
+        memos: [{ itemId: 'pi-demo-taichi', days: 6, text: '雲手的時候，肩膀終於沒有聳起來。' }, { itemId: 'pi-demo-sit', days: 12, text: '坐完才發現，窗外一直有鳥在叫。' }]
+      }
     },
     back: { days: 7, say: '隔了 {n} 天。想從哪裡開始都可以。' },
     search: { placeholder: '找一筆紀錄：方法、標籤、寫過的話', none: '找不到符合的紀錄。' },

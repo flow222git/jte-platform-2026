@@ -231,6 +231,16 @@ check('pracUnmark、pracInsp',()=>{const l=[{id:'1',itemId:'a',key:'2026-11-01'}
 check('pracId：前綴與格式',()=>{ok(/^p-[0-9a-z]+[a-z0-9]{6}$/.test(M.pracId('p-')));ok(M.pracId('x')!==M.pracId('x'));});
 check('route：我的練習項目網址',()=>{const r=M.route('#practice-item-abc');eq(r.pane,'practice');eq(r.sub,'trail');eq(r.item,'abc');eq(M.route('#practice-item-a/b').pane,'today');eq(M.route('#practice-item-').pane,'today');eq(M.route('#practice').item,'');eq(M.paneOf('#practice-item-abc'),'practice');});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
+check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
+  const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
+  const src=x.responseText,bad=/進步|退步|加油|連續/;ok(!bad.test(src),'me-practice.js');
+  const code=src.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');ok(!/[一-鿿]/.test(code),'中文只能在註解裡');
+  const walk=v=>{if(typeof v==='string')ok(!bad.test(v),v);else if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')Object.values(v).forEach(walk);};walk(D.prac.t);walk(D.prac.demo);});
+check('我的練習：畫面文案與示範資料齊全',()=>{const t=D.prac.t;
+  ['title','note','empty','add','log','submit','logged','loggedOn','back','thisMonth','allTime','noLogs','ym','dayAria','pickDay','addOn','delLogAsk','byWeek','byMonth','chartAltW','chartAltM','inspLabel','inspKeep','inspPhoto','notesNew','noteDelAsk','unitWarn','archive','unarchive','delItemAsk','fail'].forEach(k=>ok(t[k],'t.'+k));
+  ['log','insp','notes','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
+  const dm=D.prac.demo;eq(dm.items.length,2);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
+  dm.notes.forEach(n=>ok(M.pracNoteCheck(n,D.prac.max).ok,n.title));ok(dm.memos.some(m=>m.itemId===dm.items[0].id));});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://font.emtech.cc" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://font.emtech.cc/css/GenJyuuGothic/500" rel="stylesheet"><link href="https://font.emtech.cc/css/GenJyuuGothic/700" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="me-practice.css">
 <style>
 /* 設計元素比照線上課程站的 design-system.css（色票、圓角、字體、膠囊按鈕、英文小標、漂浮色塊）。
    插畫（蠟筆、手寫字、米色紙）只留在「整理出來的樣子」。 */
@@ -377,6 +378,7 @@ dialog.authdlg .in{width:100%}
         </div>
       </div>
     </section>
+    <div id="pracquick" hidden></div>
     <section aria-labelledby="h-open" id="sec-open" hidden>
       <div class="sec"><div><p class="eyebrow">STILL OPEN</p><h2 id="h-open">還開著的</h2></div><span>沒有期限。先放下也可以。</span></div>
       <div class="panel" id="open"></div>
@@ -403,6 +405,12 @@ dialog.authdlg .in{width:100%}
 
   <!-- 練習：什麼對我有效 -->
   <div id="view-practice" hidden>
+    <section aria-labelledby="h-prac" id="sec-prac">
+      <div class="sec"><div><p class="eyebrow"></p><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
+      <div id="pracbox"></div>
+    </section>
+    <div id="praczone" hidden></div>
+    <div id="pracrest">
     <section aria-labelledby="h-wrk">
       <div class="sec"><div><p class="eyebrow">WHAT WORKS</p><h2 id="h-wrk"></h2></div><span id="wrknote"></span></div>
       <div class="panel" id="wrklist"></div>
@@ -416,6 +424,7 @@ dialog.authdlg .in{width:100%}
       <div class="panel" id="outlist"></div>
       <p style="margin-top:12px"><button class="lnk" data-go="mymap-map" data-lens="to" id="prreview"></button></p>
     </section>
+    </div>
   </div>
 
   <!-- 我的地圖：我逐漸認識了什麼樣的自己。體驗足跡與生命地圖是裡面的切換 -->
@@ -520,6 +529,7 @@ dialog.authdlg .in{width:100%}
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
 <script src="me-cloud.js"></script>
+<script src="me-practice.js"></script>
 <script>
 (function(){
 'use strict';
@@ -648,7 +658,7 @@ var PICON={today:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy
 function renderPanes(){$('#panes').innerHTML=D.panes.map(function(p){var on=S.pane===p.key;return '<button data-pane="'+p.key+'"'+(on?' class="on" aria-current="page"':'')+'>'+PICON[p.key]+'<b>'+p.name+'</b><span>'+p.q+'</span></button>'}).join('');
   $('#subs').innerHTML=D.subs.map(function(x){var on=S.sub===x.key;return '<button class="chip'+(on?' on':'')+'" data-sub="'+x.key+'" aria-pressed="'+on+'">'+x.name+'</button>'}).join('')}
 function showPane(v){var r=M.route(v);S.pane=r.pane;if(r.pane==='mymap')S.sub=r.sub;D.panes.forEach(function(p){$('#view-'+p.key).hidden=p.key!==S.pane});
-  $('#sub-trail').hidden=S.sub!=='trail';$('#sub-overview').hidden=S.sub!=='overview';$('#fab').hidden=S.pane==='today';renderPanes()}
+  $('#sub-trail').hidden=S.sub!=='trail';$('#sub-overview').hidden=S.sub!=='overview';$('#fab').hidden=S.pane==='today';renderPanes();JtePrac.handleHash(v)}
 function goPane(h){h=String(h||'today').replace(/^#/,'');var top=$('#panes').getBoundingClientRect().top+window.scrollY;if(location.hash!=='#'+h){try{location.hash=h}catch(e){}}showPane(h);
   if(window.innerWidth<=640||window.scrollY>top)window.scrollTo(0,window.innerWidth<=640?0:Math.max(0,top-10))}
 /* 探索：我對什麼感興趣 */
@@ -888,7 +898,7 @@ function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.con
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
   if(oc||linked.length){save();toast('回來了。這次做的事接上了起點')}
-  renderJust();renderActs();renderWelcome();renderGates();renderOpen();renderUseful();renderToolbox();renderExplore();renderPractice();renderCare();renderTiles();renderSW();renderCapsule();renderList();renderCal();renderCollage();renderMap();renderManual();renderData();
+  renderJust();renderActs();renderWelcome();renderGates();renderOpen();renderUseful();renderToolbox();renderExplore();renderPractice();renderCare();JtePrac.render();renderTiles();renderSW();renderCapsule();renderList();renderCal();renderCollage();renderMap();renderManual();renderData();
   var cl=liveTris().filter(whole).length;
   if(S.closed!==null&&cl>S.closed){if(!O.firsts.tri){O.firsts.tri=true;save();toast(D.found.first)}else toast(D.found.next)}
   S.closed=cl}
@@ -1022,7 +1032,13 @@ var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O
 $('#demo').hidden=!DEMO;$('#heroline').textContent='練習生手帳。'+M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
 $('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
-$('#fab').textContent='＋ '+D.quick;showPane(location.hash);
+$('#fab').textContent='＋ '+D.quick;
+JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
+  getInsp:function(){return O.memos.concat(S.cloud)},
+  addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now(),key:TODAY,text:text,itemId:itemId});save();renderAll()},
+  startPhoto:function(itemId){S.capItem=itemId;goPane('today');$('#memo').focus()},
+  refresh:function(){renderAll()}});
+showPane(location.hash);
 $('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}renderAuth();renderData();loadCloud()})}
 renderPics();
