@@ -146,6 +146,16 @@ check('buildPages：有照片的靈感成為一頁，照片照順序、只收圖
 check('搜尋：找得到照片註解',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'散步',photos:[{id:'a',data:JP,caption:'河堤的夕陽',order:0}]}]);
   eq(M.searchPages(ps,'夕陽',{},{}).length,1);eq(M.searchPages(ps,'散步 河堤',{},{}).length,1);eq(M.searchPages(ps,'山',{},{}).length,0);});
 check('視角：方法視角不收靈感',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'x',photos:[{id:'a',data:JP,order:0}]}]);eq(ps[0].src,'Insp');eq(M.lensGroups('to',ps,{}).length,0);});
+check('活動紀錄：文案與上限都在資料檔',()=>{const A=D.act,U=D.auth;
+  eq(A.maxText,2000);eq(A.maxTitle,100);eq(A.maxUrl,500);
+  eq(A.cols.email,'Email');eq(A.cols.preBody,'前測_身體狀態');eq(A.cols.preMood,'前測_情緒狀態');eq(A.cols.expect,'活動前期待');eq(A.cols.feeling,'過程感受');
+  eq(A.cols.postBody,'後測_身體狀態');eq(A.cols.postMood,'後測_情緒狀態');eq(A.cols.takeaway,'最實用日常收穫');eq(A.cols.feedback,'心得與回饋');
+  eq(Object.keys(A.cols).length,9,'只有核准的九欄');
+  ['ask','keep','decline','later','declineAsk','declineYes','kept','declined','fail','before','after','body','mood','expect','feeling','takeaway','feedback','photo','drop','dropAsk','invite','inviteHide','demoNote','from','cancel'].forEach(k=>ok(A[k],'act.'+k));
+  ['missing','format','tld','dup','score','blank'].forEach(k=>ok(A.flags[k],'flags.'+k));
+  ['open','title','hint','email','pw','pwNote','signIn','signUp','reset','resetSent','verifyNote','resend','resent','refresh','notYet','close'].forEach(k=>ok(U[k],'auth.'+k));
+  ['auth/invalid-credential','auth/email-already-in-use','auth/weak-password','auth/invalid-email','auth/too-many-requests','other'].forEach(k=>ok(U.err[k],'err.'+k));
+  ok(D.privacy.cloud.indexOf('活動紀錄')>-1);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>
