@@ -1,11 +1,16 @@
 /* 我的練息場 /me — 雲端靈感（Firebase Auth + Firestore）
  * 只有「放了照片的靈感」會進來。路徑以 uid 為鑰：users/{uid}/inspirations、users/{uid}/photos。
+ * 活動紀錄在 activityRecords/{sessionId}__{email}：管理者匯入，本人（信箱已驗證）只讀得到自己的，並決定收不收。
  * Firebase 專案是 lianxichang-me（/me 專用；平台其他工具用的是另一個專案 jointoenjoy，這裡不碰它）。
  * 依賴 vendor/ 的 firebase compat 與 canvas，不進自動測試；驗證方式見計畫 Task 7。 */
 (function (g) {
   var CFG = { apiKey: 'AIzaSyCxogQ_5H43cRGl4QWXvHhWFYgwxM6bLHM', authDomain: 'lianxichang-me.firebaseapp.com', projectId: 'lianxichang-me',
     storageBucket: 'lianxichang-me.firebasestorage.app', messagingSenderId: '531763902352', appId: '1:531763902352:web:6f995c86625cf2cd4b2515' };
-  var auth = null, db = null, user = null;
+  var auth = null, db = null, user = null, onU = null;
+  function shape(u) {
+    return u ? { uid: u.uid, email: (u.email || '').toLowerCase(), name: u.displayName || u.email || '', verified: !!u.emailVerified,
+      byPassword: (u.providerData || []).some(function (p) { return p && p.providerId === 'password'; }) } : null;
+  }
 
   function init(onUser) {
     var f = g.firebase;
@@ -13,10 +18,8 @@
     if (!f.apps.length) f.initializeApp(CFG);
     auth = f.auth(); db = f.firestore();
     auth.getRedirectResult().catch(function () {});
-    auth.onAuthStateChanged(function (u) {
-      user = u ? { uid: u.uid, email: u.email || '', name: u.displayName || u.email || '' } : null;
-      onUser(user);
-    });
+    onU = onUser;
+    auth.onAuthStateChanged(function (u) { user = shape(u); onUser(user); });
     return true;
   }
   function signIn() {
@@ -28,6 +31,21 @@
     });
   }
   function signOut() { return auth.signOut(); }
+  // 信箱＋密碼。建立帳號後寄驗證信；只有驗證過的信箱對得到活動紀錄。
+  function signUpEmail(email, pw) {
+    return auth.createUserWithEmailAndPassword(String(email).trim(), pw).then(function (c) { return c.user.sendEmailVerification(); });
+  }
+  function signInEmail(email, pw) { return auth.signInWithEmailAndPassword(String(email).trim(), pw); }
+  function resendVerify() { if (!auth.currentUser) return Promise.reject(new Error('not-signed-in')); return auth.currentUser.sendEmailVerification(); }
+  function resetPw(email) { return auth.sendPasswordResetEmail(String(email).trim()); }
+  // 點了驗證信之後，要重新讀一次帳號並換新的權杖，規則才看得到「已驗證」。
+  function refreshUser() {
+    var u = auth.currentUser;
+    if (!u) return Promise.resolve(null);
+    return u.reload().then(function () { return auth.currentUser.getIdToken(true); }).then(function () {
+      user = shape(auth.currentUser); if (onU) onU(user); return user;
+    });
+  }
   function col(name) { return db.collection('users').doc(user.uid).collection(name); }
   function need() { if (!user) throw new Error('not-signed-in'); }
 
@@ -105,6 +123,54 @@
     });
   }
 
+  // ── 活動紀錄：activityRecords/{sessionId}__{email}。本人只讀得到 email 等於自己已驗證信箱的那幾筆。 ──
+  function acts() { return db.collection('activityRecords'); }
+  function listActs() {
+    if (!user || !user.verified || !user.email) return Promise.resolve([]);
+    return acts().where('email', '==', user.email).get().then(function (s) {
+      var out = []; s.forEach(function (d) { var x = d.data(); x.docId = d.id; out.push(x); }); return out;
+    });
+  }
+  function decideAct(act, status) {
+    need();
+    var now = g.firebase.firestore.FieldValue.serverTimestamp(), ref = acts().doc(act.docId);
+    if (status === 'declined') {
+      // 選「不用」：整筆改寫成只剩記號，內容欄位全部移除。
+      return ref.set({ email: act.email, sessionId: act.sessionId, status: 'declined', decidedAt: now })
+        .then(function () { return { docId: act.docId, email: act.email, sessionId: act.sessionId, status: 'declined' }; });
+    }
+    return ref.update({ status: status, decidedAt: now }).then(function () { act.status = status; return act; });
+  }
+  function isAdmin() {
+    if (!user) return Promise.resolve(false);
+    return db.collection('admins').doc(user.uid).get().then(function (d) { return d.exists; }, function () { return false; });
+  }
+  function sessionActs(sessionId) {
+    need();
+    return acts().where('sessionId', '==', sessionId).get().then(function (s) {
+      var m = {}; s.forEach(function (d) { m[d.id] = { status: d.data().status || 'pending' }; }); return m;
+    });
+  }
+  function writeActs(writes) {
+    need();
+    var now = g.firebase.firestore.FieldValue.serverTimestamp(), jobs = [], i;
+    function run(part) {
+      var b = db.batch();
+      part.forEach(function (w) {
+        var data = {}, k; for (k in w.data) if (Object.prototype.hasOwnProperty.call(w.data, k)) data[k] = w.data[k];
+        data.importedAt = now;
+        if (w.isNew) b.set(acts().doc(w.id), data); else b.set(acts().doc(w.id), data, { merge: true });
+      });
+      return b.commit().then(function () { return { ok: part.length, failed: 0 }; }, function () { return { ok: 0, failed: part.length }; });
+    }
+    for (i = 0; i < writes.length; i += 200) jobs.push(run(writes.slice(i, i + 200)));
+    return Promise.all(jobs).then(function (rs) {
+      return rs.reduce(function (a, r) { return { ok: a.ok + r.ok, failed: a.failed + r.failed }; }, { ok: 0, failed: 0 });
+    });
+  }
+
   g.JteCloud = { init: init, signIn: signIn, signOut: signOut, compress: compress, listInsp: listInsp,
-    saveInsp: saveInsp, deletePhoto: deletePhoto, deleteInsp: deleteInsp, wipeAll: wipeAll };
+    saveInsp: saveInsp, deletePhoto: deletePhoto, deleteInsp: deleteInsp, wipeAll: wipeAll,
+    signUpEmail: signUpEmail, signInEmail: signInEmail, resendVerify: resendVerify, resetPw: resetPw, refreshUser: refreshUser,
+    listActs: listActs, decideAct: decideAct, isAdmin: isAdmin, sessionActs: sessionActs, writeActs: writeActs };
 })(window);

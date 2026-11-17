@@ -7,6 +7,7 @@
 //   2. 讀：octenso/allowlist —— 登入閘查白名單
 //   3. /me 靈感區：users/{uid}/inspirations、users/{uid}/photos，用 Firebase Auth（只有本人能讀寫）。
 //      2026-11-17 起這兩段實際發布在另一個專案 lianxichang-me（/me 專用），不在 jointoenjoy；本檔保留作為規則文字的備份。
+//   4. /me 活動紀錄：activityRecords/{sessionId}__{email}、admins/{uid}，同樣只發布在 lianxichang-me。
 //   注意：首頁與部分工具另有 users/{email}/daily 的同步程式（未用 Firebase Auth）；線上規則可能與本檔不同，發布前請先對照線上現有規則，只加入 /me 靈感區那兩段，不要整份覆蓋。
 // 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
 
@@ -45,6 +46,56 @@ service cloud.firestore {
         && request.resource.data.caption is string && request.resource.data.caption.size() <= 200
         && request.resource.data.order is int;
       allow update: if false;
+    }
+
+    // ── /me 活動紀錄（發布在專案 lianxichang-me）──
+    // 管理者：admins/{uid} 有這一筆的帳號。這一筆由專案擁有者在 Console 手動建立，用戶端不能寫。
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function myVerifiedEmail() {
+      return request.auth != null && request.auth.token.email_verified == true ? request.auth.token.email : null;
+    }
+    function scoreOk(m) {
+      return m is map && m.keys().hasOnly(['body', 'mood'])
+        && (m.body == null || (m.body is int && m.body >= 1 && m.body <= 10))
+        && (m.mood == null || (m.mood is int && m.mood >= 1 && m.mood <= 10));
+    }
+    // 上限與 me/me-data.js 的 act 一致。欄位清單就是全部：沒有姓名、企業、部門、職級，也沒有給主辦方的評分。
+    function actOk(d, id) {
+      return d.keys().hasOnly(['email', 'sessionId', 'title', 'date', 'photoUrl', 'pre', 'post', 'expect', 'feeling', 'takeaway', 'feedback', 'status', 'importedAt', 'decidedAt'])
+        && d.email is string && d.email.size() <= 200 && d.email == d.email.lower()
+        && d.sessionId is string && d.sessionId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{1,30}$')
+        && id == d.sessionId + '__' + d.email
+        && d.title is string && d.title.size() <= 100
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.photoUrl is string && d.photoUrl.size() <= 500
+        && scoreOk(d.pre) && scoreOk(d.post)
+        && d.expect is string && d.expect.size() <= 2000
+        && d.feeling is string && d.feeling.size() <= 2000
+        && d.takeaway is string && d.takeaway.size() <= 2000
+        && d.feedback is string && d.feedback.size() <= 2000;
+    }
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+    match /activityRecords/{id} {
+      allow read: if isAdmin() || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail());
+      // 管理者：新增一律是 pending；更新不能動本人的決定，也不能覆寫本人選了「不用」的那一筆。
+      allow create: if isAdmin() && actOk(request.resource.data, id) && request.resource.data.status == 'pending';
+      allow update: if (isAdmin() && actOk(request.resource.data, id)
+                        && resource.data.status != 'declined' && request.resource.data.status == resource.data.status)
+        // 本人：收進來／之後再說，只動 status 與 decidedAt
+        || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail() && resource.data.status != 'declined'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
+            && request.resource.data.status in ['kept', 'pending'])
+        // 本人：不用 → 整筆只剩記號，內容全部移除
+        || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail()
+            && request.resource.data.keys().hasOnly(['email', 'sessionId', 'status', 'decidedAt'])
+            && request.resource.data.email == resource.data.email && request.resource.data.sessionId == resource.data.sessionId
+            && request.resource.data.status == 'declined');
+      allow delete: if isAdmin();
     }
 
     // 其餘一律禁止
