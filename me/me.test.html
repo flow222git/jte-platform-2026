@@ -128,6 +128,24 @@ check('資料檔：靈感區的上限與文案',()=>{const I=D.insp;eq(I.maxPhot
   ['add','needLogin','signIn','signOut','signedIn','cloudNote','offline','caption','remove','left','right','saving','kept','fail','photoCount','delPhoto','delIns','delAsk','delYes','full','compressFail','wipe','wipeAsk','wipeYes','wiped'].forEach(k=>ok(I[k],k));
   ['empty','text','count','type','size','caption'].forEach(k=>ok(I.bad[k],'bad.'+k));eq(D.capture.label,'靈感');ok(D.privacy.cloud.indexOf('只有你看得到')>-1);
   ok(I.cloudNote.indexOf('只有你看得到')>-1);});
+const JP='data:image/jpeg;base64,AAAA';
+check('靈感驗證：有一句或有照片才算；張數、類型、大小、註解、字數都有上限',()=>{const L=D.insp,c=x=>M.inspCheck(x,L).why;
+  eq(M.inspCheck({text:'好酷'},L).ok,true);eq(M.inspCheck({text:'',photos:[{data:JP}]},L).ok,true);
+  eq(c({text:'  '}),'empty');eq(c(null),'empty');eq(c({photos:[]}),'empty');
+  eq(c({text:'x'.repeat(501)}),'text');
+  eq(c({photos:[1,2,3,4,5].map(()=>({data:JP}))}),'count');
+  eq(c({photos:[{data:'data:image/png;base64,AAAA'}]}),'type');eq(c({photos:[{data:'javascript:alert(1)'}]}),'type');
+  eq(c({photos:[{data:JP+'A'.repeat(420001)}]}),'size');
+  eq(c({photos:[{data:JP,caption:'x'.repeat(201)}]}),'caption');eq(M.inspCheck({photos:[{data:JP,caption:'x'.repeat(200)}]},L).ok,true);});
+check('縮圖尺寸：等比縮到最長邊，本來就小的不放大',()=>{const a=M.fitSize(4032,3024,1280);eq(a.w,1280);eq(a.h,960);const b=M.fitSize(1000,3000,1280);eq(b.w,427);eq(b.h,1280);const s=M.fitSize(800,600,1280);eq(s.w,800);eq(s.h,600);});
+check('buildPages：有照片的靈感成為一頁，照片照順序、只收圖片；只有照片沒有字也算',()=>{
+  const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'',cloud:true,photos:[{id:'b',data:'data:image/jpeg;base64,B',caption:'二',order:1},{id:'a',data:'data:image/jpeg;base64,A',caption:'一',order:0},{id:'x',data:'javascript:alert(1)',order:2}]},{id:'m1',key:'2026-11-11',text:'只有字'}]);
+  eq(ps.length,2);const p=ps[0];eq(p.src,'Insp');eq(p.kind,'隨手記');eq(p.label,'照片');eq(p.photos.map(x=>x.id).join(),'a,b');eq(p.photos[0].caption,'一');
+  eq(ps[1].src,'Memo');eq(ps[1].photos.length,0);
+  eq(M.buildPages({},[{id:'ins-2',key:'2026-11-12',photos:[{id:'x',data:'javascript:alert(1)'}]}]).length,0,'只有壞照片不成頁');});
+check('搜尋：找得到照片註解',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'散步',photos:[{id:'a',data:JP,caption:'河堤的夕陽',order:0}]}]);
+  eq(M.searchPages(ps,'夕陽',{},{}).length,1);eq(M.searchPages(ps,'散步 河堤',{},{}).length,1);eq(M.searchPages(ps,'山',{},{}).length,0);});
+check('視角：方法視角不收靈感',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'x',photos:[{id:'a',data:JP,order:0}]}]);eq(M.lensGroups('to',ps,{}).length,0);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>

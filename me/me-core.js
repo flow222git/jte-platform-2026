@@ -25,7 +25,7 @@
     if (!m) return null;
     var p = { id: String(l.recordId || l.id || (l.source + '-' + key + '-' + i)), key: key, src: l.source,
       kind: m.kind, title: m.name, label: m.name, doodle: m.doodle, tool: m.tool,
-      text: '', sub: '', note: '', meta: [], feel: arr(l.feelings), big: null, link: '' };
+      text: '', sub: '', note: '', meta: [], feel: arr(l.feelings), big: null, link: '', photos: [] };
     var dur = l.durationSec ? mmss(l.durationSec) : '';
     switch (l.source) {
       case 'BreatheAware':
@@ -80,14 +80,19 @@
       if (!r || typeof r !== 'object' || !/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
       if (r.note || arr(r.moods).length) {
         ps.push({ id: 'day-' + k, key: k, src: 'Day', kind: '隨手記', title: '', label: String(r.note || '今日').slice(0, 6), doodle: '', tool: '',
-          text: r.note || '', sub: arr(r.moods).length ? '狀態：' + r.moods.join('・') : '', note: '', meta: [], feel: [], big: null, link: '' });
+          text: r.note || '', sub: arr(r.moods).length ? '狀態：' + r.moods.join('・') : '', note: '', meta: [], feel: [], big: null, link: '', photos: [] });
       }
       arr(r.linked).forEach(function (l, i) { var p = toPage(k, l, i); if (p) ps.push(p); });
     });
     arr(memos).forEach(function (m) {
-      if (!m || !m.text) return;
-      ps.push({ id: String(m.id), key: m.key, src: 'Memo', kind: '隨手記', title: '', label: String(m.text).slice(0, 6), doodle: '', tool: '',
-        text: String(m.text), sub: '', note: '', meta: [], feel: [], big: null, link: '' });
+      if (!m) return;
+      var ph = arr(m.photos).filter(function (x) { return x && /^data:image\//.test(String(x.data || '')); })
+        .slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); })
+        .map(function (x) { return { id: String(x.id), data: String(x.data), caption: String(x.caption || '') }; });
+      var text = String(m.text || '');
+      if (!text && !ph.length) return;
+      ps.push({ id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
+        text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph });
     });
     ps.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
     return ps;
@@ -215,11 +220,33 @@
     }).sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; }).slice(0, n || 2)
       .map(function (t) { return { t: t, p: byId[t.recId] }; });
   }
+  // 靈感：有一句或有照片才算。上限來自 me-data.js 的 insp，與 firestore.rules 一致。
+  function inspCheck(ins, lim) {
+    if (!ins || typeof ins !== 'object') return { ok: false, why: 'empty' };
+    var text = String(ins.text || '').trim(), ph = arr(ins.photos);
+    if (!text && !ph.length) return { ok: false, why: 'empty' };
+    if (text.length > lim.maxText) return { ok: false, why: 'text' };
+    if (ph.length > lim.maxPhotos) return { ok: false, why: 'count' };
+    for (var i = 0; i < ph.length; i++) {
+      var d = String((ph[i] || {}).data || '');
+      if (d.indexOf('data:image/jpeg;base64,') !== 0) return { ok: false, why: 'type' };
+      if (d.length > lim.maxDataLen) return { ok: false, why: 'size' };
+      if (String(ph[i].caption || '').length > lim.maxCaption) return { ok: false, why: 'caption' };
+    }
+    return { ok: true, why: '' };
+  }
+  function fitSize(w, h, maxEdge) {
+    var m = Math.max(w, h);
+    if (!(m > maxEdge)) return { w: w, h: h };
+    var r = maxEdge / m;
+    return { w: Math.round(w * r), h: Math.round(h * r) };
+  }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
   function hay(p, a, t) {
     var j = (t && t.join) || {};
     return [p.title, p.text, p.sub, p.note, p.label, p.kind].concat(arr(p.feel), arr(a && a.tags),
-      arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why))
+      arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why),
+      arr(p.photos).map(function (x) { return x && x.caption; }))
       .filter(Boolean).join('\n').toLowerCase();
   }
   function searchPages(pages, q, ann, triByRec) {
@@ -246,7 +273,7 @@
         put(t.join.kind === 'state' ? t.join.state : t.join.kind === 'circle' ? 'circle' : 'curious', p);
       });
     } else if (lens === 'to') {
-      arr(pages).forEach(function (p) { if (p.src === 'Day' || p.src === 'Memo') return; put(p.kind === '活動' ? '活動' : p.title, p); });
+      arr(pages).forEach(function (p) { if (p.src === 'Day' || p.src === 'Memo' || p.src === 'Insp') return; put(p.kind === '活動' ? '活動' : p.title, p); });
     } else if (lens === 'enjoy') {
       arr(pages).forEach(function (p) { arr((ann[p.id] || {}).enjoy).forEach(function (k) { put(k, p); }); });
     } else return [];
@@ -306,5 +333,5 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups };
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize };
 })(window);
