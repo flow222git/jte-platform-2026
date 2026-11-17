@@ -144,9 +144,11 @@
     logs: ['itemId', 'date', 'amount', 'note', 'at'],
     notes: ['itemId', 'title', 'body', 'updatedAt']
   };
+  // 規則要求每個欄位都在；呼叫端沒給的補上預設值，免得整筆被擋。
+  var DEFAULTS = { name: '', unit: '', color: '', archived: false, createdAt: 0, itemId: '', date: '', amount: 0, note: '', at: 0, title: '', body: '', updatedAt: 0 };
   function pick(kind, obj) {
     var out = {}, f = FIELDS[kind], i;
-    for (i = 0; i < f.length; i++) if (obj[f[i]] !== undefined) out[f[i]] = obj[f[i]];
+    for (i = 0; i < f.length; i++) out[f[i]] = obj[f[i]] !== undefined ? obj[f[i]] : DEFAULTS[f[i]];
     return out;
   }
   function pracLoad() {
@@ -187,9 +189,10 @@
     return safe(function () {
       need();
       return Promise.all([col(KINDS.logs).where('itemId', '==', itemId).get(), col(KINDS.notes).where('itemId', '==', itemId).get()]).then(function (r) {
-        var refs = [col(KINDS.items).doc(itemId)];
+        var refs = [];
         r.forEach(function (s) { s.forEach(function (d) { refs.push(d.ref); }); });
-        return delRefs(refs);
+        // 先刪紀錄與筆記，都成功了才刪項目本身，失敗時不會留下沒有項目的紀錄。
+        return delRefs(refs).then(function () { return col(KINDS.items).doc(itemId).delete(); });
       });
     });
   }
