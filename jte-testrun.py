@@ -25,7 +25,33 @@ import threading
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+
+
+def find_chrome():
+    """找 Chrome：先看環境變數 JTE_CHROME，再依作業系統試常見路徑，最後查 PATH。"""
+    env = os.environ.get('JTE_CHROME')
+    if env:
+        return env
+    candidates = [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # macOS
+    ]
+    for base in (os.environ.get('PROGRAMFILES'),
+                 os.environ.get('PROGRAMFILES(X86)'),
+                 os.environ.get('LOCALAPPDATA')):
+        if base:
+            candidates.append(os.path.join(base, 'Google', 'Chrome', 'Application', 'chrome.exe'))
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    import shutil
+    for name in ('google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'chrome'):
+        found = shutil.which(name)
+        if found:
+            return found
+    return candidates[0]
+
+
+CHROME = find_chrome()
 POLL_TIMEOUT = 90.0   # modal 測試含多次 PBKDF2，給足輪詢逾時
 POLL_INTERVAL = 0.5
 
