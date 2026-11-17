@@ -552,10 +552,11 @@ function renderAuth(){var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S
   b.disabled=false;
   a.innerHTML=S.user?esc(I.signedIn.replace('{n}',S.user.name))+' <button class="lnk" id="signout">'+I.signOut+'</button>':esc(I.needLogin)+' <button class="lnk pri" id="signin">'+I.signIn+'</button>'}
 function renderPics(){$('#pics').innerHTML=S.draft.map(function(d,i){return '<div class="pic" data-i="'+i+'"><img src="'+esc(d.data)+'" alt=""><input class="in" maxlength="'+I.maxCaption+'" value="'+esc(d.caption)+'" placeholder="'+esc(I.caption)+'" aria-label="'+esc(I.caption)+'"><div class="row">'+(i?'<button class="lnk" data-pa="left">'+I.left+'</button>':'')+(i<S.draft.length-1?'<button class="lnk" data-pa="right">'+I.right+'</button>':'')+'<button class="lnk" data-pa="remove">'+I.remove+'</button></div></div>'}).join('');
-  $('#keepnote').textContent=DEMO?'示範模式不會儲存。':(S.draft.length?I.cloudNote:D.capture.note);renderAuth()}
+  $('#keepnote').textContent=DEMO?I.demoNote:(S.draft.length?I.cloudNote:D.capture.note);renderAuth()}
 function syncCaps(){$$('#pics .pic').forEach(function(el){var d=S.draft[+el.dataset.i];if(d)d.caption=el.querySelector('.in').value.trim()})}
 function loadCloud(){if(!S.user||!window.JteCloud){S.cloud=[];renderAll();return}
-  JteCloud.listInsp().then(function(l){S.cloud=l;renderAll()}).catch(function(){toast(I.offline)})}
+  var uid=S.user.uid;
+  JteCloud.listInsp().then(function(l){if(!(S.user&&S.user.uid===uid))return;var ids={};l.forEach(function(x){ids[x.id]=1});S.cloud=S.cloud.filter(function(x){return !ids[x.id]}).concat(l);renderAll()}).catch(function(){if(S.user&&S.user.uid===uid)toast(I.offline)})}
 function rng(s){return function(){return (s=(s*9301+49297)%233280)/233280}}
 function hash(s){var h=7;String(s).split('').forEach(function(c){h=(h*31+c.charCodeAt(0))%9973});return h}
 
@@ -889,10 +890,10 @@ function keepInsp(v){var ins={key:TODAY,text:v,photos:S.draft.map(function(d){re
   if(!S.user){toast(I.needLogin);return}
   if(navigator.onLine===false){toast(I.fail);return}
   var k=$('#keep');k.disabled=true;k.textContent=I.saving;
-  var tmo=new Promise(function(res,rej){setTimeout(function(){rej(new Error('timeout'))},I.saveTimeoutMs)}),restore=function(){k.disabled=false;k.textContent=D.capture.keep};
-  Promise.race([JteCloud.saveInsp(ins),tmo]).then(function(saved){S.cloud.unshift(saved);afterKeep()},function(){toast(I.fail)}).then(restore,restore)}
+  var done=false,tm=setTimeout(function(){if(!done)toast(I.slow)},I.saveTimeoutMs),restore=function(){done=true;clearTimeout(tm);k.disabled=false;k.textContent=D.capture.keep};
+  Promise.resolve().then(function(){return JteCloud.saveInsp(ins)}).then(function(saved){S.cloud.unshift(saved);afterKeep()},function(){toast(I.fail)}).then(restore,restore)}
 function afterKeep(){var id=S.cloud[0].id;if(S.capFor){newTri({kind:'state',state:S.capFor},'',id);S.capFor=null;capLabel();save()}
-  $('#memo').value='';S.draft=[];renderPics();renderAll();toast(DEMO?'留下了':I.kept)}
+  $('#memo').value='';S.draft=[];renderPics();renderAll();toast(DEMO?I.keptLocal:I.kept)}
 $('#addpic').onclick=function(){if(S.draft.length>=I.maxPhotos){toast(I.full.replace('{n}',I.maxPhotos));return}
   if(!DEMO&&!S.user){JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}$('#picin').click()};
 $('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[],0,I.maxPhotos-S.draft.length);this.value='';syncCaps();
@@ -962,7 +963,7 @@ $('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.plac
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;showPane(location.hash);
 $('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
-if(DEMO){S.cloud=demoInsp();S.cloudOk=true}else if(window.JteCloud){S.cloudOk=JteCloud.init(function(u){S.user=u;renderAuth();renderData();loadCloud()})}
+if(DEMO){S.cloud=demoInsp();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}renderAuth();renderData();loadCloud()})}
 renderPics();
 renderAll();
 window.__me={S:S,O:O,reload:reload,M:M};

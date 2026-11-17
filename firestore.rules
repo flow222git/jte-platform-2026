@@ -6,6 +6,7 @@
 //   1. 寫：octenso_feedback —— 新增回饋（只新增，不讀/改/刪）
 //   2. 讀：octenso/allowlist —— 登入閘查白名單
 //   3. /me 靈感區：users/{uid}/inspirations、users/{uid}/photos，用 Firebase Auth（只有本人能讀寫）。
+//   注意：首頁與部分工具另有 users/{email}/daily 的同步程式（未用 Firebase Auth）；線上規則可能與本檔不同，發布前請先對照線上現有規則，只加入 /me 靈感區那兩段，不要整份覆蓋。
 // 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
 
 rules_version = '2';

@@ -239,7 +239,7 @@
     var m = Math.max(w, h);
     if (!(m > maxEdge)) return { w: w, h: h };
     var r = maxEdge / m;
-    return { w: Math.round(w * r), h: Math.round(h * r) };
+    return { w: Math.max(1, Math.round(w * r)), h: Math.max(1, Math.round(h * r)) };
   }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
   function hay(p, a, t) {
