@@ -54,7 +54,7 @@ service cloud.firestore {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     function myVerifiedEmail() {
-      return request.auth != null && request.auth.token.email_verified == true ? request.auth.token.email : null;
+      return request.auth != null && request.auth.token.email_verified == true ? request.auth.token.email.lower() : null;
     }
     function scoreOk(m) {
       return m is map && m.keys().hasOnly(['body', 'mood'])
@@ -88,14 +88,15 @@ service cloud.firestore {
                         && resource.data.status != 'declined' && request.resource.data.status == resource.data.status)
         // 本人：收進來／之後再說，只動 status 與 decidedAt
         || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail() && resource.data.status != 'declined'
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt']) && request.resource.data.decidedAt == request.time
             && request.resource.data.status in ['kept', 'pending'])
         // 本人：不用 → 整筆只剩記號，內容全部移除
         || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail()
             && request.resource.data.keys().hasOnly(['email', 'sessionId', 'status', 'decidedAt'])
             && request.resource.data.email == resource.data.email && request.resource.data.sessionId == resource.data.sessionId
-            && request.resource.data.status == 'declined');
-      allow delete: if isAdmin();
+            && request.resource.data.status == 'declined' && request.resource.data.decidedAt == request.time);
+      // 本人選了「不用」的記號不能從用戶端刪（刪了重新匯入就會再問一次）；真的要清，由擁有者在 Console 處理。
+      allow delete: if isAdmin() && resource.data.status != 'declined';
     }
 
     // 其餘一律禁止
