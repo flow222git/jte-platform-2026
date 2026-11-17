@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>me-core tests</title>
+<script src="me-data.js"></script>
+<script src="me-core.js"></script>
+</head><body>
+<pre id="out">running...</pre>
+<script>
+const out=document.getElementById('out');let pass=0,fail=0;const lines=[];
+function log(s){lines.push(s);out.textContent=lines.join('\n');}
+function eq(a,b,m){if(a!==b)throw new Error((m||'eq')+' got['+a+'] want['+b+']');}
+function ok(v,m){if(!v)throw new Error(m||'not ok');}
+function check(n,fn){try{fn();pass++;log('PASS '+n);}catch(e){fail++;log('FAIL '+n+' :: '+(e&&e.message||e));}}
+const M=window.JteMe,D=window.JTE_ME_DATA,K='2026-11-10';
+
+check('資料檔：五個狀態各有兩扇門，門是存在的工具或「記一句」；好的狀態排在前面',()=>{eq(D.states.length,5);eq(D.states.map(s=>s.key).join(),'good,keen,empty,full,stuck');D.states.forEach(s=>{eq(s.doors.length,2);ok(s.name&&s.desc&&s.say);s.doors.forEach(d=>ok(d.note||D.tools[d.tool],'missing tool '+d.tool));ok(s.doors.some(d=>d.tool),'至少一扇工具門');});});
+check('資料檔：工具連結皆為相對或站內路徑',()=>{Object.values(D.tools).forEach(t=>ok(!/^https?:/.test(t.href),t.href));});
+check('資料檔：每個來源對應的工具都存在',()=>{Object.values(D.sources).forEach(s=>{if(s.tool)ok(D.tools[s.tool],s.tool);ok(D.kinds.indexOf(s.kind)>-1,s.kind);});});
+check('dlabel：日期與星期',()=>{eq(M.dlabel('2026-11-17'),'11/17 週二');});
+check('未知來源：不產生頁面',()=>{eq(M.toPage(K,{source:'Nope'},0),null);eq(M.toPage(K,null,0),null);});
+check('小憩練息：呼吸法名稱、時長、感受',()=>{const p=M.toPage(K,{source:'XiaoQi',recordId:'x1',modeName:'諧振呼吸',durationSec:300,feelings:['輕鬆很多']},0);eq(p.id,'x1');eq(p.kind,'練習');eq(p.text,'諧振呼吸');eq(p.meta[0],'5 分 00 秒');eq(p.feel[0],'輕鬆很多');eq(p.tool,'xiaoqi');});
+check('身體能量：數字照原樣、等級用工具自己的詞',()=>{const p=M.toPage(K,{source:'HRV',energy:72,level:'high',hr:64,rmssd:48,tags:['剛起床']},0);eq(p.big,72);eq(p.text,'充足');eq(p.meta.join('|'),'心率 64|RMSSD 48 ms');eq(p.feel[0],'剛起床');});
+check('身體能量：energy 為 0 仍保留',()=>{eq(M.toPage(K,{source:'HRV',energy:0},0).big,0);});
+check('呼吸覺察（新舊兩種來源）',()=>{eq(M.toPage(K,{source:'BreatheAware',patternLabel:'呼吸偏淺',breathRate:14},0).text,'呼吸偏淺');eq(M.toPage(K,{source:'BreathAware',stateLabel:'平靜',bpm:8},0).meta[0],'每分鐘 8 次');});
+check('問易：卦名、主題、筆記',()=>{const p=M.toPage(K,{source:'WenYi',mainHex:'復',topic:'工作',summary:'回到起點',note:'不急'},0);eq(p.text,'復');eq(p.sub,'主題：工作');ok(p.note.indexOf('不急')>-1);eq(p.label,'問易・復');});
+check('卜易：本卦與之卦',()=>{eq(M.toPage(K,{source:'BuYi',ben:'乾',bian:'姤'},0).text,'乾，之卦 姤');});
+check('書寫與深度 HRV',()=>{eq(M.toPage(K,{source:'WriteSpace'},0).text,'一次書寫');eq(M.toPage(K,{source:'HRVRecord',stressIndex:40,vitalityIndex:70},0).meta.join('|'),'壓力 40|活力 70');});
+check('活動：名稱成為標題、照片連結只收 http(s)',()=>{const p=M.toPage(K,{source:'Activity',activityName:'太極體驗',photoUrl:'javascript:alert(1)'},0);eq(p.title,'太極體驗');eq(p.link,'');eq(M.toPage(K,{source:'Activity',photoUrl:'https://x.test/a'},0).link,'https://x.test/a');});
+check('心情溫度計：分數與作答不進頁面',()=>{const p=M.toPage(K,{source:'BSRS',score:13,level:'moderate',answers:[3,3,3,2,2],item6:1},0);const s=JSON.stringify(p);ok(s.indexOf('13')<0&&s.indexOf('moderate')<0&&s.indexOf('item6')<0,'leak '+s);});
+check('沒有 recordId 時用來源＋日期＋序號當 id',()=>{eq(M.toPage(K,{source:'TWCT',typeName:'A'},2).id,'TWCT-'+K+'-2');});
+check('buildPages：新到舊、每日備註成為一頁、隨手記併入、壞資料略過',()=>{
+  const ps=M.buildPages({'2026-11-01':{note:'記一下',moods:['平靜'],linked:[{source:'XiaoQi',modeName:'a'}]},'2026-11-09':{linked:[{source:'HRV',energy:50},{source:'Nope'}]},'bad-key':{linked:[{source:'HRV',energy:1}]},'2026-11-02':null},[{id:'m1',key:'2026-11-05',text:'好酷'},{id:'m2',key:'2026-11-06'}]);
+  eq(ps.length,4);eq(ps[0].key,'2026-11-09');eq(ps[1].id,'m1');eq(ps[3].key,'2026-11-01');ok(ps.some(p=>p.id==='day-2026-11-01'&&p.sub==='狀態：平靜'));});
+check('buildPages：空輸入',()=>{eq(M.buildPages(null,null).length,0);eq(M.buildPages({},[]).length,0);});
+check('hrvSeries：舊到新、只收有數字的',()=>{const s=M.hrvSeries({'2026-11-09':{linked:[{source:'HRV',energy:50}]},'2026-11-01':{linked:[{source:'HRV',energy:70},{source:'HRV'},{source:'XiaoQi'}]}});eq(s.length,2);eq(s[0].energy,70);eq(s[1].key,'2026-11-09');});
+check('monthCount：只算當月',()=>{const ps=[{key:'2026-11-01'},{key:'2026-11-30'},{key:'2026-10-31'}];eq(M.monthCount(ps,2026,10),2);eq(M.monthCount(ps,2026,9),1);});
+check('esc：跳脫 HTML',()=>{eq(M.esc('<b>"x"&\'</b>'),'&lt;b&gt;&quot;x&quot;&amp;&#39;&lt;/b&gt;');eq(M.esc(null),'');});
+
+check('addDays／daysBetween：跨月',()=>{eq(M.addDays('2026-11-01',-1),'2026-10-31');eq(M.daysBetween('2026-10-31','2026-11-17'),17);});
+const J={kind:'curious',text:'x'};
+check('三角形階段：只有起點／做了／三個角都有',()=>{eq(M.triStage({join:J},{}),'join');eq(M.triStage({join:J,recId:'r1'},{}),'to');eq(M.triStage({join:J,recId:'r1'},{r1:{enjoy:[]}}),'to');eq(M.triStage({join:J,recId:'r1'},{r1:{enjoy:['P']}}),'whole');eq(M.triStage(null,{}),'join');});
+check('三角形：自己寫的一句發現就算第三個角，不必貼幸福用字',()=>{eq(M.triStage({join:J,recId:'r1',found:'肩膀鬆了'},{}),'whole');ok(M.triCorners({join:J,recId:'r1',found:'肩膀鬆了'},{}).enjoy);ok(!M.triCorners({join:J,recId:'r1',found:''},{}).enjoy);});
+check('三角形：三個角可以用任何順序補，起點沒寫不算齊',()=>{eq(M.triStage({join:{kind:'blank'},recId:'r1',found:'a'},{}),'nojoin');eq(M.triStage({recId:'r1',found:'a'},{}),'nojoin');const c=M.triCorners({join:{kind:'from',text:'上次的發現',from:'t0'}},{});ok(c.join&&!c.to&&!c.enjoy);});
+check('三角形接線：只接走進門之後才出現的紀錄',()=>{
+  const pages=[{id:'new',tool:'hrv',key:'2026-11-17'},{id:'old',tool:'hrv',key:'2026-11-17'},{id:'x',tool:'xiaoqi',key:'2026-11-17'},{id:'past',tool:'hrv',key:'2026-11-10'}];
+  const tris=[{id:'t1',key:'2026-11-17',tool:'hrv',before:['old']}];
+  eq(M.linkTriangles(tris,pages).join(),'t1');eq(tris[0].recId,'new');});
+check('三角形接線：同一筆紀錄不會被接兩次、放下的不接、沒指定工具的不接',()=>{
+  const pages=[{id:'a',tool:'hrv',key:'2026-11-17'}];
+  const tris=[{id:'t1',key:'2026-11-17',tool:'hrv',before:[]},{id:'t2',key:'2026-11-17',tool:'hrv',before:[]},{id:'t3',key:'2026-11-17',tool:'hrv',before:[],dropped:true},{id:'t4',key:'2026-11-17',tool:'',before:[]}];
+  eq(M.linkTriangles(tris,pages).join(),'t1');ok(!tris[1].recId&&!tris[2].recId&&!tris[3].recId);
+  eq(M.linkTriangles(tris,pages).length,0,'second run links nothing');});
+check('三角形接線：有兩筆新紀錄時接較早的那筆',()=>{
+  const pages=[{id:'later',tool:'xiaoqi',key:'2026-11-18'},{id:'first',tool:'xiaoqi',key:'2026-11-17'}];
+  const t=[{id:'t',key:'2026-11-17',tool:'xiaoqi',before:[]}];M.linkTriangles(t,pages);eq(t[0].recId,'first');});
+check('再次遇見：只挑夠久以前的、同一天挑同一筆、沒有就回 null',()=>{
+  const pages=[{id:'n',key:'2026-11-10',text:'近'},{id:'o1',key:'2026-11-01',text:'遠一'},{id:'o2',key:'2026-10-01',text:'遠二'},{id:'e',key:'2026-09-01',text:'',title:''}];
+  const a=M.capsulePick(pages,'2026-11-17',14,7),b=M.capsulePick(pages,'2026-11-17',14,7);ok(a&&a.id===b.id);ok(a.id==='o1'||a.id==='o2');
+  eq(M.capsulePick([{id:'n',key:'2026-11-10',text:'近'}],'2026-11-17',14,3),null);eq(M.capsulePick([],'2026-11-17',14,3),null);});
+check('使用說明書：只彙整本人標過的',()=>{
+  const pages=[{id:'a',tool:'xiaoqi',label:'三口呼吸'},{id:'b',tool:'xiaoqi',label:'三口呼吸'},{id:'c',tool:'',label:'隨手'},{id:'d',tool:'hrv',label:'身體能量'}];
+  const m=M.manual(pages,{themes:[{n:'安定'},{n:'空的'}],ann:{a:{useful:true,enjoy:['P','M'],tags:['安定']},b:{useful:true,enjoy:['P'],notes:[{k:'2026-11-01',text:'舊'},{k:'2026-11-09',text:'新'}]},c:{useful:true},d:{}}});
+  eq(m.useful.join(),'三口呼吸');eq(m.themes.length,1);eq(m.themes[0].count,1);eq(m.enjoy[0].k,'P');eq(m.enjoy[0].count,2);eq(m.lastNote.text,'新');
+  const z=M.manual([],null);eq(z.useful.length,0);eq(z.lastNote,null);eq(z.whys.length,0);eq(z.founds.length,0);});
+check('使用說明書：願意開始的理由與發現只列本人寫過的，放下的不算',()=>{
+  const m=M.manual([],{tris:[{id:'a',key:'2026-11-01',why:['好奇','想學會'],found:'舊的發現',foundKey:'2026-11-02'},{id:'b',key:'2026-11-05',why:['好奇'],found:'新的發現',foundKey:'2026-11-09'},{id:'c',key:'2026-11-06',why:['不算'],found:'不算',dropped:true},{id:'d',key:'2026-11-07'}]});
+  eq(m.whys.length,2);eq(m.whys[0].w,'好奇');eq(m.whys[0].count,2);eq(m.whys[1].w,'想學會');eq(m.founds.length,2);eq(m.founds[0].text,'新的發現');});
+check('資料檔：探索期的門與三角形顏色齊全',()=>{D.welcome.doors.forEach(d=>ok(D.tools[d.tool]&&d.why));D.states.forEach(s=>ok(D.joinColors[s.key],s.key));D.kinds.forEach(k=>ok(D.kindColors[k],k));ok(D.capsule.minDays>0);ok(D.joinColors.from&&D.joinColors.curious);});
+check('資料檔：動力的詞、發現、資料與公開的文案齊全，使用說明書沒有門檻',()=>{ok(D.why.words.length>0&&D.why.ask&&D.why.own);ok(D.found.ask&&D.found.again&&D.found.color);ok(D.manual.unlock===undefined&&D.manual.empty);['now','choice','download','wipe','wipeAsk','wipeYes'].forEach(k=>ok(D.privacy[k],k));ok(D.privacy.choice.indexOf('預設是不要')>-1);});
+
+check('五個空間：網址有指定就照網址，不認得的一律到今天；舊網址仍可用',()=>{
+  eq(D.panes.map(p=>p.key).join(),'today,explore,practice,mymap,care');D.panes.forEach(p=>eq(M.paneOf('#'+p.key),p.key));
+  eq(M.paneOf(''),'today');eq(M.paneOf('#nope'),'today');eq(M.paneOf(null),'today');
+  eq(M.route('#mymap').sub,'trail');eq(M.route('#mymap-map').sub,'overview');eq(M.route('#mymap-map').pane,'mymap');
+  eq(M.route('#now').pane,'today');eq(M.route('#trail').pane,'mymap');eq(M.route('#map').pane,'mymap');eq(M.route('#map').sub,'overview');
+  eq(M.hashOf('mymap','overview'),'mymap-map');eq(M.hashOf('mymap','trail'),'mymap');eq(M.hashOf('care'),'care');eq(M.hashOf('x'),'today');});
+check('練習：對我有效的只收本人標過的；活動算平台以外的方法；最近一句發現跟著方法',()=>{
+  const ps=[{id:'a',title:'小憩・練息',tool:'xiaoqi',kind:'練習',key:'2026-11-01'},{id:'b',title:'小憩・練息',tool:'xiaoqi',kind:'練習',key:'2026-11-09'},{id:'c',title:'太極體驗',tool:'',kind:'活動',key:'2026-11-05'},{id:'h',title:'身體能量',tool:'hrv',kind:'練習',key:'2026-11-06'},{id:'m',title:'',tool:'',kind:'隨手記',key:'2026-11-07'}];
+  const st={ann:{a:{useful:true},c:{useful:true}},tris:[{recId:'a',found:'舊的',foundKey:'2026-11-01'},{recId:'b',found:'新的',foundKey:'2026-11-09'},{recId:'h',found:'不算',dropped:true}]};
+  const v=M.practiceView(ps,st);eq(v.works.map(x=>x.name+x.count).join(),'小憩・練息2,太極體驗1');eq(v.works[0].found,'新的');eq(v.works[0].last,'2026-11-09');eq(v.works[0].tool,'xiaoqi');
+  eq(v.outside.map(x=>x.name).join(),'太極體驗');const z=M.practiceView(null,null);eq(z.works.length,0);eq(z.outside.length,0);});
+check('資料檔：探索的卡片連結、一起練的守則與文案齊全',()=>{D.explore.cards.forEach(c=>ok(c.go?D.panes.some(p=>p.key===c.go):/^https:/.test(D.links[c.link]),c.name));eq(D.subs.length,2);
+  const C=D.care;ok(C.cheers.length>0&&C.rhythms.length>0&&C.spans.length>0);ok(C.max>1&&C.open.join&&C.mine.title&&C.create.open&&C.create.invite_only);ok(C.rules.out.indexOf('心得只有團員看得到')>-1);ok(C.rules.tone.indexOf('沒有排名')>-1&&C.rules.tone.indexOf('不算連續天數')>-1);ok(C.rules.hide.indexOf('心情溫度計')>-1);ok(C.locked.text&&C.checkin.keep);ok(D.joinColors.circle&&D.join.circle);});
+check('一起練：只數誰練了，不列誰沒練；同一人一天多次只算一人；休息的人另外列',()=>{
+  const c={members:[{id:'me',name:'我'},{id:'a',name:'阿哲'},{id:'b',name:'小安',resting:true}],checkins:[{who:'a',k:'2026-11-17',at:'2026-11-17T08:00',text:'早'},{who:'a',k:'2026-11-17',at:'2026-11-17T12:00'},{who:'me',k:'2026-11-16',at:'x'},{who:'a',k:'2026-11-11',at:'x'},{who:'a',k:'2026-11-10',at:'x'}]};
+  const v=M.circleView(c,'2026-11-17','me');eq(v.days.length,7);eq(v.days[6].k,'2026-11-17');eq(v.days[6].count,1);eq(v.days[5].count,1);eq(v.days[0].k,'2026-11-11');eq(v.weekCount,4);eq(v.today.length,2);eq(v.today[0].at,'2026-11-17T12:00');ok(!v.mine);eq(v.resting.join(),'小安');eq(v.size,3);
+  c.checkins.push({who:'me',k:'2026-11-17',at:'2026-11-17T13:00'});ok(M.circleView(c,'2026-11-17','me').mine);const z=M.circleView(null,'2026-11-17','me');eq(z.today.length,0);eq(z.weekCount,0);eq(z.size,0);});
+check('一起練：正在進行的團只列開放、還沒結束、我沒參加的；對外只有彙總，沒有任何人的心得',()=>{
+  const T='2026-11-17',mk=(id,o)=>Object.assign({id:id,name:id,open:true,start:'2026-11-15',span:7,members:[{id:'a',name:'阿哲'}],checkins:[{who:'a',k:T,at:'x',text:'私下的心得'}]},o);
+  const cs=[mk('ok',{}),mk('mine',{members:[{id:'me'},{id:'a'}]}),mk('closed',{open:false}),mk('ended',{start:'2026-11-01'}),mk('nolimit',{span:0,start:'2026-10-01'}),mk('full',{members:[{id:'a'},{id:'b'},{id:'c'}]})];
+  const l=M.openCircles(cs,'me',T,3);eq(l.map(x=>x.id).join(),'ok,nolimit,full');eq(l[0].day,3);eq(l[0].span,7);eq(l[0].size,1);eq(l[0].todayCount,1);ok(!l[0].full);ok(l[2].full);eq(l[1].span,0);
+  ok(JSON.stringify(l).indexOf('私下的心得')<0,'心得不能外露');ok(JSON.stringify(l).indexOf('阿哲')<0,'成員名字不能外露');eq(M.openCircles(null,'me',T,3).length,0);});
+check('一起練：第幾天與是否結束；是不是團員',()=>{eq(M.circleDay({start:'2026-11-17',span:7},'2026-11-17').day,1);ok(!M.circleDay({start:'2026-11-11',span:7},'2026-11-17').ended);ok(M.circleDay({start:'2026-11-10',span:7},'2026-11-17').ended);ok(!M.circleDay({start:'2020-01-01',span:0},'2026-11-17').ended);eq(M.circleDay({},'2026-11-17').day,1);
+  ok(M.isMember({members:[{id:'me'}]},'me'));ok(!M.isMember({members:[{id:'a'}]},'me'));ok(!M.isMember(null,'me'));});
+check('視角：因為一起練而開始的，在起點視角自成一組',()=>{const g=M.lensGroups('join',[{id:'a',title:'x',kind:'隨手記',src:'Memo'}],{ann:{},tris:[{join:{kind:'circle',text:'午休三口呼吸'},recId:'a'}]});eq(g.length,1);eq(g[0].k,'circle');});
+check('剛剛：只挑今天、沒有三角形、沒貼過、沒被略過的工具或活動紀錄',()=>{
+  const ps=[{id:'memo',key:'2026-11-17',tool:'',kind:'隨手記'},{id:'a',key:'2026-11-17',tool:'hrv',kind:'練習'},{id:'b',key:'2026-11-17',tool:'',kind:'活動'},{id:'old',key:'2026-11-16',tool:'hrv',kind:'練習'}];
+  eq(M.justPick(ps,{},{},'2026-11-17',[]).id,'a');eq(M.justPick(ps,{a:{}},{},'2026-11-17',[]).id,'b');eq(M.justPick(ps,{},{a:{enjoy:['P']}},'2026-11-17',['b']),null);eq(M.justPick([],null,null,'2026-11-17',null),null);});
+check('同一個狀態上次做了什麼：只列本人有紀錄的、新到舊、放下的不算',()=>{
+  const byId={r1:{id:'r1'},r2:{id:'r2'},r3:{id:'r3'}};
+  const tris=[{key:'2026-11-01',join:{kind:'state',state:'full'},recId:'r1'},{key:'2026-11-10',join:{kind:'state',state:'full'},recId:'r2',found:'鬆了'},{key:'2026-11-12',join:{kind:'state',state:'full'},recId:'r3',dropped:true},{key:'2026-11-13',join:{kind:'state',state:'empty'},recId:'r1'},{key:'2026-11-14',join:{kind:'state',state:'full'},recId:''},{key:'2026-11-15',join:{kind:'state',state:'full'},recId:'gone'}];
+  const l=M.lastSame(tris,byId,'full',2);eq(l.length,2);eq(l[0].p.id,'r2');eq(l[0].t.found,'鬆了');eq(l[1].p.id,'r1');eq(M.lastSame(tris,byId,'stuck').length,0);eq(M.lastSame(null,null,'full').length,0);});
+check('搜尋：找得到內容、標籤、補的話、起點、動力、發現；多個詞都要符合',()=>{
+  const ps=[{id:'a',title:'小憩・練息',text:'正念三口呼吸',feel:['稍微放鬆']},{id:'b',title:'問易',text:'復',note:'不急'},{id:'c',title:'活動',text:''}];
+  const ann={a:{tags:['安定的力量']},b:{notes:[{k:'x',text:'想通了'}]}},tr={c:{join:{kind:'curious',text:'朋友說太極很好玩'},why:['好奇'],found:'鬆而不懈'}};
+  const ids=q=>M.searchPages(ps,q,ann,tr).map(p=>p.id).join();
+  eq(ids(''),'a,b,c');eq(ids('呼吸'),'a');eq(ids('安定'),'a');eq(ids('想通'),'b');eq(ids('太極'),'c');eq(ids('好奇'),'c');eq(ids('鬆而不懈'),'c');eq(ids('小憩 放鬆'),'a');eq(ids('小憩 不急'),'');eq(ids('  '),'a,b,c');});
+check('視角：自取主題照本人的順序，空的主題也留著',()=>{
+  const g=M.lensGroups('mine',[{id:'a'},{id:'b'}],{themes:[{n:'安定'},{n:'空的'}],ann:{a:{tags:['安定']},b:{tags:['安定']}}});eq(g.length,2);eq(g[0].k,'安定');eq(g[0].ps.length,2);eq(g[1].ps.length,0);});
+check('視角：起點、方法、幸福用字各自分組，多的排前面，沒寫的不硬放',()=>{
+  const ps=[{id:'a',title:'小憩・練息',kind:'練習',src:'XiaoQi'},{id:'b',title:'小憩・練息',kind:'練習',src:'XiaoQi'},{id:'c',title:'太極體驗',kind:'活動',src:'Activity'},{id:'m',title:'',kind:'隨手記',src:'Memo'}];
+  const st={ann:{a:{enjoy:['P','M']},b:{enjoy:['P']}},tris:[{join:{kind:'state',state:'full'},recId:'a'},{join:{kind:'state',state:'full'},recId:'b'},{join:{kind:'curious',text:'x'},recId:'c'},{join:{kind:'from',text:'y'},recId:'m'},{join:{kind:'blank'},recId:'c'},{join:{kind:'state',state:'empty'},recId:'a',dropped:true}]};
+  const j=M.lensGroups('join',ps,st);eq(j.map(x=>x.k+x.ps.length).join(),'full2,curious2');
+  const t=M.lensGroups('to',ps,st);eq(t.map(x=>x.k+x.ps.length).join(),'小憩・練息2,活動1');
+  const e=M.lensGroups('enjoy',ps,st);eq(e.map(x=>x.k+x.ps.length).join(),'P2,M1');eq(M.lensGroups('oct',ps,st).length,0);eq(M.lensGroups('join',[],null).length,0);});
+
+check('優勢幸福力：照分數排序、前三個是核心優勢、沒填或不合理的不顯示',()=>{
+  const v=M.swView({year:'2026',happy:4,strengths:{甲:'13',乙:16,丙:'',丁:'abc',戊:14,己:15},perma:{P:76,E:'69',R:120,M:-1,A:''}},['甲','乙','丙','丁','戊','己'],['P','E','R','M','A']);
+  eq(v.strengths.map(x=>x.n+x.v).join(),'乙16,己15,戊14,甲13');eq(v.top.length,3);eq(v.perma.map(x=>x.k+x.v).join(),'P76,E69');eq(v.happy,4);eq(v.year,2026);ok(v.any);
+  const z=M.swView(null,['甲'],['P']);ok(!z.any);eq(z.strengths.length,0);eq(z.happy,null);eq(M.swView({happy:9},[],[]).happy,null);});
+check('工具箱：每個工具做過幾次、上次哪一天；隨手記不算',()=>{
+  const u=M.toolUse([{tool:'hrv',key:'2026-11-01'},{tool:'hrv',key:'2026-11-09'},{tool:'xiaoqi',key:'2026-11-03'},{tool:'',key:'2026-11-10'}]);
+  eq(u.hrv.count,2);eq(u.hrv.last,'2026-11-09');eq(u.xiaoqi.count,1);ok(!u['']);eq(Object.keys(M.toolUse(null)).length,0);});
+check('資料檔：工具箱涵蓋現行首頁的每個工具與八態能格，每個都有說明',()=>{
+  const all=[].concat.apply([],D.toolbox.groups.map(g=>g.tools));eq(all.length,Object.keys(D.tools).length);all.forEach(t=>ok(D.tools[t]&&D.tools[t].desc,t));eq(new Set(all).size,all.length);});
+check('資料檔：優勢幸福力的欄位與並列聲明',()=>{ok(D.sw.strengths.length>0);D.perma.order.forEach(k=>ok(D.sw.perma[k],k));ok(D.sw.note.indexOf('不互相對照')>-1);});
+
+log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
+try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
+</script>
+</body></html>
