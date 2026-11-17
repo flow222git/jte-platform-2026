@@ -158,7 +158,7 @@
     capture: { label: '靈感', forState: '記下「{s}」的這一刻', placeholder: '一句話、一個詞都可以', keep: '留下', start: '這是我想靠近的事', note: '只有一句話時存在這台裝置；放了照片的那一筆會存到你的雲端。「想靠近的事」會留成一個起點，之後做了可以接回來。', useful: '你標過「對我有用」的' },
     // 靈感區：一句話，或幾張照片各自加註解。有照片的一筆存到本人的雲端（Firebase），只有本人看得到。
     // 上限與 firestore.rules 一致；改這裡要一起改規則。
-    insp: { maxPhotos: 4, maxEdge: 1280, maxDataLen: 420000, maxCaption: 200, maxText: 500,
+    insp: { maxPhotos: 4, maxEdge: 1280, maxDataLen: 420000, maxCaption: 200, maxText: 500, saveTimeoutMs: 30000,
       add: '加照片', needLogin: '登入後可以放照片', signIn: '用 Google 登入', signOut: '登出', signedIn: '{n} 已登入',
       cloudNote: '放了照片的這一筆會存到你的雲端，只有你看得到。', offline: '照片功能暫時連不上，可以先只記一句。',
       caption: '這張想說什麼（可以不寫）', remove: '拿掉', left: '往前', right: '往後', saving: '存的時候…',

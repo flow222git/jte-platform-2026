@@ -124,7 +124,7 @@ check('資料檔：工具箱涵蓋現行首頁的每個工具與八態能格，�
   const all=[].concat.apply([],D.toolbox.groups.map(g=>g.tools));eq(all.length,Object.keys(D.tools).length);all.forEach(t=>ok(D.tools[t]&&D.tools[t].desc,t));eq(new Set(all).size,all.length);});
 check('資料檔：優勢幸福力的欄位與並列聲明',()=>{ok(D.sw.strengths.length>0);D.perma.order.forEach(k=>ok(D.sw.perma[k],k));ok(D.sw.note.indexOf('不互相對照')>-1);});
 
-check('資料檔：靈感區的上限與文案',()=>{const I=D.insp;eq(I.maxPhotos,4);eq(I.maxEdge,1280);eq(I.maxDataLen,420000);eq(I.maxCaption,200);eq(I.maxText,500);
+check('資料檔：靈感區的上限與文案',()=>{const I=D.insp;eq(I.maxPhotos,4);eq(I.maxEdge,1280);eq(I.maxDataLen,420000);eq(I.maxCaption,200);eq(I.maxText,500);eq(I.saveTimeoutMs,30000);
   ['add','needLogin','signIn','signOut','signedIn','cloudNote','offline','caption','remove','left','right','saving','kept','fail','photoCount','delPhoto','delIns','delAsk','delYes','full','compressFail','wipe','wipeAsk','wipeYes','wiped'].forEach(k=>ok(I[k],k));
   ['empty','text','count','type','size','caption'].forEach(k=>ok(I.bad[k],'bad.'+k));eq(D.capture.label,'靈感');ok(D.privacy.cloud.indexOf('只有你看得到')>-1);
   ok(I.cloudNote.indexOf('只有你看得到')>-1);});
