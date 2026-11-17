@@ -283,6 +283,21 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
 @media(max-width:980px){.trail{grid-template-columns:1fr}.trail .sheet{position:static}}
 @media(max-width:1060px){.panes span{display:none}}
 @media(max-width:860px){.cards3{grid-template-columns:1fr}.mirrors{grid-template-columns:1fr}.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.swform fieldset{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:0 16px}.in,.memo textarea{font-size:16px}.sheets.two{grid-template-columns:1fr}.now{grid-template-columns:1fr}.bento{grid-template-columns:1fr 1fr}.hero{align-items:end;padding:22px 0 14px}.blobs{width:112px}.panel{padding:20px}.rec>button{grid-template-columns:18px 1fr auto}.rec .x{grid-column:2/4;white-space:normal}.tile{min-height:164px}.num{font-size:46px}.welcome{border-radius:var(--r-lg);padding:24px}}
+.pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
+.pics:empty{display:none}
+.pic{display:flex;flex-direction:column;gap:6px}
+.pic img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}
+.pic .in{font-size:13px;padding:6px 8px}
+.pic .row{gap:4px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:10px 0}
+.photos figure{margin:0}
+.photos .ph{display:block;padding:0;border:0;background:none;cursor:zoom-in;width:100%}
+.photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}
+.photos figcaption{font-size:13px;color:var(--ink-3);margin-top:4px}
+dialog.zoom{border:0;padding:0;background:transparent;max-width:min(92vw,1280px)}
+dialog.zoom::backdrop{background:rgba(3,38,57,.82)}
+dialog.zoom img{max-width:100%;max-height:82vh;display:block;border-radius:var(--r-sm)}
+dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 @media(pointer:coarse){.chip,.dot{min-height:36px}.btn.sm{min-height:38px}.lnk{padding-block:8px}.acts .lnk{padding:7px 14px}}
 @media(max-width:640px){.swcols{grid-template-columns:1fr}.panes{position:fixed;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:12px;right:12px;display:flex;margin:0}.panes button{flex:1;flex-direction:column;justify-content:center;gap:2px;padding:7px 2px;min-height:52px}.panes b{font-size:11.5px;letter-spacing:.02em}.panes span{display:none}.cards2{grid-template-columns:1fr}.fab{right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:10px 16px}body{padding-bottom:100px}.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}.sheets{grid-template-columns:1fr}.orow{grid-template-columns:30px 1fr}.orow>.row{grid-column:1/-1}.gcards{grid-template-columns:1fr;gap:6px}.gcard,.gcard:nth-child(-n+2){grid-column:auto}.gcard{flex-direction:row;align-items:baseline;gap:10px;padding:10px 14px}.gcard b{font-size:18px;white-space:nowrap}.gcard span{flex:1}.pill a{padding:7px 12px;font-size:13px}.logo b{font-size:18px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
@@ -343,6 +358,8 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
         <div class="panel memo">
           <label class="note" for="memo" id="caplabel"></label>
           <textarea id="memo" maxlength="120"></textarea>
+          <div class="pics" id="pics"></div>
+          <div class="row picrow" style="margin-top:10px"><button class="btn sm" id="addpic" type="button"></button><input type="file" id="picin" accept="image/*" multiple hidden><span class="note" id="authline"></span></div>
           <div class="row" style="margin-top:12px"><button class="btn fill" id="keep"></button><button class="btn" id="jkeep"></button></div>
           <p class="note" id="keepnote" style="margin-top:8px"></p>
           <div id="useful" hidden></div>
@@ -477,8 +494,13 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
   </footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+<dialog class="zoom" id="zoom"><form method="dialog"><button class="ph" style="border:0;background:none;padding:0;cursor:zoom-out"><img id="zoomimg" alt=""></button></form><p id="zoomcap"></p></dialog>
 <script src="me-data.js"></script>
 <script src="me-core.js"></script>
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script src="vendor/firebase-firestore-compat.js"></script>
+<script src="me-cloud.js"></script>
 <script>
 (function(){
 'use strict';
@@ -518,8 +540,22 @@ var persona=DEMO?{title:'巽・協作者',ts:rel(40)+'T10:00:00'}:readLS('bagua_
 function save(){if(DEMO)return;try{localStorage.setItem('jte_me_v1',JSON.stringify(O))}catch(e){}}
 function word(k){return O.words[k]||D.perma.words[k]}
 function ann(id){return O.ann[id]||(O.ann[id]={})}
-var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,q:'',swEdit:false,capFor:null};
+var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,q:'',swEdit:false,capFor:null,user:null,cloud:[],draft:[],cloudOk:false,delIns:false,cwipe:false};
 function toast(t){var e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){e.hidden=true},2200)}
+/* 靈感區：草稿照片、登入、雲端靈感 */
+var I=D.insp;
+function demoPic(bg,fg,w){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="'+bg+'"/><circle cx="'+w+'" cy="170" r="70" fill="'+fg+'"/><rect y="280" width="400" height="120" fill="'+fg+'" opacity=".45"/></svg>')}
+function demoInsp(){return [{id:'ins-demo-1',key:rel(2),text:'河堤散步，風很舒服。',cloud:true,photos:[{id:'dp1',data:demoPic('#A9EFFF','#2F6BD8',140),caption:'傍晚的河堤',order:0},{id:'dp2',data:demoPic('#FFC3FE','#FF9925',260),caption:'',order:1}]}]}
+function renderAuth(){var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S.draft.length?'（'+S.draft.length+'/'+I.maxPhotos+'）':'');
+  if(DEMO){a.textContent='';return}
+  if(!S.cloudOk){a.textContent=I.offline;b.disabled=true;return}
+  b.disabled=false;
+  a.innerHTML=S.user?esc(I.signedIn.replace('{n}',S.user.name))+' <button class="lnk" id="signout">'+I.signOut+'</button>':esc(I.needLogin)+' <button class="lnk pri" id="signin">'+I.signIn+'</button>'}
+function renderPics(){$('#pics').innerHTML=S.draft.map(function(d,i){return '<div class="pic" data-i="'+i+'"><img src="'+esc(d.data)+'" alt=""><input class="in" maxlength="'+I.maxCaption+'" value="'+esc(d.caption)+'" placeholder="'+esc(I.caption)+'" aria-label="'+esc(I.caption)+'"><div class="row">'+(i?'<button class="lnk" data-pa="left">'+I.left+'</button>':'')+(i<S.draft.length-1?'<button class="lnk" data-pa="right">'+I.right+'</button>':'')+'<button class="lnk" data-pa="remove">'+I.remove+'</button></div></div>'}).join('');
+  $('#keepnote').textContent=DEMO?'示範模式不會儲存。':(S.draft.length?I.cloudNote:D.capture.note);renderAuth()}
+function syncCaps(){$$('#pics .pic').forEach(function(el){var d=S.draft[+el.dataset.i];if(d)d.caption=el.querySelector('.in').value.trim()})}
+function loadCloud(){if(!S.user||!window.JteCloud){S.cloud=[];renderAll();return}
+  JteCloud.listInsp().then(function(l){S.cloud=l;renderAll()}).catch(function(){toast(I.offline)})}
 function rng(s){return function(){return (s=(s*9301+49297)%233280)/233280}}
 function hash(s){var h=7;String(s).split('').forEach(function(c){h=(h*31+c.charCodeAt(0))%9973});return h}
 
@@ -802,7 +838,7 @@ function exportImage(){var defs=document.querySelector('svg[width="0"] defs');if
   var img=new Image();img.onload=function(){try{var c=document.createElement('canvas');c.width=720;c.height=1180;c.getContext('2d').drawImage(img,0,0,720,1180);c.toBlob(function(b){if(!b){dl(url,'.svg');return}var u=URL.createObjectURL(b);dl(u,'.png');setTimeout(function(){URL.revokeObjectURL(u);URL.revokeObjectURL(url)},4000)},'image/png')}catch(e){dl(url,'.svg')}};
   img.onerror=function(){dl(url,'.svg')};img.src=url;toast('圖存在這台裝置上，要不要傳給別人由你決定')}
 
-function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});
+function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud));S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
   if(oc||linked.length){save();toast('回來了。這次做的事接上了起點')}
@@ -842,7 +878,23 @@ function capLabel(){var n=S.capFor&&stName(S.capFor);$('#caplabel').textContent=
 $('#gates').onclick=function(e){var nb=e.target.closest('[data-note]');if(nb){S.capFor=nb.dataset.note;capLabel();$('#memo').focus();return}
   var b=e.target.closest('[data-g]');if(!b)return;if(S.capFor){S.capFor=null;capLabel()}S.gate=S.gate===b.dataset.g?null:b.dataset.g;if(S.gate)O.states[TODAY]=S.gate;else delete O.states[TODAY];save();renderGates();renderCal()};
 $('#jkeep').onclick=function(){var v=$('#memo').value.trim();if(!v){$('#memo').focus();return}newTri({kind:'curious',text:v.slice(0,40)},'');save();$('#memo').value='';renderAll();toast('起點留下了，在「還開著的」裡')};
-$('#keep').onclick=function(){var v=$('#memo').value.trim();if(!v){$('#memo').focus();return}var mid='m-'+Date.now();O.memos.push({id:mid,key:TODAY,text:v});if(S.capFor){newTri({kind:'state',state:S.capFor},'',mid);S.capFor=null;capLabel()}save();$('#memo').value='';renderAll();toast('留下了')};
+$('#keep').onclick=function(){var v=$('#memo').value.trim();syncCaps();if(S.draft.length){keepInsp(v);return}
+  if(!v){$('#memo').focus();return}var mid='m-'+Date.now();O.memos.push({id:mid,key:TODAY,text:v});if(S.capFor){newTri({kind:'state',state:S.capFor},'',mid);S.capFor=null;capLabel()}save();$('#memo').value='';renderAll();toast('留下了')};
+function keepInsp(v){var ins={key:TODAY,text:v,photos:S.draft.map(function(d){return {data:d.data,caption:d.caption}})},chk=M.inspCheck(ins,I);
+  if(!chk.ok){toast(I.bad[chk.why]||I.bad.empty);return}
+  if(DEMO){S.cloud.unshift({id:'ins-demo-'+Date.now(),key:TODAY,text:v,cloud:true,photos:ins.photos.map(function(p,i){return {id:'dp-'+Date.now()+i,data:p.data,caption:p.caption,order:i}})});afterKeep();return}
+  if(!S.user){toast(I.needLogin);return}
+  var k=$('#keep');k.disabled=true;k.textContent=I.saving;
+  JteCloud.saveInsp(ins).then(function(saved){S.cloud.unshift(saved);afterKeep()}).catch(function(){toast(I.fail)}).then(function(){k.disabled=false;k.textContent=D.capture.keep})}
+function afterKeep(){var id=S.cloud[0].id;if(S.capFor){newTri({kind:'state',state:S.capFor},'',id);S.capFor=null;capLabel();save()}
+  $('#memo').value='';S.draft=[];renderPics();renderAll();toast(DEMO?'留下了':I.kept)}
+$('#addpic').onclick=function(){if(S.draft.length>=I.maxPhotos){toast(I.full.replace('{n}',I.maxPhotos));return}
+  if(!DEMO&&!S.user){JteCloud.signIn().catch(function(){toast(I.offline)});return}$('#picin').click()};
+$('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[],0,I.maxPhotos-S.draft.length);this.value='';syncCaps();
+  fs.reduce(function(pr,f){return pr.then(function(){return JteCloud.compress(f,I).then(function(d){S.draft.push({data:d,caption:''});renderPics()}).catch(function(){toast(I.compressFail)})})},Promise.resolve())};
+$('#pics').onclick=function(e){var b=e.target.closest('[data-pa]');if(!b)return;syncCaps();var i=+b.closest('.pic').dataset.i,a=b.dataset.pa,d=S.draft;
+  if(a==='remove')d.splice(i,1);if(a==='left'&&i>0)d.splice(i-1,0,d.splice(i,1)[0]);if(a==='right'&&i<d.length-1)d.splice(i+1,0,d.splice(i,1)[0]);renderPics()};
+$('#authline').onclick=function(e){if(e.target.id==='signin')JteCloud.signIn().catch(function(){toast(I.offline)});if(e.target.id==='signout')JteCloud.signOut()};
 $('#open').onclick=function(e){var b=e.target.closest('[data-oa]');if(!b)return;var row=b.closest('.orow'),t=triById(row.dataset.t),k=b.dataset.oa;if(!t)return;
   var fi=row.querySelector('.fnd'),fv=fi?fi.value.trim():'';
   if(k==='did'){S.did=S.did===t.id?null:t.id;renderOpen();var i=$('#open .didin');if(i)i.focus();return}
@@ -895,7 +947,9 @@ $('#demo').hidden=!DEMO;$('#heroline').textContent='練習生手帳。'+M.dlabel
 $('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;showPane(location.hash);
-$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;if(DEMO)$('#keepnote').textContent='示範模式不會儲存。';
+$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
+if(DEMO){S.cloud=demoInsp();S.cloudOk=true}else if(window.JteCloud){S.cloudOk=JteCloud.init(function(u){S.user=u;renderAuth();renderData();loadCloud()})}
+renderPics();
 renderAll();
 window.__me={S:S,O:O,reload:reload,M:M};
 })();
