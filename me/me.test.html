@@ -156,6 +156,29 @@ check('活動紀錄：文案與上限都在資料檔',()=>{const A=D.act,U=D.aut
   ['open','title','hint','email','pw','pwNote','signIn','signUp','reset','resetSent','verifyNote','resend','resent','refresh','notYet','close'].forEach(k=>ok(U[k],'auth.'+k));
   ['auth/invalid-credential','auth/email-already-in-use','auth/weak-password','auth/invalid-email','auth/too-many-requests','other'].forEach(k=>ok(U.err[k],'err.'+k));
   ok(D.privacy.cloud.indexOf('活動紀錄')>-1);});
+const T='\t',ACT_HDR=['企業','姓名','部門','職級','Email','前測_身體狀態 (1-10)','前測_情緒狀態 (1-10)','活動前期待','過程感受','後測_身體狀態 (1-10)','後測_情緒狀態 (1-10)','身心狀態更了解 (1-10)','帶領者專業度與陪伴感 (1-10)','可帶回日常應用收穫 (1-10)','最實用日常收穫','整體滿意度 (1-10)','推薦意願 (1-10)','心得與回饋'].join(T);
+const ACT_PASTE=['',['活動日期','2026/11/05','活動照片連結','https://photos.example.com/a','11/05 場次'].join(T),['活動日期','2026/11/06','活動照片連結','https://photos.example.com/b','11/06 場次'].join(T),ACT_HDR,'',
+  ['甲公司','王小明','設計','一般員工',' Ming@Example.com ','4','5','想放鬆','"第一行\n第二行，有 ""引號"""','7','8','9','10','9','回家泡茶','10','10','很喜歡'].join(T),
+  ['','李小華','','','hua@example.com.te','11','','','','','','','','','','','',''].join(T),
+  ['','陳小美','','','mei@example.com','','','','','','','','','','','','',''].join(T),
+  ['','林小強','','','','3','3','','還好','','','','','','','','',''].join(T)].join('\r\n');
+check('tsvRows：分頁符號、引號裡的換行與雙引號、CRLF',()=>{const r=M.tsvRows('a\tb\r\n"x\ny"\t"他說 ""好"""\nlast');eq(r.length,3);eq(r[0].join('|'),'a|b');eq(r[1][0],'x\ny');eq(r[1][1],'他說 "好"');eq(r[2][0],'last');eq(M.tsvRows('').length,0);eq(M.tsvRows(null).length,0);});
+check('actDate：斜線或連字號、補零；看不懂回空字串',()=>{eq(M.actDate('2026/11/05'),'2026-11-05');eq(M.actDate('2026-1-5'),'2026-01-05');eq(M.actDate(' 2026/11/06 '),'2026-11-06');eq(M.actDate('11/05'),'');eq(M.actDate('2026/13/01'),'');eq(M.actDate(''),'');});
+check('actEmail：小寫去空白；沒有、格式不對、結尾可疑各有標記',()=>{const L=D.act.tlds;
+  eq(M.actEmail(' Ming@Example.com ',L).email,'ming@example.com');eq(M.actEmail('a@b.com.tw',L).flags.length,0);
+  eq(M.actEmail('',L).flags.join(),'missing');eq(M.actEmail('abc',L).flags.join(),'format');eq(M.actEmail('a b@c.com',L).flags.join(),'format');
+  eq(M.actEmail('a@b.com.te',L).flags.join(),'tld');eq(M.actEmail('a@b.con',L).flags.join(),'tld');});
+check('actScore：1–10 的整數；空的不算錯；其他標成不合格',()=>{eq(M.actScore('7').v,7);eq(M.actScore(' 10 ').v,10);eq(M.actScore('').v,null);eq(M.actScore('').bad,false);
+  eq(M.actScore('11').bad,true);eq(M.actScore('0').bad,true);eq(M.actScore('7.5').bad,true);eq(M.actScore('很好').bad,true);eq(M.actScore('11').v,null);});
+check('actParse：找到場次與標題列，只留核准欄位',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);ok(r.ok);
+  eq(r.sessions.length,2);eq(r.sessions[0].date,'2026-11-05');eq(r.sessions[0].photoUrl,'https://photos.example.com/a');eq(r.sessions[1].date,'2026-11-06');
+  eq(r.rows.length,4);const a=r.rows[0];eq(a.email,'ming@example.com');eq(a.pre.body,4);eq(a.pre.mood,5);eq(a.post.body,7);eq(a.post.mood,8);
+  eq(a.expect,'想放鬆');eq(a.feeling,'第一行\n第二行，有 "引號"');eq(a.takeaway,'回家泡茶');eq(a.feedback,'很喜歡');eq(a.flags.length,0);
+  eq(Object.keys(a).sort().join(),'email,expect,feedback,feeling,flags,line,post,pre,takeaway');
+  const s=JSON.stringify(r);['甲公司','王小明','李小華','設計','一般員工'].forEach(x=>ok(s.indexOf(x)<0,'leak '+x));ok(!/9|10/.test(JSON.stringify(a)),'評分（9、10）不進來');});
+check('actParse：可疑的列有標記；沒填問卷的標 blank；沒有標題列回 ok=false',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);
+  eq(r.rows[1].flags.sort().join(),'score,tld');eq(r.rows[1].pre.body,null);eq(r.rows[2].flags.join(),'blank');eq(r.rows[3].flags.join(),'missing');
+  eq(M.actParse('隨便貼的字',D.act.cols,D.act.tlds).ok,false);eq(M.actParse('',D.act.cols,D.act.tlds).rows.length,0);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>

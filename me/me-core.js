@@ -241,6 +241,70 @@
     var r = maxEdge / m;
     return { w: Math.max(1, Math.round(w * r)), h: Math.max(1, Math.round(h * r)) };
   }
+  // ── 活動紀錄：把管理者從試算表貼上的內容拆開。只留白名單欄位，其他在這裡就丟掉。 ──
+  // 試算表複製出來是 TSV：欄位用 Tab 分，內容有換行或引號的儲存格會用雙引號包起來。
+  function tsvRows(text) {
+    var s = String(text == null ? '' : text), rows = [], row = [], cell = '', q = false, i, c;
+    if (!s) return rows;
+    for (i = 0; i < s.length; i++) {
+      c = s.charAt(i);
+      if (q) {
+        if (c === '"') { if (s.charAt(i + 1) === '"') { cell += '"'; i++; } else q = false; }
+        else cell += c;
+      } else if (c === '"' && cell === '') q = true;
+      else if (c === '\t') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && s.charAt(i + 1) === '\n') i++;
+        row.push(cell); cell = ''; rows.push(row); row = [];
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  function actDate(s) {
+    var m = /^\s*(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\s*$/.exec(String(s == null ? '' : s));
+    if (!m || +m[2] < 1 || +m[2] > 12 || +m[3] < 1 || +m[3] > 31) return '';
+    return m[1] + '-' + pad(+m[2]) + '-' + pad(+m[3]);
+  }
+  function actEmail(s, tlds) {
+    var e = String(s == null ? '' : s).trim().toLowerCase();
+    if (!e) return { email: '', flags: ['missing'] };
+    if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(e)) return { email: e, flags: ['format'] };
+    return { email: e, flags: arr(tlds).indexOf(e.slice(e.lastIndexOf('.') + 1)) < 0 ? ['tld'] : [] };
+  }
+  function actScore(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return { v: null, bad: false };
+    var n = /^\d{1,2}$/.test(s) ? +s : NaN;
+    return n >= 1 && n <= 10 ? { v: n, bad: false } : { v: null, bad: true };
+  }
+  function actParse(text, cols, tlds) {
+    var rows = tsvRows(text), sessions = [], out = [], hi = -1, idx = {}, i, r;
+    function cellOf(row, k) { return idx[k] == null ? '' : String(row[idx[k]] == null ? '' : row[idx[k]]).trim(); }
+    for (i = 0; i < rows.length; i++) {
+      r = rows[i].map(function (x) { return String(x).trim(); });
+      if (r.indexOf('Email') > -1 && r.indexOf('姓名') > -1) { hi = i; break; }
+      var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結');
+      if (di > -1 && actDate(r[di + 1])) sessions.push({ date: actDate(r[di + 1]), photoUrl: pi > -1 ? safeUrl(r[pi + 1]) : '' });
+    }
+    if (hi < 0) return { ok: false, sessions: sessions, rows: [] };
+    rows[hi].forEach(function (h, j) {
+      h = String(h).trim();
+      Object.keys(cols).forEach(function (k) { if (idx[k] == null && h.indexOf(cols[k]) === 0) idx[k] = j; });
+    });
+    for (i = hi + 1; i < rows.length; i++) {
+      r = rows[i];
+      if (!r.some(function (x) { return String(x).trim(); })) continue;
+      var e = actEmail(cellOf(r, 'email'), tlds), flags = e.flags.slice(), bad = false, any = false;
+      var sc = {}; ['preBody', 'preMood', 'postBody', 'postMood'].forEach(function (k) { var x = actScore(cellOf(r, k)); sc[k] = x.v; if (x.bad) bad = true; if (x.v !== null) any = true; });
+      var tx = {}; ['expect', 'feeling', 'takeaway', 'feedback'].forEach(function (k) { tx[k] = cellOf(r, k); if (tx[k]) any = true; });
+      if (bad) flags.push('score');
+      if (!any && !bad && e.email) flags = ['blank'];
+      out.push({ line: i + 1, email: e.email, flags: flags, pre: { body: sc.preBody, mood: sc.preMood }, post: { body: sc.postBody, mood: sc.postMood },
+        expect: tx.expect, feeling: tx.feeling, takeaway: tx.takeaway, feedback: tx.feedback });
+    }
+    return { ok: true, sessions: sessions, rows: out };
+  }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
   function hay(p, a, t) {
     var j = (t && t.join) || {};
@@ -333,5 +397,5 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize };
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse };
 })(window);
