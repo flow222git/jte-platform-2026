@@ -150,7 +150,7 @@ check('活動紀錄：文案與上限都在資料檔',()=>{const A=D.act,U=D.aut
   eq(A.maxText,2000);eq(A.maxTitle,100);eq(A.maxUrl,500);
   eq(A.cols.email,'Email');eq(A.cols.preBody,'前測_身體狀態');eq(A.cols.preMood,'前測_情緒狀態');eq(A.cols.expect,'活動前期待');eq(A.cols.feeling,'過程感受');
   eq(A.cols.postBody,'後測_身體狀態');eq(A.cols.postMood,'後測_情緒狀態');eq(A.cols.takeaway,'最實用日常收穫');eq(A.cols.feedback,'心得與回饋');
-  eq(Object.keys(A.cols).length,9,'只有核准的九欄');
+  eq(Object.keys(A.cols).length,9,'只有核准的九欄');ok(!!A.demoDeclined&&!!A.fallbackTitle&&!!A.flags.noses&&!!A.flags.cols,'新增文案');ok(D.privacy.cloud.indexOf('主辦方')>-1,'privacy 提到主辦方');
   ['ask','keep','decline','later','declineAsk','declineYes','kept','declined','fail','before','after','body','mood','expect','feeling','takeaway','feedback','photo','drop','dropAsk','invite','inviteHide','demoNote','from','cancel'].forEach(k=>ok(A[k],'act.'+k));
   ['missing','format','tld','dup','score','blank'].forEach(k=>ok(A.flags[k],'flags.'+k));
   ['open','title','hint','email','pw','pwNote','signIn','signUp','reset','resetSent','verifyNote','resend','resent','refresh','notYet','close'].forEach(k=>ok(U[k],'auth.'+k));
@@ -206,6 +206,13 @@ check('buildPages：收進來的活動紀錄成為一頁；還沒決定與不用
 check('活動紀錄：搜尋找得到自己寫的話；方法視角收在「活動」；練習頁列為平台以外的方法',()=>{const ps=M.buildPages({},[],[Object.assign({},M.actRecord(AROW,SES,D.act),{docId:'d1',status:'kept'})]);
   eq(M.searchPages(ps,'回家泡茶',{},{}).length,1);eq(M.searchPages(ps,'茶席 安靜',{},{}).length,1);eq(M.searchPages(ps,'爬山',{},{}).length,0);
   eq(M.lensGroups('to',ps,{})[0].k,'活動');eq(M.practiceView(ps,{}).outside[0].name,'茶席體驗');});
+check('actEmail：含斜線或超過 200 字是格式不對',()=>{const L=D.act.tlds;eq(M.actEmail('a/b@example.com',L).flags.join(),'format');eq(M.actEmail('x'.repeat(200)+'@example.com',L).flags.join(),'format');});
+check('actParse：空白列保留信箱標記；回報找不到的欄位',()=>{
+  const blank=['','','','','a@example.con','','','','','','','','','','','','',''].join(T);
+  const r=M.actParse([ACT_HDR,blank].join('\n'),D.act.cols,D.act.tlds);eq(r.rows[0].flags.slice().sort().join(),'blank,tld');eq(r.missingCols.length,0);
+  eq(M.actParse(ACT_PASTE,D.act.cols,D.act.tlds).missingCols.length,0);
+  const h=ACT_HDR.split(T).filter(x=>x.indexOf('心得與回饋')!==0&&x.indexOf('後測_情緒狀態')!==0).join(T);
+  eq(M.actParse(h,D.act.cols,D.act.tlds).missingCols.join(),'postMood,feedback');eq(M.actParse('隨便',D.act.cols,D.act.tlds).missingCols.length,0);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>

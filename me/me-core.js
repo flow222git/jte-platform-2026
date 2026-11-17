@@ -270,7 +270,7 @@
   function actEmail(s, tlds) {
     var e = String(s == null ? '' : s).trim().toLowerCase();
     if (!e) return { email: '', flags: ['missing'] };
-    if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(e)) return { email: e, flags: ['format'] };
+    if (e.length > 200 || !/^[^\s@\/]+@[^\s@.\/]+(\.[^\s@.\/]+)+$/.test(e)) return { email: e, flags: ['format'] };
     return { email: e, flags: arr(tlds).indexOf(e.slice(e.lastIndexOf('.') + 1)) < 0 ? ['tld'] : [] };
   }
   function actScore(v) {
@@ -288,7 +288,7 @@
       var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結');
       if (di > -1 && actDate(r[di + 1])) sessions.push({ date: actDate(r[di + 1]), photoUrl: pi > -1 ? safeUrl(r[pi + 1]) : '' });
     }
-    if (hi < 0) return { ok: false, sessions: sessions, rows: [] };
+    if (hi < 0) return { ok: false, sessions: sessions, rows: [], missingCols: [] };
     rows[hi].forEach(function (h, j) {
       h = String(h).trim();
       Object.keys(cols).forEach(function (k) { if (idx[k] == null && h.indexOf(cols[k]) === 0) idx[k] = j; });
@@ -300,11 +300,11 @@
       var sc = {}; ['preBody', 'preMood', 'postBody', 'postMood'].forEach(function (k) { var x = actScore(cellOf(r, k)); sc[k] = x.v; if (x.bad) bad = true; if (x.v !== null) any = true; });
       var tx = {}; ['expect', 'feeling', 'takeaway', 'feedback'].forEach(function (k) { tx[k] = cellOf(r, k); if (tx[k]) any = true; });
       if (bad) flags.push('score');
-      if (!any && !bad && e.email) flags = ['blank'];
+      if (!any && !bad && e.email) flags.push('blank');
       out.push({ line: i + 1, email: e.email, flags: flags, pre: { body: sc.preBody, mood: sc.preMood }, post: { body: sc.postBody, mood: sc.postMood },
         expect: tx.expect, feeling: tx.feeling, takeaway: tx.takeaway, feedback: tx.feedback });
     }
-    return { ok: true, sessions: sessions, rows: out };
+    return { ok: true, sessions: sessions, rows: out, missingCols: Object.keys(cols).filter(function (k) { return idx[k] == null; }) };
   }
   function actSessionOk(id) { return /^\d{4}-\d{2}-\d{2}-[a-z0-9-]{1,30}$/.test(String(id || '')); }
   function actDocId(sessionId, email) { return String(sessionId) + '__' + String(email); }

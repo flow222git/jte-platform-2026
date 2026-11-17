@@ -33,7 +33,7 @@
   function signOut() { return auth.signOut(); }
   // 信箱＋密碼。建立帳號後寄驗證信；只有驗證過的信箱對得到活動紀錄。
   function signUpEmail(email, pw) {
-    return auth.createUserWithEmailAndPassword(String(email).trim(), pw).then(function (c) { return c.user.sendEmailVerification(); });
+    return auth.createUserWithEmailAndPassword(String(email).trim(), pw).then(function (c) { return c.user.sendEmailVerification().catch(function () {}); });
   }
   function signInEmail(email, pw) { return auth.signInWithEmailAndPassword(String(email).trim(), pw); }
   function resendVerify() { if (!auth.currentUser) return Promise.reject(new Error('not-signed-in')); return auth.currentUser.sendEmailVerification(); }
@@ -155,17 +155,23 @@
     need();
     var now = g.firebase.firestore.FieldValue.serverTimestamp(), jobs = [], i;
     function run(part) {
-      var b = db.batch();
-      part.forEach(function (w) {
-        var data = {}, k; for (k in w.data) if (Object.prototype.hasOwnProperty.call(w.data, k)) data[k] = w.data[k];
-        data.importedAt = now;
-        if (w.isNew) b.set(acts().doc(w.id), data); else b.set(acts().doc(w.id), data, { merge: true });
-      });
-      return b.commit().then(function () { return { ok: part.length, failed: 0 }; }, function () { return { ok: 0, failed: part.length }; });
+      var b;
+      try {
+        b = db.batch();
+        part.forEach(function (w) {
+          var data = {}, k; for (k in w.data) if (Object.prototype.hasOwnProperty.call(w.data, k)) data[k] = w.data[k];
+          data.importedAt = now;
+          if (w.isNew) b.set(acts().doc(w.id), data); else b.set(acts().doc(w.id), data, { merge: true });
+        });
+      } catch (e) { return Promise.resolve({ ok: 0, failed: part.length, codes: [e && e.code || 'error'] }); }
+      return b.commit().then(function () { return { ok: part.length, failed: 0, codes: [] }; }, function (e) { return { ok: 0, failed: part.length, codes: [e && e.code || 'error'] }; });
     }
-    for (i = 0; i < writes.length; i += 200) jobs.push(run(writes.slice(i, i + 200)));
+    for (i = 0; i < writes.length; i += 20) jobs.push(run(writes.slice(i, i + 20)));
     return Promise.all(jobs).then(function (rs) {
-      return rs.reduce(function (a, r) { return { ok: a.ok + r.ok, failed: a.failed + r.failed }; }, { ok: 0, failed: 0 });
+      return rs.reduce(function (a, r) {
+        r.codes.forEach(function (c) { if (a.codes.indexOf(c) < 0) a.codes.push(c); });
+        return { ok: a.ok + r.ok, failed: a.failed + r.failed, codes: a.codes };
+      }, { ok: 0, failed: 0, codes: [] });
     });
   }
 
