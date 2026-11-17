@@ -78,7 +78,7 @@
     return Promise.all([col('inspirations').get(), col('photos').get()]).then(function (r) {
       var by = {}, out = [];
       r[1].forEach(function (d) { var x = d.data(); (by[x.insId] = by[x.insId] || []).push({ id: d.id, data: x.data, caption: x.caption || '', order: x.order || 0 }); });
-      r[0].forEach(function (d) { var x = d.data(); out.push({ id: 'ins-' + d.id, docId: d.id, key: x.key, text: x.text || '', cloud: true, photos: by[d.id] || [] }); });
+      r[0].forEach(function (d) { var x = d.data(); out.push({ id: 'ins-' + d.id, docId: d.id, key: x.key, text: x.text || '', itemId: x.itemId || '', cloud: true, photos: by[d.id] || [] }); });
       return out;
     });
   }
@@ -90,8 +90,10 @@
       b.set(pr, { insId: ref.id, data: p.data, caption: p.caption || '', order: i, createdAt: now });
       return { id: pr.id, data: p.data, caption: p.caption || '', order: i };
     });
-    b.set(ref, { key: ins.key, text: ins.text || '', photos: ids, createdAt: now });
-    return b.commit().then(function () { return { id: 'ins-' + ref.id, docId: ref.id, key: ins.key, text: ins.text || '', cloud: true, photos: photos }; });
+    var main = { key: ins.key, text: ins.text || '', photos: ids, createdAt: now };
+    if (ins.itemId) main.itemId = ins.itemId;
+    b.set(ref, main);
+    return b.commit().then(function () { return { id: 'ins-' + ref.id, docId: ref.id, key: ins.key, text: ins.text || '', itemId: ins.itemId || '', cloud: true, photos: photos }; });
   }
   function deletePhoto(ins, photoId) {
     need();
@@ -120,6 +122,109 @@
         jobs.push(b.commit());
       }
       return Promise.all(jobs);
+    });
+  }
+
+  // 沒登入時回 rejected Promise，不同步 throw。
+  function safe(fn) { try { return Promise.resolve(fn()); } catch (e) { return Promise.reject(e); } }
+
+  // 靈感掛到某個練習項目；itemId 空的就拿掉標記。
+  function setInspItem(ins, itemId) {
+    return safe(function () {
+      need();
+      var upd = { itemId: itemId ? itemId : g.firebase.firestore.FieldValue.delete() };
+      return col('inspirations').doc(ins.docId).update(upd).then(function () { ins.itemId = itemId || ''; return ins; });
+    });
+  }
+
+  // ── 我的練習：users/{uid}/practiceItems|practiceLogs|practiceNotes。文件代號就是 id，id 不寫進內容。 ──
+  var KINDS = { items: 'practiceItems', logs: 'practiceLogs', notes: 'practiceNotes' };
+  var FIELDS = {
+    items: ['name', 'unit', 'color', 'archived', 'createdAt'],
+    logs: ['itemId', 'date', 'amount', 'note', 'at'],
+    notes: ['itemId', 'title', 'body', 'updatedAt']
+  };
+  function pick(kind, obj) {
+    var out = {}, f = FIELDS[kind], i;
+    for (i = 0; i < f.length; i++) if (obj[f[i]] !== undefined) out[f[i]] = obj[f[i]];
+    return out;
+  }
+  function pracLoad() {
+    return safe(function () {
+      need();
+      var ks = ['items', 'logs', 'notes'];
+      return Promise.all(ks.map(function (k) { return col(KINDS[k]).get(); })).then(function (r) {
+        var out = { items: [], logs: [], notes: [] };
+        r.forEach(function (s, i) { s.forEach(function (d) { var x = d.data(); x.id = d.id; out[ks[i]].push(x); }); });
+        return out;
+      });
+    });
+  }
+  function pracHas() {
+    return safe(function () { need(); return col(KINDS.items).limit(1).get().then(function (s) { return !s.empty; }); });
+  }
+  function pracPut(kind, obj) {
+    return safe(function () {
+      need();
+      if (!KINDS[kind]) throw new Error('bad-kind');
+      return col(KINDS[kind]).doc(obj.id).set(pick(kind, obj)).then(function () { return obj; });
+    });
+  }
+  function pracDel(kind, id) {
+    return safe(function () { need(); if (!KINDS[kind]) throw new Error('bad-kind'); return col(KINDS[kind]).doc(id).delete(); });
+  }
+  // 把一串 ref 分批（每批最多 400）刪掉。
+  function delRefs(refs) {
+    var jobs = [], i;
+    for (i = 0; i < refs.length; i += 400) {
+      var b = db.batch();
+      refs.slice(i, i + 400).forEach(function (x) { b.delete(x); });
+      jobs.push(b.commit());
+    }
+    return Promise.all(jobs);
+  }
+  function pracDelItem(itemId) {
+    return safe(function () {
+      need();
+      return Promise.all([col(KINDS.logs).where('itemId', '==', itemId).get(), col(KINDS.notes).where('itemId', '==', itemId).get()]).then(function (r) {
+        var refs = [col(KINDS.items).doc(itemId)];
+        r.forEach(function (s) { s.forEach(function (d) { refs.push(d.ref); }); });
+        return delRefs(refs);
+      });
+    });
+  }
+  function pracUpload(p) {
+    return safe(function () {
+      need();
+      var ops = [], jobs = [], i;
+      ['items', 'logs', 'notes'].forEach(function (k) {
+        ((p && p[k]) || []).forEach(function (o) { ops.push({ ref: col(KINDS[k]).doc(o.id), data: pick(k, o) }); });
+      });
+      function run(part) {
+        var b;
+        try {
+          b = db.batch();
+          part.forEach(function (w) { b.set(w.ref, w.data); });
+        } catch (e) { return Promise.resolve({ ok: 0, failed: part.length, codes: [e && e.code || 'error'] }); }
+        return b.commit().then(function () { return { ok: part.length, failed: 0, codes: [] }; }, function (e) { return { ok: 0, failed: part.length, codes: [e && e.code || 'error'] }; });
+      }
+      for (i = 0; i < ops.length; i += 400) jobs.push(run(ops.slice(i, i + 400)));
+      return Promise.all(jobs).then(function (rs) {
+        return rs.reduce(function (a, r) {
+          r.codes.forEach(function (c) { if (a.codes.indexOf(c) < 0) a.codes.push(c); });
+          return { ok: a.ok + r.ok, failed: a.failed + r.failed, codes: a.codes };
+        }, { ok: 0, failed: 0, codes: [] });
+      });
+    });
+  }
+  function pracWipe() {
+    return safe(function () {
+      need();
+      return Promise.all(['items', 'logs', 'notes'].map(function (k) { return col(KINDS[k]).get(); })).then(function (r) {
+        var refs = [];
+        r.forEach(function (s) { s.forEach(function (d) { refs.push(d.ref); }); });
+        return delRefs(refs);
+      });
     });
   }
 
@@ -178,5 +283,7 @@
   g.JteCloud = { init: init, signIn: signIn, signOut: signOut, compress: compress, listInsp: listInsp,
     saveInsp: saveInsp, deletePhoto: deletePhoto, deleteInsp: deleteInsp, wipeAll: wipeAll,
     signUpEmail: signUpEmail, signInEmail: signInEmail, resendVerify: resendVerify, resetPw: resetPw, refreshUser: refreshUser,
-    listActs: listActs, decideAct: decideAct, isAdmin: isAdmin, sessionActs: sessionActs, writeActs: writeActs };
+    listActs: listActs, decideAct: decideAct, isAdmin: isAdmin, sessionActs: sessionActs, writeActs: writeActs,
+    setInspItem: setInspItem, pracLoad: pracLoad, pracHas: pracHas, pracPut: pracPut, pracDel: pracDel, pracDelItem: pracDelItem,
+    pracUpload: pracUpload, pracWipe: pracWipe };
 })(window);
