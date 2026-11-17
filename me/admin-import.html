@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>活動紀錄匯入｜練息場</title>
+<style>
+:root{--ink:#032639;--ink-3:#6B7686;--line:rgba(20,34,56,.14);--bg:#fff;--soft:#F6F8FB;--blue:#2F6BD8;--warn:#B4530A}
+*{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--ink);font:15px/1.7 system-ui,"Noto Sans TC",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 80px}h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:0 0 8px}
+.panel{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.note{font-size:13px;color:var(--ink-3)}.warn{color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:7px 18px;font-weight:700;cursor:pointer;min-height:38px}
+button.fill{background:var(--ink);color:#fff;border-color:var(--ink)}button:disabled{opacity:.5;cursor:default}
+input,select,textarea{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--soft);min-width:0}
+textarea{width:100%;min-height:180px}
+.ses{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.ses label{display:grid;gap:2px;font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border-top:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+td.tx{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}tr.off{opacity:.45}td input{width:100%;min-width:190px}
+</style></head><body>
+<div class="wrap">
+  <h1>活動紀錄匯入</h1><p class="note" id="lead"></p>
+  <div class="panel" id="gate"></div>
+  <div id="work" hidden>
+    <div class="panel"><h2 id="h1"></h2><p class="note" id="n1"></p><textarea id="paste" aria-labelledby="h1"></textarea>
+      <div class="row" style="margin-top:10px"><button class="fill" id="parse"></button><span class="note warn" id="perr" role="alert"></span></div></div>
+    <div class="panel" id="p2" hidden><h2 id="h2"></h2><p class="note" id="n2"></p><div id="sess"></div></div>
+    <div class="panel" id="p3" hidden><h2 id="h3"></h2><p class="note" id="n3"></p>
+      <div class="row" id="bulk" style="margin:8px 0"></div><div class="tw"><table id="tbl"></table></div>
+      <div class="row" style="margin-top:14px"><button class="fill" id="go"></button><span class="note" id="sum"></span></div>
+      <p class="note" id="res" role="status" style="margin-top:10px"></p></div>
+  </div>
+</div>
+<script src="me-data.js"></script>
+<script src="me-core.js"></script>
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script src="vendor/firebase-firestore-compat.js"></script>
+<script src="me-cloud.js"></script>
+<script>
+(function(){
+'use strict';
+var D=window.JTE_ME_DATA,M=window.JteMe,A=D.act,esc=M.esc,$=function(s){return document.querySelector(s)};
+var T={lead:'把試算表的活動整理貼進來，讓參加者登入後看到自己的那一筆。只會送出信箱、前後測、四段文字；姓名、企業、部門、職級與給主辦方的評分不會離開這個瀏覽器。',
+  needLogin:'這一頁只有管理者能用。請先登入。',signIn:'用 Google 登入',signOut:'登出',notAdmin:'這個帳號不是管理者。這一頁只有管理者能用。',offline:'連不上雲端，請重新整理再試。',
+  h1:'一、貼上',n1:'在試算表打開一場活動的分頁，全選（Ctrl+A）、複製、貼到下面。一次貼一個分頁。',parse:'拆解',noHeader:'找不到標題列。請確認貼上的內容包含「姓名」「Email」那一列。',
+  h2:'二、場次',n2:'活動名稱與場次代號要自己填。場次代號只能用小寫英文、數字、連字號，例如 tea；同一場以後重貼要用同一個代號。',
+  title:'活動名稱',date:'日期',slug:'場次代號',photo:'照片連結',idIs:'文件代號開頭：',
+  h3:'三、預覽',n3:'只列出會送出的欄位。有標記的列預設略過，確認沒問題可以取消略過；信箱可以直接改。',
+  skip:'略過',ses:'場次',email:'信箱',pre:'前測',post:'後測',text:'文字（開頭）',flag:'標記',all:'全部設為',
+  go:'確認匯入',going:'匯入中…',sum:'會送出 {n} 筆，略過 {s} 筆',badSes:'場次還沒填完：每一場都要有活動名稱、日期與合格的場次代號，而且代號不能重複。',
+  done:'完成。新增 {a} 筆、更新 {u} 筆、本人選了不用而跳過 {k} 筆、失敗 {f} 筆。',fail:'匯入失敗，請再試一次。'};
+var S={user:null,admin:false,sessions:[],rows:[],busy:false};
+$('#lead').textContent=T.lead;['h1','n1','h2','n2','h3','n3'].forEach(function(k){$('#'+k).textContent=T[k]});$('#parse').textContent=T.parse;$('#go').textContent=T.go;
+
+function gate(){var g=$('#gate');$('#work').hidden=!S.admin;
+  if(!S.user)g.innerHTML='<p>'+T.needLogin+'</p><div class="row"><button class="fill" id="in">'+T.signIn+'</button></div>';
+  else g.innerHTML='<div class="row"><span>'+esc(S.user.email)+'</span><button id="out">'+T.signOut+'</button></div>'+(S.admin?'':'<p class="warn">'+T.notAdmin+'</p>')}
+$('#gate').onclick=function(e){if(e.target.id==='in')JteCloud.signIn().catch(function(){});if(e.target.id==='out')JteCloud.signOut()};
+
+function sid(s){return s.date+'-'+s.slug}
+function sesOk(){var seen={};return S.sessions.length>0&&S.sessions.every(function(s){var id=sid(s);if(!s.title.trim()||!M.actSessionOk(id)||seen[id])return false;seen[id]=1;return true})}
+function renderSes(){$('#sess').innerHTML=S.sessions.map(function(s,i){return '<div class="ses" data-i="'+i+'"><label>'+T.title+'<input data-k="title" maxlength="'+A.maxTitle+'" value="'+esc(s.title)+'"></label><label>'+T.date+'<input data-k="date" value="'+esc(s.date)+'" placeholder="2026-11-05"></label><label>'+T.slug+'<input data-k="slug" maxlength="30" value="'+esc(s.slug)+'" placeholder="tea"></label><label>'+T.photo+'<input data-k="photoUrl" maxlength="'+A.maxUrl+'" value="'+esc(s.photoUrl)+'"></label><span class="note">'+T.idIs+esc(sid(s))+'__</span></div>'}).join('')}
+function flagsOf(r,i,dups){var f=r.flags.filter(function(x){return x==='score'||x==='blank'}).concat(M.actEmail(r.email,A.tlds).flags);if(dups.indexOf(i)>-1)f.push('dup');return f}
+function dupIdx(){return M.actDups(S.rows.map(function(r){return {sessionId:r.skip?'skip-'+r.line:String(r.ses),email:r.email}}))}
+function renderRows(){var dups=dupIdx(),opt=function(v){return S.sessions.map(function(s,i){return '<option value="'+i+'"'+(i===v?' selected':'')+'>'+esc(s.date+' '+s.title)+'</option>'}).join('')};
+  $('#bulk').innerHTML=S.sessions.length>1?'<span class="note">'+T.all+'</span>'+S.sessions.map(function(s,i){return '<button data-all="'+i+'">'+esc(s.date)+'</button>'}).join(''):'';
+  $('#tbl').innerHTML='<tr><th>'+T.skip+'</th>'+(S.sessions.length>1?'<th>'+T.ses+'</th>':'')+'<th>'+T.email+'</th><th>'+T.pre+'</th><th>'+T.post+'</th><th>'+T.text+'</th><th>'+T.flag+'</th></tr>'+
+    S.rows.map(function(r,i){var f=flagsOf(r,i,dups),sc=function(o){return [o.body,o.mood].map(function(x){return x==null?'–':x}).join('／')};
+      return '<tr data-i="'+i+'"'+(r.skip?' class="off"':'')+'><td><input type="checkbox" data-k="skip"'+(r.skip?' checked':'')+' aria-label="'+T.skip+'"></td>'+(S.sessions.length>1?'<td><select data-k="ses">'+opt(r.ses)+'</select></td>':'')+
+        '<td><input data-k="email" maxlength="200" value="'+esc(r.email)+'" aria-label="'+T.email+'"></td><td>'+sc(r.pre)+'</td><td>'+sc(r.post)+'</td><td class="tx">'+esc((r.feedback||r.feeling||r.takeaway||r.expect||'').slice(0,30))+'</td><td class="warn">'+f.map(function(x){return esc(A.flags[x])}).join('、')+'</td></tr>'}).join('');
+  var n=S.rows.filter(function(r){return !r.skip}).length;$('#sum').textContent=T.sum.replace('{n}',n).replace('{s}',S.rows.length-n)}
+
+$('#parse').onclick=function(){var r=M.actParse($('#paste').value,A.cols,A.tlds);$('#perr').textContent=r.ok?'':T.noHeader;$('#p2').hidden=$('#p3').hidden=!r.ok;$('#res').textContent='';if(!r.ok)return;
+  S.sessions=(r.sessions.length?r.sessions:[{date:'',photoUrl:''}]).map(function(s){return {title:'',date:s.date,slug:'',photoUrl:s.photoUrl}});
+  S.rows=r.rows.map(function(x){x.ses=0;x.skip=x.flags.length>0;return x});
+  M.actDups(S.rows.map(function(x){return {sessionId:'0',email:x.email}})).forEach(function(i){S.rows[i].skip=true});
+  renderSes();renderRows()};
+$('#sess').addEventListener('input',function(e){var k=e.target.dataset.k,box=e.target.closest('.ses');if(!k||!box)return;var s=S.sessions[+box.dataset.i];s[k]=e.target.value.trim();box.querySelector('span').textContent=T.idIs+sid(s)+'__'});
+$('#sess').addEventListener('change',function(){renderRows()});
+$('#tbl').addEventListener('change',function(e){var k=e.target.dataset.k,tr=e.target.closest('tr');if(!k||!tr)return;var r=S.rows[+tr.dataset.i];
+  if(k==='skip')r.skip=e.target.checked;if(k==='ses')r.ses=+e.target.value;if(k==='email')r.email=M.actEmail(e.target.value,A.tlds).email;renderRows()});
+$('#bulk').onclick=function(e){var b=e.target.closest('[data-all]');if(!b)return;S.rows.forEach(function(r){r.ses=+b.dataset.all});renderRows()};
+
+$('#go').onclick=function(){if(S.busy)return;var res=$('#res');res.className='note';
+  if(!sesOk()){res.className='note warn';res.textContent=T.badSes;return}
+  var dups=dupIdx(),recs=[];
+  S.rows.forEach(function(r,i){if(r.skip||dups.indexOf(i)>-1||M.actEmail(r.email,A.tlds).flags.some(function(f){return f!=='tld'}))return;var s=S.sessions[r.ses];
+    recs.push(M.actRecord(r,{sessionId:sid(s),title:s.title,date:s.date,photoUrl:s.photoUrl},A))});
+  S.busy=true;$('#go').disabled=true;$('#go').textContent=T.going;
+  var ids={};recs.forEach(function(r){ids[r.sessionId]=1});
+  Promise.all(Object.keys(ids).map(function(id){return JteCloud.sessionActs(id)})).then(function(ms){var ex={};ms.forEach(function(m){Object.keys(m).forEach(function(k){ex[k]=m[k]})});
+    var p=M.actPlan(recs,ex);return JteCloud.writeActs(p.writes).then(function(w){var bad=w.failed;
+      res.textContent=T.done.replace('{a}',bad?'?':p.added).replace('{u}',bad?'?':p.updated).replace('{k}',p.skipped).replace('{f}',bad);if(bad)res.className='note warn'})})
+  .catch(function(){res.className='note warn';res.textContent=T.fail})
+  .then(function(){S.busy=false;$('#go').disabled=false;$('#go').textContent=T.go})};
+
+if(!window.JteCloud||!JteCloud.init(function(u){S.user=u;S.admin=false;gate();if(u)JteCloud.isAdmin().then(function(y){if(S.user&&S.user.uid===u.uid){S.admin=y;gate()}})})){$('#gate').textContent=T.offline}
+})();
+</script>
+</body></html>
