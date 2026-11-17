@@ -244,7 +244,36 @@ check('我的練習：畫面文案與示範資料齊全',()=>{const t=D.prac.t;
   ['log','insp','notes','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
   const dm=D.prac.demo;eq(dm.items.length,2);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
   dm.notes.forEach(n=>ok(M.pracNoteCheck(n,D.prac.max).ok,n.title));ok(dm.memos.some(m=>m.itemId===dm.items[0].id));});
+check('雲端說明：詢問文案講到管理者、不再說只有你讀得到；資料與公開的雲端句仍在',()=>{
+  const a=D.prac.t.cloudAsk;ok(a.indexOf('管理者')>-1,'管理者');ok(a.indexOf('只有你讀得到')<0,'只有你讀得到');ok(a.indexOf('{n}')>-1,'{n}');
+  const c=D.privacy.cloud;['只有你看得到','活動紀錄','主辦方'].forEach(w=>ok(c.indexOf(w)>-1,w));ok(c.indexOf('練習紀錄另外寫在下面')>-1);});
+check('我的練習：prac 底下沒有任何字串含「只有你」',()=>{const walk=v=>{if(typeof v==='string')ok(v.indexOf('只有你')<0,v);else if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')Object.values(v).forEach(walk);};walk(D.prac);});
+// 上傳失敗／成功對本機資料的影響：用假的 ctx 與假的 JteCloud 把畫面模組真的跑一遍
+const asyncDone=(async()=>{
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const sx=document.createElement('script');sx.src='me-practice.js';
+  await new Promise((res,rej)=>{sx.onload=res;sx.onerror=()=>rej(new Error('載入 me-practice.js 失敗'));document.head.appendChild(sx);});
+  const host=document.createElement('div');host.style.display='none';host.innerHTML='<div id="sec-prac"><div class="eyebrow"></div><h2 id="h-prac"></h2><span id="pracnote"></span><div id="pracbox"></div></div><div id="pracquick"></div><div id="praczone" hidden></div><div id="pracrest"></div>';document.body.appendChild(host);
+  const O={prefs:{},memos:[],prac:{items:[{id:'pi-t1',name:'太極',unit:'分鐘',color:D.prac.colors[0],archived:false,createdAt:1}],logs:[{id:'pl-t1',itemId:'pi-t1',date:'2026-11-17',amount:20,note:'',at:1}],notes:[]}};
+  let mode='fail',uploads=0;
+  window.JteCloud={pracHas:()=>Promise.resolve(false),pracLoad:()=>Promise.resolve({items:[],logs:[],notes:[]}),
+    pracUpload:()=>{uploads++;return Promise.resolve(mode==='fail'?{ok:0,failed:2,codes:['permission-denied']}:{ok:2,failed:0,codes:[]});}};
+  const ctx={D,M,O,DEMO:false,TODAY:'2026-11-18',save(){},toast(){},goPane(){},getInsp:()=>[],addMemo(){},startPhoto(){},unmarkInsp(){},refresh(){window.JtePrac.render();}};
+  window.JtePrac.init(ctx);window.JtePrac.setUser({uid:'u-test'});await wait(60);
+  const box=document.getElementById('pracbox'),clk=a=>{const b=box.querySelector('[data-pa='+a+']');ok(b,'找不到按鈕 '+a);b.click();};
+  ok(box.textContent.indexOf('2 筆')>-1,'詢問卡帶筆數（2 筆）：'+box.textContent);
+  clk('askyes');await wait(60);
+  ok(O.prac&&O.prac.items.length===1&&O.prac.logs.length===1,'上傳失敗：本機紀錄要還在');
+  ok(box.querySelector('[data-pa=upretry]')&&box.querySelector('[data-pa=upno]'),'失敗卡有再試與先不要');
+  ok(box.textContent.indexOf('permission-denied')<0,'畫面上不顯示原始錯誤碼');
+  clk('upno');await wait(30);ok(!box.querySelector('[data-pa=upretry]'),'先不要：回到平常的畫面');ok(O.prac.items.length===1,'先不要：本機還在');
+  clk('tocloud');await wait(60);ok(box.querySelector('[data-pa=upretry]'),'再放一次又失敗');
+  mode='ok';clk('upretry');await wait(80);
+  ok(O.prac===undefined,'上傳成功：本機那份清掉');ok(O.prefs.pracCloud['u-test']==='cloud','上傳成功：記下放雲端');ok(uploads===3,'共呼叫三次');
+})();
+asyncDone.then(()=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{});},e=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{throw e;});}).then(()=>{
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
+});
 </script>
 </body></html>

@@ -8,6 +8,8 @@
 //   3. /me 靈感區：users/{uid}/inspirations、users/{uid}/photos，用 Firebase Auth（只有本人能讀寫）。
 //      2026-11-17 起這兩段實際發布在另一個專案 lianxichang-me（/me 專用），不在 jointoenjoy；本檔保留作為規則文字的備份。
 //   4. /me 活動紀錄：activityRecords/{sessionId}__{email}、admins/{uid}，同樣只發布在 lianxichang-me。
+//   5. /me 我的練習：users/{uid}/practiceItems、users/{uid}/practiceLogs、users/{uid}/practiceNotes（只有本人能讀寫），同樣只發布在 lianxichang-me。
+//      另外 users/{uid}/inspirations 多了選填欄位 itemId（靈感掛到哪個練習項目）；發布規則時兩處都要一起更新。
 //   注意：首頁與部分工具另有 users/{email}/daily 的同步程式（未用 Firebase Auth）；線上規則可能與本檔不同，發布前請先對照線上現有規則，只加入 /me 靈感區那兩段，不要整份覆蓋。
 // 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
 

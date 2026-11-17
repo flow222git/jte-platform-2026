@@ -883,14 +883,17 @@ function renderManual(){$('#mtitle').textContent=D.manual.title;var m=M.manual(S
   if(m.lastNote)h+='<h4>最近補的一句</h4>'+esc(m.lastNote.text);
   el.innerHTML=h}
 /* 我的資料：預設私人；下載與刪除都在本機完成 */
-function renderData(){var p=D.privacy;$('#data').innerHTML='<p>'+(S.user?p.cloud:p.now)+'</p>'+(DEMO?'':'<p style="margin-top:6px">'+(JtePrac.mode()==='cloud'?p.practiceCloud:p.practiceLocal)+'</p>')+'<p class="note" style="margin-top:6px">'+p.choice+'</p><div class="row" style="margin-top:14px"><button class="btn sm" id="dl">'+p.download+'</button>'+(S.wipe?'<span class="note">'+p.wipeAsk+'</span><button class="btn sm fill" id="wipeyes">'+p.wipeYes+'</button><button class="lnk" id="wipeno">取消</button>':'<button class="lnk" id="wipe">'+p.wipe+'</button>')+'</div>'
+function renderData(){var p=D.privacy;$('#data').innerHTML='<p>'+(S.user?p.cloud:p.now)+'</p>'+(DEMO?'':'<p style="margin-top:6px">'+(JtePrac.mode()==='cloud'?p.practiceCloud:JtePrac.mode()==='out'?D.prac.t.needLogin:p.practiceLocal)+'</p>')+'<p class="note" style="margin-top:6px">'+p.choice+'</p><div class="row" style="margin-top:14px"><button class="btn sm" id="dl">'+p.download+'</button>'+(S.wipe?'<span class="note">'+p.wipeAsk+'</span><button class="btn sm fill" id="wipeyes">'+p.wipeYes+'</button><button class="lnk" id="wipeno">取消</button>':'<button class="lnk" id="wipe">'+p.wipe+'</button>')+'</div>'
   +(S.user?'<div class="row" style="margin-top:10px">'+(S.cwipe?'<span class="note">'+I.wipeAsk+'</span><button class="btn sm fill" id="cwipeyes">'+I.wipeYes+'</button><button class="lnk" id="cwipeno">'+I.cancel+'</button>':'<button class="lnk" id="cwipe">'+I.wipe+'</button>')+'</div>':'')}
 function downloadData(){if(DEMO){toast('示範模式沒有你的資料可以下載');return}
   if(JtePrac.pending()){toast(D.prac.t.notReady);return}
   var blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),note:'練息場｜我的練息場。這個檔案只在你的裝置上產生。',jte_me_v1:O,jte_daily_v1:daily,bagua_persona_v1:persona||null,practice:JtePrac.exportData(),cloud_inspirations:S.cloud,cloud_activities:S.acts.filter(function(a){return a.status==='kept'})},null,2)],{type:'application/json'});
   var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='lianxichang-my-data-'+TODAY+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);toast(D.privacy.downloadNote)}
-function wipeMine(){if(!DEMO){try{localStorage.removeItem('jte_me_v1')}catch(e){}}
+function wipeMine(){var keepPrac=O.prac,keepCloud=O.prefs&&O.prefs.pracCloud;
+  if(!DEMO){try{localStorage.removeItem('jte_me_v1')}catch(e){}}
   Object.keys(O).forEach(function(k){delete O[k]});['themes','memos','tris'].forEach(function(k){O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){O[k]={}});
+  /* 練習紀錄與它放哪裡的選擇不在「註記」裡，這裡不動 */
+  if(keepPrac!==undefined)O.prac=keepPrac;if(keepCloud)O.prefs.pracCloud=keepCloud;if(!DEMO)save();
   S.wipe=false;S.gate=null;S.open=null;S.sub=null;S.closed=null;renderAll();toast(D.privacy.wiped)}
 /* 終局期：存成一張圖（只在本機產生，由本人決定傳給誰） */
 function exportImage(){var defs=document.querySelector('svg[width="0"] defs');if(!defs)return;
@@ -1031,7 +1034,8 @@ $('#data').onclick=function(e){var id=e.target.id;if(id==='dl')downloadData();if
 function pick(n,out){$(out).textContent=n.dataset.pick+'。'}
 [['#lensmap','#pick'],['#collage','#pick2']].forEach(function(s){$(s[0]).addEventListener('click',function(e){var n=e.target.closest('.node');if(n)pick(n,s[1])});$(s[0]).addEventListener('keydown',function(e){var n=e.target.closest('.node');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(n,s[1])}})});
 function reload(){if(DEMO)return;daily=readLS('jte_daily_v1')||{};persona=readLS('bagua_persona_v1');renderAll()}
-window.addEventListener('storage',function(e){if(e.key==='jte_daily_v1'||e.key==='bagua_persona_v1')reload()});
+window.addEventListener('storage',function(e){if(e.key==='jte_daily_v1'||e.key==='bagua_persona_v1')reload();
+  else if(e.key==='jte_me_v1'&&!DEMO){var o=readLS('jte_me_v1');if(o&&o.prac!==undefined)O.prac=o.prac;else delete O.prac;renderAll()}});
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')reload()});
 window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 /* 開場 */
@@ -1042,7 +1046,7 @@ $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.sea
 $('#fab').textContent='＋ '+D.quick;
 JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
   getInsp:function(){return O.memos.concat(S.cloud)},
-  addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now(),key:TODAY,text:text,itemId:itemId});save();renderAll()},
+  addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),key:TODAY,text:text,itemId:itemId});save();renderAll()},
   startPhoto:function(itemId){S.capItem=itemId;renderMemoItem();goPane('today');$('#memo').focus()},
   unmarkInsp:function(itemId){var uid=S.user&&S.user.uid;S.cloud.forEach(function(x){if(x.itemId!==itemId)return;
     if(DEMO||!window.JteCloud){x.itemId='';return}
@@ -1050,7 +1054,7 @@ JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goP
   refresh:function(){renderAll()}});
 showPane(location.hash);
 $('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
-if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud()})}
+if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud()});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
 renderAll();
 window.__me={S:S,O:O,reload:reload,M:M};

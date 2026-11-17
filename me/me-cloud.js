@@ -185,6 +185,12 @@
     }
     return Promise.all(jobs);
   }
+  function delRefsSeq(refs) {
+    var chain = Promise.resolve(), i;
+    function one(part) { return function () { var b = db.batch(); part.forEach(function (x) { b.delete(x); }); return b.commit(); }; }
+    for (i = 0; i < refs.length; i += 400) chain = chain.then(one(refs.slice(i, i + 400)));
+    return chain;
+  }
   function pracDelItem(itemId) {
     return safe(function () {
       need();
@@ -196,37 +202,38 @@
       });
     });
   }
+  // 一批一批依序寫（上一批成功才寫下一批）；先紀錄、再筆記、項目最後。
+  // pracHas() 看的是項目，所以項目是最後一個落地的：中途失敗的話，下次載入不會被當成「雲端已經有資料」而自動切過去。
   function pracUpload(p) {
     return safe(function () {
       need();
-      var ops = [], jobs = [], i;
-      ['items', 'logs', 'notes'].forEach(function (k) {
+      var batches = [], i;
+      ['logs', 'notes', 'items'].forEach(function (k) {
+        var ops = [];
         ((p && p[k]) || []).forEach(function (o) { ops.push({ ref: col(KINDS[k]).doc(o.id), data: pick(k, o) }); });
+        for (i = 0; i < ops.length; i += 400) batches.push(ops.slice(i, i + 400));
       });
+      var res = { ok: 0, failed: 0, codes: [] }, dead = false;
+      function add(c) { if (res.codes.indexOf(c) < 0) res.codes.push(c); }
       function run(part) {
+        if (dead) { res.failed += part.length; return Promise.resolve(); }
         var b;
         try {
           b = db.batch();
           part.forEach(function (w) { b.set(w.ref, w.data); });
-        } catch (e) { return Promise.resolve({ ok: 0, failed: part.length, codes: [e && e.code || 'error'] }); }
-        return b.commit().then(function () { return { ok: part.length, failed: 0, codes: [] }; }, function (e) { return { ok: 0, failed: part.length, codes: [e && e.code || 'error'] }; });
+        } catch (e) { dead = true; res.failed += part.length; add(e && e.code || 'error'); return Promise.resolve(); }
+        return b.commit().then(function () { res.ok += part.length; }, function (e) { dead = true; res.failed += part.length; add(e && e.code || 'error'); });
       }
-      for (i = 0; i < ops.length; i += 400) jobs.push(run(ops.slice(i, i + 400)));
-      return Promise.all(jobs).then(function (rs) {
-        return rs.reduce(function (a, r) {
-          r.codes.forEach(function (c) { if (a.codes.indexOf(c) < 0) a.codes.push(c); });
-          return { ok: a.ok + r.ok, failed: a.failed + r.failed, codes: a.codes };
-        }, { ok: 0, failed: 0, codes: [] });
-      });
+      return batches.reduce(function (chain, part) { return chain.then(function () { return run(part); }); }, Promise.resolve()).then(function () { return res; });
     });
   }
+  // 清掉雲端的練習資料：先紀錄與筆記，項目最後（中途失敗時，項目還在，下次還看得到有東西沒刪乾淨）。
   function pracWipe() {
     return safe(function () {
       need();
-      return Promise.all(['items', 'logs', 'notes'].map(function (k) { return col(KINDS[k]).get(); })).then(function (r) {
-        var refs = [];
-        r.forEach(function (s) { s.forEach(function (d) { refs.push(d.ref); }); });
-        return delRefs(refs);
+      return Promise.all(['logs', 'notes', 'items'].map(function (k) { return col(KINDS[k]).get(); })).then(function (r) {
+        var groups = r.map(function (s) { var refs = []; s.forEach(function (d) { refs.push(d.ref); }); return refs; });
+        return groups.reduce(function (chain, refs) { return chain.then(function () { return delRefsSeq(refs); }); }, Promise.resolve());
       });
     });
   }

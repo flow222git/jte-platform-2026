@@ -10,7 +10,8 @@
   // 畫面狀態：哪個項目的專區、哪個分頁、月曆的月份、哪一天、哪個表單開著
   var st = { data: { items: [], logs: [], notes: [] }, seen: null, item: '', tab: 'log', calY: 0, calM: 0, day: '', chart: 'week',
     lf: null, itf: null, nopen: '', ask: '', busy: false, focus: '', select: false, user: null,
-    mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, skipImport: {} };
+    mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, cloudOff: false, authed: false, nnid: '' };
+  var dirty = { box: false, quick: false, zone: false };
   var TABS = ['log', 'insp', 'notes', 'set'];
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -56,6 +57,7 @@
     st.data.logs.forEach(function (l) { if (l.itemId === itemId && l.date === C.TODAY) { n++; s += Number(l.amount) || 0; } });
     return n ? Math.round(s * 10) / 10 : 0;
   }
+  function newItf(name, unit) { return { name: name, unit: unit, id: M.pracId('pi-') }; }
   function copy(x) { var o = {}, k; for (k in x) if (Object.prototype.hasOwnProperty.call(x, k)) o[k] = x[k]; return o; }
 
   // ── store：本機（jte_me_v1 的 prac）與示範（只在記憶體） ──
@@ -140,7 +142,16 @@
     C.O.prefs.pracCloud[uid] = v; C.save();
   }
   function localCount() { var p = M.pracClean(C.O.prac); return p.items.length + p.logs.length + p.notes.length; }
-  function pending() { return st.mode === 'cloud' && st.cloudState !== 'ready'; }
+  function hasCloudPref() { var p = prefs(), k; for (k in p) if (Object.prototype.hasOwnProperty.call(p, k) && p[k] === 'cloud') return true; return false; }
+  // 以前選過放雲端的人，登入狀態還在還原時先顯示讀取中，免得閃出空的畫面
+  function restoring() { return !C.DEMO && !st.authed && !!g.JteCloud && hasCloudPref(); }
+  function pending() { return restoring() || (st.mode === 'cloud' && st.cloudState !== 'ready'); }
+  function skipMap() { var p = C.O.prefs; return p && p.pracSkipImport && typeof p.pracSkipImport === 'object' ? p.pracSkipImport : {}; }
+  function setSkip(uid) {
+    if (!C.O.prefs || typeof C.O.prefs !== 'object') C.O.prefs = {};
+    if (!C.O.prefs.pracSkipImport || typeof C.O.prefs.pracSkipImport !== 'object') C.O.prefs.pracSkipImport = {};
+    C.O.prefs.pracSkipImport[uid] = true; C.save();
+  }
   function useLocal() { store = localStore(); st.seen = C.O.prac; st.data = M.pracClean(C.O.prac); st.cloudState = ''; }
   function mergeData(a, b) {
     var out = emptyData();
@@ -150,27 +161,27 @@
     });
     return out;
   }
-  function askVisible() { return st.mode === 'ask' && !!st.uid && !st.moving && !st.moveErr && localCount() > 0; }
-  function importVisible() { return st.mode === 'cloud' && st.cloudState === 'ready' && !!st.uid && !st.skipImport[st.uid] && !st.moving && !st.moveErr && localCount() > 0; }
+  function askVisible() { return st.mode === 'ask' && !st.cloudOff && !!st.uid && !st.moving && !st.moveErr && localCount() > 0; }
+  function importVisible() { return st.mode === 'cloud' && st.cloudState === 'ready' && !!st.uid && !skipMap()[st.uid] && !st.moving && !st.moveErr && localCount() > 0; }
   function enterCloud(uid) {
     var gen = st.gen, me = cloudStore(uid);
     store = me; st.mode = 'cloud'; st.cloudState = 'loading'; st.data = emptyData();
     st.ask = ''; st.lf = null; st.itf = null; st.nopen = '';
-    render();
+    render(true);
     me.load().then(function (d) {
       if (gen !== st.gen) return;
       st.data = d; st.cloudState = 'ready'; C.refresh();
     }, function () {
       if (gen !== st.gen) return;
-      st.cloudState = 'error'; C.toast(T.loadFail); render();
+      st.cloudState = 'error'; C.toast(T.loadFail); render(true);
     });
   }
   // 本機的全部放上雲端；全部成功才清掉本機，有失敗就停下來、本機不動
   function upload() {
     var uid = st.uid, gen = st.gen, local = M.pracClean(C.O.prac);
-    function fail(code) { if (gen !== st.gen) return; st.moving = ''; st.moveErr = fill(T.upFail, { c: code }); st.focus = 'retry'; render(); }
+    function fail(code) { if (gen !== st.gen) return; try { console.warn('practice upload failed:', code); } catch (e) { /* 沒有 console */ } st.moving = ''; st.moveErr = T.upFail; st.focus = 'retry'; render(true); }
     if (!uid || !g.JteCloud) return;
-    st.moving = 'up'; st.moveErr = ''; render();
+    st.moving = 'up'; st.moveErr = ''; render(true);
     timed(function () { return g.JteCloud.pracUpload(local); }, 60000).then(function (r) {
       if (gen !== st.gen) return;
       if (!r || r.failed) { fail(r && r.codes && r.codes.length ? r.codes.join(', ') : 'error'); return; }
@@ -182,39 +193,40 @@
   // 把雲端的搬回本機：先寫進本機，再刪雲端；刪不乾淨就留著提醒
   function toLocal() {
     var uid = st.uid, gen = st.gen;
-    function stop() { if (gen !== st.gen) return; st.moving = ''; st.focus = 'tl'; C.toast(T.downFail); render(); }
+    function stop() { if (gen !== st.gen) return; st.moving = ''; st.focus = 'tl'; C.toast(T.downFail); render(true); }
     function finish(left) {
       if (gen !== st.gen) return;
       useLocal(); st.mode = 'local'; st.moving = ''; st.wipeLeft = left; st.focus = left ? 'wr' : 'new';
       C.toast(left ? T.wipeLeft : T.downDone); C.refresh();
     }
     if (!uid || !g.JteCloud) return;
-    st.moving = 'down'; st.ask = ''; st.moveErr = ''; render();
+    st.moving = 'down'; st.ask = ''; st.moveErr = ''; render(true);
     timed(function () { return g.JteCloud.pracLoad(); }, 30000).then(function (d) {
+      if (gen !== st.gen || st.uid !== uid) return; // 這段時間換了帳號：不把前一個人的雲端資料寫進這台裝置
       var m = mergeData(M.pracClean(d), M.pracClean(C.O.prac));
       C.O.prac = m; setPref(uid, 'local');
-      if (gen !== st.gen) return;
       return timed(function () { return g.JteCloud.pracWipe(); }, 60000).then(function () { finish(false); }, function () { finish(true); });
     }, stop);
   }
   function wipeAgain() {
     var uid = st.uid, gen = st.gen;
     if (!uid || !g.JteCloud) return;
-    st.moving = 'down'; render();
+    st.moving = 'down'; render(true);
     timed(function () { return g.JteCloud.pracWipe(); }, 60000).then(function () {
       if (gen !== st.gen) return;
-      st.moving = ''; st.wipeLeft = false; st.focus = 'new'; C.toast(T.wipeDone); render();
+      st.moving = ''; st.wipeLeft = false; st.focus = 'new'; C.toast(T.wipeDone); render(true);
     }, function () {
       if (gen !== st.gen) return;
-      st.moving = ''; st.focus = 'wr'; C.toast(T.wipeLeft); render();
+      st.moving = ''; st.focus = 'wr'; C.toast(T.wipeLeft); render(true);
     });
   }
   function setUser(user) {
     st.user = user || null;
     if (!inited || C.DEMO) return;
-    var uid = user ? user.uid : null, was = !!store && store.kind === 'cloud', gen, pref;
-    if (uid === st.uid) return;
-    st.uid = uid; st.gen++; gen = st.gen;
+    var uid = user ? user.uid : null, was = !!store && store.kind === 'cloud', gen, pref, first = !st.authed;
+    st.authed = true;
+    if (uid === st.uid) { if (first) C.refresh(); return; }
+    st.uid = uid; st.gen++; gen = st.gen; st.cloudOff = false;
     st.moving = ''; st.moveErr = ''; st.wipeLeft = false; st.ask = ''; st.lf = null; st.itf = null; st.nopen = '';
     if (!uid) {
       if (was) { store = { kind: 'out' }; st.mode = 'out'; st.data = emptyData(); st.cloudState = ''; }
@@ -235,7 +247,11 @@
       var m = M.pracMode(prefs(), uid, has);
       if (m === 'cloud') { setPref(uid, 'cloud'); enterCloud(uid); }
       else { st.mode = m; C.refresh(); }
-    }, function () { /* 查不到：維持本機，這次不問 */ });
+    }, function () {
+      // 查不到（多半是雲端規則還沒開）：維持本機，這次不問，也不顯示放雲端的入口
+      if (gen !== st.gen) return;
+      st.cloudOff = true; C.refresh();
+    });
     C.refresh();
   }
 
@@ -298,6 +314,7 @@
   }
   function itemForm(mode, it) {
     var v = it || st.itf || {}, key = 'if-' + mode, unit = v.unit || '', color = safeColor(v.color || P.colors[items().length % P.colors.length]);
+    if (!P.colors.some(function (c) { return c.toLowerCase() === color.toLowerCase(); })) color = P.colors[0];
     var h = '<form class="pr-iform" data-form="item" data-mode="' + mode + '" novalidate>';
     h += '<label class="pr-f"><span>' + esc(T.name) + '</span><input class="in" name="name" maxlength="' + P.max.name + '" autocomplete="off" placeholder="' + esc(T.namePh) + '" value="' + esc(v.name || '') + '"' + fk(key + '-name') + '></label>';
     h += '<div class="pr-f"><span id="' + key + '-ul">' + esc(T.unit) + '</span><div class="pr-units"><div class="chips" role="group" aria-labelledby="' + key + '-ul">' +
@@ -329,9 +346,9 @@
     var h = '';
     if (C.DEMO || !st.uid) return '';
     if (st.moving) return '<p class="note pr-moving" role="status">' + esc(st.moving === 'up' ? T.upBusy : T.downBusy) + '</p>';
-    if (st.moveErr) return '<div class="panel pr-ask"><p class="pr-err" role="alert">' + esc(st.moveErr) + '</p><div class="row"><button class="btn fill" data-pa="upretry"' + fk('retry') + '>' + esc(T.retry) + '</button></div></div>';
+    if (st.moveErr) return '<div class="panel pr-ask"><p class="pr-err" role="alert">' + esc(st.moveErr) + '</p><div class="row"><button class="btn fill" data-pa="upretry"' + fk('retry') + '>' + esc(T.retry) + '</button><button class="btn" data-pa="upno"' + fk('upno') + '>' + esc(T.upNo) + '</button></div></div>';
     if (st.wipeLeft) return '<div class="panel pr-ask"><p>' + esc(T.wipeLeft) + '</p><div class="row"><button class="btn" data-pa="wiperetry"' + fk('wr') + '>' + esc(T.wipeRetry) + '</button></div></div>';
-    if (askVisible()) h = '<div class="panel pr-ask"><p>' + esc(T.cloudAsk) + '</p><div class="row"><button class="btn fill" data-pa="askyes"' + fk('askyes') + '>' + esc(T.askYes) + '</button><button class="btn" data-pa="askno"' + fk('askno') + '>' + esc(T.askNo) + '</button></div></div>';
+    if (askVisible()) h = '<div class="panel pr-ask"><p>' + esc(fill(T.cloudAsk, { n: localCount() })) + '</p><div class="row"><button class="btn fill" data-pa="askyes"' + fk('askyes') + '>' + esc(T.askYes) + '</button><button class="btn" data-pa="askno"' + fk('askno') + '>' + esc(T.askNo) + '</button></div></div>';
     else if (importVisible()) h = '<div class="panel pr-ask"><p>' + esc(fill(T.importAsk, { n: localCount() })) + '</p><div class="row"><button class="btn fill" data-pa="impyes"' + fk('impyes') + '>' + esc(T.importYes) + '</button><button class="btn" data-pa="impno"' + fk('impno') + '>' + esc(T.importNo) + '</button></div></div>';
     return h;
   }
@@ -343,10 +360,12 @@
       return '<p class="note pr-where">' + esc(T.whereCloud) + ' <button class="lnk" data-pa="tolocal"' + fk('tl') + '>' + esc(T.toLocal) + '</button></p>';
     }
     if (askVisible()) return '';
+    if (st.cloudOff) return '';
     return '<p class="note pr-where">' + esc(T.whereLocal) + ' <button class="lnk" data-pa="tocloud"' + fk('tc') + '>' + esc(T.toCloud) + '</button></p>';
   }
   function renderBox() {
     var act = active(), arch = items().filter(function (x) { return x.archived; }), h = '';
+    if (restoring()) { box.innerHTML = '<p class="note pr-moving" role="status">' + esc(T.loading) + '</p>'; return; }
     if (st.mode === 'out') {
       box.innerHTML = '<div class="panel pr-empty"><p>' + esc(T.needLogin) + '</p><div class="row"><button class="btn" data-pa="uselocal"' + fk('ul') + '>' + esc(T.useLocal) + '</button></div></div>';
       return;
@@ -374,8 +393,8 @@
   // ── 今天的快速鍵 ──
   function renderQuick() {
     var act = active();
-    quick.hidden = !act.length;
-    if (!act.length) { quick.innerHTML = ''; return; }
+    quick.hidden = !act.length || pending();
+    if (!act.length || pending()) { quick.innerHTML = ''; return; }
     var openId = st.lf && st.lf.ctx === 'quick' ? st.lf.item : '';
     quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="gopr">' + esc(T.quickGo) + '</button></div>' +
       '<div class="pr-pills">' + act.map(function (it) {
@@ -405,7 +424,7 @@
       var on = st.tab === k;
       return '<button role="tab" id="pr-tab-' + k + '" aria-controls="pr-tp" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-pa="tab" data-t="' + k + '"' + fk('t-' + k) + '>' + esc(T.tabs[k]) + '</button>';
     }).join('') + '</div>';
-    h += '<div class="panel pr-tp" id="pr-tp" role="tabpanel" aria-labelledby="pr-tab-' + st.tab + '"' + cvars(it) + '>' +
+    h += '<div class="panel pr-tp" id="pr-tp" role="tabpanel" tabindex="0" aria-labelledby="pr-tab-' + st.tab + '"' + cvars(it) + '>' +
       (st.tab === 'log' ? tabLog(it) : st.tab === 'insp' ? tabInsp(it) : st.tab === 'notes' ? tabNotes(it) : tabSet(it)) + '</div>';
     zone.innerHTML = h;
     if (st.tab === 'log') drawChart();
@@ -497,7 +516,7 @@
     h += '<div class="pr-blk">' + (list.length ? list.map(function (x) {
       var ph = (x.photos || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
       return '<div class="pr-insp"><small>' + esc(M.dlabel(x.key)) + '</small>' + (x.text ? '<p>' + esc(x.text) + '</p>' : '') +
-        (ph.length ? '<div class="pr-thumbs">' + ph.map(function (p) { return '<figure><img src="' + esc(p.data) + '" alt="' + esc(p.caption || '') + '" loading="lazy">' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') + '</div>';
+        (ph.length ? '<div class="pr-thumbs">' + ph.filter(function (p) { return /^data:image\//.test(String(p.data || '')); }).map(function (p) { return '<figure><img src="' + esc(p.data) + '" alt="' + esc(p.caption || '') + '" loading="lazy">' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') + '</div>';
     }).join('') : '<p class="note">' + esc(T.inspNone) + '</p>') + '</div>';
     return h;
   }
@@ -553,6 +572,7 @@
   function openLog(ctx, itemId, extra, back) {
     var f = { ctx: ctx, item: itemId, back: back };
     if (extra) { f.log = extra.log || ''; f.date = extra.date || ''; }
+    if (!f.log) f.nid = M.pracId('pl-');
     st.lf = f; st.focus = lfKey() + '-a'; st.select = true; st.ask = '';
   }
   function closeLog() { var b = st.lf && st.lf.back; st.lf = null; if (b) st.focus = b; }
@@ -562,7 +582,7 @@
     var old = f.log ? logById(f.log) : null, el = form.elements;
     var r = M.pracLogCheck({ date: el.date.value, amount: el.amount.value, note: el.note.value }, C.TODAY, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err === 'future' || r.err === 'date' ? (el.date.type === 'hidden' ? '' : 'date') : r.err === 'note' ? 'note' : 'amount'); return; }
-    var lg = { id: old ? old.id : M.pracId('pl-'), itemId: it.id, date: r.log.date, amount: r.log.amount, note: r.log.note, at: old ? (old.at || Date.now()) : Date.now() };
+    var lg = { id: old ? old.id : (f.nid || (f.nid = M.pracId('pl-'))), itemId: it.id, date: r.log.date, amount: r.log.amount, note: r.log.note, at: old ? (old.at || Date.now()) : Date.now() };
     run(form, store.putLog(lg), function () {
       upsert(st.data.logs, lg);
       var msg = lg.date === C.TODAY ? fill(T.logged, { n: it.name, a: M.pracFmt(lg.amount), u: it.unit }) : fill(T.loggedOn, { d: M.dlabel(lg.date), n: it.name, a: M.pracFmt(lg.amount), u: it.unit });
@@ -570,7 +590,7 @@
       closeLog();
       if (f.ctx === 'edit') st.focus = 'le-' + lg.id;
       if (f.ctx === 'day') st.focus = 'da';
-      C.toast(msg); announce(msg); render();
+      C.toast(msg); announce(msg); render(true);
     });
   }
   function submitItem(form) {
@@ -578,21 +598,21 @@
     var r = M.pracItemCheck({ name: el.name.value, unit: el.unit.value, color: col ? col.value : '' }, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
     var it;
-    if (mode === 'new') it = { id: M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: safeColor(r.item.color), archived: false, createdAt: Date.now() };
+    if (mode === 'new') it = { id: (st.itf && st.itf.id) || M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: safeColor(r.item.color), archived: false, createdAt: Date.now() };
     else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = safeColor(r.item.color); }
     run(form, store.putItem(it), function () {
       upsert(st.data.items, it);
       if (mode === 'new') { st.itf = null; st.focus = 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
       else C.toast(T.saved);
-      render();
+      render(true);
     });
   }
   function submitNote(form) {
     var id = form.getAttribute('data-id'), el = form.elements, old = id ? noteById(id) : null;
     var r = M.pracNoteCheck({ title: el.title.value, body: el.body.value }, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
-    var n = { id: old ? old.id : M.pracId('pn-'), itemId: st.item, title: r.note.title, body: r.note.body, updatedAt: Date.now() };
-    run(form, store.putNote(n), function () { upsert(st.data.notes, n); st.nopen = ''; st.focus = 'no-' + n.id; C.toast(T.saved); render(); });
+    var n = { id: old ? old.id : (st.nnid || (st.nnid = M.pracId('pn-'))), itemId: st.item, title: r.note.title, body: r.note.body, updatedAt: Date.now() };
+    run(form, store.putNote(n), function () { upsert(st.data.notes, n); st.nopen = ''; st.focus = 'no-' + n.id; C.toast(T.saved); render(true); });
   }
   function submitInsp(form) {
     var ta = form.elements.text, v = ta.value.replace(/^\s+|\s+$/g, '');
@@ -623,20 +643,21 @@
       case 'back': st.backTo = st.item; C.goPane('practice'); return;
       case 'gopr': C.goPane('practice'); return;
       case 'askyes': case 'impyes': case 'upretry': case 'tocloud': upload(); return;
+      case 'upno': st.moveErr = ''; if (st.mode === 'ask') st.mode = 'local'; st.focus = 'new'; break;
       case 'askno': if (!st.uid) return; setPref(st.uid, 'local'); st.mode = 'local'; st.focus = 'new'; break;
-      case 'impno': if (!st.uid) return; st.skipImport[st.uid] = true; st.focus = 'new'; break;
+      case 'impno': if (!st.uid) return; setSkip(st.uid); st.focus = 'new'; break;
       case 'tolocal': st.ask = 'tolocal'; st.focus = 'tly'; break;
       case 'tolocalyes': toLocal(); return;
       case 'wiperetry': wipeAgain(); return;
       case 'cretry': if (st.uid) enterCloud(st.uid); return;
       case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
-      case 'new': st.itf = { name: '', unit: '' }; st.lf = null; st.focus = 'if-new-name'; break;
+      case 'new': st.itf = newItf('', ''); st.lf = null; st.focus = 'if-new-name'; break;
       case 'ex':
         x = P.examples[+b.getAttribute('data-i')];
         if (!x) return;
         form = b.closest('form');
         if (form) { form.elements.name.value = x.name; form.elements.unit.value = x.unit; syncUnits(form); return; }
-        st.itf = { name: x.name, unit: x.unit }; st.focus = 'if-new-save'; break;
+        st.itf = newItf(x.name, x.unit); st.focus = 'if-new-save'; break;
       case 'icancel': st.itf = null; st.focus = 'new'; break;
       case 'unit':
         form = b.closest('form');
@@ -651,26 +672,26 @@
       case 'nask': st.ask = ''; st.focus = b.getAttribute('data-back') || ''; break;
       case 'ldelyes':
         x = b.getAttribute('data-log');
-        run(null, store.delLog(x), function () { st.data.logs = drop(st.data.logs, x); st.ask = ''; st.focus = 'da'; C.toast(T.deleted); announce(T.deleted); render(); });
+        run(null, store.delLog(x), function () { st.data.logs = drop(st.data.logs, x); st.ask = ''; st.focus = 'da'; C.toast(T.deleted); announce(T.deleted); render(true); });
         return;
       case 'tab': setTab(b.getAttribute('data-t'), true); return;
-      case 'cprev': if (--st.calM < 1) { st.calM = 12; st.calY--; } st.focus = 'cp'; break;
-      case 'cnext': if (++st.calM > 12) { st.calM = 1; st.calY++; } st.focus = 'cn'; break;
+      case 'cprev': if (--st.calM < 1) { st.calM = 12; st.calY--; } monthMoved(); st.focus = 'cp'; break;
+      case 'cnext': if (++st.calM > 12) { st.calM = 1; st.calY++; } monthMoved(); st.focus = 'cn'; break;
       case 'day': st.day = st.day === b.getAttribute('data-d') ? '' : b.getAttribute('data-d'); if (st.lf && (st.lf.ctx === 'day' || st.lf.ctx === 'edit')) st.lf = null; st.ask = ''; break;
       case 'chart': st.chart = b.getAttribute('data-c'); st.focus = st.chart === 'week' ? 'cw' : 'cm'; break;
       case 'photo': if (it) C.startPhoto(it.id); return;
-      case 'nnew': st.nopen = 'new'; st.ask = ''; st.focus = 'nf-new-t'; break;
+      case 'nnew': st.nopen = 'new'; st.nnid = M.pracId('pn-'); st.ask = ''; st.focus = 'nf-new-t'; break;
       case 'nopen': if (st.nopen === id) { st.nopen = ''; st.focus = 'no-' + id; } else { st.nopen = id; st.focus = 'nf-' + id + '-b'; } st.ask = ''; break;
       case 'nclose': x = st.nopen; st.nopen = ''; st.ask = ''; st.focus = x && x !== 'new' ? 'no-' + x : 'nn'; break;
       case 'ndel': st.ask = 'note:' + st.nopen; st.focus = 'ny-' + st.nopen; break;
       case 'ndelyes':
         x = st.nopen;
-        run(null, store.delNote(x), function () { st.data.notes = drop(st.data.notes, x); st.nopen = ''; st.ask = ''; st.focus = 'nn'; C.toast(T.deleted); render(); });
+        run(null, store.delNote(x), function () { st.data.notes = drop(st.data.notes, x); st.nopen = ''; st.ask = ''; st.focus = 'nn'; C.toast(T.deleted); render(true); });
         return;
       case 'arch':
         if (!it) return;
         x = copy(it); x.archived = !it.archived;
-        run(null, store.putItem(x), function () { upsert(st.data.items, x); st.focus = 'ar'; C.toast(x.archived ? T.archivedDone : T.unarchivedDone); render(); });
+        run(null, store.putItem(x), function () { upsert(st.data.items, x); st.focus = 'ar'; C.toast(x.archived ? T.archivedDone : T.unarchivedDone); render(true); });
         return;
       case 'idel': st.ask = 'item'; st.focus = 'iy'; break;
       case 'idelyes':
@@ -686,8 +707,9 @@
         return;
       default: return;
     }
-    render();
+    render(true);
   }
+  function monthMoved() { st.day = ''; st.ask = ''; if (st.lf && (st.lf.ctx === 'day' || st.lf.ctx === 'edit')) st.lf = null; }
   function syncUnits(form) {
     var v = form.elements.unit.value;
     each(form.querySelectorAll('[data-pa=unit]'), function (c) { var on = c.getAttribute('data-u') === v; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
@@ -697,7 +719,7 @@
     st.tab = k; st.ask = ''; st.nopen = '';
     if (st.lf && st.lf.ctx !== 'zone') st.lf = null;
     if (focus) st.focus = 't-' + k;
-    render();
+    render(true);
   }
   function onKey(e) {
     var t = e.target;
@@ -710,7 +732,7 @@
       if (n > -1) { e.preventDefault(); setTab(TABS[n], true); }
       return;
     }
-    if (e.key === 'Escape' && st.lf && t.closest && t.closest('form[data-form=log]')) { e.preventDefault(); closeLog(); render(); }
+    if (e.key === 'Escape' && st.lf && t.closest && t.closest('form[data-form=log]')) { e.preventDefault(); closeLog(); render(true); }
   }
   function onInput(e) {
     var t = e.target;
@@ -719,15 +741,27 @@
   }
 
   // ── 對外介面 ──
-  function render() {
+  // 輸入欄位正被使用時，不整個重畫那一區（會斷掉輸入法組字、清掉錯誤訊息與選取）；
+  // 自己的動作（送出、取消、切分頁…）傳 force 一定重畫。
+  function focusIn(root) { var a = document.activeElement; return !!(a && a !== root && root.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }
+  function render(force) {
     if (!inited) return;
     syncLocal();
-    var s = snapshot();
     if (st.lf && !itemById(st.lf.item)) st.lf = null;
-    var arch = box.querySelector('details.pr-arch');
+    if (st.lf && st.lf.ctx === 'edit' && !logById(st.lf.log)) st.lf = null;
+    var s = snapshot(), arch = box.querySelector('details.pr-arch');
     if (arch) st.archOpen = arch.open;
-    renderBox(); renderQuick(); renderZone();
+    function go(name, root, fn) {
+      if (!force && focusIn(root)) { dirty[name] = true; return; }
+      dirty[name] = false; fn();
+    }
+    go('box', box, renderBox); go('quick', quick, renderQuick); go('zone', zone, renderZone);
     restore(s);
+  }
+  function onFocusOut(e) {
+    var root = e.currentTarget;
+    if (e.relatedTarget && root.contains(e.relatedTarget)) return;
+    setTimeout(function () { if ((dirty.box || dirty.quick || dirty.zone) && !focusIn(root)) render(); }, 300);
   }
   function handleHash(h) {
     var r = M.route(h), id = r.item || '';
@@ -737,14 +771,14 @@
       st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.calY = cur.y; st.calM = cur.m;
       if (st.lf && st.lf.ctx !== 'quick') st.lf = null;
       st.focus = 'zh';
-      render();
+      render(true);
       return true;
     }
     if (st.item || !zone.hidden) {
       var was = st.backTo; st.item = ''; st.backTo = ''; st.ask = ''; st.nopen = '';
       if (st.lf && st.lf.ctx !== 'quick' && st.lf.ctx !== 'card') st.lf = null;
       if (was && r.pane === 'practice') st.focus = 'co-' + was;
-      render();
+      render(true);
     }
     return false;
   }
@@ -764,7 +798,7 @@
     var cur = nowYM(); st.calY = cur.y; st.calM = cur.m;
     [box, quick, zone].forEach(function (r) {
       r.addEventListener('click', onClick); r.addEventListener('submit', onSubmit);
-      r.addEventListener('keydown', onKey); r.addEventListener('input', onInput);
+      r.addEventListener('keydown', onKey); r.addEventListener('input', onInput); r.addEventListener('focusout', onFocusOut);
     });
     var tm = null;
     window.addEventListener('resize', function () { clearTimeout(tm); tm = setTimeout(function () { if (st.item && st.tab === 'log' && !zone.hidden) drawChart(); }, 150); });
@@ -777,7 +811,7 @@
   // 給 index.html 的靈感框、足跡、資料說明用
   function activeItems() { return active().map(function (x) { return { id: x.id, name: x.name }; }); }
   function itemName(id) { var it = id ? itemById(id) : null; return it ? it.name : ''; }
-  function mode() { return store && store.kind === 'cloud' ? 'cloud' : 'local'; }
+  function mode() { return store && store.kind === 'cloud' ? 'cloud' : store && store.kind === 'out' ? 'out' : 'local'; }
 
   g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData,
     items: activeItems, itemName: itemName, mode: mode, pending: pending };
