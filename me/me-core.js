@@ -73,7 +73,7 @@
     return p;
   }
 
-  function buildPages(daily, memos) {
+  function buildPages(daily, memos, acts) {
     var ps = [];
     Object.keys(daily || {}).forEach(function (k) {
       var r = daily[k];
@@ -94,6 +94,7 @@
       ps.push({ id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
         text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph });
     });
+    arr(acts).forEach(function (a) { var p = actPage(a); if (p) ps.push(p); });
     ps.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
     return ps;
   }
@@ -305,12 +306,57 @@
     }
     return { ok: true, sessions: sessions, rows: out };
   }
+  function actSessionOk(id) { return /^\d{4}-\d{2}-\d{2}-[a-z0-9-]{1,30}$/.test(String(id || '')); }
+  function actDocId(sessionId, email) { return String(sessionId) + '__' + String(email); }
+  function cut(s, n) { return String(s == null ? '' : s).trim().slice(0, n); }
+  function sc2(o) { o = o || {}; return { body: o.body == null ? null : o.body, mood: o.mood == null ? null : o.mood }; }
+  // 一列＋場次 → 一筆要寫進雲端的紀錄。這裡列出的就是全部欄位，沒有別的。
+  function actRecord(row, ses, lim) {
+    return { email: String(row.email || ''), sessionId: String(ses.sessionId || ''), title: cut(ses.title, lim.maxTitle), date: String(ses.date || ''),
+      photoUrl: safeUrl(ses.photoUrl).slice(0, lim.maxUrl), pre: sc2(row.pre), post: sc2(row.post),
+      expect: cut(row.expect, lim.maxText), feeling: cut(row.feeling, lim.maxText), takeaway: cut(row.takeaway, lim.maxText), feedback: cut(row.feedback, lim.maxText) };
+  }
+  function actDups(items) {
+    var seen = {}, out = [];
+    arr(items).forEach(function (x, i) { var k = actDocId(x.sessionId, x.email); if (seen[k]) out.push(i); else seen[k] = 1; });
+    return out;
+  }
+  // 匯入計畫：選了「不用」的跳過（不覆寫）；已有的保留原本的狀態；新的是 pending。
+  function actPlan(recs, existing) {
+    var writes = [], added = 0, updated = 0, skipped = 0;
+    arr(recs).forEach(function (r) {
+      var id = actDocId(r.sessionId, r.email), old = (existing || {})[id], data = {}, k;
+      if (old && old.status === 'declined') { skipped++; return; }
+      for (k in r) if (Object.prototype.hasOwnProperty.call(r, k)) data[k] = r[k];
+      data.status = old ? (old.status || 'pending') : 'pending';
+      if (old) updated++; else added++;
+      writes.push({ id: id, data: data, isNew: !old });
+    });
+    return { writes: writes, added: added, updated: updated, skipped: skipped };
+  }
+  // 前後測並列：只把數字排在一起，不算差距、不解讀。
+  function actLines(a, L) {
+    function one(lab, o) {
+      o = o || {};
+      var p = [o.body != null && L.body + ' ' + o.body, o.mood != null && L.mood + ' ' + o.mood].filter(Boolean);
+      return p.length ? lab + '　' + p.join('　') : '';
+    }
+    return [one(L.before, a && a.pre), one(L.after, a && a.post)].filter(Boolean);
+  }
+  function actPage(a) {
+    if (!a || a.status !== 'kept' || !/^\d{4}-\d{2}-\d{2}$/.test(String(a.date || ''))) return null;
+    var title = String(a.title || '活動');
+    return { id: 'act-' + a.docId, key: a.date, src: 'Act', kind: '活動', title: title, label: title, doodle: 'mount', tool: '',
+      text: String(a.feedback || a.takeaway || a.feeling || a.expect || '').slice(0, 40), sub: '', note: '', meta: [], feel: [], big: null,
+      link: safeUrl(a.photoUrl), photos: [],
+      act: { pre: sc2(a.pre), post: sc2(a.post), expect: String(a.expect || ''), feeling: String(a.feeling || ''), takeaway: String(a.takeaway || ''), feedback: String(a.feedback || '') } };
+  }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
   function hay(p, a, t) {
-    var j = (t && t.join) || {};
+    var j = (t && t.join) || {}, c = p.act || {};
     return [p.title, p.text, p.sub, p.note, p.label, p.kind].concat(arr(p.feel), arr(a && a.tags),
       arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why),
-      arr(p.photos).map(function (x) { return x && x.caption; }))
+      arr(p.photos).map(function (x) { return x && x.caption; }), [c.expect, c.feeling, c.takeaway, c.feedback])
       .filter(Boolean).join('\n').toLowerCase();
   }
   function searchPages(pages, q, ann, triByRec) {
@@ -397,5 +443,5 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse };
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actLines: actLines, actPage: actPage };
 })(window);

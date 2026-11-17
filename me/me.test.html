@@ -179,6 +179,33 @@ check('actParse：找到場次與標題列，只留核准欄位',()=>{const r=M.
 check('actParse：可疑的列有標記；沒填問卷的標 blank；沒有標題列回 ok=false',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);
   eq(r.rows[1].flags.sort().join(),'score,tld');eq(r.rows[1].pre.body,null);eq(r.rows[2].flags.join(),'blank');eq(r.rows[3].flags.join(),'missing');
   eq(M.actParse('隨便貼的字',D.act.cols,D.act.tlds).ok,false);eq(M.actParse('',D.act.cols,D.act.tlds).rows.length,0);});
+const SES={sessionId:'2026-11-05-tea',title:'茶席體驗',date:'2026-11-05',photoUrl:'https://photos.example.com/a'};
+const AROW={line:6,email:'ming@example.com',flags:[],pre:{body:4,mood:5},post:{body:7,mood:8},expect:'想放鬆',feeling:'很安靜',takeaway:'回家泡茶',feedback:'很喜歡'};
+check('場次代號與文件代號',()=>{ok(M.actSessionOk('2026-11-05-tea'));ok(!M.actSessionOk('2026-11-05'));ok(!M.actSessionOk('2026-11-05-茶席'));ok(!M.actSessionOk('2026-11-05-Tea'));ok(!M.actSessionOk(''));
+  eq(M.actDocId('2026-11-05-tea','ming@example.com'),'2026-11-05-tea__ming@example.com');});
+check('actRecord：只有核准欄位、文字截到上限、連結只收 http(s)',()=>{const r=M.actRecord(AROW,SES,D.act);
+  eq(Object.keys(r).sort().join(),'date,email,expect,feedback,feeling,photoUrl,post,pre,sessionId,takeaway,title');
+  eq(r.email,'ming@example.com');eq(r.title,'茶席體驗');eq(r.pre.body,4);eq(r.post.mood,8);eq(r.photoUrl,'https://photos.example.com/a');
+  const big=M.actRecord(Object.assign({},AROW,{feedback:'x'.repeat(2500)}),Object.assign({},SES,{photoUrl:'javascript:alert(1)',title:'y'.repeat(150)}),D.act);
+  eq(big.feedback.length,2000);eq(big.photoUrl,'');eq(big.title.length,100);});
+check('actDups：同一場同一個信箱，第二次以後算重複',()=>{eq(M.actDups([{sessionId:'s1',email:'a@example.com'},{sessionId:'s2',email:'a@example.com'},{sessionId:'s1',email:'a@example.com'},{sessionId:'s1',email:'b@example.com'}]).join(),'2');eq(M.actDups([]).length,0);});
+check('actPlan：新的是 pending、已有的保留狀態、選了不用的跳過',()=>{const mk=e=>M.actRecord(Object.assign({},AROW,{email:e}),SES,D.act);
+  const p=M.actPlan([mk('new@example.com'),mk('kept@example.com'),mk('no@example.com')],{'2026-11-05-tea__kept@example.com':{status:'kept'},'2026-11-05-tea__no@example.com':{status:'declined'}});
+  eq(p.added,1);eq(p.updated,1);eq(p.skipped,1);eq(p.writes.length,2);
+  eq(p.writes[0].id,'2026-11-05-tea__new@example.com');eq(p.writes[0].data.status,'pending');ok(p.writes[0].isNew);
+  eq(p.writes[1].data.status,'kept');ok(!p.writes[1].isNew);eq(p.writes[1].data.feeling,'很安靜');});
+check('actLines：前後測並列，不算差距；沒有的那一項不寫',()=>{const L=D.act;
+  eq(M.actLines({pre:{body:6,mood:5},post:{body:8,mood:7}},L).join('|'),'活動前　身體 6　情緒 5|活動後　身體 8　情緒 7');
+  eq(M.actLines({pre:{body:6,mood:null},post:{body:null,mood:null}},L).join('|'),'活動前　身體 6');eq(M.actLines({},L).length,0);
+  const s=M.actLines({pre:{body:6,mood:5},post:{body:8,mood:7}},L).join('');ok(!/[+＋]|進步|提升|差/.test(s),'不捏因果');});
+check('buildPages：收進來的活動紀錄成為一頁；還沒決定與不用的不出現',()=>{const base=Object.assign({},M.actRecord(AROW,SES,D.act));
+  const acts=[Object.assign({},base,{docId:'d1',status:'kept'}),Object.assign({},base,{docId:'d2',status:'pending'}),{docId:'d3',email:'x@example.com',sessionId:'s',status:'declined'}];
+  const ps=M.buildPages({},[],acts);eq(ps.length,1);const p=ps[0];eq(p.id,'act-d1');eq(p.src,'Act');eq(p.kind,'活動');eq(p.title,'茶席體驗');eq(p.key,'2026-11-05');
+  eq(p.link,'https://photos.example.com/a');eq(p.tool,'');eq(p.act.feeling,'很安靜');eq(p.act.pre.body,4);eq(p.photos.length,0);
+  eq(M.buildPages({},[]).length,0,'第三個參數可以不給');eq(M.actPage({docId:'d',status:'kept',date:'亂寫'}),null);});
+check('活動紀錄：搜尋找得到自己寫的話；方法視角收在「活動」；練習頁列為平台以外的方法',()=>{const ps=M.buildPages({},[],[Object.assign({},M.actRecord(AROW,SES,D.act),{docId:'d1',status:'kept'})]);
+  eq(M.searchPages(ps,'回家泡茶',{},{}).length,1);eq(M.searchPages(ps,'茶席 安靜',{},{}).length,1);eq(M.searchPages(ps,'爬山',{},{}).length,0);
+  eq(M.lensGroups('to',ps,{})[0].k,'活動');eq(M.practiceView(ps,{}).outside[0].name,'茶席體驗');});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 </script>
