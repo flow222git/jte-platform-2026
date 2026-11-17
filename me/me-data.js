@@ -191,6 +191,15 @@
       err: { 'auth/invalid-credential': '信箱或密碼不對。', 'auth/wrong-password': '信箱或密碼不對。', 'auth/user-not-found': '信箱或密碼不對。',
         'auth/email-already-in-use': '這個信箱已經有帳號了，請直接登入。', 'auth/weak-password': '密碼至少要 6 個字。',
         'auth/invalid-email': '信箱格式不對。', 'auth/too-many-requests': '試太多次了，請晚一點再試。', other: '沒有成功，請再試一次。' } },
+    prac: {
+      max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000 },
+      units: ['分鐘', '遍', '次'],
+      examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
+      colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
+      weeks: 12, months: 12,
+      err: { name: '請填項目名稱（30 字以內）', unit: '請填單位（10 字以內）', date: '日期不對', future: '不能選未來的日子', amount: '請填大於 0 的數字', note: '這一句太長了（500 字以內）', title: '請填標題（100 字以內）', body: '內文太長了（20000 字以內）' },
+      t: { title: '我的練習', note: '你自己長期在練的事。項目自己訂，慢慢記。' }
+    },
     back: { days: 7, say: '隔了 {n} 天。想從哪裡開始都可以。' },
     search: { placeholder: '找一筆紀錄：方法、標籤、寫過的話', none: '找不到符合的紀錄。' },
     honest: '這一頁只把你留下的東西排在一起，不代表它們之間有因果。這裡是鏡子，不是算命。',

@@ -179,11 +179,12 @@
   // 舊網址 #now／#trail／#map 仍然可用。
   var PANES = ['today', 'explore', 'practice', 'mymap', 'care'];
   function route(hash) {
-    var h = String(hash || '').replace(/^#/, '');
-    if (h === 'now') return { pane: 'today', sub: 'trail' };
-    if (h === 'trail') return { pane: 'mymap', sub: 'trail' };
-    if (h === 'map' || h === 'mymap-map') return { pane: 'mymap', sub: 'overview' };
-    return { pane: PANES.indexOf(h) > -1 ? h : 'today', sub: 'trail' };
+    var h = String(hash || '').replace(/^#/, ''), mi = /^practice-item-([A-Za-z0-9_-]{1,40})$/.exec(h);
+    if (mi) return { pane: 'practice', sub: 'trail', item: mi[1] };
+    if (h === 'now') return { pane: 'today', sub: 'trail', item: '' };
+    if (h === 'trail') return { pane: 'mymap', sub: 'trail', item: '' };
+    if (h === 'map' || h === 'mymap-map') return { pane: 'mymap', sub: 'overview', item: '' };
+    return { pane: PANES.indexOf(h) > -1 ? h : 'today', sub: 'trail', item: '' };
   }
   function paneOf(hash) { return route(hash).pane; }
   function hashOf(pane, sub) { return pane === 'mymap' && sub === 'overview' ? 'mymap-map' : (PANES.indexOf(pane) > -1 ? pane : 'today'); }
@@ -439,9 +440,134 @@
     });
   }
 
+  // ── 我的練習：自訂項目的長期紀錄（純函式） ──
+  function pracFmt(n) { return String(Math.round(Number(n) * 10) / 10); }
+  function pracAmount(v, max) {
+    var s = String(v == null ? '' : v).replace(/^\s+|\s+$/g, '');
+    if (!s || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
+    var n = Number(s);
+    if (!isFinite(n) || n <= 0 || n > max) return null;
+    n = Math.round(n * 10) / 10;
+    return n > 0 ? n : null;
+  }
+  function trimS(v) { return String(v == null ? '' : v).replace(/^\s+|\s+$/g, ''); }
+  function pracItemCheck(x, lim) {
+    x = x || {};
+    var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '' };
+    var err = '';
+    if (!item.name || item.name.length > lim.name) err = 'name';
+    else if (!item.unit || item.unit.length > lim.unit) err = 'unit';
+    return { ok: !err, err: err, item: item };
+  }
+  function realDate(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+  }
+  function pracLogCheck(x, todayKey, lim) {
+    x = x || {};
+    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note);
+    var err = '';
+    if (!realDate(date)) err = 'date';
+    else if (date > todayKey) err = 'future';
+    else if (amount === null) err = 'amount';
+    else if (note.length > lim.note) err = 'note';
+    return { ok: !err, err: err, log: { date: date, amount: amount, note: note } };
+  }
+  function pracNoteCheck(x, lim) {
+    x = x || {};
+    var note = { title: trimS(x.title), body: String(x.body == null ? '' : x.body) };
+    var err = '';
+    if (!note.title || note.title.length > lim.title) err = 'title';
+    else if (note.body.length > lim.body) err = 'body';
+    return { ok: !err, err: err, note: note };
+  }
+  function pracClean(p) {
+    p = p || {};
+    function keep(v) { return arr(v).filter(function (e) { return e && e.id; }); }
+    return { items: keep(p.items), logs: keep(p.logs), notes: keep(p.notes) };
+  }
+  function pracLast(logs, itemId) {
+    var last = '';
+    arr(logs).forEach(function (l) { if (l && l.itemId === itemId && l.date > last) last = l.date; });
+    return last;
+  }
+  function pracSum(list) {
+    var n = 0, s = 0;
+    list.forEach(function (l) { n++; s += Number(l.amount) || 0; });
+    return { n: n, sum: Math.round(s * 10) / 10 };
+  }
+  function pracOf(logs, itemId) { return arr(logs).filter(function (l) { return l && l.itemId === itemId && l.date; }); }
+  function pracMonth(logs, itemId, y, m) {
+    var mine = pracOf(logs, itemId), first = new Date(y, m - 1, 1), count = new Date(y, m, 0).getDate();
+    var days = [], d, key, rows, s, all = [];
+    for (d = 1; d <= count; d++) {
+      key = y + '-' + pad(m) + '-' + pad(d);
+      rows = mine.filter(function (l) { return l.date === key; });
+      s = pracSum(rows);
+      days.push({ key: key, d: d, n: s.n, sum: s.sum });
+      all = all.concat(rows);
+    }
+    s = pracSum(all);
+    return { lead: (first.getDay() + 6) % 7, days: days, n: s.n, sum: s.sum };
+  }
+  function pracTotals(logs, itemId, todayKey) {
+    var mine = pracOf(logs, itemId), ym = String(todayKey).slice(0, 7), first = '';
+    mine.forEach(function (l) { if (!first || l.date < first) first = l.date; });
+    var a = pracSum(mine), mo = pracSum(mine.filter(function (l) { return l.date.slice(0, 7) === ym; }));
+    return { month: { n: mo.n, sum: mo.sum }, all: { n: a.n, sum: a.sum, first: first } };
+  }
+  function pracWeeks(logs, itemId, todayKey, count) {
+    var mine = pracOf(logs, itemId), dow = (toDate(todayKey).getDay() + 6) % 7, cur = addDays(todayKey, -dow), out = [], i, st, en, s;
+    for (i = count - 1; i >= 0; i--) {
+      st = addDays(cur, -7 * i); en = addDays(st, 6);
+      s = pracSum(mine.filter(function (l) { return l.date >= st && l.date <= en; }));
+      out.push({ start: st, n: s.n, sum: s.sum });
+    }
+    return out;
+  }
+  function pracMonths(logs, itemId, todayKey, count) {
+    var mine = pracOf(logs, itemId), p = String(todayKey).split('-').map(Number), out = [], i, d, ym, s;
+    for (i = count - 1; i >= 0; i--) {
+      d = new Date(p[0], p[1] - 1 - i, 1); ym = d.getFullYear() + '-' + pad(d.getMonth() + 1);
+      s = pracSum(mine.filter(function (l) { return l.date.slice(0, 7) === ym; }));
+      out.push({ ym: ym, n: s.n, sum: s.sum });
+    }
+    return out;
+  }
+  function pracDayLogs(logs, itemId, key) {
+    return pracOf(logs, itemId).filter(function (l) { return l.date === key; })
+      .sort(function (a, b) { return (a.at || 0) < (b.at || 0) ? -1 : (a.at || 0) > (b.at || 0) ? 1 : 0; });
+  }
+  function pracRemoveItem(p, itemId) {
+    p = p || {};
+    function not(e) { return !(e && e.itemId === itemId); }
+    return { items: arr(p.items).filter(function (e) { return !(e && e.id === itemId); }), logs: arr(p.logs).filter(not), notes: arr(p.notes).filter(not) };
+  }
+  function pracUnmark(list, itemId) {
+    return arr(list).map(function (e) {
+      if (!e || e.itemId !== itemId) return e;
+      var c = {}, k;
+      for (k in e) if (Object.prototype.hasOwnProperty.call(e, k) && k !== 'itemId') c[k] = e[k];
+      return c;
+    });
+  }
+  function pracInsp(list, itemId) {
+    return arr(list).filter(function (e) { return e && e.itemId === itemId; })
+      .sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
+  }
+  function pracId(prefix) {
+    var r = '', i, c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (i = 0; i < 6; i++) r += c.charAt(Math.floor(Math.random() * c.length));
+    return prefix + Date.now().toString(36) + r;
+  }
+
   g.JteMe = { pad: pad, keyOf: keyOf, dlabel: dlabel, mmss: mmss, esc: esc, safeUrl: safeUrl,
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actLines: actLines, actPage: actPage };
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actLines: actLines, actPage: actPage,
+    pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
+    pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracId: pracId };
 })(window);
