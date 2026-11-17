@@ -1,7 +1,7 @@
 /* 我的練習：本人自訂的練習項目、每次的紀錄、月曆、累計、長條圖、心得靈感、筆記。
  * 由 me/index.html 透過 window.JtePrac 接上（init／render／setUser／handleHash／exportData）。
  * 文案全部在 me-data.js 的 JTE_ME_DATA.prac.t；這裡不寫中文句子。
- * 資料讀寫一律經過 store（本機、示範；雲端在下一步加）；畫面等寫入成功才更新。
+ * 資料讀寫一律經過 store（本機、雲端、示範）；畫面等寫入成功才更新。雲端的寫入失敗就顯示錯誤，不會改存本機。
  */
 (function (g) {
   'use strict';
@@ -9,7 +9,8 @@
   var box, quick, zone, secPrac, rest, live;
   // 畫面狀態：哪個項目的專區、哪個分頁、月曆的月份、哪一天、哪個表單開著
   var st = { data: { items: [], logs: [], notes: [] }, seen: null, item: '', tab: 'log', calY: 0, calM: 0, day: '', chart: 'week',
-    lf: null, itf: null, nopen: '', ask: '', busy: false, focus: '', select: false, user: null };
+    lf: null, itf: null, nopen: '', ask: '', busy: false, focus: '', select: false, user: null,
+    mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, skipImport: {} };
   var TABS = ['log', 'insp', 'notes', 'set'];
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -28,7 +29,7 @@
   }
   function safeColor(c) { return /^#[0-9a-f]{6}$/i.test(String(c || '')) ? c : P.colors[0]; }
   function cvars(it) { var c = safeColor(it.color); return ' style="--pc:' + c + ';--pt:' + tint(c, 0.16) + ';--pt2:' + tint(c, 0.32) + '"'; }
-  function busy() { return st.busy; }
+  function busy() { return st.busy || !!st.moving; }
   function announce(t) { if (live) { live.textContent = ''; setTimeout(function () { live.textContent = t; }, 30); } }
 
   // ── 資料 ──
@@ -67,6 +68,33 @@
       putItem: put('items'), putLog: put('logs'), putNote: put('notes'), delLog: del('logs'), delNote: del('notes'),
       delItem: function (id) { C.O.prac = M.pracRemoveItem(box2(), id); C.save(); st.seen = C.O.prac; return Promise.resolve(id); } };
   }
+  // 帶逾時的呼叫：沒網路馬上失敗，卡住太久也失敗（Firestore 離線時寫入會一直等）
+  function timed(fn, ms) {
+    return new Promise(function (ok, no) {
+      var done = false, tm;
+      function end(f) { return function (v) { if (done) return; done = true; clearTimeout(tm); f(v); }; }
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) { no(new Error('offline')); return; }
+      tm = setTimeout(function () { end(no)(new Error('timeout')); }, ms);
+      try { fn().then(end(ok), end(no)); } catch (e) { end(no)(e); }
+    });
+  }
+  function emptyData() { return { items: [], logs: [], notes: [] }; }
+  function errCode(e) { return (e && (e.code || e.message)) || 'error'; }
+  function cloudStore(uid) {
+    var me;
+    function stale() { return st.uid !== uid || store !== me; }
+    function call(fn) {
+      return timed(function () { return fn(g.JteCloud); }, 20000).then(function (r) { if (stale()) throw new Error('stale'); return r; },
+        function (e) { if (stale()) throw new Error('stale'); throw e; });
+    }
+    function put(kind) { return function (obj) { return call(function (c) { return c.pracPut(kind, obj); }); }; }
+    function del(kind) { return function (id) { return call(function (c) { return c.pracDel(kind, id); }).then(function () { return id; }); }; }
+    me = { kind: 'cloud',
+      load: function () { return call(function (c) { return c.pracLoad(); }).then(function (d) { return M.pracClean(d); }); },
+      putItem: put('items'), putLog: put('logs'), putNote: put('notes'), delLog: del('logs'), delNote: del('notes'),
+      delItem: function (id) { return call(function (c) { return c.pracDelItem(id); }).then(function () { return id; }); } };
+    return me;
+  }
   function demoStore() {
     function ok(x) { return Promise.resolve(x); }
     return { kind: 'demo', load: function () { return ok(st.data); },
@@ -102,6 +130,113 @@
   function syncLocal() {
     if (store.kind !== 'local' || C.O.prac === st.seen) return;
     st.seen = C.O.prac; st.data = M.pracClean(C.O.prac);
+  }
+
+  // ── 登入之後：本機或雲端 ──
+  function prefs() { var p = C.O.prefs; return p && p.pracCloud && typeof p.pracCloud === 'object' ? p.pracCloud : {}; }
+  function setPref(uid, v) {
+    if (!C.O.prefs || typeof C.O.prefs !== 'object') C.O.prefs = {};
+    if (!C.O.prefs.pracCloud || typeof C.O.prefs.pracCloud !== 'object') C.O.prefs.pracCloud = {};
+    C.O.prefs.pracCloud[uid] = v; C.save();
+  }
+  function localCount() { var p = M.pracClean(C.O.prac); return p.items.length + p.logs.length + p.notes.length; }
+  function pending() { return st.mode === 'cloud' && st.cloudState !== 'ready'; }
+  function useLocal() { store = localStore(); st.seen = C.O.prac; st.data = M.pracClean(C.O.prac); st.cloudState = ''; }
+  function mergeData(a, b) {
+    var out = emptyData();
+    ['items', 'logs', 'notes'].forEach(function (k) {
+      var seen = {};
+      a[k].concat(b[k]).forEach(function (x) { if (!seen[x.id]) { seen[x.id] = 1; out[k].push(x); } });
+    });
+    return out;
+  }
+  function askVisible() { return st.mode === 'ask' && !!st.uid && !st.moving && !st.moveErr && localCount() > 0; }
+  function importVisible() { return st.mode === 'cloud' && st.cloudState === 'ready' && !!st.uid && !st.skipImport[st.uid] && !st.moving && !st.moveErr && localCount() > 0; }
+  function enterCloud(uid) {
+    var gen = st.gen, me = cloudStore(uid);
+    store = me; st.mode = 'cloud'; st.cloudState = 'loading'; st.data = emptyData();
+    st.ask = ''; st.lf = null; st.itf = null; st.nopen = '';
+    render();
+    me.load().then(function (d) {
+      if (gen !== st.gen) return;
+      st.data = d; st.cloudState = 'ready'; C.refresh();
+    }, function () {
+      if (gen !== st.gen) return;
+      st.cloudState = 'error'; C.toast(T.loadFail); render();
+    });
+  }
+  // 本機的全部放上雲端；全部成功才清掉本機，有失敗就停下來、本機不動
+  function upload() {
+    var uid = st.uid, gen = st.gen, local = M.pracClean(C.O.prac);
+    function fail(code) { if (gen !== st.gen) return; st.moving = ''; st.moveErr = fill(T.upFail, { c: code }); st.focus = 'retry'; render(); }
+    if (!uid || !g.JteCloud) return;
+    st.moving = 'up'; st.moveErr = ''; render();
+    timed(function () { return g.JteCloud.pracUpload(local); }, 60000).then(function (r) {
+      if (gen !== st.gen) return;
+      if (!r || r.failed) { fail(r && r.codes && r.codes.length ? r.codes.join(', ') : 'error'); return; }
+      delete C.O.prac; setPref(uid, 'cloud');
+      st.moving = ''; st.moveErr = ''; st.focus = 'new';
+      C.toast(T.uploaded); enterCloud(uid);
+    }, function (e) { fail(errCode(e)); });
+  }
+  // 把雲端的搬回本機：先寫進本機，再刪雲端；刪不乾淨就留著提醒
+  function toLocal() {
+    var uid = st.uid, gen = st.gen;
+    function stop() { if (gen !== st.gen) return; st.moving = ''; st.focus = 'tl'; C.toast(T.downFail); render(); }
+    function finish(left) {
+      if (gen !== st.gen) return;
+      useLocal(); st.mode = 'local'; st.moving = ''; st.wipeLeft = left; st.focus = left ? 'wr' : 'new';
+      C.toast(left ? T.wipeLeft : T.downDone); C.refresh();
+    }
+    if (!uid || !g.JteCloud) return;
+    st.moving = 'down'; st.ask = ''; st.moveErr = ''; render();
+    timed(function () { return g.JteCloud.pracLoad(); }, 30000).then(function (d) {
+      var m = mergeData(M.pracClean(d), M.pracClean(C.O.prac));
+      C.O.prac = m; setPref(uid, 'local');
+      if (gen !== st.gen) return;
+      return timed(function () { return g.JteCloud.pracWipe(); }, 60000).then(function () { finish(false); }, function () { finish(true); });
+    }, stop);
+  }
+  function wipeAgain() {
+    var uid = st.uid, gen = st.gen;
+    if (!uid || !g.JteCloud) return;
+    st.moving = 'down'; render();
+    timed(function () { return g.JteCloud.pracWipe(); }, 60000).then(function () {
+      if (gen !== st.gen) return;
+      st.moving = ''; st.wipeLeft = false; st.focus = 'new'; C.toast(T.wipeDone); render();
+    }, function () {
+      if (gen !== st.gen) return;
+      st.moving = ''; st.focus = 'wr'; C.toast(T.wipeLeft); render();
+    });
+  }
+  function setUser(user) {
+    st.user = user || null;
+    if (!inited || C.DEMO) return;
+    var uid = user ? user.uid : null, was = !!store && store.kind === 'cloud', gen, pref;
+    if (uid === st.uid) return;
+    st.uid = uid; st.gen++; gen = st.gen;
+    st.moving = ''; st.moveErr = ''; st.wipeLeft = false; st.ask = ''; st.lf = null; st.itf = null; st.nopen = '';
+    if (!uid) {
+      if (was) { store = { kind: 'out' }; st.mode = 'out'; st.data = emptyData(); st.cloudState = ''; }
+      else { useLocal(); st.mode = 'local'; }
+      C.refresh();
+      return;
+    }
+    useLocal(); st.mode = 'local';
+    pref = prefs()[uid];
+    if (pref) {
+      if (M.pracMode(prefs(), uid, false) === 'cloud') enterCloud(uid); else C.refresh();
+      return;
+    }
+    // 沒問過：先看雲端有沒有；查不到就當作本機，這次不問
+    if (!g.JteCloud || !g.JteCloud.pracHas) { C.refresh(); return; }
+    g.JteCloud.pracHas().then(function (has) {
+      if (gen !== st.gen) return;
+      var m = M.pracMode(prefs(), uid, has);
+      if (m === 'cloud') { setPref(uid, 'cloud'); enterCloud(uid); }
+      else { st.mode = m; C.refresh(); }
+    }, function () { /* 查不到：維持本機，這次不問 */ });
+    C.refresh();
   }
 
   // ── 畫面重畫時保留輸入內容與焦點 ──
@@ -189,20 +324,51 @@
     if (on) h += logForm();
     return h + '</div>';
   }
+  // 登入後的提示卡：放到雲端、把這台的紀錄放進去、失敗重試
+  function noticeHTML() {
+    var h = '';
+    if (C.DEMO || !st.uid) return '';
+    if (st.moving) return '<p class="note pr-moving" role="status">' + esc(st.moving === 'up' ? T.upBusy : T.downBusy) + '</p>';
+    if (st.moveErr) return '<div class="panel pr-ask"><p class="pr-err" role="alert">' + esc(st.moveErr) + '</p><div class="row"><button class="btn fill" data-pa="upretry"' + fk('retry') + '>' + esc(T.retry) + '</button></div></div>';
+    if (st.wipeLeft) return '<div class="panel pr-ask"><p>' + esc(T.wipeLeft) + '</p><div class="row"><button class="btn" data-pa="wiperetry"' + fk('wr') + '>' + esc(T.wipeRetry) + '</button></div></div>';
+    if (askVisible()) h = '<div class="panel pr-ask"><p>' + esc(T.cloudAsk) + '</p><div class="row"><button class="btn fill" data-pa="askyes"' + fk('askyes') + '>' + esc(T.askYes) + '</button><button class="btn" data-pa="askno"' + fk('askno') + '>' + esc(T.askNo) + '</button></div></div>';
+    else if (importVisible()) h = '<div class="panel pr-ask"><p>' + esc(fill(T.importAsk, { n: localCount() })) + '</p><div class="row"><button class="btn fill" data-pa="impyes"' + fk('impyes') + '>' + esc(T.importYes) + '</button><button class="btn" data-pa="impno"' + fk('impno') + '>' + esc(T.importNo) + '</button></div></div>';
+    return h;
+  }
+  // 最下面一行小字：現在放哪裡、怎麼換
+  function whereHTML() {
+    if (C.DEMO || !st.uid || st.moving || st.moveErr || st.wipeLeft) return '';
+    if (st.mode === 'cloud') {
+      if (st.ask === 'tolocal') return '<div class="pr-where"><span class="note">' + esc(T.downAsk) + '</span><button class="btn sm fill" data-pa="tolocalyes"' + fk('tly') + '>' + esc(T.downYes) + '</button><button class="lnk" data-pa="nask" data-back="tl">' + esc(T.cancel) + '</button></div>';
+      return '<p class="note pr-where">' + esc(T.whereCloud) + ' <button class="lnk" data-pa="tolocal"' + fk('tl') + '>' + esc(T.toLocal) + '</button></p>';
+    }
+    if (askVisible()) return '';
+    return '<p class="note pr-where">' + esc(T.whereLocal) + ' <button class="lnk" data-pa="tocloud"' + fk('tc') + '>' + esc(T.toCloud) + '</button></p>';
+  }
   function renderBox() {
     var act = active(), arch = items().filter(function (x) { return x.archived; }), h = '';
+    if (st.mode === 'out') {
+      box.innerHTML = '<div class="panel pr-empty"><p>' + esc(T.needLogin) + '</p><div class="row"><button class="btn" data-pa="uselocal"' + fk('ul') + '>' + esc(T.useLocal) + '</button></div></div>';
+      return;
+    }
+    if (pending()) {
+      box.innerHTML = st.cloudState === 'error'
+        ? '<div class="panel pr-empty"><p role="alert">' + esc(T.loadFail) + '</p><div class="row"><button class="btn" data-pa="cretry"' + fk('cretry') + '>' + esc(T.retry) + '</button></div></div>'
+        : '<p class="note pr-moving" role="status">' + esc(T.loading) + '</p>';
+      return;
+    }
     if (!items().length && !st.itf) {
       h = '<div class="panel pr-empty"><p>' + esc(T.empty) + '</p><div class="pr-ex"><span class="note">' + esc(T.examples) + '</span><div class="chips">' +
         P.examples.map(function (x, i) { return '<button type="button" class="chip" data-pa="ex" data-i="' + i + '">' + esc(x.name) + '・' + esc(x.unit) + '</button>'; }).join('') +
         '</div></div><div class="row"><button class="btn fill" data-pa="new"' + fk('new') + '>' + esc(T.add) + '</button></div></div>';
-      box.innerHTML = h; return;
+      box.innerHTML = noticeHTML() + h + whereHTML(); return;
     }
-    h = '<div class="pr-grid">' + act.map(cardHTML).join('');
+    h = noticeHTML() + '<div class="pr-grid">' + act.map(cardHTML).join('');
     if (!st.itf) h += '<button class="pr-card pr-new" data-pa="new"' + fk('new') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button>';
     h += '</div>';
     if (st.itf) h += '<div class="panel pr-newf"><h3 class="pr-h3" id="pr-newh">' + esc(T.addTitle) + '</h3>' + itemForm('new') + '</div>';
     if (arch.length) h += '<details class="pr-arch"' + (st.archOpen ? ' open' : '') + '><summary' + fk('arch') + '>' + esc(fill(T.archivedN, { n: arch.length })) + '</summary><div class="pr-grid">' + arch.map(cardHTML).join('') + '</div></details>';
-    box.innerHTML = h;
+    box.innerHTML = h + whereHTML();
   }
 
   // ── 今天的快速鍵 ──
@@ -226,7 +392,7 @@
     if (!open) { zone.innerHTML = ''; return; }
     var it = itemById(st.item);
     if (!it) {
-      zone.innerHTML = '<div class="pr-zhead"><button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button></div><div class="panel"><p class="note">' + esc(T.notFound) + '</p></div>';
+      zone.innerHTML = '<div class="pr-zhead"><button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button></div><div class="panel"><p class="note">' + esc(pending() ? T.loading : T.notFound) + '</p></div>';
       return;
     }
     var zl = st.lf && st.lf.ctx === 'zone';
@@ -377,8 +543,9 @@
     st.busy = true;
     var btns = form ? form.querySelectorAll('button') : [];
     each(btns, function (b) { b.disabled = true; });
-    p.then(function (r) { st.busy = false; ok(r); }, function () {
+    p.then(function (r) { st.busy = false; ok(r); }, function (e) {
       st.busy = false; each(btns, function (b) { b.disabled = false; });
+      if (e && e.message === 'stale') return; // 這段時間換了帳號，結果不算
       C.toast(T.fail);
       if (form) setErr(form, T.fail);
     });
@@ -455,6 +622,14 @@
       case 'open': C.goPane('practice-item-' + id); return;
       case 'back': st.backTo = st.item; C.goPane('practice'); return;
       case 'gopr': C.goPane('practice'); return;
+      case 'askyes': case 'impyes': case 'upretry': case 'tocloud': upload(); return;
+      case 'askno': if (!st.uid) return; setPref(st.uid, 'local'); st.mode = 'local'; st.focus = 'new'; break;
+      case 'impno': if (!st.uid) return; st.skipImport[st.uid] = true; st.focus = 'new'; break;
+      case 'tolocal': st.ask = 'tolocal'; st.focus = 'tly'; break;
+      case 'tolocalyes': toLocal(); return;
+      case 'wiperetry': wipeAgain(); return;
+      case 'cretry': if (st.uid) enterCloud(st.uid); return;
+      case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
       case 'new': st.itf = { name: '', unit: '' }; st.lf = null; st.focus = 'if-new-name'; break;
       case 'ex':
         x = P.examples[+b.getAttribute('data-i')];
@@ -505,6 +680,7 @@
           st.data = M.pracRemoveItem(st.data, x);
           // 屬於這個項目的心得靈感留著，只拿掉標記
           C.O.memos = M.pracUnmark(C.O.memos, x); C.save();
+          if (C.unmarkInsp) C.unmarkInsp(x);
           st.ask = ''; st.lf = null; st.backTo = ''; st.focus = 'new'; C.toast(T.deleted); C.goPane('practice'); C.refresh();
         });
         return;
@@ -594,10 +770,15 @@
     window.addEventListener('resize', function () { clearTimeout(tm); tm = setTimeout(function () { if (st.item && st.tab === 'log' && !zone.hidden) drawChart(); }, 150); });
     inited = true;
   }
-  function setUser(user) { st.user = user || null; }
   function exportData() {
     return { items: st.data.items.map(copy), logs: st.data.logs.map(copy), notes: st.data.notes.map(copy) };
   }
 
-  g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData };
+  // 給 index.html 的靈感框、足跡、資料說明用
+  function activeItems() { return active().map(function (x) { return { id: x.id, name: x.name }; }); }
+  function itemName(id) { var it = id ? itemById(id) : null; return it ? it.name : ''; }
+  function mode() { return store && store.kind === 'cloud' ? 'cloud' : 'local'; }
+
+  g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData,
+    items: activeItems, itemName: itemName, mode: mode, pending: pending };
 })(window);

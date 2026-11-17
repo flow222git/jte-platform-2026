@@ -62,7 +62,7 @@
 .pr-log .in:focus-visible{outline:2px solid var(--pc,var(--blue));outline-offset:1px}
 
 /* 今天的快速鍵 */
-#pracquick{margin:0 0 8px}
+#pracquick{margin:12px 0 0}
 .pr-quick{padding:20px 24px;display:grid;gap:12px}
 .pr-qhead{display:flex;gap:4px 12px;align-items:baseline;flex-wrap:wrap}
 .pr-qhead b{font-weight:700;color:var(--dark);letter-spacing:.06em}
@@ -200,3 +200,13 @@
   .pr-lga{grid-column:1/-1;justify-content:flex-start}
 }
 @media(pointer:coarse){.pr-lga .lnk,.pr-back{padding-block:10px}}
+
+/* 放雲端的提示卡、現在放哪裡、靈感框的項目選單、足跡上的小標 */
+.pr-ask{margin-bottom:12px;padding:20px 24px;display:grid;gap:12px;background:var(--bg-soft)}
+.pr-ask p{max-width:60ch}
+.pr-moving{margin-bottom:12px}
+.pr-where{margin-top:14px;display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap}
+.pr-where .lnk{font-size:inherit}
+#memoitemrow{align-items:center;gap:8px 10px;flex-wrap:wrap}
+#memoitem{max-width:100%;min-height:40px}
+.pr-itag{display:inline-block;margin-right:8px;padding:1px 9px;border-radius:999px;background:var(--bg-soft);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;vertical-align:1px}

@@ -91,8 +91,10 @@
         .map(function (x) { return { id: String(x.id), data: String(x.data), caption: String(x.caption || '') }; });
       var text = String(m.text || '');
       if (!text && !ph.length) return;
-      ps.push({ id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
-        text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph });
+      var pg = { id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
+        text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph };
+      if (m.itemId) pg.itemId = String(m.itemId);
+      ps.push(pg);
     });
     arr(acts).forEach(function (a) { var p = actPage(a); if (p) ps.push(p); });
     ps.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
@@ -556,6 +558,14 @@
     return arr(list).filter(function (e) { return e && e.itemId === itemId; })
       .sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
   }
+  // 這個帳號的練習紀錄放哪裡：pref 是 { uid: 'cloud' | 'local' }，cloudHas 是雲端已經有項目
+  function pracMode(pref, uid, cloudHas) {
+    if (!uid) return 'local';
+    var v = pref && typeof pref === 'object' ? pref[uid] : '';
+    if (v === 'cloud') return 'cloud';
+    if (v === 'local') return 'local';
+    return cloudHas ? 'cloud' : 'ask';
+  }
   function pracId(prefix) {
     var r = '', i, c = 'abcdefghijklmnopqrstuvwxyz0123456789';
     for (i = 0; i < 6; i++) r += c.charAt(Math.floor(Math.random() * c.length));
@@ -569,5 +579,5 @@
     circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actLines: actLines, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
-    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracId: pracId };
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };
 })(window);
