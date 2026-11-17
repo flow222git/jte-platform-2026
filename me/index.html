@@ -743,7 +743,7 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   if(t&&corners(t).join)h+='<p class="note">起點：'+esc(joinLabel(t))+(t.join.kind==='from'?'（'+D.join.from+'）':'')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</p>';
   if(p.sub&&p.text)h+='<p>'+esc(p.sub)+'</p>';
   if(p.note)h+='<p>'+esc(p.note)+'</p>';
-  if(ph.length)h+='<div class="photos">'+ph.map(function(z){return '<figure><button class="ph" data-act="zoom" data-pid="'+esc(z.id)+'"><img src="'+esc(z.data)+'" alt="'+esc(z.caption||'照片')+'" loading="lazy"></button>'+(z.caption?'<figcaption>'+esc(z.caption)+'</figcaption>':'')+(p.src==='Insp'?'<button class="lnk" data-act="delpic" data-pid="'+esc(z.id)+'">'+I.delPhoto+'</button>':'')+'</figure>'}).join('')+'</div>';
+  if(ph.length)h+='<div class="photos">'+ph.map(function(z){return '<figure><button class="ph" data-act="zoom" data-pid="'+esc(z.id)+'"><img src="'+esc(z.data)+'" alt="'+esc(z.caption||I.photoAlt)+'" loading="lazy"></button>'+(z.caption?'<figcaption>'+esc(z.caption)+'</figcaption>':'')+(p.src==='Insp'?'<button class="lnk" data-act="delpic" data-pid="'+esc(z.id)+'">'+I.delPhoto+'</button>':'')+'</figure>'}).join('')+'</div>';
   if(p.feel.length)h+='<div class="tagrow">'+p.feel.map(function(f){return '<span class="feel">'+esc(f)+'</span>'}).join('')+'</div>';
   if(p.meta.length)h+='<p class="note">'+p.meta.map(esc).join('・')+'</p>';
   if(p.link)h+='<p class="note"><a href="'+esc(p.link)+'" target="_blank" rel="noopener">看活動照片</a></p>';
@@ -751,13 +751,13 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   (a.notes||[]).forEach(function(n){h+='<p class="add"><small>'+esc(M.dlabel(n.k))+' 補</small>'+esc(n.text)+'</p>'});
   if(tg.length)h+='<div class="tagrow">'+tg.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')+'</div>';
   var has=t&&(t.found||en.length);
-  h+='<div class="acts"><button class="lnk'+(has?'':' pri')+'" data-act="enjoy">'+D.found.ask+'</button>'+((p.tool||p.kind==='活動')?'<button class="lnk'+(a.useful?' pri':'')+'" data-act="useful" aria-pressed="'+!!a.useful+'">'+(a.useful?'已標為對我有用':'對我有用')+'</button>':'')+'<button class="lnk" data-act="tag">加標籤</button>'+(t&&corners(t).join?'<button class="lnk" data-act="motive">'+D.why.ask+'</button>':'<button class="lnk" data-act="why">當時為什麼來</button>')+'<button class="lnk" data-act="note">補一句</button>'+(t&&t.found?'<button class="lnk" data-act="again">'+D.found.again+'</button>':'')+(p.src==='Insp'?'<button class="lnk" data-act="delins">'+I.delIns+'</button>':'')+'</div>';
+  h+='<div class="acts"><button class="lnk'+(has?'':' pri')+'" data-act="enjoy">'+D.found.ask+'</button>'+((p.tool||p.kind==='活動')?'<button class="lnk'+(a.useful?' pri':'')+'" data-act="useful" aria-pressed="'+!!a.useful+'">'+(a.useful?'已標為對我有用':'對我有用')+'</button>':'')+'<button class="lnk" data-act="tag">加標籤</button>'+(t&&corners(t).join?'<button class="lnk" data-act="motive">'+D.why.ask+'</button>':'<button class="lnk" data-act="why">當時為什麼來</button>')+'<button class="lnk" data-act="note">補一句</button>'+(t&&t.found?'<button class="lnk" data-act="again">'+D.found.again+'</button>':'')+(S.cloud.some(function(c){return c.id===p.id})?'<button class="lnk" data-act="delins">'+I.delIns+'</button>':'')+'</div>';
   if(S.sub==='why')h+='<div class="row">'+D.states.map(function(g){return '<button class="chip" data-act="whystate" data-s="'+g.key+'">'+g.name+'</button>'}).join('')+'<input class="in" style="flex:1" maxlength="40" placeholder="或用自己的話：被什麼吸引" aria-label="當時為什麼來"><button class="btn sm" data-act="whysave">留下</button></div>';
   if(S.sub==='tag')h+='<div class="row">'+O.themes.filter(function(x){return tg.indexOf(x.n)<0}).map(function(x){return '<button class="chip" data-act="addtag" data-t="'+esc(x.n)+'">'+esc(x.n)+'</button>'}).join('')+'<input class="in" maxlength="8" placeholder="取一個新的" aria-label="新標籤"><button class="btn sm" data-act="newtag">加入</button></div>';
   if(S.sub==='note')h+='<div class="row"><input class="in" style="flex:1" maxlength="80" placeholder="現在再看，想補什麼" aria-label="補一句"><button class="btn sm" data-act="savenote">留下</button></div>';
   if(S.sub==='enjoy')h+='<div class="row"><input class="in" style="flex:1;min-width:160px" maxlength="80" value="'+esc(t&&t.found||'')+'" placeholder="'+D.found.placeholder+'" aria-label="'+D.found.ask+'"><button class="btn sm" data-act="savefound">留下</button></div><div class="row"><span class="note">也可以貼一個自己的幸福用字</span>'+dotsHTML('data-act="dot"',en)+'</div>';
   if(S.sub==='motive'&&t)h+=whyHTML(t);
-  if(S.sub==='delins')h+='<div class="row"><span class="note">'+I.delAsk+'</span><button class="btn sm fill" data-act="delyes">'+I.delYes+'</button><button class="lnk" data-act="delins">取消</button></div>';
+  if(S.sub==='delins'&&S.cloud.some(function(c){return c.id===p.id}))h+='<div class="row"><span class="note">'+I.delAsk+'</span><button class="btn sm fill" data-act="delyes">'+I.delYes+'</button><button class="lnk" data-act="delins">'+I.cancel+'</button></div>';
   return h+'</div></div>'}
 function renderList(){$('#filters').innerHTML=['全部'].concat(D.kinds).map(function(k){return '<button class="chip'+(S.filter===k?' on':'')+'" data-f="'+k+'">'+k+'</button>'}).join('');
   var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec).filter(function(p){return S.filter==='全部'||p.kind===S.filter}),h='',cur='';
@@ -826,7 +826,7 @@ function renderManual(){$('#mtitle').textContent=D.manual.title;var m=M.manual(S
   el.innerHTML=h}
 /* 我的資料：預設私人；下載與刪除都在本機完成 */
 function renderData(){var p=D.privacy;$('#data').innerHTML='<p>'+(S.user?p.cloud:p.now)+'</p><p class="note" style="margin-top:6px">'+p.choice+'</p><div class="row" style="margin-top:14px"><button class="btn sm" id="dl">'+p.download+'</button>'+(S.wipe?'<span class="note">'+p.wipeAsk+'</span><button class="btn sm fill" id="wipeyes">'+p.wipeYes+'</button><button class="lnk" id="wipeno">取消</button>':'<button class="lnk" id="wipe">'+p.wipe+'</button>')+'</div>'
-  +(S.user?'<div class="row" style="margin-top:10px">'+(S.cwipe?'<span class="note">'+I.wipeAsk+'</span><button class="btn sm fill" id="cwipeyes">'+I.wipeYes+'</button><button class="lnk" id="cwipeno">取消</button>':'<button class="lnk" id="cwipe">'+I.wipe+'</button>')+'</div>':'')}
+  +(S.user?'<div class="row" style="margin-top:10px">'+(S.cwipe?'<span class="note">'+I.wipeAsk+'</span><button class="btn sm fill" id="cwipeyes">'+I.wipeYes+'</button><button class="lnk" id="cwipeno">'+I.cancel+'</button>':'<button class="lnk" id="cwipe">'+I.wipe+'</button>')+'</div>':'')}
 function downloadData(){if(DEMO){toast('示範模式沒有你的資料可以下載');return}
   var blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),note:'練息場｜我的練息場。這個檔案只在你的裝置上產生。',jte_me_v1:O,jte_daily_v1:daily,bagua_persona_v1:persona||null,cloud_inspirations:S.cloud},null,2)],{type:'application/json'});
   var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='lianxichang-my-data-'+TODAY+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);toast(D.privacy.downloadNote)}
@@ -911,15 +911,17 @@ $('#open').onclick=function(e){var b=e.target.closest('[data-oa]');if(!b)return;
   save();renderAll()};
 $('#views').onclick=function(e){var b=e.target.closest('[data-v]');if(!b)return;S.view=b.dataset.v;$$('#views .chip').forEach(function(x){x.classList.toggle('on',x===b)});$('#v-list').hidden=S.view!=='list';$('#v-cal').hidden=S.view!=='cal'};
 $('#filters').onclick=function(e){var b=e.target.closest('[data-f]');if(!b)return;S.filter=b.dataset.f;renderList()};
+function forgetRec(id){delete O.ann[id];O.tris.forEach(function(t){if(t.recId===id)t.dropped=true});save()}
 $('#list').onclick=function(e){var act=e.target.closest('[data-act]');
   if(!act){var hd=e.target.closest('.rec>button');if(hd){S.open=S.open===hd.dataset.id?null:hd.dataset.id;S.sub=null;renderList()}return}
-  var box=act.closest('.detail'),id=box.dataset.id,a=ann(id),k=act.dataset.act;a.tags=a.tags||[];a.enjoy=a.enjoy||[];
-  var tr=S.triByRec[id];
+  var box=act.closest('.detail'),id=box.dataset.id,k=act.dataset.act,a;
   var ci=S.cloud.filter(function(c){return c.id===id})[0];
-  if(k==='zoom'){var z=(S.byId[id].photos||[]).filter(function(q){return q.id===act.dataset.pid})[0];if(z){$('#zoomimg').src=z.data;$('#zoomimg').alt=z.caption||'照片';$('#zoomcap').textContent=z.caption;$('#zoom').showModal()}return}
+  if(k==='zoom'){var z=(S.byId[id].photos||[]).filter(function(q){return q.id===act.dataset.pid})[0];if(z){$('#zoomimg').src=z.data;$('#zoomimg').alt=z.caption||I.photoAlt;$('#zoomcap').textContent=z.caption;$('#zoom').showModal()}return}
   if(k==='delins'){S.sub=S.sub==='delins'?null:'delins';renderList();return}
-  if(k==='delyes'&&ci){(DEMO?Promise.resolve():JteCloud.deleteInsp(ci)).then(function(){S.cloud.splice(S.cloud.indexOf(ci),1);S.open=null;S.sub=null;renderAll();toast('刪掉了')}).catch(function(){toast(I.fail)});return}
-  if(k==='delpic'&&ci){(DEMO?Promise.resolve(ci.text||ci.photos.length>1?(ci.photos=ci.photos.filter(function(q){return q.id!==act.dataset.pid}),ci):null):JteCloud.deletePhoto(ci,act.dataset.pid)).then(function(r){if(!r)S.cloud.splice(S.cloud.indexOf(ci),1);renderAll();toast('拿掉了')}).catch(function(){toast(I.fail)});return}
+  if(k==='delyes'){if(!ci||S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return DEMO?null:JteCloud.deleteInsp(ci)}).then(function(){S.busyDel=false;var i=S.cloud.indexOf(ci);if(i>-1)S.cloud.splice(i,1);forgetRec(id);S.open=null;S.sub=null;renderAll();toast(I.deleted)}).catch(function(){S.busyDel=false;toast(I.fail)});return}
+  if(k==='delpic'){if(!ci||S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return DEMO?(ci.text||ci.photos.length>1?(ci.photos=ci.photos.filter(function(q){return q.id!==act.dataset.pid}),ci):null):JteCloud.deletePhoto(ci,act.dataset.pid)}).then(function(r){S.busyDel=false;if(!r){var i=S.cloud.indexOf(ci);if(i>-1)S.cloud.splice(i,1);forgetRec(id);S.open=null;S.sub=null}renderAll();toast(I.removed)}).catch(function(){S.busyDel=false;toast(I.fail)});return}
+  a=ann(id);a.tags=a.tags||[];a.enjoy=a.enjoy||[];
+  var tr=S.triByRec[id];
   if(k==='tag'||k==='note'||k==='enjoy'||k==='why'||k==='motive'){S.sub=S.sub===k?null:k;renderList();return}
   if(k==='dot'){var i=a.enjoy.indexOf(act.dataset.k);if(i>-1)a.enjoy.splice(i,1);else a.enjoy.push(act.dataset.k)}
   if(k==='addtag'){a.tags.push(act.dataset.t);S.sub=null}
@@ -946,7 +948,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-why]
   save();renderOpen();renderList();renderManual()});
 $('#data').onclick=function(e){var id=e.target.id;if(id==='dl')downloadData();if(id==='wipe'){S.wipe=true;renderData()}if(id==='wipeno'){S.wipe=false;renderData()}if(id==='wipeyes')wipeMine();
   if(id==='cwipe'){S.cwipe=true;renderData()}if(id==='cwipeno'){S.cwipe=false;renderData()}
-  if(id==='cwipeyes'){JteCloud.wipeAll().then(function(){S.cloud=[];S.cwipe=false;renderAll();toast(I.wiped)}).catch(function(){toast(I.fail)})}};
+  if(id==='cwipeyes'){if(S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return JteCloud.wipeAll()}).then(function(){S.busyDel=false;S.cloud.forEach(function(c){forgetRec(c.id)});S.cloud=[];S.cwipe=false;renderAll();toast(I.wiped)}).catch(function(){S.busyDel=false;toast(I.fail)})}};
 function pick(n,out){$(out).textContent=n.dataset.pick+'。'}
 [['#lensmap','#pick'],['#collage','#pick2']].forEach(function(s){$(s[0]).addEventListener('click',function(e){var n=e.target.closest('.node');if(n)pick(n,s[1])});$(s[0]).addEventListener('keydown',function(e){var n=e.target.closest('.node');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(n,s[1])}})});
 function reload(){if(DEMO)return;daily=readLS('jte_daily_v1')||{};persona=readLS('bagua_persona_v1');renderAll()}

@@ -163,6 +163,7 @@
       cloudNote: '放了照片的這一筆會存到你的雲端，只有你看得到。', offline: '照片功能暫時連不上，可以先只記一句。',
       caption: '這張想說什麼（可以不寫）', remove: '拿掉', left: '往前', right: '往後', saving: '存的時候…',
       kept: '留下了，照片存到你的雲端', fail: '沒有存到，請再試一次。內容都還在。', photoCount: '{n} 張照片',
+      deleted: '刪掉了', removed: '拿掉了', photoAlt: '照片', cancel: '取消',
       delPhoto: '拿掉這張', delIns: '刪除這一筆', delAsk: '確定刪除？雲端上的照片也會一起刪掉。', delYes: '確定刪除',
       full: '一筆最多 {n} 張', compressFail: '這張照片讀不出來，換一張試試',
       wipe: '刪除我在雲端的靈感與照片', wipeAsk: '確定刪除？雲端上所有靈感與照片都會刪掉，不能復原。', wipeYes: '確定刪除', wiped: '雲端的靈感與照片刪掉了',
