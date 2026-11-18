@@ -813,6 +813,26 @@
   function itemName(id) { var it = id ? itemById(id) : null; return it ? it.name : ''; }
   function mode() { return store && store.kind === 'cloud' ? 'cloud' : store && store.kind === 'out' ? 'out' : 'local'; }
 
+  // 一次加幾個項目（第一次進來的流程用）：[{name, unit, amount?}]。同名的不重複加；給了 amount 就順手記今天一筆。
+  function quickAdd(list) {
+    var chain = Promise.resolve();
+    (list || []).forEach(function (x, i) {
+      var r = M.pracItemCheck({ name: x.name, unit: x.unit, color: '' }, P.max);
+      if (!r.ok) return;
+      chain = chain.then(function () {
+        if (st.data.items.some(function (o) { return o.name === r.item.name; })) return null;
+        var it = { id: M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: P.colors[st.data.items.length % P.colors.length], archived: false, createdAt: Date.now() + i };
+        return store.putItem(it).then(function () {
+          upsert(st.data.items, it);
+          if (!(x.amount > 0)) return null;
+          var lg = { id: M.pracId('pl-'), itemId: it.id, date: C.TODAY, amount: x.amount, note: '', at: Date.now() };
+          return store.putLog(lg).then(function () { upsert(st.data.logs, lg); });
+        });
+      });
+    });
+    return chain.then(function () { render(true); });
+  }
+
   g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData,
-    items: activeItems, itemName: itemName, mode: mode, pending: pending };
+    items: activeItems, itemName: itemName, mode: mode, pending: pending, quickAdd: quickAdd };
 })(window);

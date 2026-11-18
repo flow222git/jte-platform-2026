@@ -1,0 +1,36 @@
+/* 全站共用的風格設定：簡潔（預設）／手帳。搭配 jte-theme.js。
+   頁面只用這裡的變數名稱，不寫死顏色，兩種風格才換得到。
+   規格：docs/superpowers/specs/2026-11-17-platform-style-switch-design.md */
+
+/* 簡潔：原本 me/index.html 的 :root，原樣搬過來。 */
+:root{--blue:#2F6BD8;--blue-deep:#003864;--blue-bright:#3786E6;--blue-soft:#C5DBF7;--blue-pale:#EAF1FC;--dark:#032639;
+--orange:#FF9925;--orange-dark:#E8690B;--yellow:#FFDC2D;--yellow-soft:#FFF2C2;--green:#4CAF19;--teal:#34C8A0;--purple:#7A6BD8;--purple-soft:#BAB5FF;--purple-sub:#EBEAFF;
+--c-lilac:#AFB9FD;--c-lime:#DAF54A;--c-pink:#FFC3FE;--c-cyan:#A9EFFF;--c-sky:#99DAFF;
+--ink:#1A2230;--ink-2:#5A6573;--ink-3:#6F838E;--ink-4:#9AA3B0;--line:rgba(20,34,56,.09);--bg:#fff;--bg-soft:#F6F8FB;
+--r-sm:14px;--r-md:20px;--r-lg:28px;--r-xl:40px;--shadow:0 18px 40px rgba(20,34,56,.06);
+--font:'GenJyuuGothic','Yuanti TC','Noto Sans TC','PingFang TC',-apple-system,BlinkMacSystemFont,'Microsoft JhengHei',sans-serif;--font-en:'Inter','Noto Sans TC',sans-serif;
+--hw:"HanziPen TC","Hannotate TC","Kaiti TC","BiauKai","DFKai-SB",cursive;
+--font-head:var(--font);--edge:solid;
+--s-good:#F3FBC9;--s-keen:#FFEBD6;--s-empty:#EBEAFF;--s-full:#FFE9FE;--s-stuck:#E2F9FF}
+
+/* 手帳：米色紙、鉛筆棕的字、鉛筆感的邊線、不用陰影；標題用手寫字，內文維持原本的字確保好讀。
+   手寫字先用裝置內建字體（Mac 翩翩體、Windows 標楷體），正式字體待選定授權後再內嵌。 */
+:root[data-theme="sketch"]{--dark:#3b3a35;--blue-deep:#4a4539;--blue:#3f6591;--blue-bright:#5a7fa8;--blue-soft:#cfd6d6;--blue-pale:#EEE6D2;
+--orange:#E9A04A;--orange-dark:#B8651A;--yellow-soft:#F3E3B0;--purple-sub:#E4DEEA;
+--c-lilac:#C9C6E6;--c-lime:#E3E7A6;--c-pink:#F0CFE0;--c-cyan:#C7E3E6;--c-sky:#C2D9E8;
+--ink:#3b3a35;--ink-2:#5f5a4e;--ink-3:#6b675e;--ink-4:#857f70;--line:rgba(59,58,53,.24);--bg:#FBF7EC;--bg-soft:#F4EEDF;
+--r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:14px;--shadow:none;
+--font-head:var(--hw);--edge:dashed;
+--s-good:#E9EDB4;--s-keen:#F6D9B0;--s-empty:#DCD8EC;--s-full:#F1D3DC;--s-stuck:#CFE4E2}
+
+:root[data-theme="sketch"] body{background-color:var(--bg-soft);
+background-image:radial-gradient(rgba(59,58,53,.07) 1px,transparent 1.2px),radial-gradient(rgba(59,58,53,.05) 1px,transparent 1.2px);
+background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
+:root[data-theme="sketch"] h1,:root[data-theme="sketch"] h2,:root[data-theme="sketch"] h3{font-family:var(--font-head);letter-spacing:.04em}
+
+/* 切換鈕（簡潔｜手帳），由 JteTheme.mount() 畫出來。 */
+.jte-theme-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.jte-theme-switch button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-2);padding:6px 12px;min-height:32px;border-radius:999px;cursor:pointer}
+.jte-theme-switch button[aria-pressed="true"]{background:var(--dark);color:#fff}
+.jte-theme-switch button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+:root[data-theme="sketch"] .jte-theme-switch,:root[data-theme="sketch"] .jte-theme-switch button{border-radius:var(--r-sm)}
