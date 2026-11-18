@@ -28,26 +28,32 @@ background-image:radial-gradient(rgba(59,58,53,.07) 1px,transparent 1.2px),radia
 background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
 :root[data-theme="sketch"] h1,:root[data-theme="sketch"] h2,:root[data-theme="sketch"] h3{font-family:var(--font-head);letter-spacing:.04em}
 
-/* 手繪：白紙加淡淡的格線、粗黑的筆線、不規則的邊角、色塊像麥克筆塗的、卡片有一道手畫的硬陰影。
-   標題用手寫字並畫一道螢光筆；內文維持原本的字確保好讀。2026-11-18 使用者要求加這一版。 */
-:root[data-theme="doodle"]{--dark:#1f1d1a;--blue-deep:#1f1d1a;--blue:#2B59C3;--blue-bright:#3F77E0;--blue-soft:#BFD3FA;--blue-pale:#FFF3B8;
---orange:#FF8A1F;--orange-dark:#D9650A;--yellow:#FFD92E;--yellow-soft:#FFF3B8;--purple-sub:#DCD7FF;
---c-lilac:#B9B2FF;--c-lime:#D8F04C;--c-pink:#FFA9E4;--c-cyan:#8FE3F2;--c-sky:#8CCBFF;
---ink:#1f1d1a;--ink-2:#45413a;--ink-3:#5c574e;--ink-4:#777065;--line:#1f1d1a;--bg:#FFFEF8;--bg-soft:#FBF8EC;
---r-sm:14px 6px 12px 5px/6px 12px 5px 14px;--r-md:22px 8px 18px 7px/8px 18px 7px 22px;--r-lg:30px 10px 26px 9px/10px 26px 9px 30px;--r-xl:40px 14px 34px 12px/14px 34px 12px 40px;
---shadow:4px 5px 0 rgba(31,29,26,.9);
---font-head:var(--hw);--edge:solid;--edge-w:2px;
---s-good:#E3F56A;--s-keen:#FFC27A;--s-empty:#CBC4FF;--s-full:#FFB6E8;--s-stuck:#A5E9F5}
+/* 手繪：蠟筆。參考使用者的速寫本照片：奶油色的紙，赭褐色的筆當主線，
+   顏色是塗上去的（看得到筆觸方向，紙從縫裡透出來），線細而鬆，沒有硬邊、沒有陰影。
+   標題用手寫字，底下掃一道幾個顏色的蠟筆筆觸；內文維持原本的字確保好讀。
+   2026-11-18 使用者要求加這一版；同日改為「用蠟筆不要用麥克筆」。 */
+:root[data-theme="doodle"]{--dark:#6B4226;--blue-deep:#5A3A24;--blue:#3F6FB5;--blue-bright:#5B8FD9;--blue-soft:#C4D6EC;--blue-pale:#EFE7C9;
+--orange:#E9925A;--orange-dark:#B8602F;--yellow:#F2CF4A;--yellow-soft:#F4E7B0;--green:#6E9F4A;--teal:#6DB3A0;--purple:#8E7FC4;--purple-soft:#C7C2E6;--purple-sub:#DDD9EE;
+--c-lilac:#C7C2E6;--c-lime:#CFDD9A;--c-pink:#F0BCC8;--c-cyan:#B4D9E0;--c-sky:#A9CDEB;
+--ink:#3A2E25;--ink-2:#5A4A3D;--ink-3:#6E5D4E;--ink-4:#8A7867;--line:rgba(107,66,38,.5);--bg:#FBF8EE;--bg-soft:#F5F1E3;
+--r-sm:13px 7px 12px 6px/7px 12px 6px 13px;--r-md:20px 10px 17px 9px/10px 17px 9px 20px;--r-lg:28px 13px 24px 12px/13px 24px 12px 28px;--r-xl:38px 17px 32px 15px/17px 32px 15px 38px;
+--shadow:none;
+--font-head:var(--hw);--edge:solid;--edge-w:1.5px;
+--s-good:#CFDD9A;--s-keen:#F5C98A;--s-empty:#C7C2E6;--s-full:#F2B3A6;--s-stuck:#A9CDEB;
+/* 蠟筆塗色：斜的筆觸加上紙的顆粒，蓋在任何底色上都看得到紙透出來。 */
+--crayon:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .97  0 0 0 0 .95  0 0 0 0 .89  0 0 0 1.5 -.62'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),repeating-linear-gradient(-58deg,rgba(251,248,238,0) 0 3px,rgba(251,248,238,.34) 3px 4.2px,rgba(251,248,238,0) 4.2px 7px,rgba(251,248,238,.2) 7px 7.8px);
+--swash:linear-gradient(90deg,#5B8FD9 0%,#6DB3A0 30%,#F2CF4A 58%,#E8866A 100%)}
 
-:root[data-theme="doodle"] body{background-color:var(--bg-soft);
-background-image:linear-gradient(rgba(43,89,195,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(43,89,195,.07) 1px,transparent 1px);
-background-size:24px 24px}
-:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2,:root[data-theme="doodle"] h3{font-family:var(--font-head);letter-spacing:.04em}
-/* 螢光筆：只畫在字的下半截，寬度跟著字。 */
-:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2{width:-moz-fit-content;width:fit-content;max-width:100%;
-background:linear-gradient(transparent 58%,rgba(255,217,46,.85) 58%,rgba(255,217,46,.85) 92%,transparent 92%);padding:0 6px 0 2px;margin-left:-2px}
+:root[data-theme="doodle"] body{background-color:var(--bg-soft);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .32  0 0 0 0 .2  0 0 0 .5 -.2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.16'/></svg>")}
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2,:root[data-theme="doodle"] h3{font-family:var(--font-head);letter-spacing:.04em;color:var(--dark)}
+/* 標題底下掃一道蠟筆：幾個顏色接在一起，用斜線遮罩做出筆觸。 */
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2{position:relative;z-index:0;width:-moz-fit-content;width:fit-content;max-width:100%}
+:root[data-theme="doodle"] h1::after,:root[data-theme="doodle"] h2::after{content:"";position:absolute;z-index:-1;left:-6px;right:-14px;bottom:-.08em;height:.46em;
+background:var(--swash);opacity:.62;border-radius:40% 60% 55% 45%/60% 40% 60% 40%;
+-webkit-mask:repeating-linear-gradient(-58deg,#000 0 2.4px,transparent 2.4px 4.2px);mask:repeating-linear-gradient(-58deg,#000 0 2.4px,transparent 2.4px 4.2px)}
 :root[data-theme="doodle"] .jte-theme-switch,:root[data-theme="doodle"] .jte-theme-switch button{border-radius:var(--r-sm)}
-:root[data-theme="doodle"] .jte-theme-switch{border-width:2px}
+:root[data-theme="doodle"] .jte-theme-switch{border-width:1.5px}
+:root[data-theme="doodle"] .jte-theme-switch button[aria-pressed="true"]{background-image:var(--crayon)}
 
 /* 切換鈕（簡潔｜手帳｜手繪），由 JteTheme.mount() 畫出來。 */
 .jte-theme-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}

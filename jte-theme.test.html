@@ -34,8 +34,8 @@ check('localStorage 丟例外時不壞',()=>{const g=Storage.prototype.getItem,s
   Storage.prototype.getItem=()=>{throw new Error('blocked')};Storage.prototype.setItem=()=>{throw new Error('blocked')};
   try{eq(T.get(),'simple');eq(T.set('sketch'),'sketch');eq(H.getAttribute('data-theme'),'sketch')}finally{Storage.prototype.getItem=g;Storage.prototype.setItem=s}});
 check('名稱只有這一份',()=>{eq(Object.keys(T.names).join(),'simple,sketch,doodle');eq(T.names.simple,'簡潔');eq(T.names.sketch,'手帳');eq(T.names.doodle,'手繪')});
-check('手繪版換了設定：粗筆線、硬陰影、不規則的邊角',()=>{T.set('doodle');const cs=getComputedStyle(H);eq(H.getAttribute('data-theme'),'doodle');eq(cs.getPropertyValue('--edge-w').trim(),'2px');
-  ok(/0 rgba/.test(cs.getPropertyValue('--shadow')),'硬陰影');ok(cs.getPropertyValue('--r-lg').indexOf('/')>0,'不規則邊角');T.set('simple');eq(getComputedStyle(H).getPropertyValue('--edge-w').trim(),'1px')});
+check('手繪版（蠟筆）換了設定：細而鬆的線、沒有陰影、不規則的邊角、有塗色的筆觸',()=>{T.set('doodle');const cs=getComputedStyle(H);eq(H.getAttribute('data-theme'),'doodle');eq(cs.getPropertyValue('--edge-w').trim(),'1.5px');
+  eq(cs.getPropertyValue('--shadow').trim(),'none');ok(/repeating-linear-gradient/.test(cs.getPropertyValue('--crayon')),'蠟筆筆觸');ok(!/[0-9]\s*0 rgba/.test(cs.getPropertyValue('--shadow')),'不用硬陰影');ok(cs.getPropertyValue('--r-lg').indexOf('/')>0,'不規則邊角');T.set('simple');eq(getComputedStyle(H).getPropertyValue('--edge-w').trim(),'1px')});
 try{localStorage.removeItem(K)}catch(e){}
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 // jte-testrun.py 靠這個 POST 收結果（行首 PASS／FAIL／DONE）。

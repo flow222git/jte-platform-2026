@@ -12,7 +12,7 @@
       books: [
         { key: 'simple', line: '白紙，乾淨的字。' },
         { key: 'sketch', line: '米色的紙，手寫的字。' },
-        { key: 'doodle', line: '粗粗的筆線，麥克筆的顏色。' }
+        { key: 'doodle', line: '奶油色的紙，蠟筆的筆觸。' }
       ],
       sample: '今天，剛好。'
     },
