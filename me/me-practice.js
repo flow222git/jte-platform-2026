@@ -208,6 +208,13 @@
       return timed(function () { return g.JteCloud.pracWipe(); }, 60000).then(function () { finish(false); }, function () { finish(true); });
     }, stop);
   }
+  // 給「我的資料」設定表用：整批換地方。問過才會叫到這裡。
+  function move(to) {
+    if (C.DEMO || !st.uid || st.moving) return;
+    st.ask = '';
+    if (to === 'cloud') { if (st.mode !== 'cloud') upload(); }
+    else if (st.mode === 'cloud') toLocal();
+  }
   function wipeAgain() {
     var uid = st.uid, gen = st.gen;
     if (!uid || !g.JteCloud) return;
@@ -746,6 +753,7 @@
   function focusIn(root) { var a = document.activeElement; return !!(a && a !== root && root.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }
   function render(force) {
     if (!inited) return;
+    if (C.onState) C.onState();
     syncLocal();
     if (st.lf && !itemById(st.lf.item)) st.lf = null;
     if (st.lf && st.lf.ctx === 'edit' && !logById(st.lf.log)) st.lf = null;
@@ -833,5 +841,6 @@
   }
 
   g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData,
-    items: activeItems, itemName: itemName, mode: mode, pending: pending, quickAdd: quickAdd };
+    items: activeItems, itemName: itemName, mode: mode, pending: pending, quickAdd: quickAdd,
+    move: move, moving: function () { return st.moving; }, cloudOff: function () { return !!st.cloudOff; } };
 })(window);

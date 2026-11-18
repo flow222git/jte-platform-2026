@@ -2,6 +2,7 @@
 <html lang="zh-Hant"><head><meta charset="utf-8"><title>me-core tests</title>
 <script src="me-data.js"></script>
 <script src="me-core.js"></script>
+<script src="first-data.js"></script>
 </head><body>
 <pre id="out">running...</pre>
 <script>
@@ -233,6 +234,18 @@ check('route：我的練習項目網址',()=>{const r=M.route('#practice-item-ab
 check('pracMode：沒登入、問過、沒問過',()=>{eq(M.pracMode({u:'cloud'},'',true),'local');eq(M.pracMode({u:'cloud'},null,false),'local');eq(M.pracMode({u:'cloud'},'u',false),'cloud');eq(M.pracMode({u:'local'},'u',true),'local');eq(M.pracMode({},'u',true),'cloud');eq(M.pracMode({},'u',false),'ask');eq(M.pracMode(null,'u',false),'ask');eq(M.pracMode({other:'cloud'},'u',false),'ask');});
 check('buildPages：靈感的項目標記會留下，沒有就不帶',()=>{const ps=M.buildPages({},[{id:'m1',key:'2026-11-05',text:'a',itemId:'pi-1'},{id:'m2',key:'2026-11-04',text:'b'},{id:'ins-1',key:'2026-11-03',text:'',itemId:'pi-1',photos:[{id:'p',data:'data:image/jpeg;base64,A',order:0}]}]);eq(ps[0].itemId,'pi-1');ok(!('itemId' in ps[1]));eq(ps[2].itemId,'pi-1');});
 check('資料與公開：練習紀錄的說明在，雲端那句講到管理者，原本兩句沒動',()=>{ok(D.privacy.practiceLocal.indexOf('這台裝置')>-1);ok(D.privacy.practiceCloud.indexOf('管理者')>-1);ok(D.privacy.now.indexOf('只存在這台裝置')>-1);ok(D.privacy.cloud.indexOf('只有你看得到')>-1);});
+check('我的資料設定表：沒登入時都在裝置，雲端的三類要登入才能選',()=>{const r=M.dataRows({user:false,prac:'local'}),by={};r.forEach(x=>by[x.key]=x);eq(r.length,6);eq(by.states.where,'device');eq(by.states.act,'');eq(by.words.who,'me');eq(by.photos.where,'none');eq(by.photos.act,'login');eq(by.practice.where,'device');eq(by.practice.act,'login');eq(by.acts.act,'login');eq(by.tools.where,'device');});
+check('我的資料設定表：登入後練習紀錄可以換地方，雲端的都寫明管理者看得到',()=>{let by={};M.dataRows({user:true,prac:'local',photos:0,acts:0}).forEach(x=>by[x.key]=x);eq(by.practice.act,'tocloud');eq(by.practice.who,'me');eq(by.photos.where,'cloud');eq(by.photos.who,'admin');eq(by.photos.act,'');eq(by.acts.who,'host');eq(by.acts.act,'');
+  by={};M.dataRows({user:true,prac:'cloud',photos:2,acts:1}).forEach(x=>by[x.key]=x);eq(by.practice.where,'cloud');eq(by.practice.who,'admin');eq(by.practice.act,'tolocal');eq(by.photos.act,'wipephotos');eq(by.acts.act,'acts');
+  by={};M.dataRows({user:true,prac:'local',cloudOff:true}).forEach(x=>by[x.key]=x);eq(by.practice.act,'');
+  by={};M.dataRows({user:false,prac:'out'}).forEach(x=>by[x.key]=x);eq(by.practice.where,'out');eq(by.practice.act,'login');
+  ok(M.dataRows({demo:true,user:true,prac:'cloud',photos:2,acts:1}).every(x=>x.act===''),'示範模式沒有按鈕');});
+check('我的資料設定表：每個代號都有字，雲端的兩種說法都講到管理者，還沒開放的分享有寫明',()=>{const T=D.privacy.table;[{user:false,prac:'local'},{user:true,prac:'cloud',photos:1,acts:1},{user:true,prac:'local'},{user:false,prac:'out'}].forEach(c=>M.dataRows(c).forEach(r=>{ok(T.names[r.key],r.key);ok(T.where[r.where],r.where);if(r.who)ok(T.who[r.who],r.who);if(r.act)ok(T.act[r.act],r.act);}));
+  ok(T.who.admin.indexOf('管理者')>-1);ok(T.who.host.indexOf('管理者')>-1&&T.who.host.indexOf('主辦方')>-1);ok(T.cloudAsk.indexOf('管理者')>-1);ok(T.share.indexOf('還沒開放')>-1);eq(T.who.me,'只有你');});
+check('平台介紹：短的四句講到手帳、工具、鏡子、資料留在裝置；完整頁的字齊全，八態能格掛著研究假設',()=>{const F=window.JTE_FIRST_DATA,I=F.intro,P=F.page;
+  eq(I.lines.length,4);ok(I.lines.join('').indexOf('手帳')>-1);ok(I.lines.join('').indexOf('鏡子')>-1);ok(I.lines.join('').indexOf('這台裝置')>-1);ok(I.go&&I.more&&I.again);
+  ['what','book','tools','keep','look'].forEach(k=>ok(P[k]&&P[k].h,k));eq(P.what.items.length,4);eq(P.keep.items.length,4);ok(P.tools.octenso.indexOf('研究假設')>-1);ok(P.keep.items[0].b.indexOf('算命')>-1);
+  ok(!/因為|所以你|代表你/.test(JSON.stringify(P)),'不捏因果');D.toolbox.groups.forEach(g=>g.tools.forEach(t=>ok(D.tools[t]&&D.tools[t].desc,t)));});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
