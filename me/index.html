@@ -1085,7 +1085,10 @@ function pick(n,out){$(out).textContent=n.dataset.pick+'。'}
 function reload(){if(DEMO)return;daily=readLS('jte_daily_v1')||{};persona=readLS('bagua_persona_v1');renderAll()}
 window.addEventListener('storage',function(e){if(e.key==='jte_daily_v1'||e.key==='bagua_persona_v1')reload();
   else if(e.key==='jte_me_v1'&&!DEMO){var o=readLS('jte_me_v1');if(o&&o.prac!==undefined)O.prac=o.prac;else delete O.prac;renderAll()}});
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')reload()});
+/* 還沒驗證信箱的人，點完信裡的連結回到這一頁時，自己檢查一次，不用再按「我驗證好了」。最多五秒查一次。 */
+var verifyAt=0;function verifyCheck(){if(DEMO||!S.user||S.user.verified||!window.JteCloud||!JteCloud.refreshUser)return;var n=Date.now();if(n-verifyAt<5000)return;verifyAt=n;JteCloud.refreshUser().catch(function(){})}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){reload();verifyCheck()}});
+window.addEventListener('focus',verifyCheck);
 window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 /* 開場 */
 var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O.lastVisit=TODAY;save()}
