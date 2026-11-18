@@ -179,7 +179,11 @@
       sesCol: '場次日期',
       tlds: ['tw', 'com', 'net', 'org', 'edu', 'io', 'co', 'jp', 'hk', 'sg', 'us', 'uk', 'cn', 'me', 'app', 'dev'],
       flags: { missing: '沒有信箱', format: '信箱格式不對', tld: '信箱結尾可疑', dup: '同一場重複', score: '分數不在 1–10', blank: '沒有填問卷', noses: '還沒選場次', cols: '找不到欄位' },
-      ask: '你參加過「{t}」（{d}），要收進手帳嗎？', keep: '收進來', decline: '不用', later: '之後再說',
+      ask: '你參加過「{t}」（{d}），要收進手帳嗎？',
+      // 問卷有寫東西的人：先讓他看到自己當時寫的那一句（原文，不改寫、不解讀），再問要不要收。
+      quoteHead: '{d}，你參加了「{t}」。', quoteAsk: '要把這一頁收進手帳嗎？', quoteMax: 120,
+      quoteLead: { expect: '去之前，你寫下：', feeling: '關於那天的過程，你寫下：', takeaway: '你說帶回來的是：', feedback: '活動之後，你寫下：' },
+      backAsk: '收進手帳了。現在回頭看，想補一句嗎？', backPh: '一句就好，也可以不寫', backSave: '留下', backSkip: '先不用', backSaved: '補上了，在「體驗足跡」那一頁', backMax: 80, keep: '收進來', decline: '不用', later: '之後再說',
       declineAsk: '確定不用？雲端這一筆的內容會刪掉，只留下「這一場不用」的記號，之後不會再問。', declineYes: '確定不用', kept: '收進手帳了，在「體驗足跡」', declined: '好，這一筆不收。內容已經從雲端刪掉，只留下「這一場不用」的記號', demoDeclined: '好，這一筆不收。（示範模式，沒有東西被刪除）', fallbackTitle: '活動',
       fail: '沒有成功，請再試一次。', before: '活動前', after: '活動後', body: '身體', mood: '情緒',
       expect: '活動前期待', feeling: '過程感受', takeaway: '最實用日常收穫', feedback: '心得與回饋', photo: '看活動照片',

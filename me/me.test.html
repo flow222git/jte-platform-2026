@@ -298,6 +298,12 @@ check('actAlso：給了場次清單時，沒有任何一列要送的場次也會
   const S2=[{sessionId:'2026-11-05-tea',title:'茶席',date:'2026-11-05',photoUrl:''},{sessionId:'2026-11-06-tea',title:'茶席',date:'2026-11-06',photoUrl:''}];
   const x=M.actAlso(['lead@example.com'],[],D.act,D.act.tlds,S2);eq(x.map(r=>r.sessionId+'|'+r.title).join(),'2026-11-05-tea|茶席,2026-11-06-tea|茶席');
   const own=M.actRecord(Object.assign({},AROW,{email:'lead@example.com'}),SES,D.act);eq(M.actAlso(['lead@example.com'],[own],D.act,D.act.tlds,S2).map(r=>r.sessionId).join(),'2026-11-06-tea','問卷裡已有的場次不重複');});
+check('actQuote：照期待、過程、收穫、心得的順序取第一句；空白紀錄回 null；太長才截斷',()=>{
+  eq(M.actQuote({expect:' 想放鬆 ',feeling:'很安靜'}).k,'expect');eq(M.actQuote({expect:' 想放鬆 ',feeling:'很安靜'}).text,'想放鬆');
+  eq(M.actQuote({expect:'',feeling:'',takeaway:'回家泡茶',feedback:'喜歡'}).k,'takeaway');eq(M.actQuote({feedback:'第一行\n第二行'}).text,'第一行 第二行');
+  eq(M.actQuote({expect:'  ',pre:{body:4}}),null);eq(M.actQuote(null),null);
+  const long='字'.repeat(200);eq(M.actQuote({expect:long},120).text.length,121);ok(M.actQuote({expect:long},120).text.endsWith('…'));eq(M.actQuote({expect:'短'},120).text,'短');
+  ['quoteHead','quoteAsk','backAsk','backPh','backSave','backSkip','backSaved'].forEach(k=>ok(D.act[k],'缺 '+k));['expect','feeling','takeaway','feedback'].forEach(k=>ok(D.act.quoteLead[k],'缺引言 '+k));});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });
