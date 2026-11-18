@@ -324,6 +324,21 @@
     arr(items).forEach(function (x, i) { var k = actDocId(x.sessionId, x.email); if (seen[k]) out.push(i); else seen[k] = 1; });
     return out;
   }
+  // 預設有參加的人：每一場各補一筆只有活動資訊的紀錄；問卷裡已經有這個信箱的場次不重複補。
+  function actAlso(emails, recs, lim, tlds) {
+    var ses = {}, order = [], have = {}, seen = {}, list = [], out = [];
+    arr(recs).forEach(function (r) {
+      if (!ses[r.sessionId]) { ses[r.sessionId] = { sessionId: r.sessionId, title: r.title, date: r.date, photoUrl: r.photoUrl }; order.push(r.sessionId); }
+      have[actDocId(r.sessionId, r.email)] = 1;
+    });
+    arr(emails).forEach(function (e) {
+      var x = actEmail(e, tlds);
+      if (!x.email || x.flags.indexOf('missing') >= 0 || x.flags.indexOf('format') >= 0 || seen[x.email]) return;
+      seen[x.email] = 1; list.push(x.email);
+    });
+    order.forEach(function (id) { list.forEach(function (e) { if (!have[actDocId(id, e)]) out.push(actRecord({ email: e }, ses[id], lim)); }); });
+    return out;
+  }
   // 匯入計畫：選了「不用」的跳過（不覆寫）；已有的保留原本的狀態；新的是 pending。
   function actPlan(recs, existing) {
     var writes = [], added = 0, updated = 0, skipped = 0;
@@ -576,7 +591,7 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actLines: actLines, actPage: actPage,
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, actLines: actLines, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };

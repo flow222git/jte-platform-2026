@@ -802,7 +802,7 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   if(ph.length)h+='<div class="photos">'+ph.map(function(z){return '<figure><button class="ph" data-act="zoom" data-pid="'+esc(z.id)+'"><img src="'+esc(z.data)+'" alt="'+esc(z.caption||I.photoAlt)+'" loading="lazy"></button>'+(z.caption?'<figcaption>'+esc(z.caption)+'</figcaption>':'')+(p.src==='Insp'?'<button class="lnk" data-act="delpic" data-pid="'+esc(z.id)+'">'+I.delPhoto+'</button>':'')+'</figure>'}).join('')+'</div>';
   if(p.feel.length)h+='<div class="tagrow">'+p.feel.map(function(f){return '<span class="feel">'+esc(f)+'</span>'}).join('')+'</div>';
   if(p.meta.length)h+='<p class="note">'+p.meta.map(esc).join('・')+'</p>';
-  if(p.act){var al=M.actLines(p.act,A);h+='<div class="actv">'+al.map(function(x){return '<p>'+esc(x)+'</p>'}).join('')+['expect','feeling','takeaway','feedback'].map(function(k){return p.act[k]?'<p><small>'+A[k]+'</small>'+esc(p.act[k])+'</p>':''}).join('')+'<p class="note">'+A.from+'</p></div>'}
+  if(p.act){var al=M.actLines(p.act,A);h+='<div class="actv">'+al.map(function(x){return '<p>'+esc(x)+'</p>'}).join('')+['expect','feeling','takeaway','feedback'].map(function(k){return p.act[k]?'<p><small>'+A[k]+'</small>'+esc(p.act[k])+'</p>':''}).join('')+(al.length||p.act.expect||p.act.feeling||p.act.takeaway||p.act.feedback?'<p class="note">'+A.from+'</p>':'')+'</div>'}
   if(p.link)h+='<p class="note"><a href="'+esc(p.link)+'" target="_blank" rel="noopener">看活動照片</a></p>';
   if(t&&t.found)h+='<p class="add"><small>發現</small>'+esc(t.found)+'</p>';
   (a.notes||[]).forEach(function(n){h+='<p class="add"><small>'+esc(M.dlabel(n.k))+' 補</small>'+esc(n.text)+'</p>'});

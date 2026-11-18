@@ -272,6 +272,13 @@ const asyncDone=(async()=>{
   ok(O.prac===undefined,'上傳成功：本機那份清掉');ok(O.prefs.pracCloud['u-test']==='cloud','上傳成功：記下放雲端');ok(uploads===3,'共呼叫三次');
 })();
 asyncDone.then(()=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{});},e=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{throw e;});}).then(()=>{
+check('actAlso：每一場替預設參加的人補一筆空白紀錄，問卷裡已有的不重複',()=>{const mk=(e,sid)=>M.actRecord(Object.assign({},AROW,{email:e}),Object.assign({},SES,{sessionId:sid}),D.act);
+  const recs=[mk('a@example.com','2026-11-05-tea'),mk('b@example.com','2026-11-05-tea'),mk('a@example.com','2026-11-06-tea')];
+  const x=M.actAlso([' Lead@Example.com ','a@example.com','lead@example.com','亂寫',''],recs,D.act,D.act.tlds);
+  eq(x.map(r=>r.sessionId+'|'+r.email).join(),'2026-11-05-tea|lead@example.com,2026-11-06-tea|lead@example.com');
+  eq(x[0].title,recs[0].title);eq(x[0].date,recs[0].date);eq(x[0].feedback,'');eq(x[0].pre.body,null);eq(M.actLines(x[0],D.act).length,0);
+  eq(M.actAlso([],recs,D.act,D.act.tlds).length,0);eq(M.actAlso(['lead@example.com'],[],D.act,D.act.tlds).length,0);
+  const p=M.actPlan(recs.concat(x),{[M.actDocId('2026-11-05-tea','lead@example.com')]:{status:'declined'}});eq(p.skipped,1);eq(p.added,4);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });
