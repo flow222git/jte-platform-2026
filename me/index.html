@@ -78,6 +78,15 @@ section{padding:22px 0}
 .memo textarea{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);resize:none;padding:12px 14px;font-size:15.5px;line-height:1.8;background:var(--bg-soft);min-height:112px;margin-top:6px}
 .memo textarea::placeholder,.in::placeholder{color:var(--ink-4)}
 .note{font-size:12.5px;color:var(--ink-3)}
+/* 我的資料：每一類一列。寬的時候四欄，窄的時候一列一塊、每格前面帶小標。 */
+.dtab{list-style:none;margin:12px 0 0;padding:0}
+.drow{display:grid;grid-template-columns:1.5fr .9fr 1.5fr minmax(104px,auto);gap:6px 16px;padding:12px 0;border-top:1px solid var(--line);align-items:start;font-size:14.5px}
+.drow.dhead{font-size:12.5px;color:var(--ink-3);padding:0 0 8px;border-top:0}
+.dc-name{display:grid;gap:3px}
+.dl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dconf{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media(max-width:640px){.drow{grid-template-columns:1fr;gap:5px}.drow.dhead,.drow>span:empty{display:none}.dc-where,.dc-who,.dc-act{display:flex;gap:8px;align-items:baseline}
+.dl{position:static;width:5.2em;height:auto;clip:auto;flex:none;font-size:12.5px;color:var(--ink-3)}}
 label.note{font-weight:700;color:var(--ink-2)}
 .bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .tile{border-radius:var(--r-lg);padding:22px;min-height:196px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;color:var(--blue-deep)}
@@ -329,6 +338,7 @@ dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 .fblk .fdot{width:10px;height:10px;border-radius:50%;flex:none}
 .fq .fn{font-size:12px;letter-spacing:.08em;color:var(--ink-3)}
 .fq h2{font-size:20px;margin:2px 0}
+.fintro{display:grid;gap:8px}.fintro h2{font-size:24px;margin-bottom:4px}.fintro .row{gap:14px}
 .fsts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:12px}
 .fsts .gcard{grid-column:auto;min-height:84px}
 .fchip{border:1px solid rgba(20,34,56,.16);background:var(--bg);border-radius:999px;padding:8px 16px;min-height:44px;font-size:14px;font-weight:700;color:var(--dark)}
@@ -556,6 +566,7 @@ dialog.authdlg .in{width:100%}
     <span class="stamp">v0.1 試作</span>
     <span id="honest"></span>
     <span id="crisis"></span>
+    <a class="lnk" id="introlnk" href="intro.html" style="width:max-content"></a>
   </footer>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -929,8 +940,19 @@ function renderManual(){$('#mtitle').textContent=D.manual.title;var m=M.manual(S
   if(m.lastNote)h+='<h4>最近補的一句</h4>'+esc(m.lastNote.text);
   el.innerHTML=h}
 /* 我的資料：預設私人；下載與刪除都在本機完成 */
-function renderData(){var p=D.privacy;$('#data').innerHTML='<p>'+(S.user?p.cloud:p.now)+'</p>'+(DEMO?'':'<p style="margin-top:6px">'+(JtePrac.mode()==='cloud'?p.practiceCloud:JtePrac.mode()==='out'?D.prac.t.needLogin:p.practiceLocal)+'</p>')+'<p class="note" style="margin-top:6px">'+p.choice+'</p><div class="row" style="margin-top:14px"><button class="btn sm" id="dl">'+p.download+'</button>'+(S.wipe?'<span class="note">'+p.wipeAsk+'</span><button class="btn sm fill" id="wipeyes">'+p.wipeYes+'</button><button class="lnk" id="wipeno">取消</button>':'<button class="lnk" id="wipe">'+p.wipe+'</button>')+'</div>'
-  +(S.user?'<div class="row" style="margin-top:10px">'+(S.cwipe?'<span class="note">'+I.wipeAsk+'</span><button class="btn sm fill" id="cwipeyes">'+I.wipeYes+'</button><button class="lnk" id="cwipeno">'+I.cancel+'</button>':'<button class="lnk" id="cwipe">'+I.wipe+'</button>')+'</div>':'')}
+function dataCtx(){return {demo:DEMO,user:!!(S.user&&S.user.verified),prac:JtePrac.mode(),cloudOff:JtePrac.cloudOff(),photos:S.cloud.length,acts:S.acts.filter(function(a){return a.status!=='declined'}).length}}
+function renderData(){var p=D.privacy,T=p.table,mv=JtePrac.moving();
+  function cell(k,v){return '<span class="dc dc-'+k+'"><small class="dl">'+T.head[k]+'</small>'+v+'</span>'}
+  var h='<p>'+T.lead+'</p><ul class="dtab"><li class="drow dhead" aria-hidden="true"><span>'+T.head.name+'</span><span>'+T.head.where+'</span><span>'+T.head.who+'</span><span>'+T.head.act+'</span></li>';
+  M.dataRows(dataCtx()).forEach(function(r){var act='',conf='';
+    if(r.key==='practice'&&mv)act='<span class="note">'+T.busy+'</span>';
+    else if(r.act==='wipephotos'&&S.cwipe)conf='<span class="note">'+I.wipeAsk+'</span><button class="btn sm fill" id="cwipeyes">'+I.wipeYes+'</button><button class="lnk" id="cwipeno">'+I.cancel+'</button>';
+    else if(r.act&&S.dask===r.act)conf='<span class="note">'+(r.act==='tocloud'?T.cloudAsk:D.prac.t.downAsk)+'</span><button class="btn sm fill" data-da="dyes">'+(r.act==='tocloud'?T.cloudYes:D.prac.t.downYes)+'</button><button class="lnk" data-da="dno">'+I.cancel+'</button>';
+    else if(r.act)act='<button class="btn sm" data-da="'+r.act+'">'+T.act[r.act]+'</button>';
+    else if(r.key==='states'||r.key==='words')act='<span class="note">'+T.noCloud+'</span>';
+    h+='<li class="drow"><span class="dc dc-name"><b>'+T.names[r.key]+'</b>'+(T.hints[r.key]?'<span class="note">'+T.hints[r.key]+'</span>':'')+'</span>'+cell('where',T.where[r.where])+(r.who?cell('who',T.who[r.who]):'<span></span>')+(act?cell('act',act):'<span></span>')+(conf?'<span class="dconf">'+conf+'</span>':'')+'</li>'});
+  h+='</ul><p class="note" style="margin-top:10px">'+T.share+'</p><div class="row" style="margin-top:14px"><button class="btn sm" id="dl">'+p.download+'</button>'+(S.wipe?'<span class="note">'+p.wipeAsk+'</span><button class="btn sm fill" id="wipeyes">'+p.wipeYes+'</button><button class="lnk" id="wipeno">取消</button>':'<button class="lnk" id="wipe">'+p.wipe+'</button>')+'</div>';
+  $('#data').innerHTML=h}
 function downloadData(){if(DEMO){toast('示範模式沒有你的資料可以下載');return}
   if(JtePrac.pending()){toast(D.prac.t.notReady);return}
   var blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),note:'練息場｜我的練息場。這個檔案只在你的裝置上產生。',jte_me_v1:O,jte_daily_v1:daily,bagua_persona_v1:persona||null,practice:JtePrac.exportData(),cloud_inspirations:S.cloud,cloud_activities:S.acts.filter(function(a){return a.status==='kept'})},null,2)],{type:'application/json'});
@@ -1077,7 +1099,10 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-why]
   if(b.hasAttribute('data-whyadd')){var v=box.querySelector('.in').value.trim();if(!v)return;if(t.why.indexOf(v)<0)t.why.push(v)}
   else{var i=t.why.indexOf(b.dataset.why);if(i>-1)t.why.splice(i,1);else t.why.push(b.dataset.why)}
   save();renderOpen();renderList();renderManual()});
-$('#data').onclick=function(e){var id=e.target.id;if(id==='dl')downloadData();if(id==='wipe'){S.wipe=true;renderData()}if(id==='wipeno'){S.wipe=false;renderData()}if(id==='wipeyes')wipeMine();
+$('#data').onclick=function(e){var id=e.target.id,db=e.target.closest('[data-da]'),da=db&&db.dataset.da;
+  if(da==='tocloud'||da==='tolocal'){S.dask=da;renderData()}if(da==='dno'){S.dask='';renderData()}if(da==='dyes'){var dk=S.dask;S.dask='';JtePrac.move(dk==='tocloud'?'cloud':'local');renderData()}
+  if(da==='wipephotos'){S.cwipe=true;renderData()}if(da==='login'){var al=$('#authline');goPane('today');setTimeout(function(){al.scrollIntoView({block:'center'});var fb=al.querySelector('button');if(fb)fb.focus()},60)}if(da==='acts')goPane('trail');
+if(id==='dl')downloadData();if(id==='wipe'){S.wipe=true;renderData()}if(id==='wipeno'){S.wipe=false;renderData()}if(id==='wipeyes')wipeMine();
   if(id==='cwipe'){S.cwipe=true;renderData()}if(id==='cwipeno'){S.cwipe=false;renderData()}
   if(id==='cwipeyes'){if(S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return JteCloud.wipeAll()}).then(function(){S.busyDel=false;S.cloud.forEach(function(c){forgetRec(c.id)});S.cloud=[];S.cwipe=false;renderAll();toast(I.wiped)}).catch(function(){S.busyDel=false;toast(I.fail)})}};
 function pick(n,out){$(out).textContent=n.dataset.pick+'。'}
@@ -1103,7 +1128,7 @@ JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goP
   unmarkInsp:function(itemId){var uid=S.user&&S.user.uid;S.cloud.forEach(function(x){if(x.itemId!==itemId)return;
     if(DEMO||!window.JteCloud){x.itemId='';return}
     JteCloud.setInspItem(x,'').then(function(){if(S.user&&S.user.uid===uid)renderAll()},function(){})})},
-  refresh:function(){renderAll()}});
+  refresh:function(){renderAll()},onState:function(){renderData()}});
 /* ── 第一次進來：先挑一本，再點三下 ──
    只在手帳完全空白、而且還沒問過的時候出現（網址加 ?first 可以強制再看一次）。
    回答先排成預覽；按「好，開始用」才一次寫進去：狀態進今天、項目進「我的練習」。之後不再問。 */
@@ -1114,7 +1139,7 @@ function firstNeeded(){if(firstForced)return true;return !DEMO&&O.prefs.first!==
 // 所以先等登入狀態；沒登入就直接問，有登入就等雲端讀完再看。問到一半（還在挑本子）才發現他有東西，就自己收起來。
 function firstAuth(u){if(!S.firstWait)return;S.firstWait=false;if(!u){if(firstNeeded())firstStart();return}
   var n=0;(function again(){setTimeout(function(){if(FS||!S.user)return;if(JtePrac.pending()&&++n<4){again();return}if(firstNeeded())firstStart()},2500)})()}
-function firstRecheck(){if(FS&&FS.step===0&&!firstForced&&!firstBlank())firstEnd()}
+function firstRecheck(){if(FS&&FS.step<=0&&!firstForced&&!firstBlank())firstEnd()}
 function fAll(){return FS.items.concat(FS.own)}
 function fUnit(n){var all=D.prac.examples.concat(F.q2.extra),i;if(FS&&FS.units&&FS.units[n])return FS.units[n];for(i=0;i<all.length;i++)if(all[i].name===n)return all[i].unit;return F.q2.ownUnit}
 function fUnitSel(n){var u=fUnit(n),us=D.prac.units.slice();if(us.indexOf(u)<0)us.unshift(u);return '<select class="in funit" data-funit="'+esc(n)+'" aria-label="'+esc(F.q2.unitLabel.replace('{n}',n))+'">'+us.map(function(x){return '<option'+(x===u?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>'}
@@ -1128,15 +1153,16 @@ function fHome(){var h='',st=FS.state,its=fAll(),cs=D.prac.colors;
   return h}
 function fQ(n,q){return '<p class="fn">'+F.step.replace('{n}',n)+'</p><h2 id="fqh" tabindex="-1">'+q.h+'</h2><p class="note">'+q.note+'</p>'}
 function renderFirst(){var el=$('#first'),h='',st=FS.step;
-  if(st===0)h='<p>'+F.hello+'</p><h2 id="fqh" tabindex="-1">'+F.pick.h+'</h2><p class="note">'+F.pick.note+'</p><div class="fbooks'+(F.pick.books.length>2?' three':'')+'">'+F.pick.books.map(function(b){return '<button class="fbook '+b.key+'" data-fbook="'+b.key+'"><b>'+esc(JteTheme.names[b.key])+'</b><i>'+esc(F.pick.sample)+'</i><small>'+esc(b.line)+'</small></button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skipall">'+F.skipAll+'</button></div>';
+  if(st===-1)h='<div class="panel fq fintro"><h2 id="fqh" tabindex="-1">'+F.intro.h+'</h2>'+F.intro.lines.map(function(l){return '<p>'+l+'</p>'}).join('')+'<div class="row" style="margin-top:14px"><button class="btn fill" data-fgo="next">'+F.intro.go+'</button><a class="lnk" href="intro.html">'+F.intro.more+'</a><button class="lnk" data-fgo="skipall">'+F.skipAll+'</button></div></div>';
+  else if(st===0)h='<p>'+F.hello+'</p><h2 id="fqh" tabindex="-1">'+F.pick.h+'</h2><p class="note">'+F.pick.note+'</p><div class="fbooks'+(F.pick.books.length>2?' three':'')+'">'+F.pick.books.map(function(b){return '<button class="fbook '+b.key+'" data-fbook="'+b.key+'"><b>'+esc(JteTheme.names[b.key])+'</b><i>'+esc(F.pick.sample)+'</i><small>'+esc(b.line)+'</small></button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skipall">'+F.skipAll+'</button></div>';
   else{h='<div id="fhome" aria-live="polite">'+fHome()+'</div>';
     if(st===1)h+='<div class="panel fq">'+fQ(1,F.q1)+'<div class="fsts">'+D.states.map(function(g){return '<button class="gcard s-'+g.key+'" data-fst="'+g.key+'"><b>'+g.name+'</b><span>'+g.desc+'</span></button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
     if(st===2){var names=D.prac.examples.concat(F.q2.extra).map(function(x){return x.name}).concat(FS.own);
       h+='<div class="panel fq">'+fQ(2,F.q2)+'<div class="row" style="margin-top:12px">'+names.map(function(n){return '<button class="fchip" data-fit="'+esc(n)+'" aria-pressed="'+(fAll().indexOf(n)>-1)+'">'+esc(n)+'</button>'}).join('')+'</div><div class="row" style="margin-top:10px"><input class="in" id="fown" style="flex:1;min-height:44px" maxlength="'+D.prac.max.name+'" placeholder="'+F.q2.own+'" aria-label="'+F.q2.own+'"><button class="btn" id="fownadd">'+F.q2.ownAdd+'</button></div><div class="row" style="margin-top:14px"><button class="btn fill" data-fgo="next">'+F.done+'</button><button class="btn" data-fgo="none">'+F.q2.none+'</button><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>'}
     if(st===3)h+='<div class="panel fq">'+fQ(3,F.q3)+'<div class="row" style="margin-top:12px">'+F.q3.opts.map(function(o){return '<button class="fchip" data-ffrom="'+o.key+'">'+esc(o.name)+'</button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
     if(st===4){var none=!FS.state&&!fAll().length&&FS.breath<3&&!FS.from;h+='<div class="fq"><h2 id="fqh" tabindex="-1">'+F.end.h+'</h2><p class="note">'+(none?F.end.empty:F.end.note)+'</p><div class="row" style="margin-top:12px"><button class="btn fill" data-fgo="finish">'+F.end.go+'</button><button class="lnk" data-fgo="again">'+F.end.back+'</button></div></div>'}}
-  el.innerHTML=h;var f=$('#fqh');if(f&&st>0)f.focus({preventScroll:true})}
-function firstStart(){FS={step:0,state:null,items:[],own:[],units:{},none:false,from:null,breath:0,busy:false};document.body.classList.add('firsting');$('#first').hidden=false;renderFirst()}
+  el.innerHTML=h;var f=$('#fqh');if(f&&st!==0)f.focus({preventScroll:true})}
+function firstStart(){FS={step:-1,state:null,items:[],own:[],units:{},none:false,from:null,breath:0,busy:false};document.body.classList.add('firsting');$('#first').hidden=false;renderFirst()}
 function firstEnd(){FS=null;document.body.classList.remove('firsting');$('#first').hidden=true;$('#first').innerHTML='';O.prefs.first='done';save()}
 function firstFinish(){if(FS.busy)return;FS.busy=true;var a=FS,list=fAll().map(function(n){return {name:n,unit:fUnit(n)}});
   if(!list.length&&a.breath>=3)list=[F.q2.breathItem];
@@ -1170,7 +1196,7 @@ $('#first').addEventListener('change',function(e){var t=e.target;if(FS&&t.datase
 $('#first').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fown'&&!e.isComposing){e.preventDefault();fAddOwn()}});
 JteTheme.mount($('#themesw'));
 showPane(location.hash);
-$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
+$('#introlnk').textContent=F.intro.again;$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
 renderAll();

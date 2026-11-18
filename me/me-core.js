@@ -630,6 +630,22 @@
     if (v === 'local') return 'local';
     return cloudHas ? 'cloud' : 'ask';
   }
+  // 我的資料：每一類現在放哪裡、誰看得到、能做什麼。只回傳代號，字在 me-data.js 的 privacy.table。
+  // c: { demo, user（已登入且信箱驗證過）, prac: 'local'|'cloud'|'out', cloudOff, photos, acts }
+  function dataRows(c) {
+    c = c || {};
+    var u = !!c.user, rows = [];
+    function row(key, where, who, act) { rows.push({ key: key, where: where, who: who, act: c.demo ? '' : act }); }
+    row('states', 'device', 'me', '');
+    row('words', 'device', 'me', '');
+    if (u) row('photos', 'cloud', 'admin', c.photos > 0 ? 'wipephotos' : ''); else row('photos', 'none', '', 'login');
+    if (c.prac === 'cloud') row('practice', 'cloud', 'admin', 'tolocal');
+    else if (c.prac === 'out') row('practice', 'out', '', 'login');
+    else row('practice', 'device', 'me', u ? (c.cloudOff ? '' : 'tocloud') : 'login');
+    if (u) row('acts', 'cloud', 'host', c.acts > 0 ? 'acts' : ''); else row('acts', 'none', '', 'login');
+    row('tools', 'device', 'me', '');
+    return rows;
+  }
   function pracId(prefix) {
     var r = '', i, c = 'abcdefghijklmnopqrstuvwxyz0123456789';
     for (i = 0; i < 6; i++) r += c.charAt(Math.floor(Math.random() * c.length));
@@ -643,5 +659,5 @@
     circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
-    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows };
 })(window);
