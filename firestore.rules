@@ -55,7 +55,8 @@ service cloud.firestore {
     match /users/{uid}/practiceItems/{id} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid && id.size() <= 40
-        && request.resource.data.keys().hasOnly(['name', 'unit', 'color', 'archived', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'unit', 'color', 'archived', 'createdAt', 'icon'])
+        && (!('icon' in request.resource.data) || (request.resource.data.icon is string && request.resource.data.icon.size() <= 8))
         && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 30
         && request.resource.data.unit is string && request.resource.data.unit.size() >= 1 && request.resource.data.unit.size() <= 10
         && request.resource.data.color is string && request.resource.data.color.size() <= 20
