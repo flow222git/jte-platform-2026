@@ -401,6 +401,15 @@
     }
     return [one(L.before, a && a.pre), one(L.after, a && a.post)].filter(Boolean);
   }
+  // 詢問卡上要給本人看的那一句：照「期待 → 過程 → 收穫 → 心得」的順序，取第一個有寫的；原文照放，只在太長時截斷。
+  function actQuote(a, max) {
+    var ks = ['expect', 'feeling', 'takeaway', 'feedback'], i, t, n = max || 120;
+    for (i = 0; i < ks.length; i++) {
+      t = String(a && a[ks[i]] || '').replace(/\s+/g, ' ').trim();
+      if (t) return { k: ks[i], text: t.length > n ? t.slice(0, n) + '…' : t };
+    }
+    return null;
+  }
   function actPage(a) {
     if (!a || a.status !== 'kept' || !/^\d{4}-\d{2}-\d{2}$/.test(String(a.date || ''))) return null;
     var title = String(a.title || '活動');
@@ -631,7 +640,7 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actPage: actPage,
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };

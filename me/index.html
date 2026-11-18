@@ -301,6 +301,8 @@ dialog.zoom img{max-width:100%;max-height:82vh;display:block;border-radius:var(-
 dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 .actbox{background:var(--blue-pale);border-color:transparent;box-shadow:none;margin:14px 0 4px;display:grid;gap:12px}
 .actbox .acard{display:grid;gap:8px}
+.actbox .aquote{margin:0;padding:2px 0 2px 12px;border-left:2px solid var(--ink-3);font-size:1.05em;line-height:1.7;white-space:pre-wrap}
+.actbox .aquote small{display:block;color:var(--ink-3);font-size:12.5px;font-weight:700}
 .actbox .acard+.acard{border-top:1px solid var(--line);padding-top:12px}
 .actv{display:grid;gap:8px;margin:6px 0}
 .actv p{white-space:pre-wrap}
@@ -592,7 +594,8 @@ function pendingActs(){return S.acts.filter(function(a){return a.status==='pendi
 function renderActs(){var el=$('#actbox'),h='';
   if(!DEMO&&S.cloudOk&&!S.user&&O.prefs.actHint!==false)h='<p>'+esc(A.invite)+'</p><div class="row"><button class="btn sm fill" data-aa="google">'+I.signIn+'</button><button class="btn sm" data-aa="email">'+U.open+'</button><button class="lnk" data-aa="hide">'+A.inviteHide+'</button></div>';
   else if(!DEMO&&S.user&&!S.user.verified)h='<p>'+esc(U.verifyNote.replace('{e}',function(){return S.user.email}))+'</p><div class="row"><button class="btn sm fill" data-aa="refresh">'+U.refresh+'</button><button class="lnk" data-aa="resend">'+U.resend+'</button><button class="lnk" data-aa="signout">'+I.signOut+'</button></div>';
-  else h=pendingActs().map(function(a){var ask=S.actAsk===a.docId;return '<div class="acard" data-d="'+esc(a.docId)+'"><p><b>'+esc(A.ask.replace('{t}',function(){return a.title||A.fallbackTitle}).replace('{d}',function(){return M.dlabel(a.date)}))+'</b></p><p class="note">'+(DEMO?A.demoNote:A.from)+'</p>'+
+  else h=S.acts.filter(function(a){return a.docId===S.actBack&&a.status==='kept'}).map(function(a){return '<div class="acard" data-d="'+esc(a.docId)+'"><p><b>'+esc(A.backAsk)+'</b></p><div class="row"><input class="in" id="actbackin" style="flex:1" maxlength="'+A.backMax+'" placeholder="'+esc(A.backPh)+'" aria-label="'+esc(A.backAsk)+'"><button class="btn sm fill" data-aa="backsave">'+A.backSave+'</button><button class="lnk" data-aa="backskip">'+A.backSkip+'</button></div></div>'}).join('')+
+    pendingActs().map(function(a){var ask=S.actAsk===a.docId,q=M.actQuote(a,A.quoteMax),fill=function(s){return s.replace('{t}',function(){return a.title||A.fallbackTitle}).replace('{d}',function(){return M.dlabel(a.date)})};return '<div class="acard" data-d="'+esc(a.docId)+'">'+(q?'<p><b>'+esc(fill(A.quoteHead))+'</b></p><blockquote class="aquote"><small>'+A.quoteLead[q.k]+'</small>'+esc(q.text)+'</blockquote><p>'+A.quoteAsk+'</p>':'<p><b>'+esc(fill(A.ask))+'</b></p>')+'<p class="note">'+(DEMO?A.demoNote:A.from)+'</p>'+
     (ask?'<div class="row"><span class="note">'+A.declineAsk+'</span><button class="btn sm fill" data-aa="no2">'+A.declineYes+'</button><button class="lnk" data-aa="cancel">'+A.cancel+'</button></div>':'<div class="row"><button class="btn sm fill" data-aa="keep">'+A.keep+'</button><button class="btn sm" data-aa="no">'+A.decline+'</button><button class="lnk" data-aa="later">'+A.later+'</button></div>')+'</div>'}).join('');
   el.hidden=!h;el.innerHTML=h}
 function setAct(a,status){return Promise.resolve().then(function(){if(DEMO){if(status==='declined')return {docId:a.docId,email:a.email,sessionId:a.sessionId,status:'declined'};a.status=status;return a}return JteCloud.decideAct(a,status)}).then(function(r){var i=S.acts.indexOf(a);if(i>-1)S.acts[i]=r;return r})}
@@ -963,6 +966,7 @@ $('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[]
 $('#pics').onclick=function(e){var b=e.target.closest('[data-pa]');if(!b)return;syncCaps();var i=+b.closest('.pic').dataset.i,a=b.dataset.pa,d=S.draft;
   if(a==='remove')d.splice(i,1);if(a==='left'&&i>0)d.splice(i-1,0,d.splice(i,1)[0]);if(a==='right'&&i<d.length-1)d.splice(i+1,0,d.splice(i,1)[0]);renderPics()};
 $('#authline').onclick=function(e){if(e.target.id==='signin')JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});if(e.target.id==='signout')JteCloud.signOut();if(e.target.id==='emailin')openAuth()};
+$('#actbox').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='actbackin'&&!e.isComposing){e.preventDefault();var b=this.querySelector('[data-aa=backsave]');if(b)b.click()}});
 $('#actbox').onclick=function(e){var b=e.target.closest('[data-aa]');if(!b)return;var k=b.dataset.aa,card=b.closest('.acard'),a=card&&S.acts.filter(function(x){return x.docId===card.dataset.d})[0];
   if(k==='google'){JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}
   if(k==='email'){openAuth();return}
@@ -971,11 +975,13 @@ $('#actbox').onclick=function(e){var b=e.target.closest('[data-aa]');if(!b)retur
   if(k==='resend'){JteCloud.resendVerify().then(function(){toast(U.resent)},function(e){toast(authErr(e))});return}
   if(k==='refresh'){JteCloud.refreshUser().then(function(u){if(!(u&&u.verified))toast(U.notYet)},function(){toast(A.fail)});return}
   if(!a)return;
+  if(k==='backskip'){S.actBack=null;renderActs();toast(A.kept);return}
+  if(k==='backsave'){var bt=($('#actbackin').value||'').trim();S.actBack=null;if(bt){var ba=ann('act-'+a.docId);(ba.notes=ba.notes||[]).push({k:TODAY,text:bt});save();renderAll();toast(A.backSaved)}else{renderActs();toast(A.kept)}return}
   if(k==='later'){S.actLater[a.docId]=1;S.actAsk=null;renderActs();return}
   if(k==='no'){S.actAsk=a.docId;renderActs();return}
   if(k==='cancel'){S.actAsk=null;renderActs();return}
   if(S.busyDel)return;S.busyDel=true;
-  setAct(a,k==='keep'?'kept':'declined').then(function(){S.busyDel=false;S.actAsk=null;renderAll();toast(k==='keep'?A.kept:(DEMO?A.demoDeclined:A.declined))},function(){S.busyDel=false;toast(A.fail)})};
+  setAct(a,k==='keep'?'kept':'declined').then(function(){S.busyDel=false;S.actAsk=null;S.actBack=k==='keep'?a.docId:null;renderAll();if(k==='keep'){var bi=$('#actbackin');if(bi)bi.focus()}else toast(DEMO?A.demoDeclined:A.declined)},function(){S.busyDel=false;toast(A.fail)})};
 $('#authdlg').addEventListener('close',function(){$('#authpw').value=''});
 $('#authin').onclick=function(){authDo('in')};$('#authup').onclick=function(){authDo('up')};$('#authreset').onclick=function(){authDo('reset')};
 // 在輸入框按 Enter 是登入，不是關掉對話框（表單的 method="dialog" 預設會關）。
