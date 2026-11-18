@@ -61,7 +61,7 @@ var T={lead:'把試算表的活動整理貼進來，讓參加者登入後看到�
   done:'完成。新增 {a} 筆、更新 {u} 筆、本人選了不用而跳過 {k} 筆、失敗 {f} 筆。',fail:'匯入失敗，請再試一次。',
   also:'預設有參加的人（信箱，一行一個）。每一場會替他們各加一筆只有活動名稱、日期、照片連結的紀錄；問卷裡已經有的不重複加。你自己的會直接收進手帳，其他人登入後會被問要不要收。這份名單只記在這個瀏覽器。',
   alsoDone:' 其中預設參加的人 {n} 筆。',selfKept:' 你自己的 {n} 場已收進手帳。'};
-var S={user:null,admin:false,sessions:[],rows:[],busy:false};
+var S={user:null,admin:false,sessions:[],rows:[],busy:false,sheet:false};
 $('#lead').textContent=T.lead;['h0','n0','h1','n1','h2','n2','h3','n3'].forEach(function(k){$('#'+k).textContent=T[k]});$('#parse').textContent=T.parse;$('#go').textContent=T.go;$('#sync').textContent=T.sync;$('#alsol').textContent=T.also;
 var ALSO='jte_act_also_v1';try{$('#also').value=localStorage.getItem(ALSO)||''}catch(e){}
 $('#also').addEventListener('change',function(){try{localStorage.setItem(ALSO,$('#also').value)}catch(e){}});
@@ -79,11 +79,11 @@ function dupIdx(){var cnt={},out=[];function key(r){return r.skip||r.ses<0?'':r.
   S.rows.forEach(function(r){var k=key(r);if(k)cnt[k]=(cnt[k]||0)+1});
   S.rows.forEach(function(r,i){var k=key(r);if(k&&cnt[k]>1)out.push(i)});return out}
 function sendable(r,i,dups){return !r.skip&&r.ses>=0&&dups.indexOf(i)<0&&!M.actEmail(r.email,A.tlds).flags.some(function(f){return f==='missing'||f==='format'})}
-function renderRows(){var dups=dupIdx(),opt=function(v){return '<option value="-1"'+(v<0?' selected':'')+'>'+T.pick+'</option>'+S.sessions.map(function(s,i){return '<option value="'+i+'"'+(i===v?' selected':'')+'>'+esc(s.date+' '+s.title)+'</option>'}).join('')};
-  $('#bulk').innerHTML=S.sessions.length>1?'<span class="note">'+T.all+'</span>'+S.sessions.map(function(s,i){return '<button data-all="'+i+'">'+esc(s.date)+'</button>'}).join(''):'';
+function renderRows(){var dups=dupIdx(),opt=function(v,tab){return '<option value="-1"'+(v<0?' selected':'')+'>'+T.pick+'</option>'+S.sessions.map(function(s,i){return tab&&s.tab!==tab?'':'<option value="'+i+'"'+(i===v?' selected':'')+'>'+esc(s.date+' '+s.title)+'</option>'}).join('')};
+  $('#bulk').innerHTML=S.sessions.length>1&&!S.sheet?'<span class="note">'+T.all+'</span>'+S.sessions.map(function(s,i){return '<button data-all="'+i+'">'+esc(s.date)+'</button>'}).join(''):'';
   $('#tbl').innerHTML='<tr><th>'+T.skip+'</th>'+(S.sessions.length>1?'<th>'+T.ses+'</th>':'')+'<th>'+T.email+'</th><th>'+T.pre+'</th><th>'+T.post+'</th><th>'+T.text+'</th><th>'+T.flag+'</th></tr>'+
     S.rows.map(function(r,i){var f=flagsOf(r,i,dups),sc=function(o){return [o.body,o.mood].map(function(x){return x==null?'–':x}).join('／')};
-      return '<tr data-i="'+i+'"'+(r.skip?' class="off"':'')+'><td><input type="checkbox" data-k="skip"'+(r.skip?' checked':'')+' aria-label="'+esc(T.skip+' '+r.email)+'"></td>'+(S.sessions.length>1?'<td><select data-k="ses" aria-label="'+T.ses+'">'+opt(r.ses)+'</select></td>':'')+
+      return '<tr data-i="'+i+'"'+(r.skip?' class="off"':'')+'><td><input type="checkbox" data-k="skip"'+(r.skip?' checked':'')+' aria-label="'+esc(T.skip+' '+r.email)+'"></td>'+(S.sessions.length>1?'<td><select data-k="ses" aria-label="'+T.ses+'">'+opt(r.ses,r.tab)+'</select></td>':'')+
         '<td><input data-k="email" maxlength="200" value="'+esc(r.email)+'" aria-label="'+T.email+'"></td><td>'+sc(r.pre)+'</td><td>'+sc(r.post)+'</td><td class="tx">'+esc((r.feedback||r.feeling||r.takeaway||r.expect||'').slice(0,30))+'</td><td class="warn">'+f.map(function(x){return esc(A.flags[x])}).join('、')+'</td></tr>'}).join('');
   var n=0,sk=0;S.rows.forEach(function(r,i){if(r.skip)sk++;else if(sendable(r,i,dups))n++});$('#sum').textContent=T.sum.replace('{n}',n).replace('{s}',sk).replace('{x}',S.rows.length-sk-n)}
 
@@ -94,7 +94,7 @@ $('#sync').onclick=function(){if(S.busy)return;var id=M.sheetId($('#surl').value
   S.busy=true;$('#sync').disabled=true;$('#sync').textContent=T.syncing;
   JteCloud.sheetToken().then(function(tok){return JteCloud.readSheet(id,tok)}).then(function(tabs){
     var r=M.actSheet(tabs,A.cols,A.tlds,A.sesCol);
-    S.sessions=r.sessions;S.rows=r.rows.map(function(x){x.skip=x.flags.length>0;return x});
+    S.sheet=true;S.sessions=r.sessions;S.rows=r.rows.map(function(x){x.skip=x.flags.length>0;return x});
     var seen={};S.rows.forEach(function(x){if(x.skip||x.ses<0)return;var k=x.ses+'|'+x.email;if(seen[k])x.skip=true;else seen[k]=1});
     $('#paste').value='';$('#perr').textContent='';$('#res').textContent='';$('#p2').hidden=$('#p3').hidden=!S.sessions.length;
     err.className='note';err.textContent=T.synced.replace('{t}',tabs.length).replace('{s}',S.sessions.length).replace('{r}',S.rows.length);
@@ -104,7 +104,7 @@ $('#sync').onclick=function(){if(S.busy)return;var id=M.sheetId($('#surl').value
   .then(function(){S.busy=false;$('#sync').disabled=false;$('#sync').textContent=T.sync})};
 
 $('#parse').onclick=function(){var r=M.actParse($('#paste').value,A.cols,A.tlds);$('#perr').textContent=r.ok?(r.missingCols.length?T.cols.replace('{c}',function(){return r.missingCols.map(function(k){return A.cols[k]}).join('、')}):''):T.noHeader;$('#p2').hidden=$('#p3').hidden=!r.ok;$('#res').textContent='';if(!r.ok)return;
-  S.sessions=(r.sessions.length?r.sessions:[{date:'',photoUrl:''}]).map(function(s){return {title:'',date:s.date,slug:'',photoUrl:s.photoUrl}});
+  S.sheet=false;S.sessions=(r.sessions.length?r.sessions:[{date:'',photoUrl:''}]).map(function(s){return {title:'',date:s.date,slug:'',photoUrl:s.photoUrl}});
   var one=S.sessions.length===1;S.rows=r.rows.map(function(x){x.ses=one?0:-1;x.skip=x.flags.length>0;return x});
   if(one)M.actDups(S.rows.map(function(x){return {sessionId:'0',email:x.email}})).forEach(function(i){S.rows[i].skip=true});
   renderSes();renderRows()};
