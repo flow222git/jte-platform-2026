@@ -867,7 +867,7 @@ function renderCapsule(){var ok=O.prefs.capsule!==false&&O.capsuleSkip!==TODAY&&
     '<div class="row" style="margin-top:10px"><input class="in" id="capin" style="flex:1" maxlength="80" placeholder="'+D.capsule.ask+'" aria-label="'+D.capsule.ask+'"><button class="btn sm fill" id="capsave">留下</button><button class="lnk" id="capskip">今天先不看</button><button class="lnk" id="capoff">不再出現</button></div>'}
 /* 紀錄：列表 */
 function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.open===p.id,ki=D.kinds.indexOf(p.kind),t=S.triByRec[p.id];
-  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc(p.text||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
+  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(isStar(p)?'<span class="stmk" aria-label="'+esc(D.prac.t.starFilter)+'">★</span>':'')+(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc((p.src==='Note'&&p.text.length>120?p.text.slice(0,120)+'…':p.text)||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
   var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
   if(!open)return h+'</div>';
   h+='<div class="detail" data-id="'+esc(p.id)+'">';
@@ -893,11 +893,13 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   if(S.sub==='delins'&&S.cloud.some(function(c){return c.id===p.id}))h+='<div class="row"><span class="note">'+I.delAsk+'</span><button class="btn sm fill" data-act="delyes">'+I.delYes+'</button><button class="lnk" data-act="delins">'+I.cancel+'</button></div>';
   if(S.sub==='actdrop'&&p.src==='Act')h+='<div class="row"><span class="note">'+A.dropAsk+'</span><button class="btn sm fill" data-act="actdropyes">'+A.declineYes+'</button><button class="lnk" data-act="actdrop">'+A.cancel+'</button></div>';
   return h+'</div></div>'}
-function renderList(){$('#filters').innerHTML=['全部'].concat(D.kinds).map(function(k){return '<button class="chip'+(S.filter===k?' on':'')+'" data-f="'+k+'">'+k+'</button>'}).join('');
+function isStar(p){return !!((O.ann[p.id]||{}).star||(window.JtePrac&&JtePrac.starred&&JtePrac.starred(p.id)))}
+function renderList(){var anyStar=S.pages.some(isStar);if(S.filter==='★'&&!anyStar)S.filter='全部';
+  $('#filters').innerHTML=['全部'].concat(D.kinds).map(function(k){return '<button class="chip'+(S.filter===k?' on':'')+'" data-f="'+k+'">'+k+'</button>'}).join('')+(anyStar?'<button class="chip'+(S.filter==='★'?' on':'')+'" data-f="★">★ '+esc(D.prac.t.starFilter)+'</button>':'');
   var PT=D.prac.t,nm={};S.pages.forEach(function(p){if(p.itemId&&!nm[p.itemId]){var n=JtePrac.itemName(p.itemId);if(n)nm[p.itemId]=n}});
   var ic=M.itemCounts(S.pages,nm),fe=$('#itemf'),ne=$('#itemnow');if(S.item&&!nm[S.item])S.item='';
   fe.hidden=!ic.length;fe.innerHTML=ic.length?'<span class="note">'+esc(PT.itemFilter)+'</span>'+ic.map(function(x){return '<button class="chip'+(S.item===x.id?' on':'')+'" data-it="'+esc(x.id)+'" aria-pressed="'+(S.item===x.id)+'">'+(JtePrac.itemIcon(x.id)?'<img src="'+JtePrac.itemIcon(x.id)+'" alt="">':'')+esc(x.name)+'</button>'}).join(''):'';
-  var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec,nm).filter(function(p){return (S.filter==='全部'||p.kind===S.filter)&&(!S.item||p.itemId===S.item)}),h='',cur='';
+  var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec,nm).filter(function(p){return (S.filter==='全部'||(S.filter==='★'?isStar(p):p.kind===S.filter))&&(!S.item||p.itemId===S.item)}),h='',cur='';
   ne.hidden=!S.item;ne.innerHTML=S.item?esc(PT.itemCount.replace('{n}',nm[S.item]).replace('{c}',ps.length))+' <a class="lnk" href="#practice-item-'+esc(S.item)+'">'+esc(PT.itemPage.replace('{n}',nm[S.item]))+'</a> <button class="lnk" data-it="">'+esc(PT.itemAll)+'</button>':'';
   ps.forEach(function(p){if(p.key!==cur){cur=p.key;h+='<div class="day">'+M.dlabel(p.key)+'</div>'}h+=rowHTML(p)});
   $('#list').innerHTML=h||'<p class="empty">'+(S.q?D.search.none:S.pages.length?'這一類還沒有紀錄。':'還沒有任何紀錄。'+(DEMO?'':'<br><a href="?demo">看示範資料長什麼樣子</a>'))+'</p>'}
@@ -1005,7 +1007,7 @@ function renderFold(){var any=false;[].forEach.call(document.querySelectorAll('[
   var a=$('#foldall');a.textContent=FOLD.all;a.hidden=!any}
 function setFold(k,v){if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};delete foldForce[k];O.prefs.fold[k]=v;save();renderFold()}
 function unfold(k){if(folded(k))setFold(k,false)}
-function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});firstRecheck();
+function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud).concat(window.JtePrac&&JtePrac.notePages?JtePrac.notePages():[]),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});firstRecheck();
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
   if(oc||linked.length){save();toast('回來了。這次做的事接上了起點')}
@@ -1096,7 +1098,7 @@ $('#open').onclick=function(e){var b=e.target.closest('[data-oa]');if(!b)return;
   save();renderAll()};
 $('#views').onclick=function(e){var b=e.target.closest('[data-v]');if(!b)return;S.view=b.dataset.v;$$('#views .chip').forEach(function(x){x.classList.toggle('on',x===b)});$('#v-list').hidden=S.view!=='list';$('#v-cal').hidden=S.view!=='cal'};
 $('#filters').onclick=function(e){var b=e.target.closest('[data-f]');if(!b)return;S.filter=b.dataset.f;renderList()};
-function pickItem(e){var b=e.target.closest('[data-it]');if(!b)return;var v=b.dataset.it;S.item=S.item===v?'':v;if(S.item&&S.filter!=='全部'&&S.filter!=='隨手記')S.filter='全部';S.open=null;S.sub=null;renderList()}
+function pickItem(e){var b=e.target.closest('[data-it]');if(!b)return;var v=b.dataset.it;S.item=S.item===v?'':v;if(S.item&&S.filter!=='全部'&&S.filter!=='隨手記'&&S.filter!=='★')S.filter='全部';S.open=null;S.sub=null;renderList()}
 $('#itemf').onclick=pickItem;$('#itemnow').onclick=pickItem;
 function forgetRec(id){delete O.ann[id];O.tris.forEach(function(t){if(t.recId===id)t.dropped=true});save()}
 $('#list').onclick=function(e){var act=e.target.closest('[data-act]');
@@ -1165,6 +1167,8 @@ $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.sea
 $('#fab').textContent='＋ '+D.quick;
 JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
   getInsp:function(){return O.memos.concat(S.cloud)},
+  editMemo:function(id,text){var m=O.memos.filter(function(x){return x&&String(x.id)===String(id)})[0];if(m){m.text=text;save();renderAll()}},
+  dropMemo:function(id){O.memos=O.memos.filter(function(x){return !(x&&String(x.id)===String(id))});forgetRec(id);renderAll()},
   addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),key:TODAY,text:text,itemId:itemId});save();renderAll()},
   startPhoto:function(itemId){S.capItem=itemId;renderMemoItem();goPane('today');$('#memo').focus()},
   unmarkInsp:function(itemId){var uid=S.user&&S.user.uid;S.cloud.forEach(function(x){if(x.itemId!==itemId)return;

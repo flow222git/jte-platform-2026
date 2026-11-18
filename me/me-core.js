@@ -94,6 +94,7 @@
       var pg = { id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
         text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph };
       if (m.itemId) pg.itemId = String(m.itemId);
+      if (m.pn) pg.src = 'Note'; // 在項目頁寫下的：要改、要刪回項目頁
       ps.push(pg);
     });
     arr(acts).forEach(function (a) { var p = actPage(a); if (p) ps.push(p); });
@@ -528,14 +529,28 @@
     return n > 0 ? n : null;
   }
   function trimS(v) { return String(v == null ? '' : v).replace(/^\s+|\s+$/g, ''); }
-  // 項目的手繪圖示：只收「a 到 d 加兩個字」這種代號（對到 me/doodles/ 的檔名），其他一律當作沒有。
-  function pracIcon(v) { return /^[a-d][1-7][1-9a-c]$/.test(String(v || '')) ? String(v) : ''; }
+  // 項目的手繪圖示：只收「a 到 e 加兩個字」這種代號（對到 me/doodles/ 的檔名），其他一律當作沒有。
+  function pracIcon(v) { return /^[a-e][1-7][1-9a-c]$/.test(String(v || '')) ? String(v) : ''; }
+  // 新增項目時依名稱配一個圖示：名稱一樣的最優先，其次是名稱裡包含圖示名（取最長的），再其次是圖示名包含名稱。
+  function pracGuessIcon(name, icons) {
+    var n = trimS(name), best = '', bl = 0, loose = '';
+    if (!n) return '';
+    arr(icons).forEach(function (x) {
+      if (!x || !x.n) return;
+      if (x.n === n) { best = x.k; bl = 999; return; }
+      if (n.indexOf(x.n) > -1 && x.n.length > bl) { best = x.k; bl = x.n.length; }
+      else if (!loose && n.length >= 2 && x.n.indexOf(n) > -1) loose = x.k;
+    });
+    return best || loose;
+  }
   function pracItemCheck(x, lim) {
     x = x || {};
-    var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '', icon: pracIcon(x.icon) };
+    var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '', icon: pracIcon(x.icon),
+      goal: trimS(x.goal), parent: /^[A-Za-z0-9_-]{1,40}$/.test(String(x.parent || '')) ? String(x.parent) : '' };
     var err = '';
     if (!item.name || item.name.length > lim.name) err = 'name';
     else if (!item.unit || item.unit.length > lim.unit) err = 'unit';
+    else if (lim.goal && item.goal.length > lim.goal) err = 'goal';
     return { ok: !err, err: err, item: item };
   }
   function realDate(s) {
@@ -561,6 +576,28 @@
     else if (note.body.length > lim.body) err = 'body';
     return { ok: !err, err: err, note: note };
   }
+  // 大項目底下可以有小項目，只認一層：parent 不存在、指向自己、或指向另一個小項目，都當作沒有。
+  function pracParent(items, it) {
+    var id = it && it.parent, p;
+    if (!id || id === it.id) return '';
+    p = arr(items).filter(function (x) { return x && x.id === id; })[0];
+    return p && !p.parent ? String(id) : '';
+  }
+  function pracKids(items, id) { return arr(items).filter(function (x) { return x && x.id !== id && pracParent(items, x) === id; }); }
+  function pracFamily(items, id) { return [id].concat(pracKids(items, id).map(function (x) { return x.id; })); }
+  // 寫下的：不分心得、筆記、感想，也不用標題，長短不拘。
+  // 雲端規則要求每一筆有標題，所以自動拿內文第一行的開頭當標題（本人不會看到這一欄）。
+  function pracTitleOf(body) {
+    var ls = String(body == null ? '' : body).split('\n'), i, t;
+    for (i = 0; i < ls.length; i++) { t = trimS(ls[i]); if (t) return t.slice(0, 30); }
+    return '';
+  }
+  function pracWriteCheck(x, lim) {
+    var body = String(x && x.body != null ? x.body : '').replace(/\s+$/, ''), err = '';
+    if (!trimS(body)) err = 'empty';
+    else if (body.length > lim.body) err = 'body';
+    return { ok: !err, err: err, note: { title: pracTitleOf(body), body: body } };
+  }
   function pracClean(p) {
     p = p || {};
     function keep(v) { return arr(v).filter(function (e) { return e && e.id; }); }
@@ -576,7 +613,26 @@
     list.forEach(function (l) { n++; s += Number(l.amount) || 0; });
     return { n: n, sum: Math.round(s * 10) / 10 };
   }
-  function pracOf(logs, itemId) { return arr(logs).filter(function (l) { return l && l.itemId === itemId && l.date; }); }
+  // itemId 可以是一個代號，也可以是一串（大項目加它的小項目）
+  function pracOf(logs, itemId) {
+    var ids = Array.isArray(itemId) ? itemId : [itemId];
+    return arr(logs).filter(function (l) { return l && ids.indexOf(l.itemId) > -1 && l.date; });
+  }
+  // 大項目的彙整：幾次、幾天，以及「同單位才加總」的合計（分鐘歸分鐘、遍歸遍）。ym 給了就只算那個月。
+  function pracRollup(logs, items, ids, ym) {
+    var unitOf = {}, by = {}, ord = [], days = {}, n = 0, first = '';
+    arr(items).forEach(function (x) { if (x && x.id) unitOf[x.id] = String(x.unit || ''); });
+    pracOf(logs, ids).forEach(function (l) {
+      if (ym && l.date.slice(0, 7) !== ym) return;
+      var u = unitOf[l.itemId] || '';
+      if (!by[u]) { by[u] = { unit: u, n: 0, sum: 0 }; ord.push(u); }
+      by[u].n++; by[u].sum += Number(l.amount) || 0;
+      days[l.date] = 1; n++;
+      if (!first || l.date < first) first = l.date;
+    });
+    return { n: n, days: Object.keys(days).length, first: first,
+      units: ord.map(function (u) { return { unit: u, n: by[u].n, sum: Math.round(by[u].sum * 10) / 10 }; }).sort(function (a, b) { return b.n - a.n; }) };
+  }
   function pracMonth(logs, itemId, y, m) {
     var mine = pracOf(logs, itemId), first = new Date(y, m - 1, 1), count = new Date(y, m, 0).getDate();
     var days = [], d, key, rows, s, all = [];
@@ -698,5 +754,6 @@
     circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
-    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon };
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
+    pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon };
 })(window);
