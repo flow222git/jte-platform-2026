@@ -25,7 +25,7 @@
     if (!m) return null;
     var p = { id: String(l.recordId || l.id || (l.source + '-' + key + '-' + i)), key: key, src: l.source,
       kind: m.kind, title: m.name, label: m.name, doodle: m.doodle, tool: m.tool,
-      text: '', sub: '', note: '', meta: [], feel: arr(l.feelings), big: null, link: '' };
+      text: '', sub: '', note: '', meta: [], feel: arr(l.feelings), big: null, link: '', photos: [] };
     var dur = l.durationSec ? mmss(l.durationSec) : '';
     switch (l.source) {
       case 'BreatheAware':
@@ -73,22 +73,30 @@
     return p;
   }
 
-  function buildPages(daily, memos) {
+  function buildPages(daily, memos, acts) {
     var ps = [];
     Object.keys(daily || {}).forEach(function (k) {
       var r = daily[k];
       if (!r || typeof r !== 'object' || !/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
       if (r.note || arr(r.moods).length) {
         ps.push({ id: 'day-' + k, key: k, src: 'Day', kind: '隨手記', title: '', label: String(r.note || '今日').slice(0, 6), doodle: '', tool: '',
-          text: r.note || '', sub: arr(r.moods).length ? '狀態：' + r.moods.join('・') : '', note: '', meta: [], feel: [], big: null, link: '' });
+          text: r.note || '', sub: arr(r.moods).length ? '狀態：' + r.moods.join('・') : '', note: '', meta: [], feel: [], big: null, link: '', photos: [] });
       }
       arr(r.linked).forEach(function (l, i) { var p = toPage(k, l, i); if (p) ps.push(p); });
     });
     arr(memos).forEach(function (m) {
-      if (!m || !m.text) return;
-      ps.push({ id: String(m.id), key: m.key, src: 'Memo', kind: '隨手記', title: '', label: String(m.text).slice(0, 6), doodle: '', tool: '',
-        text: String(m.text), sub: '', note: '', meta: [], feel: [], big: null, link: '' });
+      if (!m) return;
+      var ph = arr(m.photos).filter(function (x) { return x && /^data:image\//.test(String(x.data || '')); })
+        .slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); })
+        .map(function (x) { return { id: String(x.id), data: String(x.data), caption: String(x.caption || '') }; });
+      var text = String(m.text || '');
+      if (!text && !ph.length) return;
+      var pg = { id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
+        text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph };
+      if (m.itemId) pg.itemId = String(m.itemId);
+      ps.push(pg);
     });
+    arr(acts).forEach(function (a) { var p = actPage(a); if (p) ps.push(p); });
     ps.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
     return ps;
   }
@@ -173,11 +181,12 @@
   // 舊網址 #now／#trail／#map 仍然可用。
   var PANES = ['today', 'explore', 'practice', 'mymap', 'care'];
   function route(hash) {
-    var h = String(hash || '').replace(/^#/, '');
-    if (h === 'now') return { pane: 'today', sub: 'trail' };
-    if (h === 'trail') return { pane: 'mymap', sub: 'trail' };
-    if (h === 'map' || h === 'mymap-map') return { pane: 'mymap', sub: 'overview' };
-    return { pane: PANES.indexOf(h) > -1 ? h : 'today', sub: 'trail' };
+    var h = String(hash || '').replace(/^#/, ''), mi = /^practice-item-([A-Za-z0-9_-]{1,40})$/.exec(h);
+    if (mi) return { pane: 'practice', sub: 'trail', item: mi[1] };
+    if (h === 'now') return { pane: 'today', sub: 'trail', item: '' };
+    if (h === 'trail') return { pane: 'mymap', sub: 'trail', item: '' };
+    if (h === 'map' || h === 'mymap-map') return { pane: 'mymap', sub: 'overview', item: '' };
+    return { pane: PANES.indexOf(h) > -1 ? h : 'today', sub: 'trail', item: '' };
   }
   function paneOf(hash) { return route(hash).pane; }
   function hashOf(pane, sub) { return pane === 'mymap' && sub === 'overview' ? 'mymap-map' : (PANES.indexOf(pane) > -1 ? pane : 'today'); }
@@ -215,11 +224,157 @@
     }).sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; }).slice(0, n || 2)
       .map(function (t) { return { t: t, p: byId[t.recId] }; });
   }
+  // 靈感：有一句或有照片才算。上限來自 me-data.js 的 insp，與 firestore.rules 一致。
+  function inspCheck(ins, lim) {
+    if (!ins || typeof ins !== 'object') return { ok: false, why: 'empty' };
+    var text = String(ins.text || '').trim(), ph = arr(ins.photos);
+    if (!text && !ph.length) return { ok: false, why: 'empty' };
+    if (text.length > lim.maxText) return { ok: false, why: 'text' };
+    if (ph.length > lim.maxPhotos) return { ok: false, why: 'count' };
+    for (var i = 0; i < ph.length; i++) {
+      var d = String((ph[i] || {}).data || '');
+      if (d.indexOf('data:image/jpeg;base64,') !== 0) return { ok: false, why: 'type' };
+      if (d.length > lim.maxDataLen) return { ok: false, why: 'size' };
+      if (String(ph[i].caption || '').length > lim.maxCaption) return { ok: false, why: 'caption' };
+    }
+    return { ok: true, why: '' };
+  }
+  function fitSize(w, h, maxEdge) {
+    var m = Math.max(w, h);
+    if (!(m > maxEdge)) return { w: w, h: h };
+    var r = maxEdge / m;
+    return { w: Math.max(1, Math.round(w * r)), h: Math.max(1, Math.round(h * r)) };
+  }
+  // ── 活動紀錄：把管理者從試算表貼上的內容拆開。只留白名單欄位，其他在這裡就丟掉。 ──
+  // 試算表複製出來是 TSV：欄位用 Tab 分，內容有換行或引號的儲存格會用雙引號包起來。
+  function tsvRows(text) {
+    var s = String(text == null ? '' : text), rows = [], row = [], cell = '', q = false, i, c;
+    if (!s) return rows;
+    for (i = 0; i < s.length; i++) {
+      c = s.charAt(i);
+      if (q) {
+        if (c === '"') { if (s.charAt(i + 1) === '"') { cell += '"'; i++; } else q = false; }
+        else cell += c;
+      } else if (c === '"' && cell === '') q = true;
+      else if (c === '\t') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && s.charAt(i + 1) === '\n') i++;
+        row.push(cell); cell = ''; rows.push(row); row = [];
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  function actDate(s) {
+    var m = /^\s*(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\s*$/.exec(String(s == null ? '' : s));
+    if (!m || +m[2] < 1 || +m[2] > 12 || +m[3] < 1 || +m[3] > 31) return '';
+    return m[1] + '-' + pad(+m[2]) + '-' + pad(+m[3]);
+  }
+  function actEmail(s, tlds) {
+    var e = String(s == null ? '' : s).trim().toLowerCase();
+    if (!e) return { email: '', flags: ['missing'] };
+    if (e.length > 200 || !/^[^\s@\/]+@[^\s@.\/]+(\.[^\s@.\/]+)+$/.test(e)) return { email: e, flags: ['format'] };
+    return { email: e, flags: arr(tlds).indexOf(e.slice(e.lastIndexOf('.') + 1)) < 0 ? ['tld'] : [] };
+  }
+  function actScore(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return { v: null, bad: false };
+    var n = /^\d{1,2}$/.test(s) ? +s : NaN;
+    return n >= 1 && n <= 10 ? { v: n, bad: false } : { v: null, bad: true };
+  }
+  function actParse(text, cols, tlds) {
+    var rows = tsvRows(text), sessions = [], out = [], hi = -1, idx = {}, i, r;
+    function cellOf(row, k) { return idx[k] == null ? '' : String(row[idx[k]] == null ? '' : row[idx[k]]).trim(); }
+    for (i = 0; i < rows.length; i++) {
+      r = rows[i].map(function (x) { return String(x).trim(); });
+      if (r.indexOf('Email') > -1 && r.indexOf('姓名') > -1) { hi = i; break; }
+      var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結');
+      if (di > -1 && actDate(r[di + 1])) sessions.push({ date: actDate(r[di + 1]), photoUrl: pi > -1 ? safeUrl(r[pi + 1]) : '' });
+    }
+    if (hi < 0) return { ok: false, sessions: sessions, rows: [], missingCols: [] };
+    rows[hi].forEach(function (h, j) {
+      h = String(h).trim();
+      Object.keys(cols).forEach(function (k) { if (idx[k] == null && h.indexOf(cols[k]) === 0) idx[k] = j; });
+    });
+    for (i = hi + 1; i < rows.length; i++) {
+      r = rows[i];
+      if (!r.some(function (x) { return String(x).trim(); })) continue;
+      var e = actEmail(cellOf(r, 'email'), tlds), flags = e.flags.slice(), bad = false, any = false;
+      var sc = {}; ['preBody', 'preMood', 'postBody', 'postMood'].forEach(function (k) { var x = actScore(cellOf(r, k)); sc[k] = x.v; if (x.bad) bad = true; if (x.v !== null) any = true; });
+      var tx = {}; ['expect', 'feeling', 'takeaway', 'feedback'].forEach(function (k) { tx[k] = cellOf(r, k); if (tx[k]) any = true; });
+      if (bad) flags.push('score');
+      if (!any && !bad && e.email) flags.push('blank');
+      out.push({ line: i + 1, email: e.email, flags: flags, pre: { body: sc.preBody, mood: sc.preMood }, post: { body: sc.postBody, mood: sc.postMood },
+        expect: tx.expect, feeling: tx.feeling, takeaway: tx.takeaway, feedback: tx.feedback });
+    }
+    return { ok: true, sessions: sessions, rows: out, missingCols: Object.keys(cols).filter(function (k) { return idx[k] == null; }) };
+  }
+  function actSessionOk(id) { return /^\d{4}-\d{2}-\d{2}-[a-z0-9-]{1,30}$/.test(String(id || '')); }
+  function actDocId(sessionId, email) { return String(sessionId) + '__' + String(email); }
+  function cut(s, n) { return String(s == null ? '' : s).trim().slice(0, n); }
+  function sc2(o) { o = o || {}; return { body: o.body == null ? null : o.body, mood: o.mood == null ? null : o.mood }; }
+  // 一列＋場次 → 一筆要寫進雲端的紀錄。這裡列出的就是全部欄位，沒有別的。
+  function actRecord(row, ses, lim) {
+    return { email: String(row.email || ''), sessionId: String(ses.sessionId || ''), title: cut(ses.title, lim.maxTitle), date: String(ses.date || ''),
+      photoUrl: safeUrl(ses.photoUrl).slice(0, lim.maxUrl), pre: sc2(row.pre), post: sc2(row.post),
+      expect: cut(row.expect, lim.maxText), feeling: cut(row.feeling, lim.maxText), takeaway: cut(row.takeaway, lim.maxText), feedback: cut(row.feedback, lim.maxText) };
+  }
+  function actDups(items) {
+    var seen = {}, out = [];
+    arr(items).forEach(function (x, i) { var k = actDocId(x.sessionId, x.email); if (seen[k]) out.push(i); else seen[k] = 1; });
+    return out;
+  }
+  // 預設有參加的人：每一場各補一筆只有活動資訊的紀錄；問卷裡已經有這個信箱的場次不重複補。
+  function actAlso(emails, recs, lim, tlds) {
+    var ses = {}, order = [], have = {}, seen = {}, list = [], out = [];
+    arr(recs).forEach(function (r) {
+      if (!ses[r.sessionId]) { ses[r.sessionId] = { sessionId: r.sessionId, title: r.title, date: r.date, photoUrl: r.photoUrl }; order.push(r.sessionId); }
+      have[actDocId(r.sessionId, r.email)] = 1;
+    });
+    arr(emails).forEach(function (e) {
+      var x = actEmail(e, tlds);
+      if (!x.email || x.flags.indexOf('missing') >= 0 || x.flags.indexOf('format') >= 0 || seen[x.email]) return;
+      seen[x.email] = 1; list.push(x.email);
+    });
+    order.forEach(function (id) { list.forEach(function (e) { if (!have[actDocId(id, e)]) out.push(actRecord({ email: e }, ses[id], lim)); }); });
+    return out;
+  }
+  // 匯入計畫：選了「不用」的跳過（不覆寫）；已有的保留原本的狀態；新的是 pending。
+  function actPlan(recs, existing) {
+    var writes = [], added = 0, updated = 0, skipped = 0;
+    arr(recs).forEach(function (r) {
+      var id = actDocId(r.sessionId, r.email), old = (existing || {})[id], data = {}, k;
+      if (old && old.status === 'declined') { skipped++; return; }
+      for (k in r) if (Object.prototype.hasOwnProperty.call(r, k)) data[k] = r[k];
+      data.status = old ? (old.status || 'pending') : 'pending';
+      if (old) updated++; else added++;
+      writes.push({ id: id, data: data, isNew: !old });
+    });
+    return { writes: writes, added: added, updated: updated, skipped: skipped };
+  }
+  // 前後測並列：只把數字排在一起，不算差距、不解讀。
+  function actLines(a, L) {
+    function one(lab, o) {
+      o = o || {};
+      var p = [o.body != null && L.body + ' ' + o.body, o.mood != null && L.mood + ' ' + o.mood].filter(Boolean);
+      return p.length ? lab + '　' + p.join('　') : '';
+    }
+    return [one(L.before, a && a.pre), one(L.after, a && a.post)].filter(Boolean);
+  }
+  function actPage(a) {
+    if (!a || a.status !== 'kept' || !/^\d{4}-\d{2}-\d{2}$/.test(String(a.date || ''))) return null;
+    var title = String(a.title || '活動');
+    return { id: 'act-' + a.docId, key: a.date, src: 'Act', kind: '活動', title: title, label: title, doodle: 'mount', tool: '',
+      text: String(a.feedback || a.takeaway || a.feeling || a.expect || '').slice(0, 40), sub: '', note: '', meta: [], feel: [], big: null,
+      link: safeUrl(a.photoUrl), photos: [],
+      act: { pre: sc2(a.pre), post: sc2(a.post), expect: String(a.expect || ''), feeling: String(a.feeling || ''), takeaway: String(a.takeaway || ''), feedback: String(a.feedback || '') } };
+  }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
   function hay(p, a, t) {
-    var j = (t && t.join) || {};
+    var j = (t && t.join) || {}, c = p.act || {};
     return [p.title, p.text, p.sub, p.note, p.label, p.kind].concat(arr(p.feel), arr(a && a.tags),
-      arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why))
+      arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why),
+      arr(p.photos).map(function (x) { return x && x.caption; }), [c.expect, c.feeling, c.takeaway, c.feedback])
       .filter(Boolean).join('\n').toLowerCase();
   }
   function searchPages(pages, q, ann, triByRec) {
@@ -246,7 +401,7 @@
         put(t.join.kind === 'state' ? t.join.state : t.join.kind === 'circle' ? 'circle' : 'curious', p);
       });
     } else if (lens === 'to') {
-      arr(pages).forEach(function (p) { if (p.src === 'Day' || p.src === 'Memo') return; put(p.kind === '活動' ? '活動' : p.title, p); });
+      arr(pages).forEach(function (p) { if (p.src === 'Day' || p.src === 'Memo' || p.src === 'Insp') return; put(p.kind === '活動' ? '活動' : p.title, p); });
     } else if (lens === 'enjoy') {
       arr(pages).forEach(function (p) { arr((ann[p.id] || {}).enjoy).forEach(function (k) { put(k, p); }); });
     } else return [];
@@ -302,9 +457,142 @@
     });
   }
 
+  // ── 我的練習：自訂項目的長期紀錄（純函式） ──
+  function pracFmt(n) { return String(Math.round(Number(n) * 10) / 10); }
+  function pracAmount(v, max) {
+    var s = String(v == null ? '' : v).replace(/^\s+|\s+$/g, '');
+    if (!s || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
+    var n = Number(s);
+    if (!isFinite(n) || n <= 0 || n > max) return null;
+    n = Math.round(n * 10) / 10;
+    return n > 0 ? n : null;
+  }
+  function trimS(v) { return String(v == null ? '' : v).replace(/^\s+|\s+$/g, ''); }
+  function pracItemCheck(x, lim) {
+    x = x || {};
+    var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '' };
+    var err = '';
+    if (!item.name || item.name.length > lim.name) err = 'name';
+    else if (!item.unit || item.unit.length > lim.unit) err = 'unit';
+    return { ok: !err, err: err, item: item };
+  }
+  function realDate(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+  }
+  function pracLogCheck(x, todayKey, lim) {
+    x = x || {};
+    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note);
+    var err = '';
+    if (!realDate(date)) err = 'date';
+    else if (date > todayKey) err = 'future';
+    else if (amount === null) err = 'amount';
+    else if (note.length > lim.note) err = 'note';
+    return { ok: !err, err: err, log: { date: date, amount: amount, note: note } };
+  }
+  function pracNoteCheck(x, lim) {
+    x = x || {};
+    var note = { title: trimS(x.title), body: String(x.body == null ? '' : x.body) };
+    var err = '';
+    if (!note.title || note.title.length > lim.title) err = 'title';
+    else if (note.body.length > lim.body) err = 'body';
+    return { ok: !err, err: err, note: note };
+  }
+  function pracClean(p) {
+    p = p || {};
+    function keep(v) { return arr(v).filter(function (e) { return e && e.id; }); }
+    return { items: keep(p.items), logs: keep(p.logs), notes: keep(p.notes) };
+  }
+  function pracLast(logs, itemId) {
+    var last = '';
+    arr(logs).forEach(function (l) { if (l && l.itemId === itemId && l.date > last) last = l.date; });
+    return last;
+  }
+  function pracSum(list) {
+    var n = 0, s = 0;
+    list.forEach(function (l) { n++; s += Number(l.amount) || 0; });
+    return { n: n, sum: Math.round(s * 10) / 10 };
+  }
+  function pracOf(logs, itemId) { return arr(logs).filter(function (l) { return l && l.itemId === itemId && l.date; }); }
+  function pracMonth(logs, itemId, y, m) {
+    var mine = pracOf(logs, itemId), first = new Date(y, m - 1, 1), count = new Date(y, m, 0).getDate();
+    var days = [], d, key, rows, s, all = [];
+    for (d = 1; d <= count; d++) {
+      key = y + '-' + pad(m) + '-' + pad(d);
+      rows = mine.filter(function (l) { return l.date === key; });
+      s = pracSum(rows);
+      days.push({ key: key, d: d, n: s.n, sum: s.sum });
+      all = all.concat(rows);
+    }
+    s = pracSum(all);
+    return { lead: (first.getDay() + 6) % 7, days: days, n: s.n, sum: s.sum };
+  }
+  function pracTotals(logs, itemId, todayKey) {
+    var mine = pracOf(logs, itemId), ym = String(todayKey).slice(0, 7), first = '';
+    mine.forEach(function (l) { if (!first || l.date < first) first = l.date; });
+    var a = pracSum(mine), mo = pracSum(mine.filter(function (l) { return l.date.slice(0, 7) === ym; }));
+    return { month: { n: mo.n, sum: mo.sum }, all: { n: a.n, sum: a.sum, first: first } };
+  }
+  function pracWeeks(logs, itemId, todayKey, count) {
+    var mine = pracOf(logs, itemId), dow = (toDate(todayKey).getDay() + 6) % 7, cur = addDays(todayKey, -dow), out = [], i, st, en, s;
+    for (i = count - 1; i >= 0; i--) {
+      st = addDays(cur, -7 * i); en = addDays(st, 6);
+      s = pracSum(mine.filter(function (l) { return l.date >= st && l.date <= en; }));
+      out.push({ start: st, n: s.n, sum: s.sum });
+    }
+    return out;
+  }
+  function pracMonths(logs, itemId, todayKey, count) {
+    var mine = pracOf(logs, itemId), p = String(todayKey).split('-').map(Number), out = [], i, d, ym, s;
+    for (i = count - 1; i >= 0; i--) {
+      d = new Date(p[0], p[1] - 1 - i, 1); ym = d.getFullYear() + '-' + pad(d.getMonth() + 1);
+      s = pracSum(mine.filter(function (l) { return l.date.slice(0, 7) === ym; }));
+      out.push({ ym: ym, n: s.n, sum: s.sum });
+    }
+    return out;
+  }
+  function pracDayLogs(logs, itemId, key) {
+    return pracOf(logs, itemId).filter(function (l) { return l.date === key; })
+      .sort(function (a, b) { return (a.at || 0) < (b.at || 0) ? -1 : (a.at || 0) > (b.at || 0) ? 1 : 0; });
+  }
+  function pracRemoveItem(p, itemId) {
+    p = p || {};
+    function not(e) { return !(e && e.itemId === itemId); }
+    return { items: arr(p.items).filter(function (e) { return !(e && e.id === itemId); }), logs: arr(p.logs).filter(not), notes: arr(p.notes).filter(not) };
+  }
+  function pracUnmark(list, itemId) {
+    return arr(list).map(function (e) {
+      if (!e || e.itemId !== itemId) return e;
+      var c = {}, k;
+      for (k in e) if (Object.prototype.hasOwnProperty.call(e, k) && k !== 'itemId') c[k] = e[k];
+      return c;
+    });
+  }
+  function pracInsp(list, itemId) {
+    return arr(list).filter(function (e) { return e && e.itemId === itemId; })
+      .sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : 0; });
+  }
+  // 這個帳號的練習紀錄放哪裡：pref 是 { uid: 'cloud' | 'local' }，cloudHas 是雲端已經有項目
+  function pracMode(pref, uid, cloudHas) {
+    if (!uid) return 'local';
+    var v = pref && typeof pref === 'object' ? pref[uid] : '';
+    if (v === 'cloud') return 'cloud';
+    if (v === 'local') return 'local';
+    return cloudHas ? 'cloud' : 'ask';
+  }
+  function pracId(prefix) {
+    var r = '', i, c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (i = 0; i < 6; i++) r += c.charAt(Math.floor(Math.random() * c.length));
+    return prefix + Date.now().toString(36) + r;
+  }
+
   g.JteMe = { pad: pad, keyOf: keyOf, dlabel: dlabel, mmss: mmss, esc: esc, safeUrl: safeUrl,
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups };
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, actLines: actLines, actPage: actPage,
+    pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
+    pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };
 })(window);

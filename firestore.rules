@@ -5,6 +5,12 @@
 // 用戶端實際只做兩件事、且未用 Firebase Auth（純 API key REST）：
 //   1. 寫：octenso_feedback —— 新增回饋（只新增，不讀/改/刪）
 //   2. 讀：octenso/allowlist —— 登入閘查白名單
+//   3. /me 靈感區：users/{uid}/inspirations、users/{uid}/photos，用 Firebase Auth（只有本人能讀寫）。
+//      2026-11-17 起這兩段實際發布在另一個專案 lianxichang-me（/me 專用），不在 jointoenjoy；本檔保留作為規則文字的備份。
+//   4. /me 活動紀錄：activityRecords/{sessionId}__{email}、admins/{uid}，同樣只發布在 lianxichang-me。
+//   5. /me 我的練習：users/{uid}/practiceItems、users/{uid}/practiceLogs、users/{uid}/practiceNotes（只有本人能讀寫），同樣只發布在 lianxichang-me。
+//      另外 users/{uid}/inspirations 多了選填欄位 itemId（靈感掛到哪個練習項目）；發布規則時兩處都要一起更新。
+//   注意：首頁與部分工具另有 users/{email}/daily 的同步程式（未用 Firebase Auth）；線上規則可能與本檔不同，發布前請先對照線上現有規則，只加入 /me 靈感區那兩段，不要整份覆蓋。
 // 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
 
 rules_version = '2';
@@ -21,6 +27,110 @@ service cloud.firestore {
     match /octenso/allowlist {
       allow read: if true;
       allow write: if false;
+    }
+
+    // /me 靈感區：放了照片的靈感，只有本人能讀寫（以 Firebase Auth uid 為鑰）。
+    // 上限與 me/me-data.js 的 insp 一致。
+    match /users/{uid}/inspirations/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['key', 'text', 'photos', 'createdAt', 'itemId'])
+        && request.resource.data.text is string && request.resource.data.text.size() <= 500
+        && request.resource.data.key is string && request.resource.data.key.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.photos is list && request.resource.data.photos.size() <= 4
+        && (!('itemId' in request.resource.data) || (request.resource.data.itemId is string && request.resource.data.itemId.size() <= 40));
+    }
+    match /users/{uid}/photos/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['insId', 'data', 'caption', 'order', 'createdAt'])
+        && request.resource.data.data is string && request.resource.data.data.size() <= 420000
+        && request.resource.data.data.matches('^data:image/jpeg;base64,.*')
+        && request.resource.data.caption is string && request.resource.data.caption.size() <= 200
+        && request.resource.data.order is int;
+      allow update: if false;
+    }
+
+    // /me 我的練習：項目、紀錄、筆記，只有本人能讀寫。上限與 me/me-data.js 的 prac.max 一致。
+    match /users/{uid}/practiceItems/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && id.size() <= 40
+        && request.resource.data.keys().hasOnly(['name', 'unit', 'color', 'archived', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 30
+        && request.resource.data.unit is string && request.resource.data.unit.size() >= 1 && request.resource.data.unit.size() <= 10
+        && request.resource.data.color is string && request.resource.data.color.size() <= 20
+        && request.resource.data.archived is bool
+        && request.resource.data.createdAt is number;
+    }
+    match /users/{uid}/practiceLogs/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && id.size() <= 40
+        && request.resource.data.keys().hasOnly(['itemId', 'date', 'amount', 'note', 'at'])
+        && request.resource.data.itemId is string && request.resource.data.itemId.size() >= 1 && request.resource.data.itemId.size() <= 40
+        && request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 100000
+        && request.resource.data.note is string && request.resource.data.note.size() <= 500
+        && request.resource.data.at is number;
+    }
+    match /users/{uid}/practiceNotes/{id} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid && id.size() <= 40
+        && request.resource.data.keys().hasOnly(['itemId', 'title', 'body', 'updatedAt'])
+        && request.resource.data.itemId is string && request.resource.data.itemId.size() >= 1 && request.resource.data.itemId.size() <= 40
+        && request.resource.data.title is string && request.resource.data.title.size() >= 1 && request.resource.data.title.size() <= 100
+        && request.resource.data.body is string && request.resource.data.body.size() <= 20000
+        && request.resource.data.updatedAt is number;
+    }
+
+    // ── /me 活動紀錄（發布在專案 lianxichang-me）──
+    // 管理者：admins/{uid} 有這一筆的帳號。這一筆由專案擁有者在 Console 手動建立，用戶端不能寫。
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function myVerifiedEmail() {
+      return request.auth != null && request.auth.token.email_verified == true ? request.auth.token.email.lower() : null;
+    }
+    function scoreOk(m) {
+      return m is map && m.keys().hasOnly(['body', 'mood'])
+        && (m.body == null || (m.body is int && m.body >= 1 && m.body <= 10))
+        && (m.mood == null || (m.mood is int && m.mood >= 1 && m.mood <= 10));
+    }
+    // 上限與 me/me-data.js 的 act 一致。欄位清單就是全部：沒有姓名、企業、部門、職級，也沒有給主辦方的評分。
+    function actOk(d, id) {
+      return d.keys().hasOnly(['email', 'sessionId', 'title', 'date', 'photoUrl', 'pre', 'post', 'expect', 'feeling', 'takeaway', 'feedback', 'status', 'importedAt', 'decidedAt'])
+        && d.email is string && d.email.size() <= 200 && d.email == d.email.lower()
+        && d.sessionId is string && d.sessionId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{1,30}$')
+        && id == d.sessionId + '__' + d.email
+        && d.title is string && d.title.size() <= 100
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.photoUrl is string && d.photoUrl.size() <= 500
+        && scoreOk(d.pre) && scoreOk(d.post)
+        && d.expect is string && d.expect.size() <= 2000
+        && d.feeling is string && d.feeling.size() <= 2000
+        && d.takeaway is string && d.takeaway.size() <= 2000
+        && d.feedback is string && d.feedback.size() <= 2000;
+    }
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+    match /activityRecords/{id} {
+      allow read: if isAdmin() || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail());
+      // 管理者：新增一律是 pending；更新不能動本人的決定，也不能覆寫本人選了「不用」的那一筆。
+      allow create: if isAdmin() && actOk(request.resource.data, id) && request.resource.data.status == 'pending';
+      allow update: if (isAdmin() && actOk(request.resource.data, id)
+                        && resource.data.status != 'declined' && request.resource.data.status == resource.data.status)
+        // 本人：收進來／之後再說，只動 status 與 decidedAt
+        || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail() && resource.data.status != 'declined'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt']) && request.resource.data.decidedAt == request.time
+            && request.resource.data.status in ['kept', 'pending'])
+        // 本人：不用 → 整筆只剩記號，內容全部移除
+        || (myVerifiedEmail() != null && resource.data.email == myVerifiedEmail()
+            && request.resource.data.keys().hasOnly(['email', 'sessionId', 'status', 'decidedAt'])
+            && request.resource.data.email == resource.data.email && request.resource.data.sessionId == resource.data.sessionId
+            && request.resource.data.status == 'declined' && request.resource.data.decidedAt == request.time);
+      // 本人選了「不用」的記號不能從用戶端刪（刪了重新匯入就會再問一次）；真的要清，由擁有者在 Console 處理。
+      allow delete: if isAdmin() && resource.data.status != 'declined';
     }
 
     // 其餘一律禁止

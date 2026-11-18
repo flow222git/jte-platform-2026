@@ -124,7 +124,163 @@ check('資料檔：工具箱涵蓋現行首頁的每個工具與八態能格，�
   const all=[].concat.apply([],D.toolbox.groups.map(g=>g.tools));eq(all.length,Object.keys(D.tools).length);all.forEach(t=>ok(D.tools[t]&&D.tools[t].desc,t));eq(new Set(all).size,all.length);});
 check('資料檔：優勢幸福力的欄位與並列聲明',()=>{ok(D.sw.strengths.length>0);D.perma.order.forEach(k=>ok(D.sw.perma[k],k));ok(D.sw.note.indexOf('不互相對照')>-1);});
 
+check('資料檔：靈感區的上限與文案',()=>{const I=D.insp;eq(I.maxPhotos,4);eq(I.maxEdge,1280);eq(I.maxDataLen,420000);eq(I.maxCaption,200);eq(I.maxText,500);eq(I.saveTimeoutMs,30000);
+  ['add','needLogin','signIn','signOut','signedIn','cloudNote','offline','caption','remove','left','right','saving','kept','slow','demoNote','keptLocal','fail','photoCount','delPhoto','delIns','delAsk','delYes','full','compressFail','wipe','wipeAsk','wipeYes','wiped','deleted','removed','photoAlt','cancel'].forEach(k=>ok(I[k],k));
+  ['empty','text','count','type','size','caption'].forEach(k=>ok(I.bad[k],'bad.'+k));eq(D.capture.label,'靈感');ok(D.privacy.cloud.indexOf('只有你看得到')>-1);
+  ok(I.cloudNote.indexOf('只有你看得到')>-1);});
+const JP='data:image/jpeg;base64,AAAA';
+check('靈感驗證：有一句或有照片才算；張數、類型、大小、註解、字數都有上限',()=>{const L=D.insp,c=x=>M.inspCheck(x,L).why;
+  eq(M.inspCheck({text:'好酷'},L).ok,true);eq(M.inspCheck({text:'',photos:[{data:JP}]},L).ok,true);
+  eq(c({text:'  '}),'empty');eq(c(null),'empty');eq(c({photos:[]}),'empty');
+  eq(c({text:'x'.repeat(501)}),'text');
+  eq(c({photos:[1,2,3,4,5].map(()=>({data:JP}))}),'count');
+  eq(c({photos:[{data:'data:image/png;base64,AAAA'}]}),'type');eq(c({photos:[{data:'javascript:alert(1)'}]}),'type');
+  eq(c({photos:[{data:JP+'A'.repeat(420001)}]}),'size');
+  eq(c({photos:[{data:JP,caption:'x'.repeat(201)}]}),'caption');eq(M.inspCheck({photos:[{data:JP,caption:'x'.repeat(200)}]},L).ok,true);});
+check('縮圖尺寸：等比縮到最長邊，本來就小的不放大',()=>{const a=M.fitSize(4032,3024,1280);eq(a.w,1280);eq(a.h,960);const b=M.fitSize(1000,3000,1280);eq(b.w,427);eq(b.h,1280);const s=M.fitSize(800,600,1280);eq(s.w,800);eq(s.h,600);const t=M.fitSize(1,5000,1280);eq(t.w,1);eq(t.h,1280);});
+check('buildPages：有照片的靈感成為一頁，照片照順序、只收圖片；只有照片沒有字也算',()=>{
+  const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'',cloud:true,photos:[{id:'b',data:'data:image/jpeg;base64,B',caption:'二',order:1},{id:'a',data:'data:image/jpeg;base64,A',caption:'一',order:0},{id:'x',data:'javascript:alert(1)',order:2}]},{id:'m1',key:'2026-11-11',text:'只有字'}]);
+  eq(ps.length,2);const p=ps[0];eq(p.src,'Insp');eq(p.kind,'隨手記');eq(p.label,'照片');eq(p.photos.map(x=>x.id).join(),'a,b');eq(p.photos[0].caption,'一');
+  eq(ps[1].src,'Memo');eq(ps[1].photos.length,0);
+  eq(M.buildPages({},[{id:'ins-2',key:'2026-11-12',photos:[{id:'x',data:'javascript:alert(1)'}]}]).length,0,'只有壞照片不成頁');});
+check('搜尋：找得到照片註解',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'散步',photos:[{id:'a',data:JP,caption:'河堤的夕陽',order:0}]}]);
+  eq(M.searchPages(ps,'夕陽',{},{}).length,1);eq(M.searchPages(ps,'散步 河堤',{},{}).length,1);eq(M.searchPages(ps,'山',{},{}).length,0);});
+check('視角：方法視角不收靈感',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'x',photos:[{id:'a',data:JP,order:0}]}]);eq(ps[0].src,'Insp');eq(M.lensGroups('to',ps,{}).length,0);});
+check('活動紀錄：文案與上限都在資料檔',()=>{const A=D.act,U=D.auth;
+  eq(A.maxText,2000);eq(A.maxTitle,100);eq(A.maxUrl,500);
+  eq(A.cols.email,'Email');eq(A.cols.preBody,'前測_身體狀態');eq(A.cols.preMood,'前測_情緒狀態');eq(A.cols.expect,'活動前期待');eq(A.cols.feeling,'過程感受');
+  eq(A.cols.postBody,'後測_身體狀態');eq(A.cols.postMood,'後測_情緒狀態');eq(A.cols.takeaway,'最實用日常收穫');eq(A.cols.feedback,'心得與回饋');
+  eq(Object.keys(A.cols).length,9,'只有核准的九欄');ok(!!A.demoDeclined&&!!A.fallbackTitle&&!!A.flags.noses&&!!A.flags.cols,'新增文案');ok(D.privacy.cloud.indexOf('主辦方')>-1,'privacy 提到主辦方');
+  ['ask','keep','decline','later','declineAsk','declineYes','kept','declined','fail','before','after','body','mood','expect','feeling','takeaway','feedback','photo','drop','dropAsk','invite','inviteHide','demoNote','from','cancel'].forEach(k=>ok(A[k],'act.'+k));
+  ['missing','format','tld','dup','score','blank'].forEach(k=>ok(A.flags[k],'flags.'+k));
+  ['open','title','hint','email','pw','pwNote','signIn','signUp','reset','resetSent','verifyNote','resend','resent','refresh','notYet','close'].forEach(k=>ok(U[k],'auth.'+k));
+  ['auth/invalid-credential','auth/email-already-in-use','auth/weak-password','auth/invalid-email','auth/too-many-requests','other'].forEach(k=>ok(U.err[k],'err.'+k));
+  ok(D.privacy.cloud.indexOf('活動紀錄')>-1);});
+const T='\t',ACT_HDR=['企業','姓名','部門','職級','Email','前測_身體狀態 (1-10)','前測_情緒狀態 (1-10)','活動前期待','過程感受','後測_身體狀態 (1-10)','後測_情緒狀態 (1-10)','身心狀態更了解 (1-10)','帶領者專業度與陪伴感 (1-10)','可帶回日常應用收穫 (1-10)','最實用日常收穫','整體滿意度 (1-10)','推薦意願 (1-10)','心得與回饋'].join(T);
+const ACT_PASTE=['',['活動日期','2026/11/05','活動照片連結','https://photos.example.com/a','11/05 場次'].join(T),['活動日期','2026/11/06','活動照片連結','https://photos.example.com/b','11/06 場次'].join(T),ACT_HDR,'',
+  ['甲公司','王小明','設計','一般員工',' Ming@Example.com ','4','5','想放鬆','"第一行\n第二行，有 ""引號"""','7','8','9','10','9','回家泡茶','10','10','很喜歡'].join(T),
+  ['','李小華','','','hua@example.com.te','11','','','','','','','','','','','',''].join(T),
+  ['','陳小美','','','mei@example.com','','','','','','','','','','','','',''].join(T),
+  ['','林小強','','','','3','3','','還好','','','','','','','','',''].join(T)].join('\r\n');
+check('tsvRows：分頁符號、引號裡的換行與雙引號、CRLF',()=>{const r=M.tsvRows('a\tb\r\n"x\ny"\t"他說 ""好"""\nlast');eq(r.length,3);eq(r[0].join('|'),'a|b');eq(r[1][0],'x\ny');eq(r[1][1],'他說 "好"');eq(r[2][0],'last');eq(M.tsvRows('').length,0);eq(M.tsvRows(null).length,0);});
+check('actDate：斜線或連字號、補零；看不懂回空字串',()=>{eq(M.actDate('2026/11/05'),'2026-11-05');eq(M.actDate('2026-1-5'),'2026-01-05');eq(M.actDate(' 2026/11/06 '),'2026-11-06');eq(M.actDate('11/05'),'');eq(M.actDate('2026/13/01'),'');eq(M.actDate(''),'');});
+check('actEmail：小寫去空白；沒有、格式不對、結尾可疑各有標記',()=>{const L=D.act.tlds;
+  eq(M.actEmail(' Ming@Example.com ',L).email,'ming@example.com');eq(M.actEmail('a@b.com.tw',L).flags.length,0);
+  eq(M.actEmail('',L).flags.join(),'missing');eq(M.actEmail('abc',L).flags.join(),'format');eq(M.actEmail('a b@c.com',L).flags.join(),'format');
+  eq(M.actEmail('a@b.com.te',L).flags.join(),'tld');eq(M.actEmail('a@b.con',L).flags.join(),'tld');});
+check('actScore：1–10 的整數；空的不算錯；其他標成不合格',()=>{eq(M.actScore('7').v,7);eq(M.actScore(' 10 ').v,10);eq(M.actScore('').v,null);eq(M.actScore('').bad,false);
+  eq(M.actScore('11').bad,true);eq(M.actScore('0').bad,true);eq(M.actScore('7.5').bad,true);eq(M.actScore('很好').bad,true);eq(M.actScore('11').v,null);});
+check('actParse：找到場次與標題列，只留核准欄位',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);ok(r.ok);
+  eq(r.sessions.length,2);eq(r.sessions[0].date,'2026-11-05');eq(r.sessions[0].photoUrl,'https://photos.example.com/a');eq(r.sessions[1].date,'2026-11-06');
+  eq(r.rows.length,4);const a=r.rows[0];eq(a.email,'ming@example.com');eq(a.pre.body,4);eq(a.pre.mood,5);eq(a.post.body,7);eq(a.post.mood,8);
+  eq(a.expect,'想放鬆');eq(a.feeling,'第一行\n第二行，有 "引號"');eq(a.takeaway,'回家泡茶');eq(a.feedback,'很喜歡');eq(a.flags.length,0);
+  eq(Object.keys(a).sort().join(),'email,expect,feedback,feeling,flags,line,post,pre,takeaway');
+  const s=JSON.stringify(r);['甲公司','王小明','李小華','設計','一般員工'].forEach(x=>ok(s.indexOf(x)<0,'leak '+x));ok(!/9|10/.test(JSON.stringify(a)),'評分（9、10）不進來');});
+check('actParse：可疑的列有標記；沒填問卷的標 blank；沒有標題列回 ok=false',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);
+  eq(r.rows[1].flags.sort().join(),'score,tld');eq(r.rows[1].pre.body,null);eq(r.rows[2].flags.join(),'blank');eq(r.rows[3].flags.join(),'missing');
+  eq(M.actParse('隨便貼的字',D.act.cols,D.act.tlds).ok,false);eq(M.actParse('',D.act.cols,D.act.tlds).rows.length,0);});
+const SES={sessionId:'2026-11-05-tea',title:'茶席體驗',date:'2026-11-05',photoUrl:'https://photos.example.com/a'};
+const AROW={line:6,email:'ming@example.com',flags:[],pre:{body:4,mood:5},post:{body:7,mood:8},expect:'想放鬆',feeling:'很安靜',takeaway:'回家泡茶',feedback:'很喜歡'};
+check('場次代號與文件代號',()=>{ok(M.actSessionOk('2026-11-05-tea'));ok(!M.actSessionOk('2026-11-05'));ok(!M.actSessionOk('2026-11-05-茶席'));ok(!M.actSessionOk('2026-11-05-Tea'));ok(!M.actSessionOk(''));
+  eq(M.actDocId('2026-11-05-tea','ming@example.com'),'2026-11-05-tea__ming@example.com');});
+check('actRecord：只有核准欄位、文字截到上限、連結只收 http(s)',()=>{const r=M.actRecord(AROW,SES,D.act);
+  eq(Object.keys(r).sort().join(),'date,email,expect,feedback,feeling,photoUrl,post,pre,sessionId,takeaway,title');
+  eq(r.email,'ming@example.com');eq(r.title,'茶席體驗');eq(r.pre.body,4);eq(r.post.mood,8);eq(r.photoUrl,'https://photos.example.com/a');
+  const big=M.actRecord(Object.assign({},AROW,{feedback:'x'.repeat(2500)}),Object.assign({},SES,{photoUrl:'javascript:alert(1)',title:'y'.repeat(150)}),D.act);
+  eq(big.feedback.length,2000);eq(big.photoUrl,'');eq(big.title.length,100);});
+check('actDups：同一場同一個信箱，第二次以後算重複',()=>{eq(M.actDups([{sessionId:'s1',email:'a@example.com'},{sessionId:'s2',email:'a@example.com'},{sessionId:'s1',email:'a@example.com'},{sessionId:'s1',email:'b@example.com'}]).join(),'2');eq(M.actDups([]).length,0);});
+check('actPlan：新的是 pending、已有的保留狀態、選了不用的跳過',()=>{const mk=e=>M.actRecord(Object.assign({},AROW,{email:e}),SES,D.act);
+  const p=M.actPlan([mk('new@example.com'),mk('kept@example.com'),mk('no@example.com')],{'2026-11-05-tea__kept@example.com':{status:'kept'},'2026-11-05-tea__no@example.com':{status:'declined'}});
+  eq(p.added,1);eq(p.updated,1);eq(p.skipped,1);eq(p.writes.length,2);
+  eq(p.writes[0].id,'2026-11-05-tea__new@example.com');eq(p.writes[0].data.status,'pending');ok(p.writes[0].isNew);
+  eq(p.writes[1].data.status,'kept');ok(!p.writes[1].isNew);eq(p.writes[1].data.feeling,'很安靜');});
+check('actLines：前後測並列，不算差距；沒有的那一項不寫',()=>{const L=D.act;
+  eq(M.actLines({pre:{body:6,mood:5},post:{body:8,mood:7}},L).join('|'),'活動前　身體 6　情緒 5|活動後　身體 8　情緒 7');
+  eq(M.actLines({pre:{body:6,mood:null},post:{body:null,mood:null}},L).join('|'),'活動前　身體 6');eq(M.actLines({},L).length,0);
+  const s=M.actLines({pre:{body:6,mood:5},post:{body:8,mood:7}},L).join('');ok(!/[+＋]|進步|提升|差/.test(s),'不捏因果');});
+check('buildPages：收進來的活動紀錄成為一頁；還沒決定與不用的不出現',()=>{const base=Object.assign({},M.actRecord(AROW,SES,D.act));
+  const acts=[Object.assign({},base,{docId:'d1',status:'kept'}),Object.assign({},base,{docId:'d2',status:'pending'}),{docId:'d3',email:'x@example.com',sessionId:'s',status:'declined'}];
+  const ps=M.buildPages({},[],acts);eq(ps.length,1);const p=ps[0];eq(p.id,'act-d1');eq(p.src,'Act');eq(p.kind,'活動');eq(p.title,'茶席體驗');eq(p.key,'2026-11-05');
+  eq(p.link,'https://photos.example.com/a');eq(p.tool,'');eq(p.act.feeling,'很安靜');eq(p.act.pre.body,4);eq(p.photos.length,0);
+  eq(M.buildPages({},[]).length,0,'第三個參數可以不給');eq(M.actPage({docId:'d',status:'kept',date:'亂寫'}),null);});
+check('活動紀錄：搜尋找得到自己寫的話；方法視角收在「活動」；練習頁列為平台以外的方法',()=>{const ps=M.buildPages({},[],[Object.assign({},M.actRecord(AROW,SES,D.act),{docId:'d1',status:'kept'})]);
+  eq(M.searchPages(ps,'回家泡茶',{},{}).length,1);eq(M.searchPages(ps,'茶席 安靜',{},{}).length,1);eq(M.searchPages(ps,'爬山',{},{}).length,0);
+  eq(M.lensGroups('to',ps,{})[0].k,'活動');eq(M.practiceView(ps,{}).outside[0].name,'茶席體驗');});
+check('actEmail：含斜線或超過 200 字是格式不對',()=>{const L=D.act.tlds;eq(M.actEmail('a/b@example.com',L).flags.join(),'format');eq(M.actEmail('x'.repeat(200)+'@example.com',L).flags.join(),'format');});
+check('actParse：空白列保留信箱標記；回報找不到的欄位',()=>{
+  const blank=['','','','','a@example.con','','','','','','','','','','','','',''].join(T);
+  const r=M.actParse([ACT_HDR,blank].join('\n'),D.act.cols,D.act.tlds);eq(r.rows[0].flags.slice().sort().join(),'blank,tld');eq(r.missingCols.length,0);
+  eq(M.actParse(ACT_PASTE,D.act.cols,D.act.tlds).missingCols.length,0);
+  const h=ACT_HDR.split(T).filter(x=>x.indexOf('心得與回饋')!==0&&x.indexOf('後測_情緒狀態')!==0).join(T);
+  eq(M.actParse(h,D.act.cols,D.act.tlds).missingCols.join(),'postMood,feedback');eq(M.actParse('隨便',D.act.cols,D.act.tlds).missingCols.length,0);});
+const PL=D.prac.max,L=(id,item,date,amount,at)=>({id,itemId:item,date,amount,at:at||0});
+check('pracFmt：最多一位小數、不留 .0',()=>{eq(M.pracFmt(3),'3');eq(M.pracFmt(1.5),'1.5');eq(M.pracFmt(0.1+0.2),'0.3');});
+check('pracAmount：不合是 null、合的四捨五入',()=>{['','abc',0,-1,100000.1,null].forEach(v=>eq(M.pracAmount(v,PL.amount),null,String(v)));eq(M.pracAmount('12',PL.amount),12);eq(M.pracAmount(' 1.5 ',PL.amount),1.5);eq(M.pracAmount(1.26,PL.amount),1.3);eq(M.pracAmount(100000,PL.amount),100000);});
+check('pracItemCheck：名稱與單位',()=>{eq(M.pracItemCheck({name:'',unit:'次'},PL).err,'name');eq(M.pracItemCheck({name:'a'.repeat(31),unit:'次'},PL).err,'name');eq(M.pracItemCheck({name:'太極',unit:''},PL).err,'unit');eq(M.pracItemCheck({name:'太極',unit:'a'.repeat(11)},PL).err,'unit');const r=M.pracItemCheck({name:' 太極 ',unit:' 分鐘 '},PL);ok(r.ok);eq(r.item.name,'太極');eq(r.item.unit,'分鐘');eq(r.item.color,'');});
+check('pracLogCheck：日期、未來、數量、一句',()=>{const T='2026-11-18';eq(M.pracLogCheck({date:'2026-02-31',amount:1},T,PL).err,'date');eq(M.pracLogCheck({date:'2026-11-19',amount:1},T,PL).err,'future');const r=M.pracLogCheck({date:T,amount:'30',note:' 好 '},T,PL);ok(r.ok);eq(r.log.amount,30);eq(r.log.note,'好');eq(M.pracLogCheck({date:T,amount:0},T,PL).err,'amount');eq(M.pracLogCheck({date:T,amount:1,note:'a'.repeat(501)},T,PL).err,'note');});
+check('pracNoteCheck：標題與內文',()=>{eq(M.pracNoteCheck({title:' ',body:''},PL).err,'title');eq(M.pracNoteCheck({title:'a'.repeat(101),body:''},PL).err,'title');eq(M.pracNoteCheck({title:'t',body:'a'.repeat(20001)},PL).err,'body');const r=M.pracNoteCheck({title:' t ',body:' 一\n二 '},PL);ok(r.ok);eq(r.note.title,'t');eq(r.note.body,' 一\n二 ');});
+check('pracClean：非陣列變空、丟掉沒有 id 的',()=>{const e=M.pracClean(null);eq(e.items.length+e.logs.length+e.notes.length,0);const c=M.pracClean({items:[{id:'a'},{name:'x'}],logs:'x',notes:[null,{id:'n'}]});eq(c.items.length,1);eq(c.logs.length,0);eq(c.notes.length,1);});
+check('pracLast',()=>{eq(M.pracLast([L('1','a','2026-11-01',1),L('2','a','2026-11-09',1),L('3','b','2026-11-12',1)],'a'),'2026-11-09');eq(M.pracLast([],'a'),'');});
+check('pracMonth：2026 年 11 月',()=>{const lg=[L('1','a','2026-11-03',10),L('2','a','2026-11-03',20),L('3','b','2026-11-03',99),L('4','a','2026-11-05',0.1),L('5','a','2026-11-05',0.2)];const m=M.pracMonth(lg,'a',2026,11);eq(m.lead,6);eq(m.days.length,30);eq(m.days[2].n,2);eq(m.days[2].sum,30);eq(m.days[2].key,'2026-11-03');eq(m.days[4].sum,0.3);eq(m.n,4);eq(m.sum,30.3);eq(M.pracMonth([],'a',2026,12).lead,1);});
+check('pracTotals：本月與全部、沒有紀錄',()=>{const lg=[L('1','a','2026-10-30',5),L('2','a','2026-11-03',10),L('3','a','2026-11-17',2),L('4','b','2026-11-17',9)];const t=M.pracTotals(lg,'a','2026-11-18');eq(t.month.n,2);eq(t.month.sum,12);eq(t.all.n,3);eq(t.all.sum,17);eq(t.all.first,'2026-10-30');const z=M.pracTotals([],'a','2026-11-18');eq(z.all.n+z.all.sum+z.month.n+z.month.sum,0);eq(z.all.first,'');});
+check('pracWeeks：週一起算、跨年、空週',()=>{const lg=[L('1','a','2026-11-16',3),L('2','a','2026-11-18',4)];const w=M.pracWeeks(lg,'a','2026-11-18',3);eq(w.map(x=>x.start).join(),'2026-11-02,2026-11-09,2026-11-16');eq(w[2].n,2);eq(w[2].sum,7);eq(w[0].n,0);eq(M.pracWeeks([],'a','2027-01-01',2).map(x=>x.start).join(),'2026-12-21,2026-12-28');});
+check('pracMonths',()=>{const m=M.pracMonths([L('1','a','2026-12-05',2)],'a','2027-01-15',3);eq(m.map(x=>x.ym).join(),'2026-11,2026-12,2027-01');eq(m[1].n,1);eq(m[1].sum,2);eq(m[0].n,0);});
+check('pracDayLogs：依 at 舊到新',()=>{const r=M.pracDayLogs([L('2','a','2026-11-03',1,20),L('1','a','2026-11-03',1,10),L('3','b','2026-11-03',1,5)],'a','2026-11-03');eq(r.map(x=>x.id).join(),'1,2');});
+check('pracRemoveItem：連同紀錄與筆記，不改輸入',()=>{const p={items:[{id:'a'},{id:'b'}],logs:[L('1','a','2026-11-03',1),L('2','b','2026-11-03',1)],notes:[{id:'n1',itemId:'a'},{id:'n2',itemId:'b'}]};const r=M.pracRemoveItem(p,'a');eq(r.items.length,1);eq(r.items[0].id,'b');eq(r.logs.length,1);eq(r.notes[0].id,'n2');eq(p.items.length,2);eq(p.logs.length,2);eq(p.notes.length,2);});
+check('pracUnmark、pracInsp',()=>{const l=[{id:'1',itemId:'a',key:'2026-11-01'},{id:'2',itemId:'b',key:'2026-11-02'},{id:'3',itemId:'a',key:'2026-11-09'}];const u=M.pracUnmark(l,'a');ok(!('itemId' in u[0]));eq(u[0].id,'1');eq(u[1].itemId,'b');eq(l[0].itemId,'a');eq(M.pracInsp(l,'a').map(x=>x.id).join(),'3,1');});
+check('pracId：前綴與格式',()=>{ok(/^p-[0-9a-z]+[a-z0-9]{6}$/.test(M.pracId('p-')));ok(M.pracId('x')!==M.pracId('x'));});
+check('route：我的練習項目網址',()=>{const r=M.route('#practice-item-abc');eq(r.pane,'practice');eq(r.sub,'trail');eq(r.item,'abc');eq(M.route('#practice-item-a/b').pane,'today');eq(M.route('#practice-item-').pane,'today');eq(M.route('#practice').item,'');eq(M.paneOf('#practice-item-abc'),'practice');});
+check('pracMode：沒登入、問過、沒問過',()=>{eq(M.pracMode({u:'cloud'},'',true),'local');eq(M.pracMode({u:'cloud'},null,false),'local');eq(M.pracMode({u:'cloud'},'u',false),'cloud');eq(M.pracMode({u:'local'},'u',true),'local');eq(M.pracMode({},'u',true),'cloud');eq(M.pracMode({},'u',false),'ask');eq(M.pracMode(null,'u',false),'ask');eq(M.pracMode({other:'cloud'},'u',false),'ask');});
+check('buildPages：靈感的項目標記會留下，沒有就不帶',()=>{const ps=M.buildPages({},[{id:'m1',key:'2026-11-05',text:'a',itemId:'pi-1'},{id:'m2',key:'2026-11-04',text:'b'},{id:'ins-1',key:'2026-11-03',text:'',itemId:'pi-1',photos:[{id:'p',data:'data:image/jpeg;base64,A',order:0}]}]);eq(ps[0].itemId,'pi-1');ok(!('itemId' in ps[1]));eq(ps[2].itemId,'pi-1');});
+check('資料與公開：練習紀錄的說明在，雲端那句講到管理者，原本兩句沒動',()=>{ok(D.privacy.practiceLocal.indexOf('這台裝置')>-1);ok(D.privacy.practiceCloud.indexOf('管理者')>-1);ok(D.privacy.now.indexOf('只存在這台裝置')>-1);ok(D.privacy.cloud.indexOf('只有你看得到')>-1);});
+check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
+check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
+  const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
+  const src=x.responseText,bad=/進步|退步|加油|連續/;ok(!bad.test(src),'me-practice.js');
+  const code=src.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'');ok(!/[一-鿿]/.test(code),'中文只能在註解裡');
+  const walk=v=>{if(typeof v==='string')ok(!bad.test(v),v);else if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')Object.values(v).forEach(walk);};walk(D.prac.t);walk(D.prac.demo);});
+check('我的練習：畫面文案與示範資料齊全',()=>{const t=D.prac.t;
+  ['title','note','empty','add','log','submit','logged','loggedOn','back','thisMonth','allTime','noLogs','ym','dayAria','pickDay','addOn','delLogAsk','byWeek','byMonth','chartAltW','chartAltM','inspLabel','inspKeep','inspPhoto','notesNew','noteDelAsk','unitWarn','archive','unarchive','delItemAsk','fail'].forEach(k=>ok(t[k],'t.'+k));
+  ['log','insp','notes','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
+  const dm=D.prac.demo;eq(dm.items.length,2);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
+  dm.notes.forEach(n=>ok(M.pracNoteCheck(n,D.prac.max).ok,n.title));ok(dm.memos.some(m=>m.itemId===dm.items[0].id));});
+check('雲端說明：詢問文案講到管理者、不再說只有你讀得到；資料與公開的雲端句仍在',()=>{
+  const a=D.prac.t.cloudAsk;ok(a.indexOf('管理者')>-1,'管理者');ok(a.indexOf('只有你讀得到')<0,'只有你讀得到');ok(a.indexOf('{n}')>-1,'{n}');
+  const c=D.privacy.cloud;['只有你看得到','活動紀錄','主辦方'].forEach(w=>ok(c.indexOf(w)>-1,w));ok(c.indexOf('練習紀錄另外寫在下面')>-1);});
+check('我的練習：prac 底下沒有任何字串含「只有你」',()=>{const walk=v=>{if(typeof v==='string')ok(v.indexOf('只有你')<0,v);else if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')Object.values(v).forEach(walk);};walk(D.prac);});
+// 上傳失敗／成功對本機資料的影響：用假的 ctx 與假的 JteCloud 把畫面模組真的跑一遍
+const asyncDone=(async()=>{
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const sx=document.createElement('script');sx.src='me-practice.js';
+  await new Promise((res,rej)=>{sx.onload=res;sx.onerror=()=>rej(new Error('載入 me-practice.js 失敗'));document.head.appendChild(sx);});
+  const host=document.createElement('div');host.style.display='none';host.innerHTML='<div id="sec-prac"><div class="eyebrow"></div><h2 id="h-prac"></h2><span id="pracnote"></span><div id="pracbox"></div></div><div id="pracquick"></div><div id="praczone" hidden></div><div id="pracrest"></div>';document.body.appendChild(host);
+  const O={prefs:{},memos:[],prac:{items:[{id:'pi-t1',name:'太極',unit:'分鐘',color:D.prac.colors[0],archived:false,createdAt:1}],logs:[{id:'pl-t1',itemId:'pi-t1',date:'2026-11-17',amount:20,note:'',at:1}],notes:[]}};
+  let mode='fail',uploads=0;
+  window.JteCloud={pracHas:()=>Promise.resolve(false),pracLoad:()=>Promise.resolve({items:[],logs:[],notes:[]}),
+    pracUpload:()=>{uploads++;return Promise.resolve(mode==='fail'?{ok:0,failed:2,codes:['permission-denied']}:{ok:2,failed:0,codes:[]});}};
+  const ctx={D,M,O,DEMO:false,TODAY:'2026-11-18',save(){},toast(){},goPane(){},getInsp:()=>[],addMemo(){},startPhoto(){},unmarkInsp(){},refresh(){window.JtePrac.render();}};
+  window.JtePrac.init(ctx);window.JtePrac.setUser({uid:'u-test'});await wait(60);
+  const box=document.getElementById('pracbox'),clk=a=>{const b=box.querySelector('[data-pa='+a+']');ok(b,'找不到按鈕 '+a);b.click();};
+  ok(box.textContent.indexOf('2 筆')>-1,'詢問卡帶筆數（2 筆）：'+box.textContent);
+  clk('askyes');await wait(60);
+  ok(O.prac&&O.prac.items.length===1&&O.prac.logs.length===1,'上傳失敗：本機紀錄要還在');
+  ok(box.querySelector('[data-pa=upretry]')&&box.querySelector('[data-pa=upno]'),'失敗卡有再試與先不要');
+  ok(box.textContent.indexOf('permission-denied')<0,'畫面上不顯示原始錯誤碼');
+  clk('upno');await wait(30);ok(!box.querySelector('[data-pa=upretry]'),'先不要：回到平常的畫面');ok(O.prac.items.length===1,'先不要：本機還在');
+  clk('tocloud');await wait(60);ok(box.querySelector('[data-pa=upretry]'),'再放一次又失敗');
+  mode='ok';clk('upretry');await wait(80);
+  ok(O.prac===undefined,'上傳成功：本機那份清掉');ok(O.prefs.pracCloud['u-test']==='cloud','上傳成功：記下放雲端');ok(uploads===3,'共呼叫三次');
+})();
+asyncDone.then(()=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{});},e=>{check('我的練習：假雲端上傳失敗不動本機，成功才清掉',()=>{throw e;});}).then(()=>{
+check('actAlso：每一場替預設參加的人補一筆空白紀錄，問卷裡已有的不重複',()=>{const mk=(e,sid)=>M.actRecord(Object.assign({},AROW,{email:e}),Object.assign({},SES,{sessionId:sid}),D.act);
+  const recs=[mk('a@example.com','2026-11-05-tea'),mk('b@example.com','2026-11-05-tea'),mk('a@example.com','2026-11-06-tea')];
+  const x=M.actAlso([' Lead@Example.com ','a@example.com','lead@example.com','亂寫',''],recs,D.act,D.act.tlds);
+  eq(x.map(r=>r.sessionId+'|'+r.email).join(),'2026-11-05-tea|lead@example.com,2026-11-06-tea|lead@example.com');
+  eq(x[0].title,recs[0].title);eq(x[0].date,recs[0].date);eq(x[0].feedback,'');eq(x[0].pre.body,null);eq(M.actLines(x[0],D.act).length,0);
+  eq(M.actAlso([],recs,D.act,D.act.tlds).length,0);eq(M.actAlso(['lead@example.com'],[],D.act,D.act.tlds).length,0);
+  const p=M.actPlan(recs.concat(x),{[M.actDocId('2026-11-05-tea','lead@example.com')]:{status:'declined'}});eq(p.skipped,1);eq(p.added,4);});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
+});
 </script>
 </body></html>
