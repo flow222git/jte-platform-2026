@@ -223,9 +223,34 @@ const PL=D.prac.max,L=(id,item,date,amount,at)=>({id,itemId:item,date,amount,at:
 check('pracFmt：最多一位小數、不留 .0',()=>{eq(M.pracFmt(3),'3');eq(M.pracFmt(1.5),'1.5');eq(M.pracFmt(0.1+0.2),'0.3');});
 check('pracAmount：不合是 null、合的四捨五入',()=>{['','abc',0,-1,100000.1,null].forEach(v=>eq(M.pracAmount(v,PL.amount),null,String(v)));eq(M.pracAmount('12',PL.amount),12);eq(M.pracAmount(' 1.5 ',PL.amount),1.5);eq(M.pracAmount(1.26,PL.amount),1.3);eq(M.pracAmount(100000,PL.amount),100000);});
 check('項目圖示：只收對得到檔名的代號；清單裡的代號不重複、都有名字；示範項目用的在清單裡',()=>{
-  eq(M.pracIcon('b25'),'b25');eq(M.pracIcon('a66'),'a66');eq(M.pracIcon('c7b'),'c7b');eq(M.pracIcon('d77'),'d77');['','e11','b80','b1d','../x','b25.webp',null,12].forEach(v=>eq(M.pracIcon(v),''));
+  eq(M.pracIcon('b25'),'b25');eq(M.pracIcon('a66'),'a66');eq(M.pracIcon('c7b'),'c7b');eq(M.pracIcon('d77'),'d77');eq(M.pracIcon('e62'),'e62');['','f11','b80','b1d','../x','b25.webp',null,12].forEach(v=>eq(M.pracIcon(v),''));
   eq(M.pracItemCheck({name:'太極',unit:'分鐘',icon:'b25'},D.prac.max).item.icon,'b25');eq(M.pracItemCheck({name:'太極',unit:'分鐘',icon:'x'},D.prac.max).item.icon,'');eq(M.pracItemCheck({name:'太極',unit:'分鐘'},D.prac.max).item.icon,'');
   const ks=D.prac.icons.map(x=>x.k);eq(new Set(ks).size,ks.length);D.prac.icons.forEach(x=>{eq(M.pracIcon(x.k),x.k);ok(x.n,x.k)});D.prac.demo.items.forEach(i=>ok(ks.indexOf(i.icon)>-1,i.id));ok(D.prac.t.icon&&D.prac.t.iconNone);});
+check('大項目與小項目：只認一層；指向自己、不存在、或指向另一個小項目都不算',()=>{
+  const its=[{id:'a',name:'太極'},{id:'b',name:'站樁',parent:'a'},{id:'c',name:'二十四式',parent:'a'},{id:'d',name:'x',parent:'b'},{id:'e',name:'y',parent:'e'},{id:'f',name:'z',parent:'nope'}];
+  eq(M.pracParent(its,its[1]),'a');eq(M.pracParent(its,its[3]),'');eq(M.pracParent(its,its[4]),'');eq(M.pracParent(its,its[5]),'');eq(M.pracParent(its,its[0]),'');
+  eq(M.pracKids(its,'a').map(x=>x.id).join(),'b,c');eq(M.pracKids(its,'b').length,0);eq(M.pracFamily(its,'a').join(),'a,b,c');eq(M.pracFamily(its,'z').join(),'z');
+  const r=M.pracItemCheck({name:'站樁',unit:'分鐘',parent:'a',goal:'  肩膀怎麼鬆 '},D.prac.max);eq(r.item.parent,'a');eq(r.item.goal,'肩膀怎麼鬆');
+  eq(M.pracItemCheck({name:'x',unit:'次',parent:'../a'},D.prac.max).item.parent,'');eq(M.pracItemCheck({name:'x',unit:'次',goal:'字'.repeat(61)},D.prac.max).err,'goal');eq(M.pracItemCheck({name:'x',unit:'次'},D.prac.max).item.goal,'');});
+check('寫下的：不用標題，長短不拘；空的不收；標題自動取第一行開頭',()=>{const L=D.prac.max;
+  eq(M.pracWriteCheck({body:'  '},L).err,'empty');eq(M.pracWriteCheck({},L).err,'empty');eq(M.pracWriteCheck({body:'a'.repeat(20001)},L).err,'body');
+  const r=M.pracWriteCheck({body:'\n今天雲手比較順\n第二行  \n'},L);ok(r.ok);eq(r.note.title,'今天雲手比較順');eq(r.note.body,'\n今天雲手比較順\n第二行');
+  eq(M.pracTitleOf('字'.repeat(50)).length,30);eq(M.pracTitleOf(''),'');ok(M.pracWriteCheck({body:'短'},L).note.title.length>=1);
+  const ps=M.buildPages({},[{id:'pn-1',key:'2026-11-18',text:'長長的一段',itemId:'a',pn:true},{id:'m-1',key:'2026-11-18',text:'短',itemId:'a'}]);eq(ps.filter(p=>p.src==='Note').length,1);eq(ps.filter(p=>p.src==='Memo').length,1);
+  const T=D.prac.t;['writeLabel','writeKeep','writeNone','writeStar','star','unstar','goal','goalNone','parent','parentNone','kids','kidAdd','backTo','delKids'].forEach(k=>ok(T[k],k));eq(Object.keys(T.tabs).join(),'log,write,set');});
+check('圖示分類：每個圖示剛好在一類，類別裡沒有不存在的圖示',()=>{const ks=D.prac.icons.map(x=>x.k),seen={};
+  D.prac.iconGroups.forEach(g=>{ok(g.n);ok(g.ks.length,g.n);g.ks.forEach(k=>{ok(ks.indexOf(k)>-1,k);ok(!seen[k],'重複 '+k);seen[k]=1})});eq(Object.keys(seen).length,ks.length);ok(D.prac.iconOther);});
+check('換過畫風的圖示：舊代號都對到清單裡的新代號，舊代號本身不在清單',()=>{const ks=D.prac.icons.map(x=>x.k);Object.keys(D.prac.iconAlias).forEach(o=>{ok(ks.indexOf(D.prac.iconAlias[o])>-1,o);ok(ks.indexOf(o)<0,o);eq(M.pracIcon(o),o)});});
+check('大項目的彙整：幾次幾天；同單位才加總；月份篩選；月曆與週可以吃一串代號',()=>{
+  const its=[{id:'a',unit:'分鐘'},{id:'b',unit:'遍',parent:'a'},{id:'c',unit:'分鐘',parent:'a'}],lg=[L('1','a','2026-11-03',30),L('2','b','2026-11-03',2),L('3','c','2026-11-05',10),L('4','b','2026-10-20',1),L('5','z','2026-11-03',9)];
+  const r=M.pracRollup(lg,its,['a','b','c'],'2026-11');eq(r.n,3);eq(r.days,2);eq(r.units.length,2);eq(r.units.filter(u=>u.unit==='分鐘')[0].sum,40);eq(r.units.filter(u=>u.unit==='遍')[0].sum,2);
+  const all=M.pracRollup(lg,its,['a','b','c']);eq(all.n,4);eq(all.days,3);eq(all.first,'2026-10-20');eq(all.units.filter(u=>u.unit==='遍')[0].sum,3);eq(M.pracRollup([],its,['a']).n,0);
+  eq(M.pracMonth(lg,['a','b','c'],2026,11).n,3);eq(M.pracMonth(lg,'a',2026,11).n,1);eq(M.pracDayLogs(lg,['a','b'],'2026-11-03').length,2);eq(M.pracTotals(lg,['a','b','c'],'2026-11-19').all.n,4);});
+check('依名稱配圖示：一樣的優先，其次名稱裡包含圖示名，取最長；配不到就空',()=>{const I=D.prac.icons,nm=k=>(I.filter(x=>x.k===k)[0]||{}).n;
+  eq(nm(M.pracGuessIcon('太極',I)),'太極');eq(nm(M.pracGuessIcon('晨間靜坐',I)),'靜坐');eq(nm(M.pracGuessIcon('每天散步',I)),'散步');eq(M.pracGuessIcon('',I),'');eq(M.pracGuessIcon('完全沒有的東西',I),'');
+  eq(M.pracGuessIcon('腳底按摩',[{k:'x1',n:'按摩'},{k:'x2',n:'腳底按摩'}]),'x2');eq(M.pracGuessIcon('腳底',[{k:'x1',n:'腳底按摩'}]),'x1');
+  D.prac.examples.forEach(x=>ok(typeof M.pracGuessIcon(x.name,I)==='string'));
+  const T=D.prac.t;['whole','wholeAdd','loggedFam','daysUnit','recent','writeFromLog','quickEmpty','quickOwn','kidSet','starFilter','setMore'].forEach(k=>ok(T[k],k));ok(D.prac.err.fam);});
 check('pracItemCheck：名稱與單位',()=>{eq(M.pracItemCheck({name:'',unit:'次'},PL).err,'name');eq(M.pracItemCheck({name:'a'.repeat(31),unit:'次'},PL).err,'name');eq(M.pracItemCheck({name:'太極',unit:''},PL).err,'unit');eq(M.pracItemCheck({name:'太極',unit:'a'.repeat(11)},PL).err,'unit');const r=M.pracItemCheck({name:' 太極 ',unit:' 分鐘 '},PL);ok(r.ok);eq(r.item.name,'太極');eq(r.item.unit,'分鐘');eq(r.item.color,'');});
 check('pracLogCheck：日期、未來、數量、一句',()=>{const T='2026-11-18';eq(M.pracLogCheck({date:'2026-02-31',amount:1},T,PL).err,'date');eq(M.pracLogCheck({date:'2026-11-19',amount:1},T,PL).err,'future');const r=M.pracLogCheck({date:T,amount:'30',note:' 好 '},T,PL);ok(r.ok);eq(r.log.amount,30);eq(r.log.note,'好');eq(M.pracLogCheck({date:T,amount:0},T,PL).err,'amount');eq(M.pracLogCheck({date:T,amount:1,note:'a'.repeat(501)},T,PL).err,'note');});
 check('pracNoteCheck：標題與內文',()=>{eq(M.pracNoteCheck({title:' ',body:''},PL).err,'title');eq(M.pracNoteCheck({title:'a'.repeat(101),body:''},PL).err,'title');eq(M.pracNoteCheck({title:'t',body:'a'.repeat(20001)},PL).err,'body');const r=M.pracNoteCheck({title:' t ',body:' 一\n二 '},PL);ok(r.ok);eq(r.note.title,'t');eq(r.note.body,' 一\n二 ');});
@@ -266,7 +291,7 @@ check('區塊收放：沒動過照預設，動過照本人；預設收起的是�
   eq(M.foldState(null,F.closed,'data'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({data:false},F.closed,'data'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
   eq(F.closed.join(),'mir,data,out,rul,bri');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);
   eq(F.keys.length,18);F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0&&F.closed.indexOf('open')<0);});
-check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
+check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,11);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
   const src=x.responseText,bad=/進步|退步|加油|連續/;ok(!bad.test(src),'me-practice.js');
@@ -274,8 +299,8 @@ check('我的練習：畫面模組與文案不寫進步、退步、加油、連�
   const walk=v=>{if(typeof v==='string')ok(!bad.test(v),v);else if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')Object.values(v).forEach(walk);};walk(D.prac.t);walk(D.prac.demo);});
 check('我的練習：畫面文案與示範資料齊全',()=>{const t=D.prac.t;
   ['title','note','empty','add','log','submit','logged','loggedOn','back','thisMonth','allTime','noLogs','ym','dayAria','pickDay','addOn','delLogAsk','byWeek','byMonth','chartAltW','chartAltM','inspLabel','inspKeep','inspPhoto','notesNew','noteDelAsk','unitWarn','archive','unarchive','delItemAsk','fail'].forEach(k=>ok(t[k],'t.'+k));
-  ['log','insp','notes','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
-  const dm=D.prac.demo;eq(dm.items.length,2);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
+  ['log','write','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
+  const dm=D.prac.demo;eq(dm.items.length,3);eq(dm.items[2].parent,dm.items[0].id);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
   dm.notes.forEach(n=>ok(M.pracNoteCheck(n,D.prac.max).ok,n.title));ok(dm.memos.some(m=>m.itemId===dm.items[0].id));});
 check('雲端說明：詢問文案講到管理者、不再說只有你讀得到；資料與公開的雲端句仍在',()=>{
   const a=D.prac.t.cloudAsk;ok(a.indexOf('管理者')>-1,'管理者');ok(a.indexOf('只有你讀得到')<0,'只有你讀得到');ok(a.indexOf('{n}')>-1,'{n}');

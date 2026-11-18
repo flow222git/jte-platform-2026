@@ -9,10 +9,10 @@
   var box, quick, zone, secPrac, rest, live;
   // 畫面狀態：哪個項目的專區、哪個分頁、月曆的月份、哪一天、哪個表單開著
   var st = { data: { items: [], logs: [], notes: [] }, seen: null, item: '', tab: 'log', calY: 0, calM: 0, day: '', chart: 'week',
-    lf: null, itf: null, nopen: '', ask: '', busy: false, focus: '', select: false, user: null,
+    lf: null, itf: null, nopen: '', wstar: false, ask: '', busy: false, focus: '', select: false, user: null,
     mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, cloudOff: false, authed: false, nnid: '' };
   var dirty = { box: false, quick: false, zone: false };
-  var TABS = ['log', 'insp', 'notes', 'set'];
+  var TABS = ['log', 'write', 'set'];
 
   function $(s, r) { return (r || document).querySelector(s); }
   function each(list, fn) { Array.prototype.forEach.call(list, fn); }
@@ -30,10 +30,19 @@
   }
   function safeColor(c) { return /^#[0-9a-f]{6}$/i.test(String(c || '')) ? c : P.colors[0]; }
   // 項目前面那個記號：挑了圖示就畫圖示，沒有就是原本的色點。
-  function iconOf(it) { var k = M.pracIcon(it && it.icon); return k && P.icons.some(function (x) { return x.k === k; }) ? k : ''; }
+  function iconOf(it) { var k = M.pracIcon(it && it.icon); k = (P.iconAlias || {})[k] || k; return k && P.icons.some(function (x) { return x.k === k; }) ? k : ''; }
   function iconSrc(k) { return 'doodles/' + k + '.webp'; }
-  function sw(it) { var k = iconOf(it); return k ? '<img class="pr-ico" src="' + iconSrc(k) + '" alt="" width="40" height="40">' : '<i class="pr-sw"></i>'; }
-  function cvars(it) { var c = safeColor(it.color); return ' style="--pc:' + c + ';--pt:' + tint(c, 0.16) + ';--pt2:' + tint(c, 0.32) + '"'; }
+  function sw(it) { var k = iconOf(it) || iconOf(itemById(parentId(it))); return k ? '<img class="pr-ico" src="' + iconSrc(k) + '" alt="" width="40" height="40">' : '<i class="pr-sw"></i>'; }
+  // 圖示照類別排；沒被分到類別的收在最後
+  function iconGroups() {
+    var by = {}, used = {}, out;
+    P.icons.forEach(function (x) { by[x.k] = x; });
+    out = (P.iconGroups || []).map(function (gp) { return { n: gp.n, list: gp.ks.filter(function (k) { return by[k] && !used[k]; }).map(function (k) { used[k] = 1; return by[k]; }) }; });
+    var rest2 = P.icons.filter(function (x) { return !used[x.k]; });
+    if (rest2.length) out.push({ n: P.iconOther, list: rest2 });
+    return out.filter(function (gp) { return gp.list.length; });
+  }
+  function cvars(it) { var c = safeColor((itemById(parentId(it)) || it).color); return ' style="--pc:' + c + ';--pt:' + tint(c, 0.16) + ';--pt2:' + tint(c, 0.32) + '"'; }
   function busy() { return st.busy || !!st.moving; }
   function announce(t) { if (live) { live.textContent = ''; setTimeout(function () { live.textContent = t; }, 30); } }
 
@@ -43,6 +52,23 @@
   function logById(id) { return st.data.logs.filter(function (x) { return x.id === id; })[0] || null; }
   function noteById(id) { return st.data.notes.filter(function (x) { return x.id === id; })[0] || null; }
   function active() { return items().filter(function (x) { return !x.archived; }); }
+  // 大項目與小項目
+  function parentId(it) { return it ? M.pracParent(items(), it) : ''; }
+  function kidsOf(id) { return M.pracKids(items(), id).filter(function (x) { return !x.archived; }); }
+  function fullName(it) { var p = itemById(parentId(it)); return p ? p.name + '・' + it.name : it.name; }
+  function famIds(it) { return parentId(it) ? [it.id] : [it.id].concat(kidsOf(it.id).map(function (x) { return x.id; })); }
+  // 大項目後面緊跟它的小項目
+  function ordered(list) {
+    var out = [], used = {};
+    list.forEach(function (x) {
+      if (parentId(x)) return;
+      out.push(x); used[x.id] = 1;
+      list.forEach(function (k) { if (parentId(k) === x.id) { out.push(k); used[k.id] = 1; } });
+    });
+    list.forEach(function (x) { if (!used[x.id]) out.push(x); });
+    return out;
+  }
+  function topLevel(list) { return list.filter(function (x) { var p = itemById(parentId(x)); return !p || p.archived !== x.archived; }); }
   function upsert(list, obj) {
     for (var i = 0; i < list.length; i++) if (list[i].id === obj.id) { list[i] = obj; return; }
     list.push(obj);
@@ -111,8 +137,9 @@
     function rnd() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
     function ms(key) { var d = ymd(key); return new Date(d.y, d.m - 1, d.d, 7, 30).getTime(); }
     Dm.items.forEach(function (x, j) {
-      out.items.push({ id: x.id, name: x.name, unit: x.unit, color: x.color, icon: x.icon || '', archived: false, createdAt: ms(M.addDays(C.TODAY, -126 + j * 14)) });
+      out.items.push({ id: x.id, name: x.name, unit: x.unit, color: x.color, icon: x.icon || '', parent: x.parent || '', goal: x.goal || '', archived: false, createdAt: ms(M.addDays(C.TODAY, -126 + j * 14)) });
     });
+    if (Dm.items[2]) for (i = 20; i >= 0; i -= 3) out.logs.push({ id: 'pl-demo-f' + i, itemId: Dm.items[2].id, date: M.addDays(C.TODAY, -i), amount: 1 + (i % 2), note: '', at: ms(M.addDays(C.TODAY, -i)) + 7200000 });
     for (i = 125; i >= 0; i--) {
       k = M.addDays(C.TODAY, -i);
       // 太極：一週三、四次，20–40 分鐘
@@ -130,7 +157,7 @@
           note: rnd() < 0.15 ? notes[Math.floor(rnd() * notes.length)] : '', at: ms(k) + 3600000 + i });
       }
     }
-    Dm.notes.forEach(function (n) { out.notes.push({ id: n.id, itemId: n.itemId, title: n.title, body: n.body, updatedAt: ms(M.addDays(C.TODAY, -n.days)) }); });
+    Dm.notes.forEach(function (n) { out.notes.push({ id: n.id, itemId: n.itemId, title: n.title, body: n.body, star: !!n.star, updatedAt: ms(M.addDays(C.TODAY, -n.days)) }); });
     return out;
   }
   function syncLocal() {
@@ -307,9 +334,33 @@
   // ── 共用元件 ──
   function lfKey() { var f = st.lf; return f ? 'lf-' + f.ctx + '-' + f.item + '-' + (f.log || '') : ''; }
   // 記一筆的小表單：數量（自動聚焦、帶上一筆的數量）、一句、日期、記下來
+  // 有小項目的大項目：最近記過的排前面；「整體」那一格只有記過、或本人點了才出現
+  function lastAt(id) { var b = ''; st.data.logs.forEach(function (l) { if (l.itemId !== id) return; var k = l.date + ':' + (1e15 + (l.at || 0)); if (k > b) b = k; }); return b; }
+  function isFam(f) { var it = f && itemById(f.item); return !!(it && !f.log && !parentId(it) && kidsOf(it.id).length); }
+  function famRows(it, f) {
+    var rows = kidsOf(it.id).slice();
+    if ((f && f.whole) || st.data.logs.some(function (l) { return l.itemId === it.id; })) rows.push(it);
+    return rows.sort(function (a, b) { var x = lastAt(a.id), y = lastAt(b.id); return x < y ? 1 : x > y ? -1 : 0; });
+  }
+  function famForm() {
+    var f = st.lf, it = itemById(f.item), key = lfKey(), rows = famRows(it, f), date = f.date || C.TODAY, eid = 'pr-e-' + f.ctx;
+    var h = '<form class="pr-log pr-fam" data-form="fam" novalidate' + cvars(it) + '>';
+    h += rows.map(function (k) {
+      var nm = k.id === it.id ? fill(T.whole, { n: it.name }) : k.name;
+      return '<label class="pr-famr"><span class="pr-famn">' + sw(k) + '<b>' + esc(nm) + '</b></span><span class="pr-amt"><input class="in" name="a-' + esc(k.id) + '" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="' + esc(lastAmount(k.id)) +
+        '" aria-label="' + esc(nm + ' ' + fill(T.amountFor, { u: k.unit })) + '" aria-describedby="' + eid + '"' + fk(key + '-a-' + k.id) + '><span class="pr-unit" aria-hidden="true">' + esc(k.unit) + '</span></span></label>';
+    }).join('');
+    if (rows.indexOf(it) < 0) h += '<button class="lnk pr-famw" type="button" data-pa="famwhole"' + fk('famw') + '>' + esc(T.wholeAdd) + '</button>';
+    h += '<input class="in pr-lnote" name="note" maxlength="' + P.max.note + '" placeholder="' + esc(T.notePh) + '" aria-label="' + esc(T.notePh) + '"' + fk(key + '-n') + '>';
+    h += '<div class="pr-lrow">' + (f.ctx === 'day' ? '<input type="hidden" name="date" value="' + esc(date) + '">'
+      : '<label class="pr-date"><span>' + esc(T.date) + '</span><input class="in" type="date" name="date" max="' + esc(C.TODAY) + '" value="' + esc(date) + '"' + fk(key + '-d') + '></label>') +
+      '<span class="pr-lbtn"><button class="btn fill" type="submit">' + esc(T.submit) + '</button><button class="lnk" type="button" data-pa="lcancel">' + esc(T.cancel) + '</button></span></div>';
+    return h + '<p class="pr-err" id="' + eid + '" role="alert"></p></form>';
+  }
   function logForm() {
     var f = st.lf, it = itemById(f.item), lg = f.log ? logById(f.log) : null, key = lfKey();
     if (!it) return '';
+    if (isFam(f)) return famForm();
     var amt = lg ? M.pracFmt(lg.amount) : lastAmount(it.id), date = lg ? lg.date : (f.date || C.TODAY), eid = 'pr-e-' + f.ctx;
     var h = '<form class="pr-log" data-form="log" novalidate' + cvars(it) + '>';
     h += '<div class="pr-lrow"><label class="pr-amt"><span class="pr-sr">' + fillH(T.amountFor, { u: it.unit }) + '</span>' +
@@ -328,30 +379,40 @@
     if (!P.colors.some(function (c) { return c.toLowerCase() === color.toLowerCase(); })) color = P.colors[0];
     var h = '<form class="pr-iform" data-form="item" data-mode="' + mode + '" novalidate>';
     h += '<label class="pr-f"><span>' + esc(T.name) + '</span><input class="in" name="name" maxlength="' + P.max.name + '" autocomplete="off" placeholder="' + esc(T.namePh) + '" value="' + esc(v.name || '') + '"' + fk(key + '-name') + '></label>';
+    if (mode === 'edit') h += '<label class="pr-f"><span>' + esc(T.goal) + '</span><input class="in" name="goal" maxlength="' + P.max.goal + '" autocomplete="off" placeholder="' + esc(T.goalPh) + '" value="' + esc(v.goal || '') + '"' + fk(key + '-goal') + '></label>';
+    var tops = items().filter(function (x) { return !parentId(x) && x.id !== v.id && (!x.archived || x.id === v.parent); }), hasKids = mode === 'edit' && M.pracKids(items(), v.id).length > 0, par = mode === 'edit' ? parentId(v) : (v.parent || '');
+    if (mode === 'edit' && tops.length && !hasKids) h += '<label class="pr-f"><span>' + esc(T.parent) + '</span><select class="in" name="parent"' + fk(key + '-par') + '><option value="">' + esc(T.parentNone) + '</option>' +
+      tops.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === par ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
     h += '<div class="pr-f"><span id="' + key + '-ul">' + esc(T.unit) + '</span><div class="pr-units"><div class="chips" role="group" aria-labelledby="' + key + '-ul">' +
       P.units.map(function (u) { var on = u === unit; return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-pa="unit" data-u="' + esc(u) + '" aria-pressed="' + on + '">' + esc(u) + '</button>'; }).join('') +
       '</div><input class="in pr-uin" name="unit" maxlength="' + P.max.unit + '" autocomplete="off" placeholder="' + esc(T.unitPh) + '" aria-label="' + esc(T.unitOwn) + '" value="' + esc(unit) + '"' + fk(key + '-unit') + '></div></div>';
-    h += '<div class="pr-f"><span id="' + key + '-cl">' + esc(T.color) + '</span><div class="pr-cols" role="radiogroup" aria-labelledby="' + key + '-cl">' +
+    if (mode === 'edit' && !par) h += '<div class="pr-f"><span id="' + key + '-cl">' + esc(T.color) + '</span><div class="pr-cols" role="radiogroup" aria-labelledby="' + key + '-cl">' +
       P.colors.map(function (c, i) { return '<label class="pr-col"><input type="radio" name="' + key + '-color" value="' + c + '"' + (c.toLowerCase() === color.toLowerCase() ? ' checked' : '') + fk(key + '-c' + i) + '><i style="background:' + c + '"></i><span class="pr-sr">' + esc(T.colorNames[i] || c) + '</span></label>'; }).join('') + '</div></div>';
     var ico = iconOf(v);
-    h += '<div class="pr-f"><span id="' + key + '-il">' + esc(T.icon) + '</span><div class="pr-icons" role="radiogroup" aria-labelledby="' + key + '-il">' +
+    if (mode === 'edit') h += '<div class="pr-f"><span id="' + key + '-il">' + esc(T.icon) + '</span><div class="pr-icons" role="radiogroup" aria-labelledby="' + key + '-il">' +
       '<label class="pr-icn" title="' + esc(T.iconNone) + '"><input type="radio" name="' + key + '-icon" value=""' + (ico ? '' : ' checked') + '><i class="pr-sw"></i><span class="pr-sr">' + esc(T.iconNone) + '</span></label>' +
-      P.icons.map(function (x) { return '<label class="pr-icn" title="' + esc(x.n) + '"><input type="radio" name="' + key + '-icon" value="' + x.k + '"' + (x.k === ico ? ' checked' : '') + '><img src="' + iconSrc(x.k) + '" alt="" width="40" height="40"><span class="pr-sr">' + esc(x.n) + '</span></label>'; }).join('') + '</div></div>';
+      iconGroups().map(function (gp) {
+        return '<b class="pr-icg">' + esc(gp.n) + '</b>' + gp.list.map(function (x) { return '<label class="pr-icn" title="' + esc(x.n) + '"><input type="radio" name="' + key + '-icon" value="' + x.k + '"' + (x.k === ico ? ' checked' : '') + '><img src="' + iconSrc(x.k) + '" alt="" width="40" height="40"><span class="pr-sr">' + esc(x.n) + '</span></label>'; }).join('');
+      }).join('') + '</div></div>';
     if (mode === 'edit') h += '<p class="note">' + esc(T.unitWarn) + '</p>';
-    if (mode === 'new') h += '<div class="pr-ex"><span class="note">' + esc(T.examples) + '</span><div class="chips">' + P.examples.map(function (x, i) { return '<button type="button" class="chip" data-pa="ex" data-i="' + i + '">' + esc(x.name) + '・' + esc(x.unit) + '</button>'; }).join('') + '</div></div>';
+    if (mode === 'new' && !v.parent) h += '<div class="pr-ex"><span class="note">' + esc(T.examples) + '</span><div class="chips">' + P.examples.map(function (x, i) { return '<button type="button" class="chip" data-pa="ex" data-i="' + i + '">' + esc(x.name) + '・' + esc(x.unit) + '</button>'; }).join('') + '</div></div>';
     h += '<p class="pr-err" role="alert"></p><div class="row"><button class="btn fill" type="submit"' + fk(key + '-save') + '>' + esc(T.save) + '</button>' +
-      (mode === 'new' ? '<button class="btn" type="button" data-pa="icancel">' + esc(T.cancel) + '</button>' : '') + '</div></form>';
+      (mode === 'new' ? '<button class="btn" type="button" data-pa="icancel">' + esc(T.cancel) + '</button>' : '') + '</div>' + (mode === 'new' ? '<p class="note">' + esc(T.setMore) + '</p>' : '') + '</form>';
     return h;
   }
 
   // ── 我的練習（練習空間） ──
   function cardHTML(it) {
     var last = M.pracLast(st.data.logs, it.id), t = M.pracTotals(st.data.logs, it.id, C.TODAY), on = st.lf && st.lf.ctx === 'card' && st.lf.item === it.id;
+    var kids = parentId(it) ? [] : kidsOf(it.id), famN = t.month.n;
+    kids.forEach(function (k) { var kl = M.pracLast(st.data.logs, k.id); if (kl > last) last = kl; famN += M.pracTotals(st.data.logs, k.id, C.TODAY).month.n; });
     var h = '<div class="pr-card' + (on ? ' on' : '') + (it.archived ? ' arch' : '') + '"' + cvars(it) + '>' +
       '<button class="pr-open" data-pa="open" data-id="' + esc(it.id) + '"' + fk('co-' + it.id) + '>' +
       '<span class="pr-name">' + sw(it) + esc(it.name) + '</span>' +
       '<span class="pr-meta">' + esc(last ? fill(T.last, { d: M.dlabel(last) }) : T.never) + '</span>' +
-      '<span class="pr-meta">' + esc(t.month.n ? fill(T.month, { n: t.month.n, s: M.pracFmt(t.month.sum), u: it.unit }) : T.monthNone) + '</span></button>';
+      '<span class="pr-meta">' + esc(kids.length ? (famN ? fill(T.monthFam, { n: famN }) : T.monthNone) : t.month.n ? fill(T.month, { n: t.month.n, s: M.pracFmt(t.month.sum), u: it.unit }) : T.monthNone) + '</span>' +
+      (kids.length ? '<span class="pr-meta pr-kidsl">' + esc(fill(T.kidsOf, { list: kids.map(function (k) { return k.name; }).join(T.listSep) })) + '</span>' : '') +
+      (it.goal ? '<span class="pr-meta pr-goall">' + esc(T.goalLabel) + '：' + esc(it.goal) + '</span>' : '') + '</button>';
     if (!it.archived) h += '<button class="btn sm pr-clog" data-pa="copen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '" aria-label="' + fillH(T.logFor, { n: it.name }) + '"' + fk('cl-' + it.id) + '>' + esc(T.log) + '</button>';
     if (on) h += logForm();
     return h + '</div>';
@@ -379,7 +440,7 @@
     return '<p class="note pr-where">' + esc(T.whereLocal) + ' <button class="lnk" data-pa="tocloud"' + fk('tc') + '>' + esc(T.toCloud) + '</button></p>';
   }
   function renderBox() {
-    var act = active(), arch = items().filter(function (x) { return x.archived; }), h = '';
+    var act = topLevel(active()), arch = items().filter(function (x) { return x.archived; }), h = '';
     if (restoring()) { box.innerHTML = '<p class="note pr-moving" role="status">' + esc(T.loading) + '</p>'; return; }
     if (st.mode === 'out') {
       box.innerHTML = '<div class="panel pr-empty"><p>' + esc(T.needLogin) + '</p><div class="row"><button class="btn" data-pa="uselocal"' + fk('ul') + '>' + esc(T.useLocal) + '</button></div></div>';
@@ -400,22 +461,31 @@
     h = noticeHTML() + '<div class="pr-grid">' + act.map(cardHTML).join('');
     if (!st.itf) h += '<button class="pr-card pr-new" data-pa="new"' + fk('new') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button>';
     h += '</div>';
-    if (st.itf) h += '<div class="panel pr-newf"><h3 class="pr-h3" id="pr-newh">' + esc(T.addTitle) + '</h3>' + itemForm('new') + '</div>';
+    if (st.itf && !st.item) h += '<div class="panel pr-newf"><h3 class="pr-h3" id="pr-newh">' + esc(T.addTitle) + '</h3>' + itemForm('new') + '</div>';
     if (arch.length) h += '<details class="pr-arch"' + (st.archOpen ? ' open' : '') + '><summary' + fk('arch') + '>' + esc(fill(T.archivedN, { n: arch.length })) + '</summary><div class="pr-grid">' + arch.map(cardHTML).join('') + '</div></details>';
     box.innerHTML = h + whereHTML();
   }
 
   // ── 今天的快速鍵 ──
   function renderQuick() {
-    var act = active();
-    quick.hidden = !act.length || pending();
-    if (!act.length || pending()) { quick.innerHTML = ''; return; }
+    var act = topLevel(active());
+    if (pending() || restoring() || st.mode === 'out') { quick.hidden = true; quick.innerHTML = ''; return; }
+    quick.hidden = false;
+    if (!items().length) {
+      // 還沒有任何項目：給一行入口，點範例就建好、直接記一筆
+      quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickEmpty) + '</span></div><div class="chips">' +
+        P.examples.map(function (x, i) { return '<button type="button" class="chip" data-pa="qex" data-i="' + i + '"' + fk('qex' + i) + '>' + esc(x.name) + '</button>'; }).join('') +
+        '<button type="button" class="chip" data-pa="qown"' + fk('qown') + '>' + esc(T.quickOwn) + '</button></div></div>';
+      return;
+    }
+    if (!act.length) { quick.hidden = true; quick.innerHTML = ''; return; }
     var openId = st.lf && st.lf.ctx === 'quick' ? st.lf.item : '';
     quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="gopr">' + esc(T.quickGo) + '</button></div>' +
       '<div class="pr-pills">' + act.map(function (it) {
-        var on = openId === it.id, ts = todaySum(it.id);
-        return '<button class="pr-pill" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + cvars(it) + fk('qp-' + it.id) + '>' + sw(it) + '<b>' + esc(it.name) + '</b><span>' + esc(T.log) + '</span>' +
-          (ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') + '</button>';
+        var on = openId === it.id, ts = todaySum(it.id), fam = kidsOf(it.id), tc = 0;
+        if (fam.length) { var fids = [it.id].concat(fam.map(function (x) { return x.id; })); st.data.logs.forEach(function (l) { if (l.date === C.TODAY && fids.indexOf(l.itemId) > -1) tc++; }); }
+        return '<button class="pr-pill" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + cvars(it) + fk('qp-' + it.id) + '>' + sw(it) + '<b>' + esc(fullName(it)) + '</b><span>' + esc(T.log) + '</span>' +
+          (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') + '</button>';
       }).join('') + '</div>' + (openId ? logForm() : '') + '</div>';
   }
 
@@ -429,64 +499,100 @@
       zone.innerHTML = '<div class="pr-zhead"><button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button></div><div class="panel"><p class="note">' + esc(pending() ? T.loading : T.notFound) + '</p></div>';
       return;
     }
-    var zl = st.lf && st.lf.ctx === 'zone';
-    var h = '<div class="pr-zhead"' + cvars(it) + '><button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button>' +
-      '<div class="pr-zt">' + sw(it) + '<h2 id="pr-zh" tabindex="-1"' + fk('zh') + '>' + esc(it.name) + '</h2><button type="button" class="lnk pr-unitbtn" data-pa="tab" data-t="set" aria-label="' + esc(fill(T.unitIs, { u: it.unit }) + '，' + T.unitEdit) + '">' + esc(fill(T.unitIs, { u: it.unit })) + '・' + esc(T.unitEdit) + '</button>' +
+    var zl = st.lf && st.lf.ctx === 'zone', par = itemById(parentId(it));
+    var h = '<div class="pr-zhead"' + cvars(it) + '>' + (par ? '<button class="lnk pr-back" data-pa="open" data-id="' + esc(par.id) + '"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(fill(T.backTo, { n: par.name })) + '</button>'
+      : '<button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button>') +
+      '<div class="pr-zt">' + sw(it) + '<h2 id="pr-zh" tabindex="-1"' + fk('zh') + '>' + esc(it.name) + '</h2>' +
       (it.archived ? '<span class="tag">' + esc(T.archivedTag) + '</span>' : '') + '</div>' +
       '<button class="btn fill" data-pa="zopen" aria-expanded="' + zl + '"' + fk('zl') + '>' + esc(T.log) + '</button></div>';
     if (zl) h += '<div class="panel pr-zlog">' + logForm() + '</div>';
+    h += '<p class="pr-goal">' + (it.goal ? '<small>' + esc(T.goalLabel) + '</small><span>' + esc(it.goal) + '</span><button class="lnk" data-pa="goaledit"' + fk('ge') + '>' + esc(T.goalEdit) + '</button>'
+      : '<button class="lnk" data-pa="goaledit"' + fk('ge') + '>' + esc(T.goalNone) + '</button>') + '</p>';
+    if (!par) {
+      var kids = M.pracKids(items(), it.id), adding = st.itf && st.itf.parent === it.id;
+      if (kids.length || adding) h += '<div class="pr-kids"><b class="pr-h3">' + esc(T.kids) + '</b>' + kids.map(function (k) {
+        var kt = M.pracTotals(st.data.logs, k.id, C.TODAY);
+        return '<button class="pr-kid' + (k.archived ? ' arch' : '') + '" data-pa="open" data-id="' + esc(k.id) + '"' + cvars(k) + fk('kid-' + k.id) + '>' + sw(k) + '<b>' + esc(k.name) + '</b><span>' +
+          esc(kt.month.n ? fill(T.month, { n: kt.month.n, s: M.pracFmt(kt.month.sum), u: k.unit }) : T.monthNone) + '</span></button>';
+      }).join('') + (adding || it.archived ? '' : '<button class="pr-kid pr-kidadd" data-pa="kidnew"' + fk('kidnew') + '><span aria-hidden="true">＋</span> ' + esc(T.kidAdd) + '</button>') + '</div>';
+      if (adding) h += '<div class="panel pr-newf"><h3 class="pr-h3">' + esc(fill(T.kidAddTitle, { n: it.name })) + '</h3>' + itemForm('new') + '<p class="note">' + esc(T.kidNote) + '</p></div>';
+    }
     h += '<div class="pr-tabs" role="tablist" aria-label="' + esc(T.tabsLabel) + '">' + TABS.map(function (k) {
       var on = st.tab === k;
       return '<button role="tab" id="pr-tab-' + k + '" aria-controls="pr-tp" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-pa="tab" data-t="' + k + '"' + fk('t-' + k) + '>' + esc(T.tabs[k]) + '</button>';
     }).join('') + '</div>';
     h += '<div class="panel pr-tp" id="pr-tp" role="tabpanel" tabindex="0" aria-labelledby="pr-tab-' + st.tab + '"' + cvars(it) + '>' +
-      (st.tab === 'log' ? tabLog(it) : st.tab === 'insp' ? tabInsp(it) : st.tab === 'notes' ? tabNotes(it) : tabSet(it)) + '</div>';
+      (st.tab === 'log' ? tabLog(it) : st.tab === 'write' ? tabWrite(it) : tabSet(it)) + '</div>';
     zone.innerHTML = h;
     if (st.tab === 'log') drawChart();
   }
 
+  function famOf(it) {
+    if (!it || parentId(it)) return null;
+    var k = M.pracKids(items(), it.id);
+    return k.length ? [it.id].concat(k.map(function (x) { return x.id; })) : null;
+  }
+  function unitsText(us) { return us.map(function (u) { return fill(T.unitSum, { s: M.pracFmt(u.sum), u: u.unit }); }).join(T.listSep); }
+  // 最近寫下的：星星的排前面，最多三段
+  function recentHTML(it) {
+    var all = writings(it), pick;
+    if (!all.length) return '';
+    pick = all.filter(function (w) { return w.star; }).concat(all.filter(function (w) { return !w.star; })).slice(0, 3);
+    return '<div class="pr-blk pr-recent"><div class="pr-chead"><h3 class="pr-h3">' + esc(T.recent) + '</h3><button class="lnk" data-pa="tab" data-t="write"' + fk('rall') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button></div>' +
+      pick.map(function (w) { var t = (w.title ? w.title + ' ' : '') + w.body; return '<p class="pr-rc' + (w.star ? ' star' : '') + '"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small><span>' + (w.star ? '★ ' : '') + esc(t.length > 90 ? t.slice(0, 90) + '…' : t) + '</span></p>'; }).join('') + '</div>';
+  }
   function tabLog(it) {
-    var lg = st.data.logs, t = M.pracTotals(lg, it.id, C.TODAY), h = '';
-    if (!t.all.n) h += '<p class="pr-invite">' + esc(T.noLogs) + '</p>';
-    else h += '<div class="pr-stats">' +
-      '<div class="pr-stat"><small>' + esc(T.thisMonth) + '</small><p><b>' + t.month.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.month.sum), u: it.unit })) + '</span></div>' +
-      '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + t.all.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.all.sum), u: it.unit })) + '<br>' + esc(fill(T.since, { d: slash(t.all.first) })) + '</span></div></div>';
-    h += '<div' + (t.all.n ? ' class="pr-two"' : '') + '><div class="pr-blk">' + calHTML(it) + '</div>';
-    if (t.all.n) {
+    var lg = st.data.logs, ids = famOf(it), h = '', has, t, mo, al;
+    if (ids) {
+      mo = M.pracRollup(lg, items(), ids, C.TODAY.slice(0, 7)); al = M.pracRollup(lg, items(), ids); has = al.n > 0;
+      if (has) h += '<div class="pr-stats">' +
+        '<div class="pr-stat"><small>' + esc(T.thisMonth) + '</small><p><b>' + mo.days + '</b> ' + esc(T.daysUnit) + '</p><span>' + esc(mo.n ? unitsText(mo.units) : T.monthNone) + '</span></div>' +
+        '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + al.days + '</b> ' + esc(T.daysUnit) + '</p><span>' + esc(unitsText(al.units)) + '<br>' + esc(fill(T.since, { d: slash(al.first) })) + '</span></div></div>';
+    } else {
+      t = M.pracTotals(lg, it.id, C.TODAY); has = t.all.n > 0;
+      if (has) h += '<div class="pr-stats">' +
+        '<div class="pr-stat"><small>' + esc(T.thisMonth) + '</small><p><b>' + t.month.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.month.sum), u: it.unit })) + '</span></div>' +
+        '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + t.all.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.all.sum), u: it.unit })) + '<br>' + esc(fill(T.since, { d: slash(t.all.first) })) + '</span></div></div>';
+    }
+    if (!has) h += '<p class="pr-invite">' + esc(T.noLogs) + '</p>';
+    h += recentHTML(it);
+    h += '<div' + (has ? ' class="pr-two"' : '') + '><div class="pr-blk">' + calHTML(it) + '</div>';
+    if (has) {
       var wk = st.chart === 'week';
       h += '<div class="pr-blk"><div class="pr-chead"><h3 class="pr-h3">' + esc(T.trend) + '</h3><div class="chips" role="group" aria-label="' + esc(T.trend) + '">' +
         '<button class="chip' + (wk ? ' on' : '') + '" data-pa="chart" data-c="week" aria-pressed="' + wk + '"' + fk('cw') + '>' + esc(T.byWeek) + '</button>' +
         '<button class="chip' + (!wk ? ' on' : '') + '" data-pa="chart" data-c="month" aria-pressed="' + !wk + '"' + fk('cm') + '>' + esc(T.byMonth) + '</button></div></div>' +
-        '<div class="pr-chart" id="pr-chart"></div><p class="note pr-cap">' + esc(fill(T.chartCap, { u: it.unit })) + '</p></div>';
+        '<div class="pr-chart" id="pr-chart"></div><p class="note pr-cap">' + esc(ids ? T.chartCapFam : fill(T.chartCap, { u: it.unit })) + '</p></div>';
     }
     return h + '</div>';
   }
   function nowYM() { var d = ymd(C.TODAY); return { y: d.y, m: d.m }; }
   function calHTML(it) {
-    var mo = M.pracMonth(st.data.logs, it.id, st.calY, st.calM), cur = nowYM(), atNow = st.calY > cur.y || (st.calY === cur.y && st.calM >= cur.m), i, h;
+    var ids = famOf(it), mo = M.pracMonth(st.data.logs, ids || it.id, st.calY, st.calM), cur = nowYM(), atNow = st.calY > cur.y || (st.calY === cur.y && st.calM >= cur.m), i, h;
     h = '<div class="pr-calnav"><button type="button" data-pa="cprev" aria-label="' + esc(T.prevMonth) + '"' + fk('cp') + '>‹</button>' +
-      '<div><b>' + esc(fill(T.ym, { y: st.calY, m: st.calM })) + '</b><span class="note">' + esc(mo.n ? fill(T.monthSum, { n: mo.n, s: M.pracFmt(mo.sum), u: it.unit }) : T.monthEmpty) + '</span></div>' +
+      '<div><b>' + esc(fill(T.ym, { y: st.calY, m: st.calM })) + '</b><span class="note">' + esc(!mo.n ? T.monthEmpty : ids ? fill(T.monthSumFam, { n: mo.n }) : fill(T.monthSum, { n: mo.n, s: M.pracFmt(mo.sum), u: it.unit })) + '</span></div>' +
       '<button type="button" data-pa="cnext" aria-label="' + esc(T.nextMonth) + '"' + (atNow ? ' disabled' : '') + fk('cn') + '>›</button></div>';
     h += '<div class="pr-cal">' + T.wd.map(function (w) { return '<span class="pr-wd" aria-hidden="true">' + esc(w) + '</span>'; }).join('');
     for (i = 0; i < mo.lead; i++) h += '<span></span>';
     mo.days.forEach(function (d) {
       var fut = d.key > C.TODAY, today = d.key === C.TODAY, sel = st.day === d.key;
-      var aria = fill(T.dayAria, { m: st.calM, d: d.d, x: d.n ? fill(T.dayHas, { n: d.n, s: M.pracFmt(d.sum), u: it.unit }) : T.dayNone }) + (today ? T.todayAria : '');
+      var aria = fill(T.dayAria, { m: st.calM, d: d.d, x: !d.n ? T.dayNone : ids ? fill(T.dayHasFam, { n: d.n }) : fill(T.dayHas, { n: d.n, s: M.pracFmt(d.sum), u: it.unit }) }) + (today ? T.todayAria : '');
       h += '<button type="button" class="pr-day' + (d.n ? ' has' : '') + (today ? ' today' : '') + '" data-pa="day" data-d="' + d.key + '" aria-pressed="' + sel + '" aria-label="' + esc(aria) + '"' + (fut ? ' disabled' : '') + fk('d-' + d.key) + '>' +
-        '<span>' + d.d + '</span>' + (d.n ? '<small>' + esc(M.pracFmt(d.sum)) + '</small>' : '') + '</button>';
+        '<span>' + d.d + '</span>' + (d.n ? '<small>' + esc(ids ? String(d.n) : M.pracFmt(d.sum)) + '</small>' : '') + '</button>';
     });
     h += '</div>';
     return h + dayHTML(it);
   }
   function dayHTML(it) {
     if (!st.day) return '<p class="note pr-pick">' + esc(T.pickDay) + '</p>';
-    var rows = M.pracDayLogs(st.data.logs, it.id, st.day), adding = st.lf && st.lf.ctx === 'day';
+    var ids = famOf(it), rows = M.pracDayLogs(st.data.logs, ids || it.id, st.day), adding = st.lf && st.lf.ctx === 'day';
     var h = '<div class="pr-dayd"><h3 class="pr-h3">' + esc(M.dlabel(st.day)) + '</h3>';
     if (!rows.length && !adding) h += '<p class="note">' + esc(T.dayEmpty) + '</p>';
     rows.forEach(function (l) {
       if (st.lf && st.lf.ctx === 'edit' && st.lf.log === l.id) { h += '<div class="pr-lg ed">' + logForm() + '</div>'; return; }
       var asking = st.ask === 'log:' + l.id;
-      h += '<div class="pr-lg"><b>' + esc(M.pracFmt(l.amount)) + '<small> ' + esc(it.unit) + '</small></b><span class="pr-lgn">' + esc(l.note) + '</span>' +
+      var li = itemById(l.itemId) || it;
+      h += '<div class="pr-lg"><b>' + esc(M.pracFmt(l.amount)) + '<small> ' + esc(li.unit) + '</small></b>' + (ids ? '<span class="pr-itag">' + esc(li.id === it.id ? fill(T.whole, { n: it.name }) : li.name) + '</span>' : '') + '<span class="pr-lgn">' + esc(l.note) + '</span>' +
         (asking ? '<span class="pr-lga"><span class="note">' + esc(T.delLogAsk) + '</span><button class="btn sm fill" data-pa="ldelyes" data-log="' + esc(l.id) + '"' + fk('ly-' + l.id) + '>' + esc(T.delYes) + '</button><button class="lnk" data-pa="nask" data-back="' + esc('ld-' + l.id) + '">' + esc(T.cancel) + '</button></span>'
           : '<span class="pr-lga"><button class="lnk" data-pa="ledit" data-log="' + esc(l.id) + '"' + fk('le-' + l.id) + '>' + esc(T.edit) + '</button><button class="lnk" data-pa="ldel" data-log="' + esc(l.id) + '"' + fk('ld-' + l.id) + '>' + esc(T.del) + '</button></span>') + '</div>';
     });
@@ -499,21 +605,22 @@
   function drawChart() {
     var el = $('#pr-chart'), it = itemById(st.item);
     if (!el || !it) return;
-    var wk = st.chart === 'week', rows = wk ? M.pracWeeks(st.data.logs, it.id, C.TODAY, P.weeks) : M.pracMonths(st.data.logs, it.id, C.TODAY, P.months);
+    var ids = famOf(it), src = ids || it.id, wk = st.chart === 'week', rows = wk ? M.pracWeeks(st.data.logs, src, C.TODAY, P.weeks) : M.pracMonths(st.data.logs, src, C.TODAY, P.months);
+    function val(r) { return ids ? r.n : r.sum; }
     var W = Math.max(260, Math.floor(el.clientWidth || 320)), H = 196, top = 24, bot = 30, padX = 4, n = rows.length;
     var slot = (W - padX * 2) / n, bw = Math.min(40, slot * 0.64), max = 0, color = safeColor(it.color), alt = [], h = '';
     var every = slot < 34 ? 2 : 1, fs = slot < 28 ? 10 : 11.5;
-    rows.forEach(function (r) { if (r.sum > max) max = r.sum; });
+    rows.forEach(function (r) { if (val(r) > max) max = val(r); });
     rows.forEach(function (r, i) {
       var cx = padX + slot * i + slot / 2, last = i === n - 1, lab, full, p;
       if (wk) { p = ymd(r.start); lab = last ? T.thisWeekShort : p.m + '/' + p.d; full = fill(T.weekOf, { d: M.dlabel(r.start) }); }
       else { p = r.ym.split('-').map(Number); lab = last ? T.thisMonthShort : fill(T.monthShort, { m: p[1] }); full = fill(T.monthOf, { y: p[0], m: p[1] }); }
-      if (r.n) alt.push(fill(T.barAlt, { w: full, s: M.pracFmt(r.sum), u: it.unit }));
+      if (r.n) alt.push(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barAlt, { w: full, s: M.pracFmt(r.sum), u: it.unit }));
       if (r.n && max) {
-        var bh = Math.max(3, (r.sum / max) * (H - top - bot)), y = H - bot - bh;
-        h += '<g><title>' + esc(fill(T.barTip, { w: full, n: r.n, s: M.pracFmt(r.sum), u: it.unit })) + '</title>' +
+        var bh = Math.max(3, (val(r) / max) * (H - top - bot)), y = H - bot - bh;
+        h += '<g><title>' + esc(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barTip, { w: full, n: r.n, s: M.pracFmt(r.sum), u: it.unit })) + '</title>' +
           '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="' + Math.min(6, bw / 3).toFixed(1) + '" fill="' + color + '"/>' +
-          '<text x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" class="v" style="font-size:' + fs + 'px">' + esc(M.pracFmt(r.sum)) + '</text></g>';
+          '<text x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" class="v" style="font-size:' + fs + 'px">' + esc(M.pracFmt(val(r))) + '</text></g>';
       }
       if (last || (n - 1 - i) % every === 0) h += '<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" class="x' + (last ? ' now' : '') + '" style="font-size:' + fs + 'px">' + esc(lab) + '</text>';
     });
@@ -522,46 +629,69 @@
       '<line x1="0" x2="' + W + '" y1="' + (H - bot + 0.5) + '" y2="' + (H - bot + 0.5) + '" class="base"/>' + h + '</svg>';
   }
 
-  function tabInsp(it) {
-    var list = M.pracInsp(C.getInsp(), it.id);
-    var h = '<form class="pr-iinsp" data-form="insp" novalidate><label class="note" for="pr-insp">' + fillH(T.inspLabel, { n: it.name }) + '</label>' +
-      '<textarea class="pr-ta sm" id="pr-insp" name="text" maxlength="500"' + fk('insp-' + it.id) + '></textarea>' +
-      '<div class="row"><button class="btn fill" type="submit">' + esc(T.inspKeep) + '</button><button class="btn" type="button" data-pa="photo">' + esc(T.inspPhoto) + '</button></div>' +
-      '<p class="note">' + esc(T.inspNote) + '</p></form>';
-    h += '<div class="pr-blk">' + (list.length ? list.map(function (x) {
-      var ph = (x.photos || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-      return '<div class="pr-insp"><small>' + esc(M.dlabel(x.key)) + '</small>' + (x.text ? '<p>' + esc(x.text) + '</p>' : '') +
-        (ph.length ? '<div class="pr-thumbs">' + ph.filter(function (p) { return /^data:image\//.test(String(p.data || '')); }).map(function (p) { return '<figure><img src="' + esc(p.data) + '" alt="' + esc(p.caption || '') + '" loading="lazy">' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') + '</div>';
-    }).join('') : '<p class="note">' + esc(T.inspNone) + '</p>') + '</div>';
+  // ── 寫下的：心得、筆記、感想不分類，選好項目就寫；重要的標星星 ──
+  // 來源有兩種：在這裡寫的（跟著「我的練習」放本機或雲端），和在「今天」留下、標了這個項目的隨手記（可以帶照片）。
+  function writings(it) {
+    var ids = famIds(it), ann = C.O.ann || {}, out = [];
+    st.data.notes.forEach(function (n) {
+      if (ids.indexOf(n.itemId) < 0) return;
+      out.push({ id: n.id, kind: 'note', itemId: n.itemId, key: n.updatedAt ? M.keyOf(new Date(n.updatedAt)) : '', at: n.updatedAt || 0,
+        title: n.title && n.title !== M.pracTitleOf(n.body) ? n.title : '', body: n.body || '', star: !!n.star, photos: [] });
+    });
+    C.getInsp().forEach(function (x) {
+      if (!x || ids.indexOf(x.itemId) < 0) return;
+      out.push({ id: String(x.id), kind: 'memo', local: !x.cloud && C.O.memos.indexOf(x) > -1, itemId: x.itemId, key: x.key || '', at: 0, title: '', body: x.text || '', star: !!(ann[x.id] && ann[x.id].star), photos: x.photos || [] });
+    });
+    // 記一筆時順手寫的那一句
+    st.data.logs.forEach(function (l) {
+      if (!l || !l.note || ids.indexOf(l.itemId) < 0) return;
+      var li = itemById(l.itemId);
+      out.push({ id: l.id, kind: 'log', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: l.note, star: !!(ann[l.id] && ann[l.id].star), photos: [], amount: M.pracFmt(l.amount), unit: li ? li.unit : '' });
+    });
+    return out.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : b.at - a.at; });
+  }
+  function writeForm(it, w) {
+    var key = w ? 'we-' + w.id : 'wr-' + it.id, ids = famIds(it), h;
+    h = '<form class="pr-wform" data-form="write" data-id="' + esc(w ? w.id : '') + '" data-kind="' + (w ? w.kind : 'note') + '" novalidate>';
+    if (!w) h += '<label class="note" for="pr-write">' + fillH(T.writeLabel, { n: it.name }) + '</label>';
+    if (!w && ids.length > 1) h += '<label class="pr-win"><span class="note">' + esc(T.writeIn) + '</span><select class="in" name="item"' + fk(key + '-i') + '>' +
+      ids.map(function (id) { var x = itemById(id); return '<option value="' + esc(id) + '">' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
+    h += '<textarea class="pr-ta pr-grow" ' + (w ? '' : 'id="pr-write" ') + 'name="body" maxlength="' + P.max.body + '"' + (w ? ' aria-label="' + esc(T.writeEdit) + '"' : '') + fk(key) + '>' + esc(w ? (w.title ? w.title + '\n' : '') + w.body : '') + '</textarea>' +
+      '<p class="pr-err" role="alert"></p><div class="row"><button class="btn fill" type="submit">' + esc(w ? T.save : T.writeKeep) + '</button>' +
+      (w ? '<button class="btn" type="button" data-pa="wclose">' + esc(T.writeCancel) + '</button>' : '<button class="btn" type="button" data-pa="photo">' + esc(T.inspPhoto) + '</button>') + '</div></form>';
     return h;
   }
-
-  function noteForm(n, isNew) {
-    var key = 'nf-' + (isNew ? 'new' : n.id), asking = !isNew && st.ask === 'note:' + n.id;
-    return '<form class="pr-nform" data-form="note" data-id="' + esc(isNew ? '' : n.id) + '" novalidate>' +
-      '<label class="pr-f"><span>' + esc(T.noteTitle) + '</span><input class="in" name="title" maxlength="' + P.max.title + '" placeholder="' + esc(T.noteTitlePh) + '" value="' + esc(isNew ? '' : n.title) + '"' + fk(key + '-t') + '></label>' +
-      '<label class="pr-f"><span>' + esc(T.noteBody) + '</span><textarea class="pr-ta" name="body" maxlength="' + P.max.body + '"' + fk(key + '-b') + '>' + esc(isNew ? '' : n.body) + '</textarea></label>' +
-      '<p class="pr-err" role="alert"></p><div class="row"><button class="btn fill" type="submit">' + esc(T.save) + '</button><button class="btn" type="button" data-pa="nclose">' + esc(T.noteClose) + '</button>' +
-      (isNew ? '' : asking ? '<span class="note">' + esc(T.noteDelAsk) + '</span><button class="btn sm fill" type="button" data-pa="ndelyes"' + fk('ny-' + n.id) + '>' + esc(T.delYes) + '</button><button class="lnk" type="button" data-pa="nask" data-back="' + esc('nd-' + n.id) + '">' + esc(T.cancel) + '</button>'
-        : '<button class="lnk" type="button" data-pa="ndel"' + fk('nd-' + n.id) + '>' + esc(T.noteDel) + '</button>') + '</div></form>';
-  }
-  function tabNotes(it) {
-    var list = st.data.notes.filter(function (n) { return n.itemId === it.id; }).sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
-    var h = st.nopen === 'new' ? '<div class="pr-nnew">' + noteForm(null, true) + '</div>' : '<div class="row"><button class="btn sm fill" data-pa="nnew"' + fk('nn') + '>' + esc(T.notesNew) + '</button></div>';
-    if (!list.length && st.nopen !== 'new') h += '<p class="note pr-gap">' + esc(T.notesNone) + '</p>';
-    h += '<div class="pr-notes">' + list.map(function (n) {
-      var on = st.nopen === n.id, d = n.updatedAt ? M.keyOf(new Date(n.updatedAt)) : '';
-      return '<div class="pr-note' + (on ? ' on' : '') + '"><button class="pr-nrow" data-pa="nopen" data-id="' + esc(n.id) + '" aria-expanded="' + on + '"' + fk('no-' + n.id) + '><b>' + esc(n.title) + '</b>' +
-        (d ? '<span>' + esc(fill(T.updated, { d: M.dlabel(d) })) + '</span>' : '') + '</button>' + (on ? noteForm(n, false) : '') + '</div>';
+  function tabWrite(it) {
+    var all = writings(it), stars = all.filter(function (w) { return w.star; }), list = st.wstar ? stars : all, h = writeForm(it, null);
+    if (!all.length) return h + '<p class="note pr-gap">' + esc(T.writeNone) + '</p>';
+    if (stars.length || st.wstar) h += '<div class="chips pr-gap" role="group" aria-label="' + esc(T.tabs.write) + '">' +
+      '<button class="chip' + (st.wstar ? '' : ' on') + '" data-pa="wfilter" data-v="" aria-pressed="' + !st.wstar + '"' + fk('wf0') + '>' + esc(T.writeAll) + '</button>' +
+      '<button class="chip' + (st.wstar ? ' on' : '') + '" data-pa="wfilter" data-v="1" aria-pressed="' + !!st.wstar + '"' + fk('wf1') + '>★ ' + esc(T.writeStar) + '</button></div>';
+    if (!list.length) h += '<p class="note pr-gap">' + esc(T.starNone) + '</p>';
+    h += '<div class="pr-ws">' + list.map(function (w) {
+      var sub = w.itemId !== it.id ? itemById(w.itemId) : null, on = st.nopen === w.id, asking = st.ask === 'w:' + w.id;
+      var ph = (w.photos || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); }).filter(function (p) { return /^data:image\//.test(String(p.data || '')); });
+      var r = '<div class="pr-w' + (w.star ? ' star' : '') + '"><div class="pr-whead"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small>' +
+        (sub ? '<span class="pr-itag">' + esc(sub.name) + '</span>' : '') + (w.kind === 'memo' ? '<span class="note">' + esc(T.writeFromToday) + '</span>' : w.kind === 'log' ? '<span class="note">' + esc(fill(T.writeFromLog, { a: w.amount, u: w.unit })) + '</span>' : '') +
+        '<button class="pr-star" data-pa="wstar" data-id="' + esc(w.id) + '" data-kind="' + w.kind + '" aria-pressed="' + w.star + '" aria-label="' + esc(w.star ? T.unstar : T.star) + '" title="' + esc(w.star ? T.unstar : T.star) + '"' + fk('ws-' + w.id) + '>' + (w.star ? '★' : '☆') + '</button></div>';
+      if (on) return r + writeForm(it, w) + '</div>';
+      r += (w.title ? '<b class="pr-wt">' + esc(w.title) + '</b>' : '') + (w.body ? '<p class="pr-wbody">' + esc(w.body) + '</p>' : '') +
+        (ph.length ? '<div class="pr-thumbs">' + ph.map(function (p) { return '<figure><img src="' + esc(p.data) + '" alt="' + esc(p.caption || '') + '" loading="lazy">' + (p.caption ? '<figcaption>' + esc(p.caption) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '');
+      if (w.kind === 'log') r += '<div class="pr-wacts"><button class="lnk" data-pa="wlog" data-id="' + esc(w.id) + '"' + fk('wed-' + w.id) + '>' + esc(T.writeLogEdit) + '</button></div>';
+      else if (w.kind === 'memo' && !w.local) r += '<div class="pr-wacts"><button class="lnk" data-pa="wgo"' + fk('wed-' + w.id) + '>' + esc(T.writeGo) + '</button></div>';
+      else r += '<div class="pr-wacts">' + (asking ? '<span class="note">' + esc(T.writeDelAsk) + '</span><button class="btn sm fill" data-pa="wdelyes" data-id="' + esc(w.id) + '" data-kind="' + w.kind + '"' + fk('wy-' + w.id) + '>' + esc(T.delYes) + '</button><button class="lnk" data-pa="nask" data-back="' + esc('wd-' + w.id) + '">' + esc(T.cancel) + '</button>'
+        : '<button class="lnk" data-pa="wedit" data-id="' + esc(w.id) + '"' + fk('wed-' + w.id) + '>' + esc(T.writeEdit) + '</button><button class="lnk" data-pa="wdel" data-id="' + esc(w.id) + '"' + fk('wd-' + w.id) + '>' + esc(T.writeDel) + '</button>') + '</div>';
+      return r + '</div>';
     }).join('') + '</div>';
     return h;
   }
 
   function tabSet(it) {
     var nl = st.data.logs.filter(function (l) { return l.itemId === it.id; }).length, nn = st.data.notes.filter(function (n) { return n.itemId === it.id; }).length;
-    var h = '<h3 class="pr-h3">' + esc(T.setTitle) + '</h3>' + itemForm('edit', it);
+    var h = '<h3 class="pr-h3">' + esc(T.setTitle) + '</h3>' + itemForm('edit', it), hasKids = M.pracKids(items(), it.id).length > 0;
+    if (!parentId(it) && !it.archived && !hasKids) h += '<div class="pr-blk"><p class="note">' + esc(T.kidSetNote) + '</p><div class="row pr-gap"><button class="btn sm" data-pa="kidnew"' + fk('kidset') + '>' + esc(T.kidSet) + '</button></div></div>';
     h += '<div class="pr-blk"><p class="note">' + esc(T.archiveNote) + '</p><div class="row pr-gap"><button class="btn sm" data-pa="arch"' + fk('ar') + '>' + esc(it.archived ? T.unarchive : T.archive) + '</button></div></div>';
-    h += '<div class="pr-blk">' + (st.ask === 'item' ? '<p class="pr-warn">' + esc(fill(T.delItemAsk, { n: it.name, l: nl, k: nn })) + '</p><div class="row pr-gap"><button class="btn sm fill" data-pa="idelyes"' + fk('iy') + '>' + esc(T.delYes) + '</button><button class="lnk" data-pa="nask" data-back="idel">' + esc(T.cancel) + '</button></div>'
+    h += '<div class="pr-blk">' + (st.ask === 'item' ? '<p class="pr-warn">' + esc(fill(T.delItemAsk, { n: it.name, l: nl, k: nn }) + (hasKids ? T.delKids : '')) + '</p><div class="row pr-gap"><button class="btn sm fill" data-pa="idelyes"' + fk('iy') + '>' + esc(T.delYes) + '</button><button class="lnk" data-pa="nask" data-back="idel">' + esc(T.cancel) + '</button></div>'
       : '<button class="lnk pr-danger" data-pa="idel"' + fk('idel') + '>' + esc(T.delItem) + '</button>') + '</div>';
     return h;
   }
@@ -589,6 +719,7 @@
     if (extra) { f.log = extra.log || ''; f.date = extra.date || ''; }
     if (!f.log) f.nid = M.pracId('pl-');
     st.lf = f; st.focus = lfKey() + '-a'; st.select = true; st.ask = '';
+    if (isFam(f)) st.focus = lfKey() + '-a-' + famRows(itemById(itemId), f)[0].id;
   }
   function closeLog() { var b = st.lf && st.lf.back; st.lf = null; if (b) st.focus = b; }
   function submitLog(form) {
@@ -608,34 +739,64 @@
       C.toast(msg); announce(msg); render(true);
     });
   }
-  function submitItem(form) {
-    var mode = form.getAttribute('data-mode'), el = form.elements, col = form.querySelector('input[name$="-color"]:checked'), ic = form.querySelector('input[name$="-icon"]:checked');
-    var r = M.pracItemCheck({ name: el.name.value, unit: el.unit.value, color: col ? col.value : '', icon: ic ? ic.value : '' }, P.max);
-    if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
-    var it;
-    if (mode === 'new') it = { id: (st.itf && st.itf.id) || M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: safeColor(r.item.color), icon: r.item.icon, archived: false, createdAt: Date.now() };
-    else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = safeColor(r.item.color); it.icon = r.item.icon; }
-    run(form, store.putItem(it), function () {
-      upsert(st.data.items, it);
-      if (mode === 'new') { st.itf = null; st.focus = 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
-      else C.toast(T.saved);
-      render(true);
+  function submitFam(form) {
+    var f = st.lf, it = f && itemById(f.item);
+    if (!it) return;
+    var el = form.elements, rows = famRows(it, f), out = [], i, k, v, r;
+    f.nids = f.nids || {};
+    for (i = 0; i < rows.length; i++) {
+      k = rows[i]; v = el['a-' + k.id] ? String(el['a-' + k.id].value).replace(/^\s+|\s+$/g, '') : '';
+      if (!v) continue;
+      r = M.pracLogCheck({ date: el.date.value, amount: v, note: out.length ? '' : el.note.value }, C.TODAY, P.max);
+      if (!r.ok) { setErr(form, P.err[r.err], r.err === 'amount' ? 'a-' + k.id : r.err === 'note' ? 'note' : el.date.type === 'hidden' ? '' : 'date'); return; }
+      out.push({ id: f.nids[k.id] || (f.nids[k.id] = M.pracId('pl-')), itemId: k.id, date: r.log.date, amount: r.log.amount, note: r.log.note, at: Date.now() + out.length });
+    }
+    if (!out.length) { setErr(form, P.err.fam, 'a-' + rows[0].id); return; }
+    var chain = Promise.resolve();
+    out.forEach(function (lg) { chain = chain.then(function () { return store.putLog(lg).then(function () { upsert(st.data.logs, lg); }); }); });
+    run(form, chain, function () {
+      var msg = fill(T.loggedFam, { n: it.name, c: out.length }), d = ymd(out[0].date);
+      if (f.ctx === 'zone' || f.ctx === 'day') { st.calY = d.y; st.calM = d.m; st.day = out[0].date; }
+      closeLog();
+      if (f.ctx === 'day') st.focus = 'da';
+      C.toast(msg); announce(msg); render(true);
     });
   }
-  function submitNote(form) {
-    var id = form.getAttribute('data-id'), el = form.elements, old = id ? noteById(id) : null;
-    var r = M.pracNoteCheck({ title: el.title.value, body: el.body.value }, P.max);
+  function submitItem(form) {
+    var mode = form.getAttribute('data-mode'), el = form.elements, col = form.querySelector('input[name$="-color"]:checked'), ic = form.querySelector('input[name$="-icon"]:checked');
+    var r = M.pracItemCheck({ name: el.name.value, unit: el.unit.value, color: col ? col.value : '', icon: ic ? ic.value : '', goal: el.goal ? el.goal.value : '',
+      parent: el.parent ? el.parent.value : mode === 'new' && st.itf ? st.itf.parent : (itemById(st.item) || {}).parent }, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
-    var n = { id: old ? old.id : (st.nnid || (st.nnid = M.pracId('pn-'))), itemId: st.item, title: r.note.title, body: r.note.body, updatedAt: Date.now() };
-    run(form, store.putNote(n), function () { upsert(st.data.notes, n); st.nopen = ''; st.focus = 'no-' + n.id; C.toast(T.saved); render(true); });
+    var it, selfId = mode === 'new' ? '' : st.item, pr = itemById(r.item.parent);
+    // 只能放在「大項目」底下；自己底下已經有小項目的，不能再放到別人底下
+    if (!pr || pr.id === selfId || parentId(pr) || (selfId && M.pracKids(items(), selfId).length)) r.item.parent = '';
+    pr = itemById(r.item.parent);
+    if (mode === 'new') it = { id: (st.itf && st.itf.id) || M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: pr ? safeColor(pr.color) : P.colors[topLevel(items()).length % P.colors.length],
+      icon: M.pracGuessIcon(r.item.name, P.icons), goal: '', parent: r.item.parent, archived: false, createdAt: Date.now() };
+    else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = pr ? safeColor(pr.color) : col ? safeColor(r.item.color) : safeColor(it.color); it.icon = r.item.icon; it.goal = r.item.goal; it.parent = r.item.parent; }
+    run(form, store.putItem(it), function () {
+      upsert(st.data.items, it);
+      if (mode === 'new') { st.itf = null; st.focus = st.item ? 'kid-' + it.id : 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
+      else C.toast(T.saved);
+      render(true); C.refresh();
+    });
   }
-  function submitInsp(form) {
-    var ta = form.elements.text, v = ta.value.replace(/^\s+|\s+$/g, '');
-    if (!v) { ta.focus(); return; }
-    ta.value = '';
-    st.focus = 'insp-' + st.item;
-    C.addMemo(v, st.item);
-    C.toast(T.inspKept); announce(T.inspKept);
+  function submitWrite(form) {
+    var id = form.getAttribute('data-id'), el = form.elements, old = id ? noteById(id) : null, cur = itemById(st.item);
+    var r = M.pracWriteCheck({ body: el.body.value }, P.max);
+    if (!r.ok) { setErr(form, P.err[r.err], 'body'); return; }
+    if (id && form.getAttribute('data-kind') === 'memo') {
+      // 在「今天」留下、只存在這台裝置的隨手記：就地改
+      C.editMemo(id, r.note.body); st.nopen = ''; st.focus = 'wed-' + id; C.toast(T.saved); announce(T.saved); render(true); return;
+    }
+    if (id && !old) return;
+    var target = el.item && cur && famIds(cur).indexOf(el.item.value) > -1 ? el.item.value : st.item, n;
+    if (old) { n = copy(old); n.title = r.note.title; n.body = r.note.body; }
+    else n = { id: st.nnid || (st.nnid = M.pracId('pn-')), itemId: target, title: r.note.title, body: r.note.body, updatedAt: Date.now() };
+    run(form, store.putNote(n), function () {
+      upsert(st.data.notes, n); st.nopen = ''; st.nnid = ''; st.focus = old ? 'wed-' + n.id : 'wr-' + st.item;
+      C.toast(old ? T.saved : T.writeKept); announce(old ? T.saved : T.writeKept); render(true); C.refresh();
+    });
   }
 
   function onSubmit(e) {
@@ -646,8 +807,8 @@
     var k = form.getAttribute('data-form');
     if (k === 'log') submitLog(form);
     else if (k === 'item') submitItem(form);
-    else if (k === 'note') submitNote(form);
-    else if (k === 'insp') submitInsp(form);
+    else if (k === 'write') submitWrite(form);
+    else if (k === 'fam') submitFam(form);
   }
   function onClick(e) {
     var b = e.target.closest('[data-pa]');
@@ -673,7 +834,7 @@
         form = b.closest('form');
         if (form) { form.elements.name.value = x.name; form.elements.unit.value = x.unit; syncUnits(form); return; }
         st.itf = newItf(x.name, x.unit); st.focus = 'if-new-save'; break;
-      case 'icancel': st.itf = null; st.focus = 'new'; break;
+      case 'icancel': st.focus = st.itf && st.itf.parent && st.item ? 'kidnew' : 'new'; st.itf = null; break;
       case 'unit':
         form = b.closest('form');
         form.elements.unit.value = b.getAttribute('data-u'); syncUnits(form); return;
@@ -681,7 +842,7 @@
       case 'copen': if (st.lf && st.lf.ctx === 'card' && st.lf.item === id) closeLog(); else openLog('card', id, null, 'cl-' + id); break;
       case 'zopen': if (st.lf && st.lf.ctx === 'zone') closeLog(); else openLog('zone', st.item, null, 'zl'); break;
       case 'dadd': openLog('day', st.item, { date: st.day }, 'da'); break;
-      case 'ledit': openLog('edit', st.item, { log: b.getAttribute('data-log') }, 'le-' + b.getAttribute('data-log')); break;
+      case 'ledit': x = logById(b.getAttribute('data-log')); if (!x) return; openLog('edit', x.itemId, { log: x.id }, 'le-' + x.id); break;
       case 'lcancel': closeLog(); break;
       case 'ldel': st.ask = 'log:' + b.getAttribute('data-log'); st.lf = null; st.focus = 'ly-' + b.getAttribute('data-log'); break;
       case 'nask': st.ask = ''; st.focus = b.getAttribute('data-back') || ''; break;
@@ -695,14 +856,44 @@
       case 'day': st.day = st.day === b.getAttribute('data-d') ? '' : b.getAttribute('data-d'); if (st.lf && (st.lf.ctx === 'day' || st.lf.ctx === 'edit')) st.lf = null; st.ask = ''; break;
       case 'chart': st.chart = b.getAttribute('data-c'); st.focus = st.chart === 'week' ? 'cw' : 'cm'; break;
       case 'photo': if (it) C.startPhoto(it.id); return;
-      case 'nnew': st.nopen = 'new'; st.nnid = M.pracId('pn-'); st.ask = ''; st.focus = 'nf-new-t'; break;
-      case 'nopen': if (st.nopen === id) { st.nopen = ''; st.focus = 'no-' + id; } else { st.nopen = id; st.focus = 'nf-' + id + '-b'; } st.ask = ''; break;
-      case 'nclose': x = st.nopen; st.nopen = ''; st.ask = ''; st.focus = x && x !== 'new' ? 'no-' + x : 'nn'; break;
-      case 'ndel': st.ask = 'note:' + st.nopen; st.focus = 'ny-' + st.nopen; break;
-      case 'ndelyes':
-        x = st.nopen;
-        run(null, store.delNote(x), function () { st.data.notes = drop(st.data.notes, x); st.nopen = ''; st.ask = ''; st.focus = 'nn'; C.toast(T.deleted); render(true); });
+      case 'wedit': st.nopen = id; st.ask = ''; st.focus = 'we-' + id; break;
+      case 'wclose': x = st.nopen; st.nopen = ''; st.focus = 'wed-' + x; break;
+      case 'wfilter': st.wstar = b.getAttribute('data-v') === '1'; st.nopen = ''; st.ask = ''; st.focus = st.wstar ? 'wf1' : 'wf0'; break;
+      case 'wdel': st.ask = 'w:' + id; st.nopen = ''; st.focus = 'wy-' + id; break;
+      case 'wdelyes':
+        if (b.getAttribute('data-kind') === 'memo') { C.dropMemo(id); st.ask = ''; st.focus = 'wr-' + st.item; C.toast(T.deleted); announce(T.deleted); break; }
+        run(null, store.delNote(id), function () { st.data.notes = drop(st.data.notes, id); st.ask = ''; st.focus = 'wr-' + st.item; C.toast(T.deleted); announce(T.deleted); render(true); C.refresh(); });
         return;
+      case 'wstar':
+        st.focus = 'ws-' + id;
+        if (b.getAttribute('data-kind') === 'note') {
+          x = noteById(id); if (!x) return;
+          x = copy(x); if (x.star) delete x.star; else x.star = true;
+          run(null, store.putNote(x), function () { upsert(st.data.notes, x); render(true); C.refresh(); });
+          return;
+        }
+        // 在「今天」留下的隨手記：星星和它的標籤一樣，記在這台裝置
+        if (!C.O.ann) C.O.ann = {};
+        x = C.O.ann[id] || (C.O.ann[id] = {});
+        if (x.star) delete x.star; else x.star = true;
+        C.save(); render(true); C.refresh(); return;
+      case 'wgo': C.goPane('trail'); return;
+      case 'wlog':
+        x = logById(id); if (!x) return;
+        st.tab = 'log'; st.day = x.date; st.calY = ymd(x.date).y; st.calM = ymd(x.date).m; st.nopen = ''; st.ask = '';
+        openLog('edit', x.itemId, { log: x.id }, 'le-' + x.id); break;
+      case 'famwhole': if (st.lf) { st.lf.whole = true; st.focus = lfKey() + '-a-' + st.lf.item; } break;
+      case 'qown': st.itf = newItf('', ''); st.lf = null; st.focus = 'if-new-name'; C.goPane('practice'); return;
+      case 'qex':
+        x = P.examples[+b.getAttribute('data-i')];
+        if (!x) return;
+        x = { id: M.pracId('pi-'), name: x.name, unit: x.unit, color: P.colors[0], icon: M.pracGuessIcon(x.name, P.icons), goal: '', parent: '', archived: false, createdAt: Date.now() };
+        run(null, store.putItem(x), function () { upsert(st.data.items, x); openLog('quick', x.id, null, 'qp-' + x.id); C.toast(fill(T.added, { n: x.name })); render(true); C.refresh(); });
+        return;
+      case 'goaledit': st.focus = 'if-edit-goal'; setTab('set'); return;
+      case 'kidnew':
+        if (!it) return;
+        st.itf = newItf('', it.unit); st.itf.parent = it.id; st.itf.color = it.color; st.lf = null; st.focus = 'if-new-name'; break;
       case 'arch':
         if (!it) return;
         x = copy(it); x.archived = !it.archived;
@@ -712,7 +903,13 @@
       case 'idelyes':
         if (!it) return;
         x = it.id;
-        run(null, store.delItem(x), function () {
+        // 底下的小項目留著，變成獨立的項目
+        var chain = Promise.resolve();
+        M.pracKids(items(), x).forEach(function (k) {
+          var c = copy(k); c.parent = '';
+          chain = chain.then(function () { return store.putItem(c).then(function () { upsert(st.data.items, c); }); });
+        });
+        run(null, chain.then(function () { return store.delItem(x); }), function () {
           st.data = M.pracRemoveItem(st.data, x);
           // 屬於這個項目的心得靈感留著，只拿掉標記
           C.O.memos = M.pracUnmark(C.O.memos, x); C.save();
@@ -753,6 +950,7 @@
     var t = e.target;
     if (t.getAttribute('aria-invalid')) t.removeAttribute('aria-invalid');
     if (t.name === 'unit' && t.form) syncUnits(t.form);
+    if (t.classList && t.classList.contains('pr-grow')) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
   }
 
   // ── 對外介面 ──
@@ -784,7 +982,7 @@
     if (id) {
       if (st.item === id && !zone.hidden) return true;
       var cur = nowYM();
-      st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.calY = cur.y; st.calM = cur.m;
+      st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wstar = false; st.itf = null; st.calY = cur.y; st.calM = cur.m;
       if (st.lf && st.lf.ctx !== 'quick') st.lf = null;
       st.focus = 'zh';
       render(true);
@@ -824,9 +1022,16 @@
   }
 
   // 給 index.html 的靈感框、足跡、資料說明用
-  function activeItems() { return active().map(function (x) { return { id: x.id, name: x.name }; }); }
-  function itemIcon(id) { var k = iconOf(id ? itemById(id) : null); return k ? iconSrc(k) : ''; }
-  function itemName(id) { var it = id ? itemById(id) : null; return it ? it.name : ''; }
+  function activeItems() { return ordered(active()).map(function (x) { return { id: x.id, name: fullName(x) }; }); }
+  // 在項目頁寫下的，也排進「我的地圖」的紀錄（要改、要刪回項目頁）
+  function notePages() {
+    return st.data.notes.filter(function (n) { return n && n.body && itemById(n.itemId); }).map(function (n) {
+      return { id: n.id, key: n.updatedAt ? M.keyOf(new Date(n.updatedAt)) : C.TODAY, text: n.body, itemId: n.itemId, pn: true };
+    });
+  }
+  function starred(id) { var n = noteById(id); return !!(n && n.star); }
+  function itemIcon(id) { var it = id ? itemById(id) : null, k = iconOf(it) || iconOf(itemById(parentId(it))); return k ? iconSrc(k) : ''; }
+  function itemName(id) { var it = id ? itemById(id) : null; return it ? fullName(it) : ''; }
   function mode() { return store && store.kind === 'cloud' ? 'cloud' : store && store.kind === 'out' ? 'out' : 'local'; }
 
   // 一次加幾個項目（第一次進來的流程用）：[{name, unit, amount?}]。同名的不重複加；給了 amount 就順手記今天一筆。
@@ -850,6 +1055,6 @@
   }
 
   g.JtePrac = { init: init, render: render, setUser: setUser, handleHash: handleHash, exportData: exportData,
-    items: activeItems, itemName: itemName, itemIcon: itemIcon, mode: mode, pending: pending, quickAdd: quickAdd,
+    items: activeItems, itemName: itemName, itemIcon: itemIcon, notePages: notePages, starred: starred, mode: mode, pending: pending, quickAdd: quickAdd,
     move: move, moving: function () { return st.moving; }, cloudOff: function () { return !!st.cloudOff; } };
 })(window);

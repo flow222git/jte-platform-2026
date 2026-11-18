@@ -140,16 +140,17 @@
   // ── 我的練習：users/{uid}/practiceItems|practiceLogs|practiceNotes。文件代號就是 id，id 不寫進內容。 ──
   var KINDS = { items: 'practiceItems', logs: 'practiceLogs', notes: 'practiceNotes' };
   var FIELDS = {
-    items: ['name', 'unit', 'color', 'archived', 'createdAt', 'icon'],
+    items: ['name', 'unit', 'color', 'archived', 'createdAt', 'icon', 'parent', 'goal'],
     logs: ['itemId', 'date', 'amount', 'note', 'at'],
-    notes: ['itemId', 'title', 'body', 'updatedAt']
+    notes: ['itemId', 'title', 'body', 'updatedAt', 'star']
   };
   // 規則要求每個欄位都在；呼叫端沒給的補上預設值，免得整筆被擋。
+  var OPTIONAL = { icon: 1, parent: 1, goal: 1, star: 1 };
   var DEFAULTS = { icon: '', name: '', unit: '', color: '', archived: false, createdAt: 0, itemId: '', date: '', amount: 0, note: '', at: 0, title: '', body: '', updatedAt: 0 };
   function pick(kind, obj) {
     var out = {}, f = FIELDS[kind], i;
     for (i = 0; i < f.length; i++) {
-      if (f[i] === 'icon' && !obj.icon) continue; // 圖示是選填的：沒挑就不寫這一欄
+      if (OPTIONAL[f[i]] && !obj[f[i]]) continue; // 選填的欄位：沒有就不寫這一欄
       out[f[i]] = obj[f[i]] !== undefined ? obj[f[i]] : DEFAULTS[f[i]];
     }
     return out;
