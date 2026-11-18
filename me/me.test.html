@@ -174,7 +174,7 @@ check('actParse：找到場次與標題列，只留核准欄位',()=>{const r=M.
   eq(r.sessions.length,2);eq(r.sessions[0].date,'2026-11-05');eq(r.sessions[0].photoUrl,'https://photos.example.com/a');eq(r.sessions[1].date,'2026-11-06');
   eq(r.rows.length,4);const a=r.rows[0];eq(a.email,'ming@example.com');eq(a.pre.body,4);eq(a.pre.mood,5);eq(a.post.body,7);eq(a.post.mood,8);
   eq(a.expect,'想放鬆');eq(a.feeling,'第一行\n第二行，有 "引號"');eq(a.takeaway,'回家泡茶');eq(a.feedback,'很喜歡');eq(a.flags.length,0);
-  eq(Object.keys(a).sort().join(),'email,expect,feedback,feeling,flags,line,post,pre,takeaway');
+  eq(Object.keys(a).sort().join(),'email,expect,feedback,feeling,flags,line,post,pre,sesDate,takeaway');
   const s=JSON.stringify(r);['甲公司','王小明','李小華','設計','一般員工'].forEach(x=>ok(s.indexOf(x)<0,'leak '+x));ok(!/9|10/.test(JSON.stringify(a)),'評分（9、10）不進來');});
 check('actParse：可疑的列有標記；沒填問卷的標 blank；沒有標題列回 ok=false',()=>{const r=M.actParse(ACT_PASTE,D.act.cols,D.act.tlds);
   eq(r.rows[1].flags.sort().join(),'score,tld');eq(r.rows[1].pre.body,null);eq(r.rows[2].flags.join(),'blank');eq(r.rows[3].flags.join(),'missing');
@@ -279,6 +279,25 @@ check('actAlso：每一場替預設參加的人補一筆空白紀錄，問卷裡
   eq(x[0].title,recs[0].title);eq(x[0].date,recs[0].date);eq(x[0].feedback,'');eq(x[0].pre.body,null);eq(M.actLines(x[0],D.act).length,0);
   eq(M.actAlso([],recs,D.act,D.act.tlds).length,0);eq(M.actAlso(['lead@example.com'],[],D.act,D.act.tlds).length,0);
   const p=M.actPlan(recs.concat(x),{[M.actDocId('2026-11-05-tea','lead@example.com')]:{status:'declined'}});eq(p.skipped,1);eq(p.added,4);});
+check('sheetId／actTabTitle：網址取代號、分頁名稱去掉月份',()=>{eq(M.sheetId('https://docs.google.com/spreadsheets/d/1abcDEF_ghi-jklMNOpqrstuvwxyz0123456789/edit?gid=5#gid=5'),'1abcDEF_ghi-jklMNOpqrstuvwxyz0123456789');eq(M.sheetId('https://example.com/x'),'');eq(M.sheetId(null),'');
+  eq(M.actTabTitle('11月 茶席'),'茶席');eq(M.actTabTitle('8月香料茶'),'香料茶');eq(M.actTabTitle(' 茶席 '),'茶席');eq(M.actTabTitle('7月'),'7月');});
+check('actSheet：單場整頁同一場；多場靠「場次日期」欄；缺欄與缺日期會回報',()=>{
+  const H=ACT_HDR.split(T),row=(e,d)=>{const r=['','某人','','',e,'4','5','想放鬆','還好','7','8','9','10','9','泡茶','10','10','喜歡'];if(d!==undefined)r.push(d);return r};
+  const one={gid:0,title:'9月 睡眠',rows:[[],['活動日期','2026/09/04','活動照片連結','https://photos.example.com/s'],H,row('a@example.com'),row('b@example.com')]};
+  const two={gid:536187484,title:'11月 茶席',rows:[['活動日期','2026/11/05','活動照片連結','https://photos.example.com/a'],['活動日期','2026/11/06'],H.concat(['場次日期']),row('a@example.com','2026/11/05'),row('c@example.com','2026-11-06'),row('d@example.com',''),row('e@example.com','2026/12/01')]};
+  const noCol={gid:7,title:'8月香料茶',rows:[['活動日期','2026/08/21'],['活動日期','2026/08/27'],H,row('f@example.com')]};
+  const bad={gid:9,title:'說明',rows:[['這一頁是說明']]},noDate={gid:10,title:'3月 騎馬',rows:[H,row('g@example.com')]};
+  const r=M.actSheet([one,two,noCol,bad,noDate],D.act.cols,D.act.tlds,D.act.sesCol);
+  eq(r.sessions.map(s=>s.title+'|'+s.date+'|'+s.slug).join(),'睡眠|2026-09-04|g0,茶席|2026-11-05|g536187484,茶席|2026-11-06|g536187484,香料茶|2026-08-21|g7,香料茶|2026-08-27|g7');
+  ok(r.sessions.every(s=>M.actSessionOk(s.date+'-'+s.slug)));eq(r.sessions[1].photoUrl,'https://photos.example.com/a');
+  eq(r.rows.map(x=>x.email[0]+x.ses).join(),'a0,b0,a1,c2,d-1,e-1,f-1');eq(r.rows[2].pre.body,4);
+  eq(r.problems.map(p=>p.tab+':'+p.why).join(),'8月香料茶:noSesCol,說明:noHeader,3月 騎馬:noDate');
+  const same=M.actSheet([{gid:3,title:'茶',rows:[['活動日期','2026/01/02'],['活動日期','2026/01/02'],H]}],D.act.cols,D.act.tlds,D.act.sesCol);eq(same.sessions.map(s=>s.slug).join(),'g3,g3-2');
+  eq(M.actParse(ACT_PASTE,D.act.cols,D.act.tlds).rows[0].sesDate,'','貼上的舊格式不受影響');});
+check('actAlso：給了場次清單時，沒有任何一列要送的場次也會補',()=>{
+  const S2=[{sessionId:'2026-11-05-tea',title:'茶席',date:'2026-11-05',photoUrl:''},{sessionId:'2026-11-06-tea',title:'茶席',date:'2026-11-06',photoUrl:''}];
+  const x=M.actAlso(['lead@example.com'],[],D.act,D.act.tlds,S2);eq(x.map(r=>r.sessionId+'|'+r.title).join(),'2026-11-05-tea|茶席,2026-11-06-tea|茶席');
+  const own=M.actRecord(Object.assign({},AROW,{email:'lead@example.com'}),SES,D.act);eq(M.actAlso(['lead@example.com'],[own],D.act,D.act.tlds,S2).map(r=>r.sessionId).join(),'2026-11-06-tea','問卷裡已有的場次不重複');});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });
