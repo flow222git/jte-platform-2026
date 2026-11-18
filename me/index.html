@@ -1040,7 +1040,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 /* 開場 */
 var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O.lastVisit=TODAY;save()}
-$('#demo').hidden=!DEMO;$('#heroline').textContent='練習生手帳。'+M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
+$('#demo').hidden=!DEMO;$('#heroline').textContent='練息生手帳。'+M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
 $('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;
