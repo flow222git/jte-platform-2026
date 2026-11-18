@@ -528,8 +528,8 @@
     return n > 0 ? n : null;
   }
   function trimS(v) { return String(v == null ? '' : v).replace(/^\s+|\s+$/g, ''); }
-  // 項目的手繪圖示：只收「a、b、c 加兩個字」這種代號（對到 me/doodles/ 的檔名），其他一律當作沒有。
-  function pracIcon(v) { return /^[a-c][1-7][1-9a-c]$/.test(String(v || '')) ? String(v) : ''; }
+  // 項目的手繪圖示：只收「a 到 d 加兩個字」這種代號（對到 me/doodles/ 的檔名），其他一律當作沒有。
+  function pracIcon(v) { return /^[a-d][1-7][1-9a-c]$/.test(String(v || '')) ? String(v) : ''; }
   function pracItemCheck(x, lim) {
     x = x || {};
     var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '', icon: pracIcon(x.icon) };
