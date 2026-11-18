@@ -643,8 +643,29 @@
     else if (c.prac === 'out') row('practice', 'out', '', 'login');
     else row('practice', 'device', 'me', u ? (c.cloudOff ? '' : 'tocloud') : 'login');
     if (u) row('acts', 'cloud', 'host', c.acts > 0 ? 'acts' : ''); else row('acts', 'none', '', 'login');
-    row('tools', 'device', 'me', '');
+    row('tools', 'tools', 'tools', ''); // 各工具自己決定放哪裡：登入工具後有些會同步到工具自己的雲端，不能寫成只在裝置
     return rows;
+  }
+  // 各工具的每日紀錄有兩份：沒登入工具時寫在 jte_daily_v1，登入後寫在 jte_daily_<信箱>。
+  // dailyKey 算出第二份的名稱（和各工具的算法一樣）；mergeDaily 把兩份排在一起，同一筆不重複。都只讀這台裝置。
+  function dailyKey(email) { email = String(email || ''); return email ? 'jte_daily_' + email.replace(/[^a-zA-Z0-9]/g, '_') : ''; }
+  function mergeDaily(a, b) {
+    var out = {}, seen;
+    function isDay(r) { return r && typeof r === 'object'; }
+    function rid(l) { return l && (l.recordId || l.id) ? String(l.recordId || l.id) : ''; }
+    [a, b].forEach(function (src) {
+      if (!isDay(src)) return;
+      Object.keys(src).forEach(function (k) {
+        var r = src[k], o = out[k], i, id;
+        if (!isDay(r)) return;
+        if (!o) { o = out[k] = {}; for (i in r) if (Object.prototype.hasOwnProperty.call(r, i)) o[i] = r[i]; o.linked = arr(r.linked).slice(); o.moods = arr(r.moods).slice(); return; }
+        seen = {}; o.linked.forEach(function (l) { id = rid(l); if (id) seen[id] = 1; });
+        arr(r.linked).forEach(function (l) { id = rid(l); if (id && seen[id]) return; if (id) seen[id] = 1; o.linked.push(l); });
+        arr(r.moods).forEach(function (m) { if (o.moods.indexOf(m) < 0) o.moods.push(m); });
+        if (r.note && r.note !== o.note) o.note = o.note ? o.note + '\n' + r.note : r.note;
+      });
+    });
+    return out;
   }
   function pracId(prefix) {
     var r = '', i, c = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -659,5 +680,5 @@
     circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
-    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows };
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily };
 })(window);

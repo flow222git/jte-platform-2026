@@ -619,7 +619,10 @@ function demoStore(){return{sw:{year:2026,happy:4,at:TODAY,strengths:{'務實謙
         {id:'t-d3',key:rel(3),created:rel(3)+'T08:00:00',join:{kind:'curious',text:'想學手沖咖啡'},why:['好奇','想創造'],tool:'',before:[],recId:''},
         {id:'t-d4',key:rel(0),created:rel(0)+'T08:00:00',join:{kind:'curious',text:'朋友說太極很好玩'},why:['好奇','有共鳴'],tool:'',before:[],recId:'act-d1'}],
   ann:{'act-d1':{tags:['安定的力量'],enjoy:['E','M'],notes:[{k:TODAY,text:'今天第一次感受到鬆而不懈。'}]},'xq-d1':{tags:['安定的力量'],enjoy:['P'],useful:true},'wy-d1':{tags:['安定的力量'],enjoy:['M']},'ws-d1':{enjoy:['R']},'act-d2':{tags:['安定的力量'],enjoy:['P','M']},'m-d1':{tags:['好玩的事']}}}}
-var daily=DEMO?demoDaily():(readLS('jte_daily_v1')||{});
+// 各工具的紀錄有兩份（沒登入工具／登入工具後），都在這台裝置上，兩份一起讀。
+function toolKey(){var e='';try{e=localStorage.getItem('jte_user_email')||''}catch(x){}return M.dailyKey(e)}
+function readDaily(){var k=toolKey();return M.mergeDaily(readLS('jte_daily_v1'),k?readLS(k):null)}
+var daily=DEMO?demoDaily():readDaily();
 var O=DEMO?demoStore():(readLS('jte_me_v1')||{});
 ['themes','memos','tris'].forEach(function(k){if(!Array.isArray(O[k]))O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){if(!O[k]||typeof O[k]!=='object')O[k]={}});
 var persona=DEMO?{title:'巽・協作者',ts:rel(40)+'T10:00:00'}:readLS('bagua_persona_v1');
@@ -1107,8 +1110,8 @@ if(id==='dl')downloadData();if(id==='wipe'){S.wipe=true;renderData()}if(id==='wi
   if(id==='cwipeyes'){if(S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return JteCloud.wipeAll()}).then(function(){S.busyDel=false;S.cloud.forEach(function(c){forgetRec(c.id)});S.cloud=[];S.cwipe=false;renderAll();toast(I.wiped)}).catch(function(){S.busyDel=false;toast(I.fail)})}};
 function pick(n,out){$(out).textContent=n.dataset.pick+'。'}
 [['#lensmap','#pick'],['#collage','#pick2']].forEach(function(s){$(s[0]).addEventListener('click',function(e){var n=e.target.closest('.node');if(n)pick(n,s[1])});$(s[0]).addEventListener('keydown',function(e){var n=e.target.closest('.node');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(n,s[1])}})});
-function reload(){if(DEMO)return;daily=readLS('jte_daily_v1')||{};persona=readLS('bagua_persona_v1');renderAll()}
-window.addEventListener('storage',function(e){if(e.key==='jte_daily_v1'||e.key==='bagua_persona_v1')reload();
+function reload(){if(DEMO)return;daily=readDaily();persona=readLS('bagua_persona_v1');renderAll()}
+window.addEventListener('storage',function(e){if(e.key==='jte_daily_v1'||e.key==='bagua_persona_v1'||e.key==='jte_user_email'||(e.key&&e.key===toolKey()))reload();
   else if(e.key==='jte_me_v1'&&!DEMO){var o=readLS('jte_me_v1');if(o&&o.prac!==undefined)O.prac=o.prac;else delete O.prac;renderAll()}});
 /* 還沒驗證信箱的人，點完信裡的連結回到這一頁時，自己檢查一次，不用再按「我驗證好了」。最多五秒查一次。 */
 var verifyAt=0;function verifyCheck(){if(DEMO||!S.user||S.user.verified||!window.JteCloud||!JteCloud.refreshUser)return;var n=Date.now();if(n-verifyAt<5000)return;verifyAt=n;JteCloud.refreshUser().catch(function(){})}

@@ -234,7 +234,7 @@ check('route：我的練習項目網址',()=>{const r=M.route('#practice-item-ab
 check('pracMode：沒登入、問過、沒問過',()=>{eq(M.pracMode({u:'cloud'},'',true),'local');eq(M.pracMode({u:'cloud'},null,false),'local');eq(M.pracMode({u:'cloud'},'u',false),'cloud');eq(M.pracMode({u:'local'},'u',true),'local');eq(M.pracMode({},'u',true),'cloud');eq(M.pracMode({},'u',false),'ask');eq(M.pracMode(null,'u',false),'ask');eq(M.pracMode({other:'cloud'},'u',false),'ask');});
 check('buildPages：靈感的項目標記會留下，沒有就不帶',()=>{const ps=M.buildPages({},[{id:'m1',key:'2026-11-05',text:'a',itemId:'pi-1'},{id:'m2',key:'2026-11-04',text:'b'},{id:'ins-1',key:'2026-11-03',text:'',itemId:'pi-1',photos:[{id:'p',data:'data:image/jpeg;base64,A',order:0}]}]);eq(ps[0].itemId,'pi-1');ok(!('itemId' in ps[1]));eq(ps[2].itemId,'pi-1');});
 check('資料與公開：練習紀錄的說明在，雲端那句講到管理者，原本兩句沒動',()=>{ok(D.privacy.practiceLocal.indexOf('這台裝置')>-1);ok(D.privacy.practiceCloud.indexOf('管理者')>-1);ok(D.privacy.now.indexOf('只存在這台裝置')>-1);ok(D.privacy.cloud.indexOf('只有你看得到')>-1);});
-check('我的資料設定表：沒登入時都在裝置，雲端的三類要登入才能選',()=>{const r=M.dataRows({user:false,prac:'local'}),by={};r.forEach(x=>by[x.key]=x);eq(r.length,6);eq(by.states.where,'device');eq(by.states.act,'');eq(by.words.who,'me');eq(by.photos.where,'none');eq(by.photos.act,'login');eq(by.practice.where,'device');eq(by.practice.act,'login');eq(by.acts.act,'login');eq(by.tools.where,'device');});
+check('我的資料設定表：沒登入時都在裝置，雲端的三類要登入才能選',()=>{const r=M.dataRows({user:false,prac:'local'}),by={};r.forEach(x=>by[x.key]=x);eq(r.length,6);eq(by.states.where,'device');eq(by.states.act,'');eq(by.words.who,'me');eq(by.photos.where,'none');eq(by.photos.act,'login');eq(by.practice.where,'device');eq(by.practice.act,'login');eq(by.acts.act,'login');eq(by.tools.where,'tools');eq(by.tools.who,'tools');ok(D.privacy.table.where.tools.indexOf('雲端')>-1,'工具那一列不能寫成只在裝置');});
 check('我的資料設定表：登入後練習紀錄可以換地方，雲端的都寫明管理者看得到',()=>{let by={};M.dataRows({user:true,prac:'local',photos:0,acts:0}).forEach(x=>by[x.key]=x);eq(by.practice.act,'tocloud');eq(by.practice.who,'me');eq(by.photos.where,'cloud');eq(by.photos.who,'admin');eq(by.photos.act,'');eq(by.acts.who,'host');eq(by.acts.act,'');
   by={};M.dataRows({user:true,prac:'cloud',photos:2,acts:1}).forEach(x=>by[x.key]=x);eq(by.practice.where,'cloud');eq(by.practice.who,'admin');eq(by.practice.act,'tolocal');eq(by.photos.act,'wipephotos');eq(by.acts.act,'acts');
   by={};M.dataRows({user:true,prac:'local',cloudOff:true}).forEach(x=>by[x.key]=x);eq(by.practice.act,'');
@@ -246,6 +246,13 @@ check('平台介紹：短的四句講到手帳、工具、鏡子、資料留在�
   eq(I.lines.length,4);ok(I.lines.join('').indexOf('手帳')>-1);ok(I.lines.join('').indexOf('鏡子')>-1);ok(I.lines.join('').indexOf('這台裝置')>-1);ok(I.go&&I.more&&I.again);
   ['what','book','tools','keep','look'].forEach(k=>ok(P[k]&&P[k].h,k));eq(P.what.items.length,4);eq(P.keep.items.length,4);ok(P.tools.octenso.indexOf('研究假設')>-1);ok(P.keep.items[0].b.indexOf('算命')>-1);
   ok(!/因為|所以你|代表你/.test(JSON.stringify(P)),'不捏因果');D.toolbox.groups.forEach(g=>g.tools.forEach(t=>ok(D.tools[t]&&D.tools[t].desc,t)));});
+check('工具紀錄：登入工具後的那一份也讀得到，兩份排在一起、同一筆不重複，原本的資料不被改動',()=>{
+  eq(M.dailyKey('a.b@example.com'),'jte_daily_a_b_example_com');eq(M.dailyKey(''),'');eq(M.dailyKey(null),'');
+  const a={'2026-11-18':{note:'早上',moods:['剛好'],linked:[{source:'XiaoQi',recordId:'xq-1'}]},'2026-11-17':{linked:[{source:'HRV',recordId:'h-1'}]}};
+  const b={'2026-11-18':{note:'晚上',moods:['剛好','有勁'],linked:[{source:'BSRS',id:'bs-1',recordId:'bs-1'},{source:'XiaoQi',recordId:'xq-1'}]},'2026-11-16':{linked:[{source:'BuYi',recordId:'b-1'}]},bad:'x'};
+  const m=M.mergeDaily(a,b);eq(Object.keys(m).sort().join(),'2026-11-16,2026-11-17,2026-11-18');eq(m['2026-11-18'].linked.map(l=>l.recordId).join(),'xq-1,bs-1');eq(m['2026-11-18'].moods.join(),'剛好,有勁');ok(m['2026-11-18'].note.indexOf('早上')>-1&&m['2026-11-18'].note.indexOf('晚上')>-1);
+  eq(a['2026-11-18'].linked.length,1,'原本的不動');eq(Object.keys(M.mergeDaily(null,null)).length,0);eq(M.mergeDaily(a,null)['2026-11-17'].linked.length,1);
+  const ps=M.buildPages(m,[],[]);ok(ps.some(p=>p.src==='BSRS'),'登入後存的那一筆排得進頁面');});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
