@@ -10,7 +10,7 @@
 --r-sm:14px;--r-md:20px;--r-lg:28px;--r-xl:40px;--shadow:0 18px 40px rgba(20,34,56,.06);
 --font:'GenJyuuGothic','Yuanti TC','Noto Sans TC','PingFang TC',-apple-system,BlinkMacSystemFont,'Microsoft JhengHei',sans-serif;--font-en:'Inter','Noto Sans TC',sans-serif;
 --hw:"HanziPen TC","Hannotate TC","Kaiti TC","BiauKai","DFKai-SB",cursive;
---font-head:var(--font);--edge:solid;
+--font-head:var(--font);--edge:solid;--edge-w:1px;
 --s-good:#F3FBC9;--s-keen:#FFEBD6;--s-empty:#EBEAFF;--s-full:#FFE9FE;--s-stuck:#E2F9FF}
 
 /* 手帳：米色紙、鉛筆棕的字、鉛筆感的邊線、不用陰影；標題用手寫字，內文維持原本的字確保好讀。
@@ -28,7 +28,38 @@ background-image:radial-gradient(rgba(59,58,53,.07) 1px,transparent 1.2px),radia
 background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
 :root[data-theme="sketch"] h1,:root[data-theme="sketch"] h2,:root[data-theme="sketch"] h3{font-family:var(--font-head);letter-spacing:.04em}
 
-/* 切換鈕（簡潔｜手帳），由 JteTheme.mount() 畫出來。 */
+/* 手繪：蠟筆。參考使用者的速寫本照片：奶油色的紙，赭褐色的筆當主線，
+   顏色是塗上去的（看得到筆觸方向，紙從縫裡透出來），線細而鬆，沒有硬邊、沒有陰影。
+   標題用手寫字，底下掃一道幾個顏色的蠟筆筆觸；內文維持原本的字確保好讀。
+   2026-11-18 使用者要求加這一版；同日改為「用蠟筆不要用麥克筆」。 */
+:root[data-theme="doodle"]{--dark:#6B4226;--blue-deep:#5A3A24;--blue:#3F6FB5;--blue-bright:#5B8FD9;--blue-soft:#C4D6EC;--blue-pale:#EFE7C9;
+--orange:#E9925A;--orange-dark:#B8602F;--yellow:#F2CF4A;--yellow-soft:#F4E7B0;--green:#6E9F4A;--teal:#6DB3A0;--purple:#8E7FC4;--purple-soft:#C7C2E6;--purple-sub:#DDD9EE;
+--c-lilac:#C7C2E6;--c-lime:#CFDD9A;--c-pink:#F0BCC8;--c-cyan:#B4D9E0;--c-sky:#A9CDEB;
+--ink:#3A2E25;--ink-2:#5A4A3D;--ink-3:#6E5D4E;--ink-4:#8A7867;--line:rgba(107,66,38,.5);--bg:#F7F3E6;--bg-soft:#F5F1E3;
+--r-sm:13px 7px 12px 6px/7px 12px 6px 13px;--r-md:20px 10px 17px 9px/10px 17px 9px 20px;--r-lg:28px 13px 24px 12px/13px 24px 12px 28px;--r-xl:38px 17px 32px 15px/17px 32px 15px 38px;
+--shadow:none;
+--font-head:var(--hw);--edge:solid;--edge-w:1.5px;
+--s-good:#CFDD9A;--s-keen:#F5C98A;--s-empty:#C7C2E6;--s-full:#F2B3A6;--s-stuck:#A9CDEB;
+/* 蠟筆塗色：斜的筆觸加上紙的顆粒，蓋在任何底色上都看得到紙透出來。 */
+--crayon:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .97  0 0 0 0 .95  0 0 0 0 .89  0 0 0 1.5 -.62'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),repeating-linear-gradient(-58deg,rgba(251,248,238,0) 0 3px,rgba(251,248,238,.34) 3px 4.2px,rgba(251,248,238,0) 4.2px 7px,rgba(251,248,238,.2) 7px 7.8px);
+--swash:linear-gradient(90deg,#5B8FD9 0%,#6DB3A0 30%,#F2CF4A 58%,#E8866A 100%);
+/* 手畫的框（border-image 用）、塗色毛毛的邊（mask 用）、右上角的小畫。 */
+--frame:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='r' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='2' seed='7' result='w'/><feDisplacementMap in='SourceGraphic' in2='w' scale='5'/></filter><filter id='q' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='.07' numOctaves='2' seed='21' result='w'/><feDisplacementMap in='SourceGraphic' in2='w' scale='6'/></filter><rect x='9' y='9' width='102' height='102' rx='17' fill='none' stroke='%236B4226' stroke-opacity='.72' stroke-width='2.2' stroke-linecap='round' filter='url(%23r)'/><rect x='10' y='8' width='101' height='104' rx='20' fill='none' stroke='%236B4226' stroke-opacity='.3' stroke-width='1.5' filter='url(%23q)'/></svg>");
+--patch:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='r' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='.09' numOctaves='2' seed='5' result='w'/><feDisplacementMap in='SourceGraphic' in2='w' scale='7'/></filter><rect x='4.5' y='5' width='91' height='90' rx='9' filter='url(%23r)'/></svg>");
+--hero-art:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 190'><filter id='c' x='-5%' y='-5%' width='110%' height='110%'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' seed='2' result='n'/><feColorMatrix in='n' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.32' result='m'/><feComposite in='SourceGraphic' in2='m' operator='in' result='g'/><feTurbulence type='fractalNoise' baseFrequency='.035' numOctaves='2' seed='9' result='w'/><feDisplacementMap in='g' in2='w' scale='5'/></filter><g filter='url(%23c)' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='%237A8F86' stroke-width='2.2'><path d='M14 150 L44 112 L60 132 L92 84 L118 126 L138 110 L170 152'/><path d='M70 112 L84 96 M96 100 L110 122 M40 128 L52 122'/></g><g stroke='%236E9F4A' stroke-width='3' opacity='.8'><path d='M30 152 L50 128 M48 154 L70 126 M66 154 L92 118 M88 154 L112 126 M110 154 L132 130 M132 154 L150 136'/></g><g stroke-width='2'><path stroke='%23D9534F' d='M318 30 C300 8 356 2 352 30 C350 52 304 50 318 30'/><path stroke='%23F2CF4A' d='M306 26 C320 4 372 22 350 42 C332 58 296 44 306 26'/><path stroke='%235B8FD9' d='M312 44 C296 22 348 6 362 26 C372 44 328 60 312 44'/></g><g stroke='%238A4B22'><path stroke-width='11' d='M196 62 C204 34 236 26 252 44 M214 40 C236 26 266 34 272 60 M192 70 C192 82 188 90 190 98 M274 64 C278 78 276 88 278 96'/><circle cx='216' cy='82' r='12' stroke-width='5.5'/><circle cx='250' cy='82' r='12' stroke-width='5.5'/><path stroke-width='5' d='M228 80 L238 80'/><path stroke-width='3.4' d='M233 98 L230 106 M222 116 C230 124 244 122 250 114'/></g><g stroke-width='6' opacity='.85'><path stroke='%235B8FD9' d='M196 150 L226 132 M208 154 L240 134'/><path stroke='%23F2CF4A' d='M226 154 L256 134 M240 156 L270 136'/><path stroke='%238E7FC4' d='M258 154 L286 136'/><path stroke='%23E8866A' d='M274 156 L300 138'/></g><g stroke='%238C7A2E' stroke-width='4.5'><path d='M330 120 L372 124 M336 122 L330 150 M346 122 L344 152 M362 124 L360 152 M372 124 L374 150 M330 120 L322 104 L334 108 M372 124 L384 112'/></g><g stroke='%235B8FD9' stroke-width='2' opacity='.8'><path d='M150 34 q6 -8 12 0 q6 8 12 0 q6 -8 12 0'/><path d='M22 56 l6 -8 M34 58 l2 -10 M46 60 l-4 -9'/></g></g></svg>")}
+
+:root[data-theme="doodle"] body{background-color:var(--bg-soft);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .32  0 0 0 0 .2  0 0 0 .5 -.2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.16'/></svg>")}
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2,:root[data-theme="doodle"] h3{font-family:var(--font-head);letter-spacing:.04em;color:var(--dark)}
+/* 標題底下掃一道蠟筆：幾個顏色接在一起，用斜線遮罩做出筆觸。 */
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2{position:relative;z-index:0;width:-moz-fit-content;width:fit-content;max-width:100%}
+:root[data-theme="doodle"] h1::after,:root[data-theme="doodle"] h2::after{content:"";position:absolute;z-index:-1;left:-6px;right:-14px;bottom:-.08em;height:.46em;
+background:var(--swash);opacity:.62;border-radius:40% 60% 55% 45%/60% 40% 60% 40%;
+-webkit-mask:repeating-linear-gradient(-58deg,#000 0 2.4px,transparent 2.4px 4.2px);mask:repeating-linear-gradient(-58deg,#000 0 2.4px,transparent 2.4px 4.2px)}
+:root[data-theme="doodle"] .jte-theme-switch,:root[data-theme="doodle"] .jte-theme-switch button{border-radius:var(--r-sm)}
+:root[data-theme="doodle"] .jte-theme-switch{border:1.5px solid transparent;border-image:var(--frame) 40/9px/3px stretch}
+:root[data-theme="doodle"] .jte-theme-switch button[aria-pressed="true"]{background-image:var(--crayon)}
+
+/* 切換鈕（簡潔｜手帳｜手繪），由 JteTheme.mount() 畫出來。 */
 .jte-theme-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .jte-theme-switch button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-2);padding:6px 12px;min-height:32px;border-radius:999px;cursor:pointer}
 .jte-theme-switch button[aria-pressed="true"]{background:var(--dark);color:#fff}

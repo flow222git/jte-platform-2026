@@ -14,7 +14,8 @@ const ok=(v,m)=>{if(!v)throw new Error(m||'not ok')};
 const T=window.JteTheme,H=document.documentElement,K='jte_theme_v1';
 
 check('預設是簡潔，<html> 一開始就有 data-theme',()=>{eq(T.get(),'simple');eq(H.getAttribute('data-theme'),'simple')});
-check('normalize：只認 simple 與 sketch，其他一律簡潔',()=>{eq(T.normalize('sketch'),'sketch');eq(T.normalize('simple'),'simple');
+check('normalize：只認 simple、sketch、doodle，其他一律簡潔',()=>{eq(T.normalize('sketch'),'sketch');eq(T.normalize('simple'),'simple');eq(T.normalize('doodle'),'doodle');
+  ['toString','constructor','__proto__'].forEach(v=>eq(T.normalize(v),'simple'));
   [null,undefined,'','dark','SKETCH',1,{}].forEach(v=>eq(T.normalize(v),'simple'))});
 check('set(sketch)：get、data-theme、localStorage 都跟著變',()=>{eq(T.set('sketch'),'sketch');eq(T.get(),'sketch');eq(H.getAttribute('data-theme'),'sketch');eq(localStorage.getItem(K),'sketch')});
 check('手帳版真的換了設定：底色、邊線樣式、標題字體變數',()=>{const cs=getComputedStyle(H);
@@ -22,8 +23,8 @@ check('手帳版真的換了設定：底色、邊線樣式、標題字體變數'
 check('set 不認得的值退回簡潔',()=>{eq(T.set('neon'),'simple');eq(H.getAttribute('data-theme'),'simple');eq(localStorage.getItem(K),'simple');
   eq(getComputedStyle(H).getPropertyValue('--bg-soft').trim(),'#F6F8FB')});
 check('存的值不認得時，get 當成簡潔',()=>{localStorage.setItem(K,'whatever');eq(T.get(),'simple');localStorage.setItem(K,'sketch');eq(T.get(),'sketch');localStorage.removeItem(K);eq(T.get(),'simple')});
-check('mount：畫出兩顆鈕，目前的那個是選取態，點了會換',()=>{const el=document.getElementById('sw');T.set('simple');T.mount(el);
-  const bs=el.querySelectorAll('button');eq(bs.length,2);eq(bs[0].textContent,'簡潔');eq(bs[1].textContent,'手帳');
+check('mount：每種風格一顆鈕，目前的那個是選取態，點了會換',()=>{const el=document.getElementById('sw');T.set('simple');T.mount(el);
+  const bs=el.querySelectorAll('button');eq(bs.length,3);eq(bs[0].textContent,'簡潔');eq(bs[1].textContent,'手帳');eq(bs[2].textContent,'手繪');
   eq(bs[0].getAttribute('aria-pressed'),'true');eq(el.getAttribute('role'),'group');ok(el.getAttribute('aria-label'));
   el.querySelectorAll('button')[1].click();eq(T.get(),'sketch');eq(el.querySelectorAll('button')[1].getAttribute('aria-pressed'),'true');eq(el.querySelectorAll('button')[0].getAttribute('aria-pressed'),'false')});
 check('另一個分頁改了風格（storage 事件），這一頁跟著換',()=>{T.set('sketch');
@@ -32,7 +33,9 @@ check('另一個分頁改了風格（storage 事件），這一頁跟著換',()=
 check('localStorage 丟例外時不壞',()=>{const g=Storage.prototype.getItem,s=Storage.prototype.setItem;
   Storage.prototype.getItem=()=>{throw new Error('blocked')};Storage.prototype.setItem=()=>{throw new Error('blocked')};
   try{eq(T.get(),'simple');eq(T.set('sketch'),'sketch');eq(H.getAttribute('data-theme'),'sketch')}finally{Storage.prototype.getItem=g;Storage.prototype.setItem=s}});
-check('名稱只有這一份',()=>{eq(Object.keys(T.names).join(),'simple,sketch');eq(T.names.simple,'簡潔');eq(T.names.sketch,'手帳')});
+check('名稱只有這一份',()=>{eq(Object.keys(T.names).join(),'simple,sketch,doodle');eq(T.names.simple,'簡潔');eq(T.names.sketch,'手帳');eq(T.names.doodle,'手繪')});
+check('手繪版（蠟筆）換了設定：細而鬆的線、沒有陰影、不規則的邊角、有塗色的筆觸',()=>{T.set('doodle');const cs=getComputedStyle(H);eq(H.getAttribute('data-theme'),'doodle');eq(cs.getPropertyValue('--edge-w').trim(),'1.5px');
+  eq(cs.getPropertyValue('--shadow').trim(),'none');ok(/repeating-linear-gradient/.test(cs.getPropertyValue('--crayon')),'蠟筆筆觸');ok(!/[0-9]\s*0 rgba/.test(cs.getPropertyValue('--shadow')),'不用硬陰影');ok(cs.getPropertyValue('--r-lg').indexOf('/')>0,'不規則邊角');T.set('simple');eq(getComputedStyle(H).getPropertyValue('--edge-w').trim(),'1px')});
 try{localStorage.removeItem(K)}catch(e){}
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 // jte-testrun.py 靠這個 POST 收結果（行首 PASS／FAIL／DONE）。

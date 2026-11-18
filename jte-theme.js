@@ -1,15 +1,15 @@
-/* 全站共用的風格切換：簡潔（simple，預設）／手帳（sketch）。
+/* 全站共用的風格切換：簡潔（simple，預設）／手帳（sketch）／手繪（doodle）。
    在 <head> 裡同步載入（不加 defer），頁面畫出來之前就把 <html data-theme> 設好，不會先閃一下另一種風格。
    偏好只存在這台裝置的 localStorage（jte_theme_v1），不上傳、不跟著帳號。
    規格：docs/superpowers/specs/2026-11-17-platform-style-switch-design.md */
 (function (g) {
   'use strict';
   var KEY = 'jte_theme_v1';
-  var NAMES = { simple: '簡潔', sketch: '手帳' };
+  var NAMES = { simple: '簡潔', sketch: '手帳', doodle: '手繪' };
   var LABEL = '網站風格';
   var mounts = [];
 
-  function normalize(v) { return v === 'sketch' ? 'sketch' : 'simple'; }
+  function normalize(v) { return typeof v === 'string' && Object.prototype.hasOwnProperty.call(NAMES, v) ? v : 'simple'; }
   function read() { try { return g.localStorage.getItem(KEY); } catch (e) { return null; } }
   function get() { return normalize(read()); }
   function apply(name) {
