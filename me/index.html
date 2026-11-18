@@ -46,6 +46,19 @@ section{padding:22px 0}
 .sec{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .sec h2{font-size:26px;line-height:1.3;letter-spacing:.02em}
 .sec>span{font-size:12.5px;color:var(--ink-3);padding-bottom:5px}
+/* 區塊收放：標題可以點，收起來只剩標題那一行和一句現況。 */
+[data-fold] .sec>div:first-child{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
+[data-fold] .sec h2{cursor:pointer}
+.foldbtn{border:0;background:none;width:36px;height:36px;border-radius:50%;display:inline-grid;place-items:center;color:var(--ink-3);flex:none}
+.foldbtn:hover{color:var(--dark)}
+.foldbtn::before{content:"";width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
+.folded .foldbtn::before{transform:translateX(-2px) rotate(-45deg)}
+.foldsum{font-size:13px;color:var(--ink-3)}
+section.folded{padding:10px 0}
+section.folded>:not(.sec){display:none!important}
+section.folded .sec{margin-bottom:0}
+section.folded .sec>:not(:first-child){display:none}
+@media(prefers-reduced-motion:reduce){.foldbtn::before{transition:none}}
 .panel{background:var(--bg);border:var(--edge-w,1px) var(--edge) var(--line);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow)}
 .now{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
 .gcards{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
@@ -487,18 +500,18 @@ dialog.authdlg .in{width:100%}
     <div class="subbar" id="subs" role="group" aria-label="體驗足跡或生命地圖"></div>
     <!-- 體驗足跡：回頭看留下了什麼 -->
     <div id="sub-trail">
-    <section aria-labelledby="h-sum">
+    <section aria-labelledby="h-sum" data-fold="sum">
       <div class="sec"><div><h2 id="h-sum">這個月</h2></div><span>數字只跟自己比。</span></div>
       <div class="bento two">
         <div class="tile t1"><span class="k">這個月留下</span><div class="num"><span id="st-month">0</span><small>頁</small></div><div class="trirow" id="st-tris"></div><p id="st-trip"></p><i class="geo"></i></div>
         <div class="tile t2"><span class="k">身體能量</span><div class="num"><span id="st-hrv">—</span><small id="st-hrvl"></small></div><svg class="spark" id="spark" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="身體能量趨勢"></svg><p><a href="../hrv/">量一次</a></p></div>
       </div>
     </section>
-    <section aria-labelledby="h-cap" id="sec-capsule" hidden>
+    <section aria-labelledby="h-cap" id="sec-capsule" data-fold="cap" hidden>
       <div class="sec"><div><h2 id="h-cap"></h2></div><span>一筆舊紀錄回來找你。不是每天都有。</span></div>
       <div class="panel" id="capsule"></div>
     </section>
-    <section aria-labelledby="h-rec">
+    <section aria-labelledby="h-rec" data-fold="rec">
       <div class="sec"><div><h2 id="h-rec">紀錄</h2></div><div class="chips" id="views"><button class="chip on" data-v="list">列表</button><button class="chip" data-v="cal">月曆</button></div></div>
       <div class="trail">
         <div class="panel">
@@ -512,7 +525,7 @@ dialog.authdlg .in{width:100%}
 
     <!-- 生命地圖：同一批紀錄，換一個角度看 -->
     <div id="sub-overview" hidden>
-    <section aria-labelledby="h-org">
+    <section aria-labelledby="h-org" data-fold="org">
       <div class="sec"><div><h2 id="h-org">整理出來的樣子</h2></div><span>同一批紀錄，換一個角度看。</span></div>
       <div class="lensbar"><div class="chips" id="lens" role="group" aria-label="切換視角"></div><span class="note" id="lensq"></span></div>
       <div class="sheets two">
@@ -522,7 +535,7 @@ dialog.authdlg .in{width:100%}
         <div class="sheet"><h3><span id="mtitle"></span></h3><div class="manual" id="manual"></div></div>
       </div>
     </section>
-    <section aria-labelledby="h-mir">
+    <section aria-labelledby="h-mir" data-fold="mir">
       <div class="sec"><div><h2 id="h-mir">兩面鏡子</h2></div><span>排在一起，不互相解釋。</span></div>
       <div class="mirrors">
         <div class="tile t3"><span class="k">八態能格・我的底色</span><div class="mid" id="st-oct"></div><p id="st-octp" style="margin-top:14px"></p></div>
@@ -530,11 +543,12 @@ dialog.authdlg .in{width:100%}
       </div>
       <div class="panel" id="swedit" hidden style="margin-top:14px"></div>
     </section>
-    <section aria-labelledby="h-data">
+    <section aria-labelledby="h-data" data-fold="data">
       <div class="sec"><div><h2 id="h-data">我的資料</h2></div><span>要不要給別人看，由你決定。</span></div>
       <div class="panel" id="data"></div>
     </section>
   </div>
+    <div class="row" style="padding:0 0 12px"><button class="lnk" id="foldall" hidden></button></div>
 
   </div>
 
@@ -974,11 +988,21 @@ function exportImage(){var defs=document.querySelector('svg[width="0"] defs');if
   var img=new Image();img.onload=function(){try{var c=document.createElement('canvas');c.width=720;c.height=1180;c.getContext('2d').drawImage(img,0,0,720,1180);c.toBlob(function(b){if(!b){dl(url,'.svg');return}var u=URL.createObjectURL(b);dl(u,'.png');setTimeout(function(){URL.revokeObjectURL(u);URL.revokeObjectURL(url)},4000)},'image/png')}catch(e){dl(url,'.svg')}};
   img.onerror=function(){dl(url,'.svg')};img.src=url;toast('圖存在這台裝置上，要不要傳給別人由你決定')}
 
+/* 區塊收放（先做我的地圖）：本人收放過的記在這台裝置；網址帶 ?show=代號 時那一塊這次先打開。 */
+var FOLD=D.fold,foldForce={};(function(){var m=/[?&]show=([a-z]+)/.exec(location.search);if(m)foldForce[m[1]]=true})();
+function folded(k){return !foldForce[k]&&M.foldState(O.prefs.fold,FOLD.closed,k)}
+function foldSum(k){return (FOLD.sum[k]||'').replace('{n}',k==='rec'?S.pages.length:$('#st-month').textContent)}
+function renderFold(){var any=false;[].forEach.call(document.querySelectorAll('[data-fold]'),function(s){var k=s.dataset.fold,f=folded(k),h=s.querySelector('.sec h2'),b=s.querySelector('.foldbtn'),m=s.querySelector('.foldsum');
+  if(!b){b=document.createElement('button');b.className='foldbtn';b.type='button';h.parentNode.appendChild(b);m=document.createElement('span');m.className='foldsum';h.parentNode.appendChild(m)}
+  s.classList.toggle('folded',f);b.setAttribute('aria-expanded',String(!f));b.setAttribute('aria-label',(f?FOLD.open:FOLD.close)+'「'+h.textContent+'」');m.textContent=f?foldSum(k):'';
+  if(f&&!s.hidden&&!s.parentNode.hidden)any=true});
+  var a=$('#foldall');a.textContent=FOLD.all;a.hidden=!any}
+function setFold(k,v){if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};delete foldForce[k];O.prefs.fold[k]=v;save();renderFold()}
 function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});firstRecheck();
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
   if(oc||linked.length){save();toast('回來了。這次做的事接上了起點')}
-  renderJust();renderActs();renderWelcome();renderGates();renderOpen();renderUseful();renderToolbox();renderExplore();renderPractice();renderCare();JtePrac.render();renderMemoItem();renderTiles();renderSW();renderCapsule();renderList();renderCal();renderCollage();renderMap();renderManual();renderData();
+  renderJust();renderActs();renderWelcome();renderGates();renderOpen();renderUseful();renderToolbox();renderExplore();renderPractice();renderCare();JtePrac.render();renderMemoItem();renderTiles();renderSW();renderCapsule();renderList();renderCal();renderCollage();renderMap();renderManual();renderData();renderFold();
   var cl=liveTris().filter(whole).length;
   if(S.closed!==null&&cl>S.closed){if(!O.firsts.tri){O.firsts.tri=true;save();toast(D.found.first)}else toast(D.found.next)}
   S.closed=cl}
@@ -1197,8 +1221,12 @@ $('#first').onclick=function(e){if(!FS)return;var t=e.target,b;
     FS.step++;renderFirst()}};
 $('#first').addEventListener('change',function(e){var t=e.target;if(FS&&t.dataset&&t.dataset.funit)FS.units[t.dataset.funit]=t.value});
 $('#first').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fown'&&!e.isComposing){e.preventDefault();fAddOwn()}});
+$('#view-mymap').addEventListener('click',function(e){var t=e.target.closest('.foldbtn')||e.target.closest('.sec h2'),s=t&&t.closest('[data-fold]');
+  if(s){setFold(s.dataset.fold,!folded(s.dataset.fold));return}
+  if(e.target.id==='foldall'){[].forEach.call(document.querySelectorAll('[data-fold]'),function(x){if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};O.prefs.fold[x.dataset.fold]=false});foldForce={};save();renderFold()}});
 JteTheme.mount($('#themesw'));
 showPane(location.hash);
+(function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
 $('#introlnk').textContent=F.intro.again;$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
