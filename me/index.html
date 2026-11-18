@@ -935,7 +935,7 @@ function exportImage(){var defs=document.querySelector('svg[width="0"] defs');if
   var img=new Image();img.onload=function(){try{var c=document.createElement('canvas');c.width=720;c.height=1180;c.getContext('2d').drawImage(img,0,0,720,1180);c.toBlob(function(b){if(!b){dl(url,'.svg');return}var u=URL.createObjectURL(b);dl(u,'.png');setTimeout(function(){URL.revokeObjectURL(u);URL.revokeObjectURL(url)},4000)},'image/png')}catch(e){dl(url,'.svg')}};
   img.onerror=function(){dl(url,'.svg')};img.src=url;toast('圖存在這台裝置上，要不要傳給別人由你決定')}
 
-function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});
+function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});firstRecheck();
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
   if(oc||linked.length){save();toast('回來了。這次做的事接上了起點')}
@@ -1090,9 +1090,14 @@ JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goP
 /* ── 第一次進來：先挑一本，再點三下 ──
    只在手帳完全空白、而且還沒問過的時候出現（網址加 ?first 可以強制再看一次）。
    回答先排成預覽；按「好，開始用」才一次寫進去：狀態進今天、項目進「我的練習」。之後不再問。 */
-var F=window.JTE_FIRST_DATA,FS=null;
+var F=window.JTE_FIRST_DATA,FS=null,firstForced=/[?&]first\b/.test(location.search);
 function firstBlank(){return !S.pages.length&&!O.tris.length&&!O.memos.length&&!Object.keys(O.states).length&&!Object.keys(O.ann).length&&!JtePrac.items().length}
-function firstNeeded(){if(/[?&]first\b/.test(location.search))return true;return !DEMO&&O.prefs.first!=='done'&&firstBlank()}
+function firstNeeded(){if(firstForced)return true;return !DEMO&&O.prefs.first!=='done'&&firstBlank()}
+// 有登入的人，手帳是不是空的要等雲端的東西回來才知道：這台裝置是空的，不代表他是新來的。
+// 所以先等登入狀態；沒登入就直接問，有登入就等雲端讀完再看。問到一半（還在挑本子）才發現他有東西，就自己收起來。
+function firstAuth(u){if(!S.firstWait)return;S.firstWait=false;if(!u){if(firstNeeded())firstStart();return}
+  var n=0;(function again(){setTimeout(function(){if(FS||!S.user)return;if(JtePrac.pending()&&++n<4){again();return}if(firstNeeded())firstStart()},2500)})()}
+function firstRecheck(){if(FS&&FS.step===0&&!firstForced&&!firstBlank())firstEnd()}
 function fAll(){return FS.items.concat(FS.own)}
 function fUnit(n){var all=D.prac.examples.concat(F.q2.extra),i;for(i=0;i<all.length;i++)if(all[i].name===n)return all[i].unit;return F.q2.ownUnit}
 function fHome(){var h='',st=FS.state,its=fAll(),cs=D.prac.colors;
@@ -1147,10 +1152,10 @@ $('#first').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.
 JteTheme.mount($('#themesw'));
 showPane(location.hash);
 $('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
-if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud()});if(!S.cloudOk)JtePrac.setUser(null)}
+if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
 renderAll();
-if(firstNeeded())firstStart();
+if(firstForced||DEMO||!S.cloudOk){if(firstNeeded())firstStart()}else S.firstWait=true;
 window.__me={S:S,O:O,reload:reload,M:M};
 })();
 
