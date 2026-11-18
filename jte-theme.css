@@ -10,7 +10,7 @@
 --r-sm:14px;--r-md:20px;--r-lg:28px;--r-xl:40px;--shadow:0 18px 40px rgba(20,34,56,.06);
 --font:'GenJyuuGothic','Yuanti TC','Noto Sans TC','PingFang TC',-apple-system,BlinkMacSystemFont,'Microsoft JhengHei',sans-serif;--font-en:'Inter','Noto Sans TC',sans-serif;
 --hw:"HanziPen TC","Hannotate TC","Kaiti TC","BiauKai","DFKai-SB",cursive;
---font-head:var(--font);--edge:solid;
+--font-head:var(--font);--edge:solid;--edge-w:1px;
 --s-good:#F3FBC9;--s-keen:#FFEBD6;--s-empty:#EBEAFF;--s-full:#FFE9FE;--s-stuck:#E2F9FF}
 
 /* 手帳：米色紙、鉛筆棕的字、鉛筆感的邊線、不用陰影；標題用手寫字，內文維持原本的字確保好讀。
@@ -28,7 +28,28 @@ background-image:radial-gradient(rgba(59,58,53,.07) 1px,transparent 1.2px),radia
 background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
 :root[data-theme="sketch"] h1,:root[data-theme="sketch"] h2,:root[data-theme="sketch"] h3{font-family:var(--font-head);letter-spacing:.04em}
 
-/* 切換鈕（簡潔｜手帳），由 JteTheme.mount() 畫出來。 */
+/* 手繪：白紙加淡淡的格線、粗黑的筆線、不規則的邊角、色塊像麥克筆塗的、卡片有一道手畫的硬陰影。
+   標題用手寫字並畫一道螢光筆；內文維持原本的字確保好讀。2026-11-18 使用者要求加這一版。 */
+:root[data-theme="doodle"]{--dark:#1f1d1a;--blue-deep:#1f1d1a;--blue:#2B59C3;--blue-bright:#3F77E0;--blue-soft:#BFD3FA;--blue-pale:#FFF3B8;
+--orange:#FF8A1F;--orange-dark:#D9650A;--yellow:#FFD92E;--yellow-soft:#FFF3B8;--purple-sub:#DCD7FF;
+--c-lilac:#B9B2FF;--c-lime:#D8F04C;--c-pink:#FFA9E4;--c-cyan:#8FE3F2;--c-sky:#8CCBFF;
+--ink:#1f1d1a;--ink-2:#45413a;--ink-3:#5c574e;--ink-4:#777065;--line:#1f1d1a;--bg:#FFFEF8;--bg-soft:#FBF8EC;
+--r-sm:14px 6px 12px 5px/6px 12px 5px 14px;--r-md:22px 8px 18px 7px/8px 18px 7px 22px;--r-lg:30px 10px 26px 9px/10px 26px 9px 30px;--r-xl:40px 14px 34px 12px/14px 34px 12px 40px;
+--shadow:4px 5px 0 rgba(31,29,26,.9);
+--font-head:var(--hw);--edge:solid;--edge-w:2px;
+--s-good:#E3F56A;--s-keen:#FFC27A;--s-empty:#CBC4FF;--s-full:#FFB6E8;--s-stuck:#A5E9F5}
+
+:root[data-theme="doodle"] body{background-color:var(--bg-soft);
+background-image:linear-gradient(rgba(43,89,195,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(43,89,195,.07) 1px,transparent 1px);
+background-size:24px 24px}
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2,:root[data-theme="doodle"] h3{font-family:var(--font-head);letter-spacing:.04em}
+/* 螢光筆：只畫在字的下半截，寬度跟著字。 */
+:root[data-theme="doodle"] h1,:root[data-theme="doodle"] h2{width:-moz-fit-content;width:fit-content;max-width:100%;
+background:linear-gradient(transparent 58%,rgba(255,217,46,.85) 58%,rgba(255,217,46,.85) 92%,transparent 92%);padding:0 6px 0 2px;margin-left:-2px}
+:root[data-theme="doodle"] .jte-theme-switch,:root[data-theme="doodle"] .jte-theme-switch button{border-radius:var(--r-sm)}
+:root[data-theme="doodle"] .jte-theme-switch{border-width:2px}
+
+/* 切換鈕（簡潔｜手帳｜手繪），由 JteTheme.mount() 畫出來。 */
 .jte-theme-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .jte-theme-switch button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-2);padding:6px 12px;min-height:32px;border-radius:999px;cursor:pointer}
 .jte-theme-switch button[aria-pressed="true"]{background:var(--dark);color:#fff}
