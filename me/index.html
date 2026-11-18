@@ -515,7 +515,7 @@ dialog.authdlg .in{width:100%}
       <div class="sec"><div><h2 id="h-rec">紀錄</h2></div><div class="chips" id="views"><button class="chip on" data-v="list">列表</button><button class="chip" data-v="cal">月曆</button></div></div>
       <div class="trail">
         <div class="panel">
-          <div id="v-list"><input class="in" id="q" type="search" autocomplete="off"><div class="chips" id="filters" style="margin-bottom:18px"></div><div id="list"></div></div>
+          <div id="v-list"><input class="in" id="q" type="search" autocomplete="off"><div class="chips" id="filters" style="margin-bottom:18px"></div><div class="chips" id="itemf" style="margin:-8px 0 18px;align-items:center" hidden></div><p class="note" id="itemnow" style="margin:-8px 0 14px" hidden></p><div id="list"></div></div>
           <div id="v-cal" hidden><div class="calnav"><button id="calprev" aria-label="上個月">‹</button><b id="callbl"></b><button id="calnext" aria-label="下個月">›</button></div><div class="cal" id="cal"></div><p class="note" id="calpick" style="margin-top:12px"></p></div>
         </div>
         <div class="sheet"><h3><span>這個月的樣子</span><button class="lnk" id="export">存成一張圖</button></h3><div id="collage"></div><div class="pick" id="pick2">點一個東西，看它是哪一筆紀錄。</div></div>
@@ -883,17 +883,22 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   (a.notes||[]).forEach(function(n){h+='<p class="add"><small>'+esc(M.dlabel(n.k))+' 補</small>'+esc(n.text)+'</p>'});
   if(tg.length)h+='<div class="tagrow">'+tg.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')+'</div>';
   var has=t&&(t.found||en.length);
-  h+='<div class="acts"><button class="lnk'+(has?'':' pri')+'" data-act="enjoy">'+D.found.ask+'</button>'+((p.tool||p.kind==='活動')?'<button class="lnk'+(a.useful?' pri':'')+'" data-act="useful" aria-pressed="'+!!a.useful+'">'+(a.useful?'已標為對我有用':'對我有用')+'</button>':'')+'<button class="lnk" data-act="tag">加標籤</button>'+(t&&corners(t).join?'<button class="lnk" data-act="motive">'+D.why.ask+'</button>':'<button class="lnk" data-act="why">當時為什麼來</button>')+'<button class="lnk" data-act="note">補一句</button>'+(t&&t.found?'<button class="lnk" data-act="again">'+D.found.again+'</button>':'')+(S.cloud.some(function(c){return c.id===p.id})?'<button class="lnk" data-act="delins">'+I.delIns+'</button>':'')+(p.src==='Act'?'<button class="lnk" data-act="actdrop">'+A.drop+'</button>':'')+'</div>';
+  h+='<div class="acts"><button class="lnk'+(has?'':' pri')+'" data-act="enjoy">'+D.found.ask+'</button>'+((p.tool||p.kind==='活動')?'<button class="lnk'+(a.useful?' pri':'')+'" data-act="useful" aria-pressed="'+!!a.useful+'">'+(a.useful?'已標為對我有用':'對我有用')+'</button>':'')+'<button class="lnk" data-act="tag">加標籤</button>'+(t&&corners(t).join?'<button class="lnk" data-act="motive">'+D.why.ask+'</button>':'<button class="lnk" data-act="why">當時為什麼來</button>')+'<button class="lnk" data-act="note">補一句</button>'+((p.src==='Memo'||p.src==='Insp')&&JtePrac.items().length?'<button class="lnk" data-act="item">'+esc(D.prac.t.memoItem)+'</button>':'')+(itn&&S.item!==p.itemId?'<button class="lnk" data-act="onlyitem" data-it="'+esc(p.itemId)+'">'+esc(D.prac.t.itemOnly.replace('{n}',itn))+'</button>':'')+(t&&t.found?'<button class="lnk" data-act="again">'+D.found.again+'</button>':'')+(S.cloud.some(function(c){return c.id===p.id})?'<button class="lnk" data-act="delins">'+I.delIns+'</button>':'')+(p.src==='Act'?'<button class="lnk" data-act="actdrop">'+A.drop+'</button>':'')+'</div>';
   if(S.sub==='why')h+='<div class="row">'+D.states.map(function(g){return '<button class="chip" data-act="whystate" data-s="'+g.key+'">'+g.name+'</button>'}).join('')+'<input class="in" style="flex:1" maxlength="40" placeholder="或用自己的話：被什麼吸引" aria-label="當時為什麼來"><button class="btn sm" data-act="whysave">留下</button></div>';
   if(S.sub==='tag')h+='<div class="row">'+O.themes.filter(function(x){return tg.indexOf(x.n)<0}).map(function(x){return '<button class="chip" data-act="addtag" data-t="'+esc(x.n)+'">'+esc(x.n)+'</button>'}).join('')+'<input class="in" maxlength="8" placeholder="取一個新的" aria-label="新標籤"><button class="btn sm" data-act="newtag">加入</button></div>';
   if(S.sub==='note')h+='<div class="row"><input class="in" style="flex:1" maxlength="80" placeholder="現在再看，想補什麼" aria-label="補一句"><button class="btn sm" data-act="savenote">留下</button></div>';
   if(S.sub==='enjoy')h+='<div class="row"><input class="in" style="flex:1;min-width:160px" maxlength="80" value="'+esc(t&&t.found||'')+'" placeholder="'+D.found.placeholder+'" aria-label="'+D.found.ask+'"><button class="btn sm" data-act="savefound">留下</button></div><div class="row"><span class="note">也可以貼一個自己的幸福用字</span>'+dotsHTML('data-act="dot"',en)+'</div>';
+  if(S.sub==='item')h+='<div class="row">'+JtePrac.items().map(function(x){return '<button class="chip'+(p.itemId===x.id?' on':'')+'" data-act="setitem" data-it="'+esc(x.id)+'" aria-pressed="'+(p.itemId===x.id)+'">'+esc(x.name)+'</button>'}).join('')+(p.itemId?'<button class="lnk" data-act="setitem" data-it="">'+esc(D.prac.t.memoItemNone)+'</button>':'')+'</div>';
   if(S.sub==='motive'&&t)h+=whyHTML(t);
   if(S.sub==='delins'&&S.cloud.some(function(c){return c.id===p.id}))h+='<div class="row"><span class="note">'+I.delAsk+'</span><button class="btn sm fill" data-act="delyes">'+I.delYes+'</button><button class="lnk" data-act="delins">'+I.cancel+'</button></div>';
   if(S.sub==='actdrop'&&p.src==='Act')h+='<div class="row"><span class="note">'+A.dropAsk+'</span><button class="btn sm fill" data-act="actdropyes">'+A.declineYes+'</button><button class="lnk" data-act="actdrop">'+A.cancel+'</button></div>';
   return h+'</div></div>'}
 function renderList(){$('#filters').innerHTML=['全部'].concat(D.kinds).map(function(k){return '<button class="chip'+(S.filter===k?' on':'')+'" data-f="'+k+'">'+k+'</button>'}).join('');
-  var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec).filter(function(p){return S.filter==='全部'||p.kind===S.filter}),h='',cur='';
+  var PT=D.prac.t,nm={};S.pages.forEach(function(p){if(p.itemId&&!nm[p.itemId]){var n=JtePrac.itemName(p.itemId);if(n)nm[p.itemId]=n}});
+  var ic=M.itemCounts(S.pages,nm),fe=$('#itemf'),ne=$('#itemnow');if(S.item&&!nm[S.item])S.item='';
+  fe.hidden=!ic.length;fe.innerHTML=ic.length?'<span class="note">'+esc(PT.itemFilter)+'</span>'+ic.map(function(x){return '<button class="chip'+(S.item===x.id?' on':'')+'" data-it="'+esc(x.id)+'" aria-pressed="'+(S.item===x.id)+'">'+esc(x.name)+'</button>'}).join(''):'';
+  var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec,nm).filter(function(p){return (S.filter==='全部'||p.kind===S.filter)&&(!S.item||p.itemId===S.item)}),h='',cur='';
+  ne.hidden=!S.item;ne.innerHTML=S.item?esc(PT.itemCount.replace('{n}',nm[S.item]).replace('{c}',ps.length))+' <a class="lnk" href="#practice-item-'+esc(S.item)+'">'+esc(PT.itemPage.replace('{n}',nm[S.item]))+'</a> <button class="lnk" data-it="">'+esc(PT.itemAll)+'</button>':'';
   ps.forEach(function(p){if(p.key!==cur){cur=p.key;h+='<div class="day">'+M.dlabel(p.key)+'</div>'}h+=rowHTML(p)});
   $('#list').innerHTML=h||'<p class="empty">'+(S.q?D.search.none:S.pages.length?'這一類還沒有紀錄。':'還沒有任何紀錄。'+(DEMO?'':'<br><a href="?demo">看示範資料長什麼樣子</a>'))+'</p>'}
 /* 紀錄：月曆 */
@@ -1091,6 +1096,8 @@ $('#open').onclick=function(e){var b=e.target.closest('[data-oa]');if(!b)return;
   save();renderAll()};
 $('#views').onclick=function(e){var b=e.target.closest('[data-v]');if(!b)return;S.view=b.dataset.v;$$('#views .chip').forEach(function(x){x.classList.toggle('on',x===b)});$('#v-list').hidden=S.view!=='list';$('#v-cal').hidden=S.view!=='cal'};
 $('#filters').onclick=function(e){var b=e.target.closest('[data-f]');if(!b)return;S.filter=b.dataset.f;renderList()};
+function pickItem(e){var b=e.target.closest('[data-it]');if(!b)return;var v=b.dataset.it;S.item=S.item===v?'':v;if(S.item&&S.filter!=='全部'&&S.filter!=='隨手記')S.filter='全部';S.open=null;S.sub=null;renderList()}
+$('#itemf').onclick=pickItem;$('#itemnow').onclick=pickItem;
 function forgetRec(id){delete O.ann[id];O.tris.forEach(function(t){if(t.recId===id)t.dropped=true});save()}
 $('#list').onclick=function(e){var act=e.target.closest('[data-act]');
   if(!act){var hd=e.target.closest('.rec>button');if(hd){S.open=S.open===hd.dataset.id?null:hd.dataset.id;S.sub=null;renderList()}return}
@@ -1102,6 +1109,12 @@ $('#list').onclick=function(e){var act=e.target.closest('[data-act]');
   if(k==='actdropyes'){var ar=S.acts.filter(function(x){return 'act-'+x.docId===id})[0];if(!ar||S.busyDel)return;S.busyDel=true;setAct(ar,'declined').then(function(){S.busyDel=false;forgetRec(id);S.open=null;S.sub=null;renderAll();toast(DEMO?A.demoDeclined:A.declined)},function(){S.busyDel=false;toast(A.fail)});return}
   if(k==='delyes'){if(!ci||S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return DEMO?null:JteCloud.deleteInsp(ci)}).then(function(){S.busyDel=false;var i=S.cloud.indexOf(ci);if(i>-1)S.cloud.splice(i,1);forgetRec(id);S.open=null;S.sub=null;renderAll();toast(I.deleted)}).catch(function(){S.busyDel=false;toast(I.fail)});return}
   if(k==='delpic'){if(!ci||S.busyDel)return;S.busyDel=true;Promise.resolve().then(function(){return DEMO?(ci.text||ci.photos.length>1?(ci.photos=ci.photos.filter(function(q){return q.id!==act.dataset.pid}),ci):null):JteCloud.deletePhoto(ci,act.dataset.pid)}).then(function(r){S.busyDel=false;if(!r){var i=S.cloud.indexOf(ci);if(i>-1)S.cloud.splice(i,1);forgetRec(id);S.open=null;S.sub=null}renderAll();toast(I.removed)}).catch(function(){S.busyDel=false;toast(I.fail)});return}
+  if(k==='item'){S.sub=S.sub==='item'?null:'item';renderList();return}
+  if(k==='onlyitem'){S.item=act.dataset.it;if(S.filter!=='全部'&&S.filter!=='隨手記')S.filter='全部';S.open=null;S.sub=null;renderList();return}
+  if(k==='setitem'){var iv=act.dataset.it||'',mm=O.memos.filter(function(m){return m&&String(m.id)===id})[0],PT=D.prac.t;
+    if(mm){if(iv)mm.itemId=iv;else delete mm.itemId;save();S.sub=null;renderAll();toast(PT.itemSaved);return}
+    if(!ci||S.busyDel)return;S.busyDel=true;
+    Promise.resolve().then(function(){if(DEMO||!window.JteCloud){ci.itemId=iv;return ci}return JteCloud.setInspItem(ci,iv)}).then(function(){S.busyDel=false;S.sub=null;renderAll();toast(PT.itemSaved)},function(){S.busyDel=false;toast(PT.itemFail)});return}
   a=ann(id);a.tags=a.tags||[];a.enjoy=a.enjoy||[];
   var tr=S.triByRec[id];
   if(k==='tag'||k==='note'||k==='enjoy'||k==='why'||k==='motive'){S.sub=S.sub===k?null:k;renderList();return}

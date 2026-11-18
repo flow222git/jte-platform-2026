@@ -144,6 +144,11 @@ check('buildPages：有照片的靈感成為一頁，照片照順序、只收圖
   eq(ps.length,2);const p=ps[0];eq(p.src,'Insp');eq(p.kind,'隨手記');eq(p.label,'照片');eq(p.photos.map(x=>x.id).join(),'a,b');eq(p.photos[0].caption,'一');
   eq(ps[1].src,'Memo');eq(ps[1].photos.length,0);
   eq(M.buildPages({},[{id:'ins-2',key:'2026-11-12',photos:[{id:'x',data:'javascript:alert(1)'}]}]).length,0,'只有壞照片不成頁');});
+check('同一個項目串起來：搜尋找得到項目名稱；每個項目各有幾筆，沒有名稱的不算',()=>{
+  const ps=M.buildPages({},[{id:'m-1',key:'2026-11-18',text:'找空間',itemId:'it1'},{id:'m-2',key:'2026-11-17',text:'鬆肩',itemId:'it1'},{id:'m-3',key:'2026-11-16',text:'散步'},{id:'m-4',key:'2026-11-15',text:'坐著',itemId:'gone'}]),nm={it1:'太極'};
+  eq(M.searchPages(ps,'太極',{},{},nm).map(p=>p.id).join(),'m-1,m-2');eq(M.searchPages(ps,'太極',{},{}).length,0);eq(M.searchPages(ps,'太極 鬆肩',{},{},nm).length,1);
+  const c=M.itemCounts(ps,nm);eq(c.length,1);eq(c[0].id,'it1');eq(c[0].name,'太極');eq(c[0].count,2);eq(M.itemCounts(ps,null).length,0);eq(M.itemCounts(null,nm).length,0);
+  const T=D.prac.t;['itemFilter','itemOnly','itemPage','itemCount','itemAll','itemSaved','itemFail'].forEach(k=>ok(T[k],k));});
 check('搜尋：找得到照片註解',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'散步',photos:[{id:'a',data:JP,caption:'河堤的夕陽',order:0}]}]);
   eq(M.searchPages(ps,'夕陽',{},{}).length,1);eq(M.searchPages(ps,'散步 河堤',{},{}).length,1);eq(M.searchPages(ps,'山',{},{}).length,0);});
 check('視角：方法視角不收靈感',()=>{const ps=M.buildPages({},[{id:'ins-1',key:'2026-11-12',text:'x',photos:[{id:'a',data:JP,order:0}]}]);eq(ps[0].src,'Insp');eq(M.lensGroups('to',ps,{}).length,0);});

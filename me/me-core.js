@@ -419,18 +419,29 @@
       act: { pre: sc2(a.pre), post: sc2(a.post), expect: String(a.expect || ''), feeling: String(a.feeling || ''), takeaway: String(a.takeaway || ''), feedback: String(a.feedback || '') } };
   }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
-  function hay(p, a, t) {
+  function hay(p, a, t, names) {
     var j = (t && t.join) || {}, c = p.act || {};
-    return [p.title, p.text, p.sub, p.note, p.label, p.kind].concat(arr(p.feel), arr(a && a.tags),
+    return [p.title, p.text, p.sub, p.note, p.label, p.kind, p.itemId && names && names[p.itemId]].concat(arr(p.feel), arr(a && a.tags),
       arr(a && a.notes).map(function (n) { return n && n.text; }), [j.text, t && t.found], arr(t && t.why),
       arr(p.photos).map(function (x) { return x && x.caption; }), [c.expect, c.feeling, c.takeaway, c.feedback])
       .filter(Boolean).join('\n').toLowerCase();
   }
-  function searchPages(pages, q, ann, triByRec) {
+  // 掛在「我的練習」某個項目上的紀錄：每個項目各有幾筆（names 是 項目代號→名稱；沒有名稱的不算）。
+  function itemCounts(pages, names) {
+    var m = {}, ord = [];
+    arr(pages).forEach(function (p) {
+      var id = p && p.itemId;
+      if (!id || !names || !names[id]) return;
+      if (!m[id]) { m[id] = 0; ord.push(id); }
+      m[id]++;
+    });
+    return ord.map(function (id) { return { id: id, name: names[id], count: m[id] }; }).sort(function (a, b) { return b.count - a.count; });
+  }
+  function searchPages(pages, q, ann, triByRec, names) {
     var words = String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
     if (!words.length) return arr(pages);
     return arr(pages).filter(function (p) {
-      var h = hay(p, (ann || {})[p.id], (triByRec || {})[p.id]);
+      var h = hay(p, (ann || {})[p.id], (triByRec || {})[p.id], names);
       return words.every(function (w) { return h.indexOf(w) > -1; });
     });
   }
@@ -685,5 +696,5 @@
     circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
-    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState };
+    pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts };
 })(window);

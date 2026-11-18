@@ -276,7 +276,9 @@
         needLogin: '登入後看得到你的練習紀錄。', useLocal: '先在這台裝置上用',
         loading: '正在讀取練習紀錄…', loadFail: '沒有讀到雲端的練習紀錄。', notReady: '練習紀錄還沒讀進來，請稍等一下再下載。',
         // 靈感框的項目選單
-        memoItem: '屬於哪個項目', memoItemNone: '不屬於哪個項目' },
+        memoItem: '屬於哪個項目', memoItemNone: '不屬於哪個項目',
+        // 紀錄清單裡：同一個項目的紀錄串在一起看；記下之後也能補掛、改掛。
+        itemFilter: '我的項目', itemOnly: '只看「{n}」的', itemPage: '到「{n}」的頁面', itemCount: '「{n}」的紀錄，{c} 筆。', itemAll: '看全部', itemSaved: '改好了', itemFail: '沒有改成，等一下再試。' },
       // 示範模式（?demo）的虛構資料；紀錄由 me-practice.js 用固定種子產生
       demo: {
         items: [{ id: 'pi-demo-taichi', name: '太極', unit: '分鐘', color: '#34C8A0' }, { id: 'pi-demo-sit', name: '靜坐', unit: '分鐘', color: '#7A6BD8' }],
