@@ -361,8 +361,12 @@
     return out;
   }
   // 預設有參加的人：每一場各補一筆只有活動資訊的紀錄；問卷裡已經有這個信箱的場次不重複補。
-  function actAlso(emails, recs, lim, tlds) {
+  // sessions（可以不給）：就算那一場沒有任何一列要送，也替預設參加的人補。
+  function actAlso(emails, recs, lim, tlds, sessions) {
     var ses = {}, order = [], have = {}, seen = {}, list = [], out = [];
+    arr(sessions).forEach(function (x) {
+      if (x && x.sessionId && !ses[x.sessionId]) { ses[x.sessionId] = { sessionId: x.sessionId, title: x.title, date: x.date, photoUrl: x.photoUrl }; order.push(x.sessionId); }
+    });
     arr(recs).forEach(function (r) {
       if (!ses[r.sessionId]) { ses[r.sessionId] = { sessionId: r.sessionId, title: r.title, date: r.date, photoUrl: r.photoUrl }; order.push(r.sessionId); }
       have[actDocId(r.sessionId, r.email)] = 1;

@@ -56,10 +56,10 @@ var T={lead:'把試算表的活動整理貼進來，讓參加者登入後看到�
   h2:'二、場次',n2:'活動名稱與場次代號要自己填。場次代號只能用小寫英文、數字、連字號，例如 tea；同一場以後重貼要用同一個代號。',
   title:'活動名稱',date:'日期',slug:'場次代號',photo:'照片連結',idIs:'文件代號開頭：',
   h3:'三、預覽',n3:'只列出會送出的欄位。有標記的列預設略過，確認沒問題可以取消略過；信箱可以直接改。',
-  skip:'略過',ses:'場次',email:'信箱',pre:'前測',post:'後測',text:'文字（開頭）',flag:'標記',all:'全部設為',
+  skip:'略過',skipAll:'全部略過',skipReset:'還原預設',ses:'場次',email:'信箱',pre:'前測',post:'後測',text:'文字（開頭）',flag:'標記',all:'全部設為',
   go:'確認匯入',going:'匯入中…',sum:'會送出 {n} 筆，略過 {s} 筆，另有 {x} 筆因信箱、重複或沒選場次不會送出',pick:'請選場次',cols:'找不到這些欄位，匯入後會是空的：{c}。請確認試算表的標題列。',needSes:'還有列沒選場次。請選好，或勾「略過」。',codes:' 錯誤代碼：{c}',badSes:'場次還沒填完：每一場都要有活動名稱、日期與合格的場次代號，而且代號不能重複。',
   done:'完成。新增 {a} 筆、更新 {u} 筆、本人選了不用而跳過 {k} 筆、失敗 {f} 筆。',fail:'匯入失敗，請再試一次。',
-  also:'預設有參加的人（信箱，一行一個）。每一場會替他們各加一筆只有活動名稱、日期、照片連結的紀錄；問卷裡已經有的不重複加。你自己的會直接收進手帳，其他人登入後會被問要不要收。這份名單只記在這個瀏覽器。',
+  also:'預設有參加的人（信箱，一行一個）。上面列出的每一場（就算那一場的列全部略過）會替他們各加一筆只有活動名稱、日期、照片連結的紀錄；問卷裡已經有的不重複加。你自己的會直接收進手帳，其他人登入後會被問要不要收。這份名單只記在這個瀏覽器。',
   alsoDone:' 其中預設參加的人 {n} 筆。',selfKept:' 你自己的 {n} 場已收進手帳。'};
 var S={user:null,admin:false,sessions:[],rows:[],busy:false,sheet:false};
 $('#lead').textContent=T.lead;['h0','n0','h1','n1','h2','n2','h3','n3'].forEach(function(k){$('#'+k).textContent=T[k]});$('#parse').textContent=T.parse;$('#go').textContent=T.go;$('#sync').textContent=T.sync;$('#alsol').textContent=T.also;
@@ -80,7 +80,7 @@ function dupIdx(){var cnt={},out=[];function key(r){return r.skip||r.ses<0?'':r.
   S.rows.forEach(function(r,i){var k=key(r);if(k&&cnt[k]>1)out.push(i)});return out}
 function sendable(r,i,dups){return !r.skip&&r.ses>=0&&dups.indexOf(i)<0&&!M.actEmail(r.email,A.tlds).flags.some(function(f){return f==='missing'||f==='format'})}
 function renderRows(){var dups=dupIdx(),opt=function(v,tab){return '<option value="-1"'+(v<0?' selected':'')+'>'+T.pick+'</option>'+S.sessions.map(function(s,i){return tab&&s.tab!==tab?'':'<option value="'+i+'"'+(i===v?' selected':'')+'>'+esc(s.date+' '+s.title)+'</option>'}).join('')};
-  $('#bulk').innerHTML=S.sessions.length>1&&!S.sheet?'<span class="note">'+T.all+'</span>'+S.sessions.map(function(s,i){return '<button data-all="'+i+'">'+esc(s.date)+'</button>'}).join(''):'';
+  $('#bulk').innerHTML='<button data-skip="1">'+T.skipAll+'</button><button data-skip="0">'+T.skipReset+'</button>'+(S.sessions.length>1&&!S.sheet?'<span class="note">'+T.all+'</span>'+S.sessions.map(function(s,i){return '<button data-all="'+i+'">'+esc(s.date)+'</button>'}).join(''):'');
   $('#tbl').innerHTML='<tr><th>'+T.skip+'</th>'+(S.sessions.length>1?'<th>'+T.ses+'</th>':'')+'<th>'+T.email+'</th><th>'+T.pre+'</th><th>'+T.post+'</th><th>'+T.text+'</th><th>'+T.flag+'</th></tr>'+
     S.rows.map(function(r,i){var f=flagsOf(r,i,dups),sc=function(o){return [o.body,o.mood].map(function(x){return x==null?'–':x}).join('／')};
       return '<tr data-i="'+i+'"'+(r.skip?' class="off"':'')+'><td><input type="checkbox" data-k="skip"'+(r.skip?' checked':'')+' aria-label="'+esc(T.skip+' '+r.email)+'"></td>'+(S.sessions.length>1?'<td><select data-k="ses" aria-label="'+T.ses+'">'+opt(r.ses,r.tab)+'</select></td>':'')+
@@ -112,7 +112,8 @@ $('#sess').addEventListener('input',function(e){var k=e.target.dataset.k,box=e.t
 $('#sess').addEventListener('change',function(){renderRows()});
 $('#tbl').addEventListener('change',function(e){var k=e.target.dataset.k,tr=e.target.closest('tr');if(!k||!tr)return;var r=S.rows[+tr.dataset.i];
   if(k==='skip')r.skip=e.target.checked;if(k==='ses')r.ses=+e.target.value;if(k==='email')r.email=M.actEmail(e.target.value,A.tlds).email;renderRows()});
-$('#bulk').onclick=function(e){var b=e.target.closest('[data-all]');if(!b)return;S.rows.forEach(function(r){r.ses=+b.dataset.all});renderRows()};
+$('#bulk').onclick=function(e){var k=e.target.closest('[data-skip]');if(k){S.rows.forEach(function(r){r.skip=k.dataset.skip==='1'||r.flags.length>0});renderRows();return}
+  var b=e.target.closest('[data-all]');if(!b)return;S.rows.forEach(function(r){r.ses=+b.dataset.all});renderRows()};
 
 $('#go').onclick=function(){if(S.busy)return;var res=$('#res');res.className='note';
   if(!sesOk()){res.className='note warn';res.textContent=T.badSes;return}
@@ -121,8 +122,8 @@ $('#go').onclick=function(){if(S.busy)return;var res=$('#res');res.className='no
   S.rows.forEach(function(r,i){if(!sendable(r,i,dups))return;var s=S.sessions[r.ses];
     recs.push(M.actRecord(r,{sessionId:sid(s),title:s.title,date:s.date,photoUrl:s.photoUrl},A))});
   S.busy=true;$('#go').disabled=true;$('#go').textContent=T.going;
-  var extra=M.actAlso($('#also').value.split(/[\s,;，；]+/),recs,A,A.tlds),extraIds={};extra.forEach(function(r){extraIds[M.actDocId(r.sessionId,r.email)]=1});
-  var ids={};recs.forEach(function(r){ids[r.sessionId]=1});
+  var extra=M.actAlso($('#also').value.split(/[\s,;，；]+/),recs,A,A.tlds,S.sessions.map(function(s){return {sessionId:sid(s),title:s.title,date:s.date,photoUrl:s.photoUrl}})),extraIds={};extra.forEach(function(r){extraIds[M.actDocId(r.sessionId,r.email)]=1});
+  var ids={};recs.concat(extra).forEach(function(r){ids[r.sessionId]=1});
   Promise.all(Object.keys(ids).map(function(id){return JteCloud.sessionActs(id)})).then(function(ms){var ex={};ms.forEach(function(m){Object.keys(m).forEach(function(k){ex[k]=m[k]})});
     var p=M.actPlan(recs.concat(extra),ex),me=S.user&&S.user.verified?S.user.email:'';
     var mine=p.writes.filter(function(x){return x.isNew&&me&&x.data.email===me&&extraIds[x.id]});

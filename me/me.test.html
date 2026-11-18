@@ -294,6 +294,10 @@ check('actSheet：單場整頁同一場；多場靠「場次日期」欄；缺�
   eq(r.problems.map(p=>p.tab+':'+p.why).join(),'8月香料茶:noSesCol,說明:noHeader,3月 騎馬:noDate');
   const same=M.actSheet([{gid:3,title:'茶',rows:[['活動日期','2026/01/02'],['活動日期','2026/01/02'],H]}],D.act.cols,D.act.tlds,D.act.sesCol);eq(same.sessions.map(s=>s.slug).join(),'g3,g3-2');
   eq(M.actParse(ACT_PASTE,D.act.cols,D.act.tlds).rows[0].sesDate,'','貼上的舊格式不受影響');});
+check('actAlso：給了場次清單時，沒有任何一列要送的場次也會補',()=>{
+  const S2=[{sessionId:'2026-11-05-tea',title:'茶席',date:'2026-11-05',photoUrl:''},{sessionId:'2026-11-06-tea',title:'茶席',date:'2026-11-06',photoUrl:''}];
+  const x=M.actAlso(['lead@example.com'],[],D.act,D.act.tlds,S2);eq(x.map(r=>r.sessionId+'|'+r.title).join(),'2026-11-05-tea|茶席,2026-11-06-tea|茶席');
+  const own=M.actRecord(Object.assign({},AROW,{email:'lead@example.com'}),SES,D.act);eq(M.actAlso(['lead@example.com'],[own],D.act,D.act.tlds,S2).map(r=>r.sessionId).join(),'2026-11-06-tea','問卷裡已有的場次不重複');});
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });
