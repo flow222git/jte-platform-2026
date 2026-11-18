@@ -253,6 +253,9 @@ check('工具紀錄：登入工具後的那一份也讀得到，兩份排在一�
   const m=M.mergeDaily(a,b);eq(Object.keys(m).sort().join(),'2026-11-16,2026-11-17,2026-11-18');eq(m['2026-11-18'].linked.map(l=>l.recordId).join(),'xq-1,bs-1');eq(m['2026-11-18'].moods.join(),'剛好,有勁');ok(m['2026-11-18'].note.indexOf('早上')>-1&&m['2026-11-18'].note.indexOf('晚上')>-1);
   eq(a['2026-11-18'].linked.length,1,'原本的不動');eq(Object.keys(M.mergeDaily(null,null)).length,0);eq(M.mergeDaily(a,null)['2026-11-17'].linked.length,1);
   const ps=M.buildPages(m,[],[]);ok(ps.some(p=>p.src==='BSRS'),'登入後存的那一筆排得進頁面');});
+check('區塊收放：沒動過照預設，動過照本人；預設收起的是兩面鏡子與我的資料，每一塊收起來都有一句',()=>{const F=D.fold;
+  eq(M.foldState(null,F.closed,'data'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({data:false},F.closed,'data'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
+  eq(F.closed.join(),'mir,data');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,8);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
