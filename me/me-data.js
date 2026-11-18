@@ -200,12 +200,12 @@
         'auth/invalid-email': '信箱格式不對。', 'auth/too-many-requests': '試太多次了，請晚一點再試。', other: '沒有成功，請再試一次。' } },
     prac: {
       max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000 },
-      units: ['分鐘', '遍', '次'],
+      units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
       examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
       colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
       weeks: 12, months: 12,
       err: { name: '請填項目名稱（30 字以內）', unit: '請填單位（10 字以內）', date: '日期不對', future: '不能選未來的日子', amount: '請填大於 0 的數字', note: '這一句太長了（500 字以內）', title: '請填標題（100 字以內）', body: '內文太長了（20000 字以內）' },
-      t: { title: '我的練習', note: '你自己長期在練的事。項目自己訂，慢慢記。', eyebrow: 'MY PRACTICE',
+      t: { title: '我的練習', note: '你自己長期在練的事。項目自己訂，慢慢記。',
         // 我的練習（練習空間最上面）
         empty: '還沒有項目。太極、靜坐、每天的散步……自己長期在練的事，都可以放進來，練完記一筆。', examples: '例如',
         add: '新增項目', addTitle: '新增一個練習項目', added: '「{n}」放進來了，練完就可以記一筆',
@@ -219,7 +219,7 @@
         amountFor: '數量（{u}）', notePh: '一句（可以不寫）', date: '日期', submit: '記下來',
         logged: '記下了：{n} {a} {u}', loggedOn: '記下了：{d} {n} {a} {u}', todayDid: '今天 {s} {u}',
         // 專區
-        back: '回到練習', unitIs: '單位：{u}', archivedTag: '已封存', notFound: '找不到這個項目，可能已經刪掉了。',
+        back: '回到練習', unitIs: '單位：{u}', unitEdit: '改', archivedTag: '已封存', notFound: '找不到這個項目，可能已經刪掉了。',
         tabs: { log: '紀錄', insp: '心得靈感', notes: '筆記', set: '設定' }, tabsLabel: '這個項目的內容',
         // 紀錄分頁
         thisMonth: '這個月', allTime: '開始到現在', times: '次', total: '共 {s} {u}', since: '從 {d} 開始',
