@@ -176,6 +176,7 @@
     act: { maxText: 2000, maxTitle: 100, maxUrl: 500,
       cols: { email: 'Email', preBody: '前測_身體狀態', preMood: '前測_情緒狀態', expect: '活動前期待', feeling: '過程感受',
         postBody: '後測_身體狀態', postMood: '後測_情緒狀態', takeaway: '最實用日常收穫', feedback: '心得與回饋' },
+      sesCol: '場次日期',
       tlds: ['tw', 'com', 'net', 'org', 'edu', 'io', 'co', 'jp', 'hk', 'sg', 'us', 'uk', 'cn', 'me', 'app', 'dev'],
       flags: { missing: '沒有信箱', format: '信箱格式不對', tld: '信箱結尾可疑', dup: '同一場重複', score: '分數不在 1–10', blank: '沒有填問卷', noses: '還沒選場次', cols: '找不到欄位' },
       ask: '你參加過「{t}」（{d}），要收進手帳嗎？', keep: '收進來', decline: '不用', later: '之後再說',

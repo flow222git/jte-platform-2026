@@ -290,10 +290,35 @@
     });
   }
 
+  // ── 試算表（管理者匯入頁用）：用登入中的 Google 帳號多要一個「查看試算表」的權限，只讀不寫。 ──
+  function sheetToken() {
+    need();
+    var p = new g.firebase.auth.GoogleAuthProvider();
+    p.addScope('https://www.googleapis.com/auth/spreadsheets.readonly');
+    if (user.email) p.setCustomParameters({ login_hint: user.email });
+    return auth.currentUser.reauthenticateWithPopup(p).then(function (r) {
+      var t = r && r.credential && r.credential.accessToken;
+      if (!t) { var e = new Error('no-token'); e.code = 'sheets/no-token'; throw e; }
+      return t;
+    });
+  }
+  function readSheet(id, token) {
+    var base = 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(id), opt = { headers: { Authorization: 'Bearer ' + token } };
+    function json(r) { if (!r.ok) { var e = new Error('sheets-' + r.status); e.code = 'sheets/' + r.status; throw e; } return r.json(); }
+    return fetch(base + '?fields=' + encodeURIComponent('sheets.properties(sheetId,title)'), opt).then(json).then(function (m) {
+      var ps = (m.sheets || []).map(function (x) { return x.properties; });
+      if (!ps.length) return [];
+      var q = ps.map(function (p) { return 'ranges=' + encodeURIComponent("'" + String(p.title).replace(/'/g, "''") + "'"); }).join('&');
+      return fetch(base + '/values:batchGet?majorDimension=ROWS&valueRenderOption=FORMATTED_VALUE&' + q, opt).then(json).then(function (v) {
+        return ps.map(function (p, i) { return { gid: String(p.sheetId), title: String(p.title), rows: ((v.valueRanges || [])[i] || {}).values || [] }; });
+      });
+    });
+  }
+
   g.JteCloud = { init: init, signIn: signIn, signOut: signOut, compress: compress, listInsp: listInsp,
     saveInsp: saveInsp, deletePhoto: deletePhoto, deleteInsp: deleteInsp, wipeAll: wipeAll,
     signUpEmail: signUpEmail, signInEmail: signInEmail, resendVerify: resendVerify, resetPw: resetPw, refreshUser: refreshUser,
-    listActs: listActs, decideAct: decideAct, isAdmin: isAdmin, sessionActs: sessionActs, writeActs: writeActs,
+    listActs: listActs, decideAct: decideAct, isAdmin: isAdmin, sessionActs: sessionActs, writeActs: writeActs, sheetToken: function () { return safe(sheetToken); }, readSheet: readSheet,
     setInspItem: setInspItem, pracLoad: pracLoad, pracHas: pracHas, pracPut: pracPut, pracDel: pracDel, pracDelItem: pracDelItem,
     pracUpload: pracUpload, pracWipe: pracWipe };
 })(window);

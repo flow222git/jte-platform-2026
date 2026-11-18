@@ -282,11 +282,12 @@
     var n = /^\d{1,2}$/.test(s) ? +s : NaN;
     return n >= 1 && n <= 10 ? { v: n, bad: false } : { v: null, bad: true };
   }
-  function actParse(text, cols, tlds) {
-    var rows = tsvRows(text), sessions = [], out = [], hi = -1, idx = {}, i, r;
+  // text 可以是貼上的文字，也可以是已經拆好的二維陣列（從試算表讀來的）。sesCol 是「這一列屬於哪一場」的欄位名稱，可以不給。
+  function actParse(text, cols, tlds, sesCol) {
+    var rows = Object.prototype.toString.call(text) === '[object Array]' ? text : tsvRows(text), si = -1, sessions = [], out = [], hi = -1, idx = {}, i, r;
     function cellOf(row, k) { return idx[k] == null ? '' : String(row[idx[k]] == null ? '' : row[idx[k]]).trim(); }
     for (i = 0; i < rows.length; i++) {
-      r = rows[i].map(function (x) { return String(x).trim(); });
+      r = arr(rows[i]).map(function (x) { return String(x).trim(); });
       if (r.indexOf('Email') > -1 && r.indexOf('姓名') > -1) { hi = i; break; }
       var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結');
       if (di > -1 && actDate(r[di + 1])) sessions.push({ date: actDate(r[di + 1]), photoUrl: pi > -1 ? safeUrl(r[pi + 1]) : '' });
@@ -295,9 +296,10 @@
     rows[hi].forEach(function (h, j) {
       h = String(h).trim();
       Object.keys(cols).forEach(function (k) { if (idx[k] == null && h.indexOf(cols[k]) === 0) idx[k] = j; });
+      if (sesCol && si < 0 && h.indexOf(sesCol) === 0) si = j;
     });
     for (i = hi + 1; i < rows.length; i++) {
-      r = rows[i];
+      r = arr(rows[i]);
       if (!r.some(function (x) { return String(x).trim(); })) continue;
       var e = actEmail(cellOf(r, 'email'), tlds), flags = e.flags.slice(), bad = false, any = false;
       var sc = {}; ['preBody', 'preMood', 'postBody', 'postMood'].forEach(function (k) { var x = actScore(cellOf(r, k)); sc[k] = x.v; if (x.bad) bad = true; if (x.v !== null) any = true; });
@@ -305,9 +307,43 @@
       if (bad) flags.push('score');
       if (!any && !bad && e.email) flags.push('blank');
       out.push({ line: i + 1, email: e.email, flags: flags, pre: { body: sc.preBody, mood: sc.preMood }, post: { body: sc.postBody, mood: sc.postMood },
-        expect: tx.expect, feeling: tx.feeling, takeaway: tx.takeaway, feedback: tx.feedback });
+        expect: tx.expect, feeling: tx.feeling, takeaway: tx.takeaway, feedback: tx.feedback, sesDate: si < 0 ? '' : actDate(r[si]) });
     }
-    return { ok: true, sessions: sessions, rows: out, missingCols: Object.keys(cols).filter(function (k) { return idx[k] == null; }) };
+    return { ok: true, sessions: sessions, rows: out, hasSesCol: si > -1, missingCols: Object.keys(cols).filter(function (k) { return idx[k] == null; }) };
+  }
+  // 試算表網址 → 文件代號。
+  function sheetId(url) {
+    var m = /\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})/.exec(String(url == null ? '' : url));
+    return m ? m[1] : '';
+  }
+  // 分頁名稱 → 活動名稱：去掉開頭的月份（「11月 茶席」→「茶席」）。
+  function actTabTitle(name) {
+    var t = String(name == null ? '' : name).trim(), u = t.replace(/^\d{1,2}\s*月\s*/, '').trim();
+    return u || t;
+  }
+  // 整份試算表（每個分頁 {gid,title,rows}）→ 場次與資料列。
+  // 場次代號用分頁的 gid，分頁改名、搬順序都不變；同一個分頁裡同一天的第二場起加序號。
+  // 多場的分頁靠「場次日期」欄對到場次，對不到的列 ses=-1。
+  function actSheet(tabs, cols, tlds, sesCol) {
+    var sessions = [], rows = [], problems = [];
+    arr(tabs).forEach(function (tab) {
+      var p = actParse(arr(tab && tab.rows), cols, tlds, sesCol), name = String(tab && tab.title || ''), base = sessions.length, seen = {};
+      if (!p.ok) { problems.push({ tab: name, why: 'noHeader' }); return; }
+      if (!p.sessions.length) { problems.push({ tab: name, why: 'noDate' }); return; }
+      if (p.missingCols.length) problems.push({ tab: name, why: 'cols', cols: p.missingCols });
+      if (p.sessions.length > 1 && !p.hasSesCol) problems.push({ tab: name, why: 'noSesCol' });
+      p.sessions.forEach(function (x) {
+        seen[x.date] = (seen[x.date] || 0) + 1;
+        sessions.push({ title: actTabTitle(name), date: x.date, slug: 'g' + String(tab.gid).replace(/[^0-9a-z]/gi, '').toLowerCase() + (seen[x.date] > 1 ? '-' + seen[x.date] : ''), photoUrl: x.photoUrl, tab: name });
+      });
+      p.rows.forEach(function (r) {
+        var k = -1, j;
+        if (p.sessions.length === 1) k = 0;
+        else if (r.sesDate) for (j = 0; j < p.sessions.length; j++) if (p.sessions[j].date === r.sesDate) { k = j; break; }
+        r.ses = k < 0 ? -1 : base + k; r.tab = name; rows.push(r);
+      });
+    });
+    return { sessions: sessions, rows: rows, problems: problems };
   }
   function actSessionOk(id) { return /^\d{4}-\d{2}-\d{2}-[a-z0-9-]{1,30}$/.test(String(id || '')); }
   function actDocId(sessionId, email) { return String(sessionId) + '__' + String(email); }
@@ -591,7 +627,7 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, actLines: actLines, actPage: actPage,
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId };
