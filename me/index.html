@@ -447,7 +447,7 @@ dialog.authdlg .in{width:100%}
         </div>
       </div>
     </section>
-    <section aria-labelledby="h-open" id="sec-open" hidden>
+    <section data-fold="open" aria-labelledby="h-open" id="sec-open" hidden>
       <div class="sec"><div><h2 id="h-open">還開著的</h2></div><span>沒有期限。先放下也可以。</span></div>
       <div class="panel" id="open"></div>
     </section>
@@ -455,16 +455,16 @@ dialog.authdlg .in{width:100%}
 
   <!-- 探索：我對什麼感興趣 -->
   <div id="view-explore" hidden>
-    <section aria-labelledby="h-cur">
+    <section data-fold="cur" aria-labelledby="h-cur">
       <div class="sec"><div><h2 id="h-cur"></h2></div><span id="curnote"></span></div>
       <div class="panel"><div id="curlist"></div>
         <div class="jrow"><input class="in" id="exin" maxlength="40"><button class="btn sm fill" id="exadd"></button></div></div>
     </section>
-    <section aria-labelledby="h-thm">
+    <section data-fold="thm" aria-labelledby="h-thm">
       <div class="sec"><div><h2 id="h-thm"></h2></div><span id="thmnote"></span></div>
       <div class="panel" id="thmlist"></div>
     </section>
-    <section aria-labelledby="h-aro">
+    <section data-fold="aro" aria-labelledby="h-aro">
       <div class="sec"><div><h2 id="h-aro"></h2></div><span id="aronote"></span></div>
       <div class="cards3" id="arolist"></div>
       <p class="quiet" id="exlater" style="margin-top:12px"></p>
@@ -473,21 +473,21 @@ dialog.authdlg .in{width:100%}
 
   <!-- 練習：什麼對我有效 -->
   <div id="view-practice" hidden>
-    <section aria-labelledby="h-prac" id="sec-prac">
+    <section data-fold="prac" aria-labelledby="h-prac" id="sec-prac">
       <div class="sec"><div><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
       <div id="pracbox"></div>
     </section>
     <div id="praczone" hidden></div>
     <div id="pracrest">
-    <section aria-labelledby="h-wrk">
+    <section data-fold="wrk" aria-labelledby="h-wrk">
       <div class="sec"><div><h2 id="h-wrk"></h2></div><span id="wrknote"></span></div>
       <div class="panel" id="wrklist"></div>
     </section>
-    <section aria-labelledby="h-tools">
+    <section data-fold="tools" aria-labelledby="h-tools">
       <div class="sec"><div><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
       <div class="panel" id="toolbox"></div>
     </section>
-    <section aria-labelledby="h-out">
+    <section data-fold="out" aria-labelledby="h-out">
       <div class="sec"><div><h2 id="h-out"></h2></div><span id="outnote"></span></div>
       <div class="panel" id="outlist"></div>
       <p style="margin-top:12px"><button class="lnk" data-go="mymap-map" data-lens="to" id="prreview"></button></p>
@@ -548,26 +548,25 @@ dialog.authdlg .in{width:100%}
       <div class="panel" id="data"></div>
     </section>
   </div>
-    <div class="row" style="padding:0 0 12px"><button class="lnk" id="foldall" hidden></button></div>
 
   </div>
 
   <!-- 陪伴：一起練。揪團打卡、互相鼓勵、分享心得 -->
   <div id="view-care" hidden>
-    <section aria-labelledby="h-cir">
+    <section data-fold="cir" aria-labelledby="h-cir">
       <div class="sec"><div><h2 id="h-cir"></h2></div><span id="cirnote"></span></div>
       <div id="circles"></div>
     </section>
-    <section aria-labelledby="h-opn">
+    <section data-fold="opn" aria-labelledby="h-opn">
       <div class="sec"><div><h2 id="h-opn"></h2></div><span id="opnnote"></span></div>
       <div class="panel" id="openlist"></div>
       <div class="panel" id="cnew" style="margin-top:14px"></div>
     </section>
-    <section aria-labelledby="h-rul">
+    <section data-fold="rul" aria-labelledby="h-rul">
       <div class="sec"><div><h2 id="h-rul"></h2></div></div>
       <div class="panel rules" id="rules"></div>
     </section>
-    <section aria-labelledby="h-bri">
+    <section data-fold="bri" aria-labelledby="h-bri">
       <div class="sec"><div><h2 id="h-bri"></h2></div><span id="brinote"></span></div>
       <div class="panel"><div class="row"><button class="btn" data-go="mymap" id="bri1">這個月存成一張圖</button><button class="btn" data-go="mymap-map" id="bri2">我的使用說明書</button><button class="btn" id="bri3">下載我的資料</button></div></div>
       <p class="helpline" id="helpline" style="margin-top:14px"></p>
@@ -575,6 +574,8 @@ dialog.authdlg .in{width:100%}
   </div>
 
   <button class="fab" id="fab" data-go="today" data-focus="memo" hidden></button>
+
+  <div class="row" style="padding:0 0 12px"><button class="lnk" id="foldall" hidden></button></div>
 
   <footer>
     <span class="stamp">v0.1 試作</span>
@@ -737,7 +738,7 @@ var PICON={today:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy
 function renderPanes(){$('#panes').innerHTML=D.panes.map(function(p){var on=S.pane===p.key;return '<button data-pane="'+p.key+'"'+(on?' class="on" aria-current="page"':'')+'>'+PICON[p.key]+'<b>'+p.name+'</b><span>'+p.q+'</span></button>'}).join('');
   $('#subs').innerHTML=D.subs.map(function(x){var on=S.sub===x.key;return '<button class="chip'+(on?' on':'')+'" data-sub="'+x.key+'" aria-pressed="'+on+'">'+x.name+'</button>'}).join('')}
 function showPane(v){var r=M.route(v);S.pane=r.pane;if(r.pane==='mymap')S.sub=r.sub;D.panes.forEach(function(p){$('#view-'+p.key).hidden=p.key!==S.pane});
-  $('#sub-trail').hidden=S.sub!=='trail';$('#sub-overview').hidden=S.sub!=='overview';$('#fab').hidden=S.pane==='today';renderPanes();JtePrac.handleHash(v)}
+  $('#sub-trail').hidden=S.sub!=='trail';$('#sub-overview').hidden=S.sub!=='overview';$('#fab').hidden=S.pane==='today';renderPanes();JtePrac.handleHash(v);if(typeof renderFold==='function'&&S.pages)renderFold()}
 function goPane(h){h=String(h||'today').replace(/^#/,'');var top=$('#panes').getBoundingClientRect().top+window.scrollY;if(location.hash!=='#'+h){try{location.hash=h}catch(e){}}showPane(h);
   if(window.innerWidth<=640||window.scrollY>top)window.scrollTo(0,window.innerWidth<=640?0:Math.max(0,top-10))}
 /* 探索：我對什麼感興趣 */
@@ -805,7 +806,7 @@ function careClick(e){var b=e.target.closest('[data-ca]');if(!b)return;var box=b
   if(k==='invite'){toast('示範模式：連結沒有真的送出');return}
   if(k==='leave'){c.members=c.members.filter(function(i){return i.id!==ME});if(!c.members.length)circles=circles.filter(function(i){return i!==c});renderCircles();toast('離開了。你自己手帳裡的紀錄還在')}}
 function joinClick(e){var b=e.target.closest('[data-join]');if(!b)return;var c=circles.filter(function(x){return x.id===b.dataset.join})[0];if(!c||M.isMember(c,ME)||c.members.length>=D.care.max)return;
-  c.members.unshift({id:ME,name:''});renderCircles();toast(D.care.open.joined);var el=$('#h-cir');if(el)window.scrollTo(0,Math.max(0,el.getBoundingClientRect().top+window.scrollY-90))}
+  c.members.unshift({id:ME,name:''});renderCircles();toast(D.care.open.joined);unfold('cir');var el=$('#h-cir');if(el)window.scrollTo(0,Math.max(0,el.getBoundingClientRect().top+window.scrollY-90))}
 function cnewClick(e){var t=e.target,b,keep=function(fn){var nm=$('#cn-name').value;fn();renderCare();$('#cn-name').value=nm};
   if(t.id==='cn-open'){S.cnew=true;S.cnw='xiaoqi';S.cns=0;S.cnr=0;S.cno=true;renderCare();$('#cn-name').focus();return}
   if(t.id==='cn-no'){S.cnew=false;renderCare();return}
@@ -815,7 +816,7 @@ function cnewClick(e){var t=e.target,b,keep=function(fn){var nm=$('#cn-name').va
   if((b=t.closest('[data-co]'))){keep(function(){S.cno=b.dataset.co==='1'});return}
   if(t.id==='cn-go'){var name=$('#cn-name').value.trim();if(!name){$('#cn-name').focus();return}
     circles.unshift({id:'cir-'+Date.now(),name:name,tool:S.cnw==='own'?'':S.cnw,what:S.cnw==='own'?'自己的方法':'',rhythm:D.care.rhythms[S.cnr],span:D.care.spans[S.cns].d,start:TODAY,open:!!S.cno,members:[{id:ME,name:''}],checkins:[]});S.cnew=false;renderCare();
-    toast(D.care.create.made+(S.cno?'別人在「正在進行的團」看得到它':'把連結傳給想一起的人'));var el=$('#h-cir');if(el)window.scrollTo(0,Math.max(0,el.getBoundingClientRect().top+window.scrollY-90))}}
+    toast(D.care.create.made+(S.cno?'別人在「正在進行的團」看得到它':'把連結傳給想一起的人'));unfold('cir');var el=$('#h-cir');if(el)window.scrollTo(0,Math.max(0,el.getBoundingClientRect().top+window.scrollY-90))}}
 /* 還開著的：少了「做了什麼」或「發現」的三角形 */
 function renderOpen(){var open=liveTris().filter(function(t){var c=corners(t);return (!c.to||!c.enjoy)&&t.id!==S.justShown});$('#sec-open').hidden=!open.length;
   $('#open').innerHTML=open.map(function(t){var st=stage(t),rec=S.byId[t.recId],wy=(t.why||[]).length?'因為'+esc(t.why.join('、'))+'。':'';
@@ -988,16 +989,17 @@ function exportImage(){var defs=document.querySelector('svg[width="0"] defs');if
   var img=new Image();img.onload=function(){try{var c=document.createElement('canvas');c.width=720;c.height=1180;c.getContext('2d').drawImage(img,0,0,720,1180);c.toBlob(function(b){if(!b){dl(url,'.svg');return}var u=URL.createObjectURL(b);dl(u,'.png');setTimeout(function(){URL.revokeObjectURL(u);URL.revokeObjectURL(url)},4000)},'image/png')}catch(e){dl(url,'.svg')}};
   img.onerror=function(){dl(url,'.svg')};img.src=url;toast('圖存在這台裝置上，要不要傳給別人由你決定')}
 
-/* 區塊收放（先做我的地圖）：本人收放過的記在這台裝置；網址帶 ?show=代號 時那一塊這次先打開。 */
+/* 區塊收放（五個空間都有；「今天」的狀態與靈感不收）：本人收放過的記在這台裝置；網址帶 ?show=代號 時那一塊這次先打開。 */
 var FOLD=D.fold,foldForce={};(function(){var m=/[?&]show=([a-z]+)/.exec(location.search);if(m)foldForce[m[1]]=true})();
 function folded(k){return !foldForce[k]&&M.foldState(O.prefs.fold,FOLD.closed,k)}
 function foldSum(k){return (FOLD.sum[k]||'').replace('{n}',k==='rec'?S.pages.length:$('#st-month').textContent)}
 function renderFold(){var any=false;[].forEach.call(document.querySelectorAll('[data-fold]'),function(s){var k=s.dataset.fold,f=folded(k),h=s.querySelector('.sec h2'),b=s.querySelector('.foldbtn'),m=s.querySelector('.foldsum');
   if(!b){b=document.createElement('button');b.className='foldbtn';b.type='button';h.parentNode.appendChild(b);m=document.createElement('span');m.className='foldsum';h.parentNode.appendChild(m)}
   s.classList.toggle('folded',f);b.setAttribute('aria-expanded',String(!f));b.setAttribute('aria-label',(f?FOLD.open:FOLD.close)+'「'+h.textContent+'」');m.textContent=f?foldSum(k):'';
-  if(f&&!s.hidden&&!s.parentNode.hidden)any=true});
+  if(f&&s.offsetParent!==null)any=true});
   var a=$('#foldall');a.textContent=FOLD.all;a.hidden=!any}
 function setFold(k,v){if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};delete foldForce[k];O.prefs.fold[k]=v;save();renderFold()}
+function unfold(k){if(folded(k))setFold(k,false)}
 function renderAll(){var oc=linkOctenso();S.pages=M.buildPages(daily,O.memos.concat(S.cloud),S.acts);S.byId={};S.pages.forEach(function(p){S.byId[p.id]=p});firstRecheck();
   var linked=M.linkTriangles(O.tris,S.pages);S.triByRec={};liveTris().forEach(function(t){if(t.recId)S.triByRec[t.recId]=t});
   if(linked.length)S.just=linked[linked.length-1];
@@ -1221,9 +1223,9 @@ $('#first').onclick=function(e){if(!FS)return;var t=e.target,b;
     FS.step++;renderFirst()}};
 $('#first').addEventListener('change',function(e){var t=e.target;if(FS&&t.dataset&&t.dataset.funit)FS.units[t.dataset.funit]=t.value});
 $('#first').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fown'&&!e.isComposing){e.preventDefault();fAddOwn()}});
-$('#view-mymap').addEventListener('click',function(e){var t=e.target.closest('.foldbtn')||e.target.closest('.sec h2'),s=t&&t.closest('[data-fold]');
+document.querySelector('.wrap').addEventListener('click',function(e){var t=e.target.closest('.foldbtn')||e.target.closest('.sec h2'),s=t&&t.closest('[data-fold]');
   if(s){setFold(s.dataset.fold,!folded(s.dataset.fold));return}
-  if(e.target.id==='foldall'){[].forEach.call(document.querySelectorAll('[data-fold]'),function(x){if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};O.prefs.fold[x.dataset.fold]=false});foldForce={};save();renderFold()}});
+  if(e.target.id==='foldall'){[].forEach.call(document.querySelectorAll('[data-fold]'),function(x){if(x.offsetParent===null)return;if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};O.prefs.fold[x.dataset.fold]=false});foldForce={};save();renderFold()}});
 JteTheme.mount($('#themesw'));
 showPane(location.hash);
 (function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
