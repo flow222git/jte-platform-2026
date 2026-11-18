@@ -416,7 +416,7 @@
     }
     var zl = st.lf && st.lf.ctx === 'zone';
     var h = '<div class="pr-zhead"' + cvars(it) + '><button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button>' +
-      '<div class="pr-zt"><i class="pr-sw"></i><h2 id="pr-zh" tabindex="-1"' + fk('zh') + '>' + esc(it.name) + '</h2><span class="note">' + esc(fill(T.unitIs, { u: it.unit })) + '</span>' +
+      '<div class="pr-zt"><i class="pr-sw"></i><h2 id="pr-zh" tabindex="-1"' + fk('zh') + '>' + esc(it.name) + '</h2><button type="button" class="lnk pr-unitbtn" data-pa="tab" data-t="set" aria-label="' + esc(fill(T.unitIs, { u: it.unit }) + '，' + T.unitEdit) + '">' + esc(fill(T.unitIs, { u: it.unit })) + '・' + esc(T.unitEdit) + '</button>' +
       (it.archived ? '<span class="tag">' + esc(T.archivedTag) + '</span>' : '') + '</div>' +
       '<button class="btn fill" data-pa="zopen" aria-expanded="' + zl + '"' + fk('zl') + '>' + esc(T.log) + '</button></div>';
     if (zl) h += '<div class="panel pr-zlog">' + logForm() + '</div>';
@@ -786,10 +786,9 @@
     if (inited) return;
     C = ctx; D = ctx.D; M = ctx.M; P = D.prac; T = P.t; esc = M.esc;
     box = $('#pracbox'); quick = $('#pracquick'); zone = $('#praczone'); secPrac = $('#sec-prac'); rest = $('#pracrest');
-    var hh = $('#h-prac'), pn = $('#pracnote'), ey = $('#sec-prac .eyebrow');
+    var hh = $('#h-prac'), pn = $('#pracnote');
     if (hh) hh.textContent = T.title;
     if (pn) pn.textContent = T.note;
-    if (ey) ey.textContent = T.eyebrow;
     live = document.createElement('div'); live.className = 'pr-sr'; live.setAttribute('aria-live', 'polite'); document.body.appendChild(live);
     if (C.DEMO) {
       store = demoStore(); st.data = demoData();

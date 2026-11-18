@@ -27,19 +27,15 @@ button{cursor:pointer}
 a{color:inherit}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .wrap{max-width:1080px;margin:auto;padding:0 24px}
-header.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0 8px;gap:12px}
-.logo{text-decoration:none;line-height:1.15;color:var(--dark)}
-.logo b{display:block;font-weight:700;font-size:21px;letter-spacing:.32em}
-.logo small{font:700 9px var(--font-en);letter-spacing:.3em;color:var(--blue-deep)}
+header.top{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"title art nav sw" "date art nav sw";align-items:center;column-gap:12px;row-gap:4px;padding:22px 0 14px}
+header.top h1{grid-area:title;font-size:clamp(30px,4vw,44px);line-height:1.15;letter-spacing:.01em}
+#heroline{grid-area:date;color:var(--blue-deep);font-weight:500;font-size:16px}
+header.top .pill{grid-area:nav;justify-self:end}
+#themesw{grid-area:sw}
 .pill{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px;display:flex;gap:4px;align-items:center}
 .pill a{text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.04em;padding:7px 16px;border-radius:999px;color:var(--ink-2);white-space:nowrap}
 .pill a:hover{color:var(--blue)}
-.pill a[aria-current]{background:var(--orange);color:var(--dark);font-weight:700}
-.hero{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:26px 0 20px}
-.eyebrow{font:700 12px var(--font-en);letter-spacing:.16em;color:var(--ink-4);text-transform:uppercase}
-.hero h1{font-size:clamp(30px,4vw,46px);line-height:1.12;letter-spacing:.01em;margin:8px 0 10px}
-.hero p{color:var(--blue-deep);font-weight:500;font-size:16px}
-.blobs{width:min(300px,34vw);height:auto;overflow:visible;display:block}
+.blobs{grid-area:art;justify-self:end;width:min(190px,22vw);height:auto;overflow:visible;display:block;margin-right:12px}
 .blobs .fl{transform-box:fill-box;transform-origin:center;animation:fa 15s ease-in-out infinite}
 .blobs .fl.b{animation:fb 18s ease-in-out infinite .6s}
 .blobs .fl.c{animation:fc 16s ease-in-out infinite .3s}
@@ -279,7 +275,7 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
 .swform .in{width:100%}
 @media(max-width:980px){.trail{grid-template-columns:1fr}.trail .sheet{position:static}}
 @media(max-width:1060px){.panes span{display:none}}
-@media(max-width:860px){.cards3{grid-template-columns:1fr}.mirrors{grid-template-columns:1fr}.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.swform fieldset{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:0 16px}.in,.memo textarea{font-size:16px}.sheets.two{grid-template-columns:1fr}.now{grid-template-columns:1fr}.bento{grid-template-columns:1fr 1fr}.hero{align-items:end;padding:22px 0 14px}.blobs{width:112px}.panel{padding:20px}.rec>button{grid-template-columns:18px 1fr auto}.rec .x{grid-column:2/4;white-space:normal}.tile{min-height:164px}.num{font-size:46px}.welcome{border-radius:var(--r-lg);padding:24px}}
+@media(max-width:860px){.cards3{grid-template-columns:1fr}.mirrors{grid-template-columns:1fr}.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.swform fieldset{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:0 16px}.in,.memo textarea{font-size:16px}.sheets.two{grid-template-columns:1fr}.now{grid-template-columns:1fr}.bento{grid-template-columns:1fr 1fr}.blobs{width:min(150px,22vw)}.panel{padding:20px}.rec>button{grid-template-columns:18px 1fr auto}.rec .x{grid-column:2/4;white-space:normal}.tile{min-height:164px}.num{font-size:46px}.welcome{border-radius:var(--r-lg);padding:24px}}
 .pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
 .pics:empty{display:none}
 .pic{display:flex;flex-direction:column;gap:6px}
@@ -296,7 +292,6 @@ dialog.zoom::backdrop{background:rgba(3,38,57,.82)}
 dialog.zoom img{max-width:100%;max-height:82vh;display:block;border-radius:var(--r-sm)}
 dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 /* 右上角：導覽＋風格切換 */
-.topr{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 /* 第一次進來：先挑一本，再點三下。進行中先把五個空間收起來，答完才出現。 */
 .firsting #panes,.firsting [id^="view-"]{display:none!important}
 #first{display:grid;gap:14px;margin:6px 0 28px;max-width:680px}
@@ -319,10 +314,6 @@ dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 /* 五個空間的導覽會黏在上面，要有紙的底色，捲動時下面的字才不會透上來。 */
 :root[data-theme="doodle"] .panes{background-color:var(--bg-soft)}
 :root[data-theme="doodle"] .sec h2{white-space:nowrap}
-/* 英文小標像用色筆隨手寫的大寫字，歪一點。 */
-:root[data-theme="doodle"] .eyebrow{font-family:var(--hw);font-size:15px;letter-spacing:.14em;color:#C8553D;transform:rotate(-2deg);transform-origin:left center}
-:root[data-theme="doodle"] section:nth-of-type(2n) .eyebrow,:root[data-theme="doodle"] [id^="view-"]:nth-of-type(2n) .eyebrow{color:#3F6FB5}
-:root[data-theme="doodle"] section:nth-of-type(3n) .eyebrow{color:#4E8A5A}
 /* 右上角：原本的幾何色塊換成一張小畫。 */
 :root[data-theme="doodle"] .blobs>*{display:none}
 :root[data-theme="doodle"] .blobs{background:var(--hero-art) center/contain no-repeat}
@@ -334,7 +325,7 @@ dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 #fhome{display:grid;gap:10px}
 .fblk{background:var(--bg);border:var(--edge-w,1px) var(--edge) var(--line);border-radius:var(--r-md);padding:14px 18px;animation:fgrow .45s ease-out}
 .fblk h3{font:700 12px var(--font);letter-spacing:.08em;color:var(--ink-3);margin-bottom:4px}
-.fblk .fit{display:flex;align-items:center;gap:10px;padding:5px 0}.fblk .fit+.fit{border-top:1px solid var(--line)}
+.fblk .fit{display:flex;align-items:center;gap:10px;padding:5px 0}.fblk .fit b{flex:1}.funit{min-height:40px;padding:4px 10px;width:auto}.fblk .fit+.fit{border-top:1px solid var(--line)}
 .fblk .fdot{width:10px;height:10px;border-radius:50%;flex:none}
 .fq .fn{font-size:12px;letter-spacing:.08em;color:var(--ink-3)}
 .fq h2{font-size:20px;margin:2px 0}
@@ -363,7 +354,7 @@ dialog.authdlg::backdrop{background:rgba(3,38,57,.5)}
 dialog.authdlg form{display:grid;gap:10px}
 dialog.authdlg .in{width:100%}
 @media(pointer:coarse){.chip,.dot{min-height:36px}.btn.sm{min-height:38px}.lnk{padding-block:8px}.acts .lnk{padding:7px 14px}}
-@media(max-width:640px){.swcols{grid-template-columns:1fr}.panes{position:fixed;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:12px;right:12px;display:flex;margin:0}.panes button{flex:1;flex-direction:column;justify-content:center;gap:2px;padding:7px 2px;min-height:52px}.panes b{font-size:11.5px;letter-spacing:.02em}.panes span{display:none}.cards2{grid-template-columns:1fr}.fab{right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:10px 16px}body{padding-bottom:100px}.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}.sheets{grid-template-columns:1fr}.orow{grid-template-columns:30px 1fr}.orow>.row{grid-column:1/-1}.gcards{grid-template-columns:1fr;gap:6px}.gcard,.gcard:nth-child(-n+2){grid-column:auto}.gcard{flex-direction:row;align-items:baseline;gap:10px;padding:10px 14px}.gcard b{font-size:18px;white-space:nowrap}.gcard span{flex:1}.pill a{padding:7px 12px;font-size:13px}.logo b{font-size:18px}}
+@media(max-width:640px){.swcols{grid-template-columns:1fr}.panes{position:fixed;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:12px;right:12px;display:flex;margin:0}.panes button{flex:1;flex-direction:column;justify-content:center;gap:2px;padding:7px 2px;min-height:52px}.panes b{font-size:11.5px;letter-spacing:.02em}.panes span{display:none}.cards2{grid-template-columns:1fr}.fab{right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:10px 16px}body{padding-bottom:100px}.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}.sheets{grid-template-columns:1fr}.orow{grid-template-columns:30px 1fr}.orow>.row{grid-column:1/-1}.gcards{grid-template-columns:1fr;gap:6px}.gcard,.gcard:nth-child(-n+2){grid-column:auto}.gcard{flex-direction:row;align-items:baseline;gap:10px;padding:10px 14px}.gcard b{font-size:18px;white-space:nowrap}.gcard span{flex:1}.pill a{padding:7px 12px;font-size:13px}header.top{grid-template-columns:auto 1fr auto auto;grid-template-areas:"title art art nav" "date date sw sw";row-gap:8px;padding:16px 0 10px}header.top h1{font-size:28px}#heroline{font-size:14.5px}.blobs{width:auto;max-width:100%;height:40px;margin-right:4px}#themesw{justify-self:end}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -393,13 +384,7 @@ dialog.authdlg .in{width:100%}
 </svg>
 <div class="wrap">
   <header class="top">
-    <a class="logo" href="../"><b>練息場</b><small>JOIN TO ENJOY</small></a>
-    <div class="topr"><nav class="pill" aria-label="主要導覽"><a href="../">首頁</a><a href="./" aria-current="page">我的練息場</a></nav><div id="themesw"></div></div>
-  </header>
-  <div class="banner" id="demo" hidden>現在看到的是示範資料，不會被儲存。按任何一扇門會假裝你做完回來。拿掉網址裡的 demo 就會讀這台裝置上的紀錄。</div>
-
-  <div class="hero">
-    <div><div class="eyebrow">My Lianxichang</div><h1>我的練息場</h1><p id="heroline"></p></div>
+    <h1>我的練息場</h1>
     <svg class="blobs" viewBox="0 0 400 190" aria-hidden="true">
       <g class="fl"><circle cx="262" cy="62" r="40" fill="#D9D9D9"/></g>
       <g class="fl c" fill="#7A6BD8"><circle cx="34" cy="96" r="24"/><circle cx="82" cy="96" r="24"/><circle cx="58" cy="72" r="24"/><circle cx="58" cy="120" r="24"/><rect x="38" y="76" width="40" height="40"/></g>
@@ -407,7 +392,11 @@ dialog.authdlg .in{width:100%}
       <g class="fl"><polygon points="214,108 262,74 300,112 284,162 226,160" fill="#FFC3FE" stroke="#FFC3FE" stroke-width="26" stroke-linejoin="round"/></g>
       <g class="fl b"><rect x="296" y="24" width="92" height="92" rx="24" fill="#3786E6" transform="rotate(16 342 70)"/></g>
     </svg>
-  </div>
+    <nav class="pill" aria-label="主要導覽"><a href="../">回練息場</a></nav>
+    <p id="heroline"></p>
+    <div id="themesw"></div>
+  </header>
+  <div class="banner" id="demo" hidden>這是示範資料，不會儲存。拿掉網址裡的 demo，就會讀這台裝置上的紀錄。</div>
 
   <div id="first" hidden></div>
 
@@ -420,7 +409,7 @@ dialog.authdlg .in{width:100%}
     <div class="welcome" id="welcome" hidden></div>
     <div id="pracquick" hidden></div>
     <section aria-labelledby="h-now">
-      <div class="sec"><div><p class="eyebrow">TODAY</p><h2 id="h-now">今天</h2></div><span>不用懂任何理論。選一個，或直接記一句。</span></div>
+      <div class="sec"><div><h2 id="h-now">今天</h2></div><span>不用懂任何理論。選一個，或直接記一句。</span></div>
       <div class="now">
         <div class="panel"><div id="gates"></div></div>
         <div class="panel memo">
@@ -436,7 +425,7 @@ dialog.authdlg .in{width:100%}
       </div>
     </section>
     <section aria-labelledby="h-open" id="sec-open" hidden>
-      <div class="sec"><div><p class="eyebrow">STILL OPEN</p><h2 id="h-open">還開著的</h2></div><span>沒有期限。先放下也可以。</span></div>
+      <div class="sec"><div><h2 id="h-open">還開著的</h2></div><span>沒有期限。先放下也可以。</span></div>
       <div class="panel" id="open"></div>
     </section>
   </div>
@@ -444,16 +433,16 @@ dialog.authdlg .in{width:100%}
   <!-- 探索：我對什麼感興趣 -->
   <div id="view-explore" hidden>
     <section aria-labelledby="h-cur">
-      <div class="sec"><div><p class="eyebrow">MY CURIOSITY</p><h2 id="h-cur"></h2></div><span id="curnote"></span></div>
+      <div class="sec"><div><h2 id="h-cur"></h2></div><span id="curnote"></span></div>
       <div class="panel"><div id="curlist"></div>
         <div class="jrow"><input class="in" id="exin" maxlength="40"><button class="btn sm fill" id="exadd"></button></div></div>
     </section>
     <section aria-labelledby="h-thm">
-      <div class="sec"><div><p class="eyebrow">MY THEMES</p><h2 id="h-thm"></h2></div><span id="thmnote"></span></div>
+      <div class="sec"><div><h2 id="h-thm"></h2></div><span id="thmnote"></span></div>
       <div class="panel" id="thmlist"></div>
     </section>
     <section aria-labelledby="h-aro">
-      <div class="sec"><div><p class="eyebrow">AROUND</p><h2 id="h-aro"></h2></div><span id="aronote"></span></div>
+      <div class="sec"><div><h2 id="h-aro"></h2></div><span id="aronote"></span></div>
       <div class="cards3" id="arolist"></div>
       <p class="quiet" id="exlater" style="margin-top:12px"></p>
     </section>
@@ -462,21 +451,21 @@ dialog.authdlg .in{width:100%}
   <!-- 練習：什麼對我有效 -->
   <div id="view-practice" hidden>
     <section aria-labelledby="h-prac" id="sec-prac">
-      <div class="sec"><div><p class="eyebrow"></p><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
+      <div class="sec"><div><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
       <div id="pracbox"></div>
     </section>
     <div id="praczone" hidden></div>
     <div id="pracrest">
     <section aria-labelledby="h-wrk">
-      <div class="sec"><div><p class="eyebrow">WHAT WORKS</p><h2 id="h-wrk"></h2></div><span id="wrknote"></span></div>
+      <div class="sec"><div><h2 id="h-wrk"></h2></div><span id="wrknote"></span></div>
       <div class="panel" id="wrklist"></div>
     </section>
     <section aria-labelledby="h-tools">
-      <div class="sec"><div><p class="eyebrow">TOOLBOX</p><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
+      <div class="sec"><div><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
       <div class="panel" id="toolbox"></div>
     </section>
     <section aria-labelledby="h-out">
-      <div class="sec"><div><p class="eyebrow">BEYOND</p><h2 id="h-out"></h2></div><span id="outnote"></span></div>
+      <div class="sec"><div><h2 id="h-out"></h2></div><span id="outnote"></span></div>
       <div class="panel" id="outlist"></div>
       <p style="margin-top:12px"><button class="lnk" data-go="mymap-map" data-lens="to" id="prreview"></button></p>
     </section>
@@ -489,18 +478,18 @@ dialog.authdlg .in{width:100%}
     <!-- 體驗足跡：回頭看留下了什麼 -->
     <div id="sub-trail">
     <section aria-labelledby="h-sum">
-      <div class="sec"><div><p class="eyebrow">THIS MONTH</p><h2 id="h-sum">這個月</h2></div><span>數字只跟自己比。</span></div>
+      <div class="sec"><div><h2 id="h-sum">這個月</h2></div><span>數字只跟自己比。</span></div>
       <div class="bento two">
         <div class="tile t1"><span class="k">這個月留下</span><div class="num"><span id="st-month">0</span><small>頁</small></div><div class="trirow" id="st-tris"></div><p id="st-trip"></p><i class="geo"></i></div>
         <div class="tile t2"><span class="k">身體能量</span><div class="num"><span id="st-hrv">—</span><small id="st-hrvl"></small></div><svg class="spark" id="spark" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="身體能量趨勢"></svg><p><a href="../hrv/">量一次</a></p></div>
       </div>
     </section>
     <section aria-labelledby="h-cap" id="sec-capsule" hidden>
-      <div class="sec"><div><p class="eyebrow">MEET AGAIN</p><h2 id="h-cap"></h2></div><span>一筆舊紀錄回來找你。不是每天都有。</span></div>
+      <div class="sec"><div><h2 id="h-cap"></h2></div><span>一筆舊紀錄回來找你。不是每天都有。</span></div>
       <div class="panel" id="capsule"></div>
     </section>
     <section aria-labelledby="h-rec">
-      <div class="sec"><div><p class="eyebrow">MY RECORDS</p><h2 id="h-rec">紀錄</h2></div><div class="chips" id="views"><button class="chip on" data-v="list">列表</button><button class="chip" data-v="cal">月曆</button></div></div>
+      <div class="sec"><div><h2 id="h-rec">紀錄</h2></div><div class="chips" id="views"><button class="chip on" data-v="list">列表</button><button class="chip" data-v="cal">月曆</button></div></div>
       <div class="trail">
         <div class="panel">
           <div id="v-list"><input class="in" id="q" type="search" autocomplete="off"><div class="chips" id="filters" style="margin-bottom:18px"></div><div id="list"></div></div>
@@ -514,7 +503,7 @@ dialog.authdlg .in{width:100%}
     <!-- 生命地圖：同一批紀錄，換一個角度看 -->
     <div id="sub-overview" hidden>
     <section aria-labelledby="h-org">
-      <div class="sec"><div><p class="eyebrow">MY SKETCHBOOK</p><h2 id="h-org">整理出來的樣子</h2></div><span>同一批紀錄，換一個角度看。</span></div>
+      <div class="sec"><div><h2 id="h-org">整理出來的樣子</h2></div><span>同一批紀錄，換一個角度看。</span></div>
       <div class="lensbar"><div class="chips" id="lens" role="group" aria-label="切換視角"></div><span class="note" id="lensq"></span></div>
       <div class="sheets two">
         <div class="sheet"><h3><span id="lensname"></span></h3>
@@ -524,7 +513,7 @@ dialog.authdlg .in{width:100%}
       </div>
     </section>
     <section aria-labelledby="h-mir">
-      <div class="sec"><div><p class="eyebrow">TWO MIRRORS</p><h2 id="h-mir">兩面鏡子</h2></div><span>排在一起，不互相解釋。</span></div>
+      <div class="sec"><div><h2 id="h-mir">兩面鏡子</h2></div><span>排在一起，不互相解釋。</span></div>
       <div class="mirrors">
         <div class="tile t3"><span class="k">八態能格・我的底色</span><div class="mid" id="st-oct"></div><p id="st-octp" style="margin-top:14px"></p></div>
         <div class="tile t4 sw" id="sw"></div>
@@ -532,7 +521,7 @@ dialog.authdlg .in{width:100%}
       <div class="panel" id="swedit" hidden style="margin-top:14px"></div>
     </section>
     <section aria-labelledby="h-data">
-      <div class="sec"><div><p class="eyebrow">MY DATA</p><h2 id="h-data">我的資料</h2></div><span>要不要給別人看，由你決定。</span></div>
+      <div class="sec"><div><h2 id="h-data">我的資料</h2></div><span>要不要給別人看，由你決定。</span></div>
       <div class="panel" id="data"></div>
     </section>
   </div>
@@ -542,20 +531,20 @@ dialog.authdlg .in{width:100%}
   <!-- 陪伴：一起練。揪團打卡、互相鼓勵、分享心得 -->
   <div id="view-care" hidden>
     <section aria-labelledby="h-cir">
-      <div class="sec"><div><p class="eyebrow">PRACTICE TOGETHER</p><h2 id="h-cir"></h2></div><span id="cirnote"></span></div>
+      <div class="sec"><div><h2 id="h-cir"></h2></div><span id="cirnote"></span></div>
       <div id="circles"></div>
     </section>
     <section aria-labelledby="h-opn">
-      <div class="sec"><div><p class="eyebrow">GROUPS IN PROGRESS</p><h2 id="h-opn"></h2></div><span id="opnnote"></span></div>
+      <div class="sec"><div><h2 id="h-opn"></h2></div><span id="opnnote"></span></div>
       <div class="panel" id="openlist"></div>
       <div class="panel" id="cnew" style="margin-top:14px"></div>
     </section>
     <section aria-labelledby="h-rul">
-      <div class="sec"><div><p class="eyebrow">WHAT OTHERS SEE</p><h2 id="h-rul"></h2></div></div>
+      <div class="sec"><div><h2 id="h-rul"></h2></div></div>
       <div class="panel rules" id="rules"></div>
     </section>
     <section aria-labelledby="h-bri">
-      <div class="sec"><div><p class="eyebrow">BRING MY NOTES</p><h2 id="h-bri"></h2></div><span id="brinote"></span></div>
+      <div class="sec"><div><h2 id="h-bri"></h2></div><span id="brinote"></span></div>
       <div class="panel"><div class="row"><button class="btn" data-go="mymap" id="bri1">這個月存成一張圖</button><button class="btn" data-go="mymap-map" id="bri2">我的使用說明書</button><button class="btn" id="bri3">下載我的資料</button></div></div>
       <p class="helpline" id="helpline" style="margin-top:14px"></p>
     </section>
@@ -708,7 +697,7 @@ function renderGates(){var on=D.states.filter(function(g){return g.key===S.gate}
 function justNow(){var t=S.just&&triById(S.just);if(t&&!t.dropped&&t.recId&&S.byId[t.recId]&&!corners(t).enjoy)return{t:t,p:S.byId[t.recId]};
   var sk=O.justSkip&&O.justSkip.k===TODAY?O.justSkip.ids:[],p=M.justPick(S.pages,S.triByRec,O.ann,TODAY,sk);return p?{t:null,p:p}:null}
 function renderJust(){var j=justNow(),el=$('#just');S.justShown=j&&j.t?j.t.id:null;el.hidden=!j;if(!j)return;
-  el.dataset.id=j.p.id;el.innerHTML='<div><p class="eyebrow">JUST NOW</p><h2>'+D.just.title+'「'+esc(j.p.title||j.p.text||j.p.kind)+'」</h2>'+(j.t&&corners(j.t).join?'<p class="note">起點：'+esc(joinLabel(j.t))+'</p>':'')+'</div><div class="row"><input class="in fnd" maxlength="80" placeholder="'+D.just.ask+'" aria-label="'+D.just.ask+'"><button class="btn sm fill" data-ja="save">留下</button></div><div class="row">'+dotsHTML('data-ja="dot"')+'<button class="lnk" data-ja="skip">'+D.just.skip+'</button></div>'}
+  el.dataset.id=j.p.id;el.innerHTML='<div><h2>'+D.just.title+'「'+esc(j.p.title||j.p.text||j.p.kind)+'」</h2>'+(j.t&&corners(j.t).join?'<p class="note">起點：'+esc(joinLabel(j.t))+'</p>':'')+'</div><div class="row"><input class="in fnd" maxlength="80" placeholder="'+D.just.ask+'" aria-label="'+D.just.ask+'"><button class="btn sm fill" data-ja="save">留下</button></div><div class="row">'+dotsHTML('data-ja="dot"')+'<button class="lnk" data-ja="skip">'+D.just.skip+'</button></div>'}
 function renderUseful(){var seen={},u=[];S.pages.forEach(function(p){if(p.tool&&D.tools[p.tool]&&(O.ann[p.id]||{}).useful&&!seen[p.tool]){seen[p.tool]=1;u.push(p.tool)}});var el=$('#useful');el.hidden=!u.length;
   el.innerHTML='<span class="note">'+D.capture.useful+'</span><div class="chips">'+u.slice(0,4).map(function(t){return '<a class="chip" href="'+D.tools[t].href+'">'+D.tools[t].name+'</a>'}).join('')+'</div>'}
 /* 三個焦距 */
@@ -1100,7 +1089,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 /* 開場 */
 var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O.lastVisit=TODAY;save()}
-$('#demo').hidden=!DEMO;$('#heroline').textContent='練息生手帳。'+M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
+$('#demo').hidden=!DEMO;$('#heroline').textContent=M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
 $('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;
@@ -1124,12 +1113,13 @@ function firstAuth(u){if(!S.firstWait)return;S.firstWait=false;if(!u){if(firstNe
   var n=0;(function again(){setTimeout(function(){if(FS||!S.user)return;if(JtePrac.pending()&&++n<4){again();return}if(firstNeeded())firstStart()},2500)})()}
 function firstRecheck(){if(FS&&FS.step===0&&!firstForced&&!firstBlank())firstEnd()}
 function fAll(){return FS.items.concat(FS.own)}
-function fUnit(n){var all=D.prac.examples.concat(F.q2.extra),i;for(i=0;i<all.length;i++)if(all[i].name===n)return all[i].unit;return F.q2.ownUnit}
+function fUnit(n){var all=D.prac.examples.concat(F.q2.extra),i;if(FS&&FS.units&&FS.units[n])return FS.units[n];for(i=0;i<all.length;i++)if(all[i].name===n)return all[i].unit;return F.q2.ownUnit}
+function fUnitSel(n){var u=fUnit(n),us=D.prac.units.slice();if(us.indexOf(u)<0)us.unshift(u);return '<select class="in funit" data-funit="'+esc(n)+'" aria-label="'+esc(F.q2.unitLabel.replace('{n}',n))+'">'+us.map(function(x){return '<option'+(x===u?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>'}
 function fHome(){var h='',st=FS.state,its=fAll(),cs=D.prac.colors;
   if(FS.from==='event')h+='<div class="fblk"><h3>'+F.q3.block+'</h3><p>'+F.q3.eventNote+'</p></div>';
   else if(FS.from)h+='<div class="fblk"><p>'+F.q3.welcome+'</p></div>';
   if(st){var d=(st.doors||[])[0];h+='<div class="fblk s-'+st.key+'"><h3>'+F.q1.block+'　'+esc(M.dlabel(TODAY))+'</h3><p><b>'+esc(st.name)+'</b>　'+esc(st.desc)+'</p>'+(d?'<p class="note">'+F.q1.door+'：'+esc(d.label)+'</p>':'')+'</div>'}
-  if(its.length)h+='<div class="fblk"><h3>'+F.q2.block+'</h3>'+its.map(function(n,i){return '<div class="fit"><span class="fdot" style="background:'+cs[i%cs.length]+'"></span><b>'+esc(n)+'</b><span class="note">'+esc(fUnit(n))+'</span></div>'}).join('')+'<p class="note" style="margin-top:6px">'+F.q2.blockNote+'</p></div>';
+  if(its.length)h+='<div class="fblk"><h3>'+F.q2.block+'</h3>'+its.map(function(n,i){return '<div class="fit"><span class="fdot" style="background:'+cs[i%cs.length]+'"></span><b>'+esc(n)+'</b>'+fUnitSel(n)+'</div>'}).join('')+'<p class="note" style="margin-top:6px">'+F.q2.blockNote+'</p></div>';
   else if(FS.none){if(FS.breath>=3)h+='<div class="fblk"><h3>'+F.q2.block+'</h3><p>'+F.q2.breathed+'</p></div>';
     else h+='<div class="fblk"><h3>'+F.q2.noneBlock+'</h3><p>'+F.q2.noneNote+'</p><div class="fbreath"><div class="fring" id="fring"></div><div><p id="fsay" aria-live="polite">&nbsp;</p><div class="row"><button class="btn sm fill" id="fstart">'+F.q2.start+'</button><button class="lnk" id="flater">'+F.q2.later+'</button></div></div></div></div>'}
   return h}
@@ -1143,7 +1133,7 @@ function renderFirst(){var el=$('#first'),h='',st=FS.step;
     if(st===3)h+='<div class="panel fq">'+fQ(3,F.q3)+'<div class="row" style="margin-top:12px">'+F.q3.opts.map(function(o){return '<button class="fchip" data-ffrom="'+o.key+'">'+esc(o.name)+'</button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
     if(st===4){var none=!FS.state&&!fAll().length&&FS.breath<3&&!FS.from;h+='<div class="fq"><h2 id="fqh" tabindex="-1">'+F.end.h+'</h2><p class="note">'+(none?F.end.empty:F.end.note)+'</p><div class="row" style="margin-top:12px"><button class="btn fill" data-fgo="finish">'+F.end.go+'</button><button class="lnk" data-fgo="again">'+F.end.back+'</button></div></div>'}}
   el.innerHTML=h;var f=$('#fqh');if(f&&st>0)f.focus({preventScroll:true})}
-function firstStart(){FS={step:0,state:null,items:[],own:[],none:false,from:null,breath:0,busy:false};document.body.classList.add('firsting');$('#first').hidden=false;renderFirst()}
+function firstStart(){FS={step:0,state:null,items:[],own:[],units:{},none:false,from:null,breath:0,busy:false};document.body.classList.add('firsting');$('#first').hidden=false;renderFirst()}
 function firstEnd(){FS=null;document.body.classList.remove('firsting');$('#first').hidden=true;$('#first').innerHTML='';O.prefs.first='done';save()}
 function firstFinish(){if(FS.busy)return;FS.busy=true;var a=FS,list=fAll().map(function(n){return {name:n,unit:fUnit(n)}});
   if(!list.length&&a.breath>=3)list=[F.q2.breathItem];
@@ -1173,6 +1163,7 @@ $('#first').onclick=function(e){if(!FS)return;var t=e.target,b;
     if(k==='none'){FS.items=[];FS.own=[];FS.none=true;FS.step=3;renderFirst();return}
     if(k==='skip'&&FS.step===2){FS.items=[];FS.own=[];FS.none=false}
     FS.step++;renderFirst()}};
+$('#first').addEventListener('change',function(e){var t=e.target;if(FS&&t.dataset&&t.dataset.funit)FS.units[t.dataset.funit]=t.value});
 $('#first').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fown'&&!e.isComposing){e.preventDefault();fAddOwn()}});
 JteTheme.mount($('#themesw'));
 showPane(location.hash);

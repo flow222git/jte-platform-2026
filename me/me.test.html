@@ -253,7 +253,7 @@ const asyncDone=(async()=>{
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
   const sx=document.createElement('script');sx.src='me-practice.js';
   await new Promise((res,rej)=>{sx.onload=res;sx.onerror=()=>rej(new Error('載入 me-practice.js 失敗'));document.head.appendChild(sx);});
-  const host=document.createElement('div');host.style.display='none';host.innerHTML='<div id="sec-prac"><div class="eyebrow"></div><h2 id="h-prac"></h2><span id="pracnote"></span><div id="pracbox"></div></div><div id="pracquick"></div><div id="praczone" hidden></div><div id="pracrest"></div>';document.body.appendChild(host);
+  const host=document.createElement('div');host.style.display='none';host.innerHTML='<div id="sec-prac"><h2 id="h-prac"></h2><span id="pracnote"></span><div id="pracbox"></div></div><div id="pracquick"></div><div id="praczone" hidden></div><div id="pracrest"></div>';document.body.appendChild(host);
   const O={prefs:{},memos:[],prac:{items:[{id:'pi-t1',name:'太極',unit:'分鐘',color:D.prac.colors[0],archived:false,createdAt:1}],logs:[{id:'pl-t1',itemId:'pi-t1',date:'2026-11-17',amount:20,note:'',at:1}],notes:[]}};
   let mode='fail',uploads=0;
   window.JteCloud={pracHas:()=>Promise.resolve(false),pracLoad:()=>Promise.resolve({items:[],logs:[],notes:[]}),
