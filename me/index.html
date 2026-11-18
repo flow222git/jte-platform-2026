@@ -867,7 +867,7 @@ function renderCapsule(){var ok=O.prefs.capsule!==false&&O.capsuleSkip!==TODAY&&
     '<div class="row" style="margin-top:10px"><input class="in" id="capin" style="flex:1" maxlength="80" placeholder="'+D.capsule.ask+'" aria-label="'+D.capsule.ask+'"><button class="btn sm fill" id="capsave">留下</button><button class="lnk" id="capskip">今天先不看</button><button class="lnk" id="capoff">不再出現</button></div>'}
 /* 紀錄：列表 */
 function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.open===p.id,ki=D.kinds.indexOf(p.kind),t=S.triByRec[p.id];
-  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',x=(itn?'<span class="pr-itag">'+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc(p.text||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
+  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc(p.text||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
   var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
   if(!open)return h+'</div>';
   h+='<div class="detail" data-id="'+esc(p.id)+'">';
@@ -896,7 +896,7 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
 function renderList(){$('#filters').innerHTML=['全部'].concat(D.kinds).map(function(k){return '<button class="chip'+(S.filter===k?' on':'')+'" data-f="'+k+'">'+k+'</button>'}).join('');
   var PT=D.prac.t,nm={};S.pages.forEach(function(p){if(p.itemId&&!nm[p.itemId]){var n=JtePrac.itemName(p.itemId);if(n)nm[p.itemId]=n}});
   var ic=M.itemCounts(S.pages,nm),fe=$('#itemf'),ne=$('#itemnow');if(S.item&&!nm[S.item])S.item='';
-  fe.hidden=!ic.length;fe.innerHTML=ic.length?'<span class="note">'+esc(PT.itemFilter)+'</span>'+ic.map(function(x){return '<button class="chip'+(S.item===x.id?' on':'')+'" data-it="'+esc(x.id)+'" aria-pressed="'+(S.item===x.id)+'">'+esc(x.name)+'</button>'}).join(''):'';
+  fe.hidden=!ic.length;fe.innerHTML=ic.length?'<span class="note">'+esc(PT.itemFilter)+'</span>'+ic.map(function(x){return '<button class="chip'+(S.item===x.id?' on':'')+'" data-it="'+esc(x.id)+'" aria-pressed="'+(S.item===x.id)+'">'+(JtePrac.itemIcon(x.id)?'<img src="'+JtePrac.itemIcon(x.id)+'" alt="">':'')+esc(x.name)+'</button>'}).join(''):'';
   var ps=M.searchPages(S.pages,S.q,O.ann,S.triByRec,nm).filter(function(p){return (S.filter==='全部'||p.kind===S.filter)&&(!S.item||p.itemId===S.item)}),h='',cur='';
   ne.hidden=!S.item;ne.innerHTML=S.item?esc(PT.itemCount.replace('{n}',nm[S.item]).replace('{c}',ps.length))+' <a class="lnk" href="#practice-item-'+esc(S.item)+'">'+esc(PT.itemPage.replace('{n}',nm[S.item]))+'</a> <button class="lnk" data-it="">'+esc(PT.itemAll)+'</button>':'';
   ps.forEach(function(p){if(p.key!==cur){cur=p.key;h+='<div class="day">'+M.dlabel(p.key)+'</div>'}h+=rowHTML(p)});
