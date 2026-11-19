@@ -143,6 +143,7 @@ label.note{font-weight:700;color:var(--ink-2)}
 .ej{display:flex;gap:4px;align-items:center}
 .ej i{width:10px;height:10px;border-radius:50%;display:block}
 .detail{padding:2px 0 18px 30px;display:grid;gap:8px}
+.rec>.actvis{margin:0 0 14px 30px;max-width:min(420px,calc(100% - 30px))}
 .detail p{color:var(--ink-2);font-size:14px}
 .tagrow{display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center}
 .tag{font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 12px;background:var(--blue-pale);color:var(--blue)}
@@ -1002,6 +1003,7 @@ function renderCapsule(){var ok=O.prefs.capsule!==false&&O.capsuleSkip!==TODAY&&
 function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.open===p.id,ki=D.kinds.indexOf(p.kind),t=S.triByRec[p.id];
   var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(isStar(p)?'<span class="stmk" aria-label="'+esc(D.prac.t.starFilter)+'">★</span>':'')+(p.qid&&questById(p.qid)?'<span class="pr-itag">'+D.explore.quest.mark+'</span>':'')+(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc((p.src==='Note'&&p.text.length>120?p.text.slice(0,120)+'…':p.text)||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
   var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
+  if(p.visual)h+='<img class="actvis" src="'+esc(p.visual)+'" alt="'+esc((p.title||'')+A.visAlt)+'" loading="lazy" referrerpolicy="no-referrer">';
   if(!open)return h+'</div>';
   h+='<div class="detail" data-id="'+esc(p.id)+'">';
   if(t&&corners(t).join)h+='<p class="note">起點：'+esc(joinLabel(t))+(t.join.kind==='from'?'（'+D.join.from+'）':'')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</p>';
@@ -1010,7 +1012,6 @@ function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.op
   if(ph.length)h+='<div class="photos">'+ph.map(function(z){return '<figure><button class="ph" data-act="zoom" data-pid="'+esc(z.id)+'"><img src="'+esc(z.data)+'" alt="'+esc(z.caption||I.photoAlt)+'" loading="lazy"></button>'+(z.caption?'<figcaption>'+esc(z.caption)+'</figcaption>':'')+(p.src==='Insp'?'<button class="lnk" data-act="delpic" data-pid="'+esc(z.id)+'">'+I.delPhoto+'</button>':'')+'</figure>'}).join('')+'</div>';
   if(p.feel.length)h+='<div class="tagrow">'+p.feel.map(function(f){return '<span class="feel">'+esc(f)+'</span>'}).join('')+'</div>';
   if(p.meta.length)h+='<p class="note">'+p.meta.map(esc).join('・')+'</p>';
-  if(p.visual)h+='<img class="actvis" src="'+esc(p.visual)+'" alt="'+esc((p.title||'')+A.visAlt)+'" loading="lazy" referrerpolicy="no-referrer">';
   if(p.act){var al=M.actLines(p.act,A);h+='<div class="actv">'+al.map(function(x){return '<p>'+esc(x)+'</p>'}).join('')+['expect','feeling','takeaway','feedback'].map(function(k){return p.act[k]?'<p><small>'+A[k]+'</small>'+esc(p.act[k])+'</p>':''}).join('')+(al.length||p.act.expect||p.act.feeling||p.act.takeaway||p.act.feedback?'<p class="note">'+A.from+'</p>':'')+'</div>'}
   if(p.link)h+='<p class="note"><a href="'+esc(p.link)+'" target="_blank" rel="noopener">看活動照片</a></p>';
   if(t&&t.found)h+='<p class="add"><small>發現</small>'+esc(t.found)+'</p>';
