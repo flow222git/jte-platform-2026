@@ -300,3 +300,13 @@
 .pr-rcgoal{padding:8px 12px;border-left:3px solid var(--pc);background:var(--pt);border-radius:0 var(--r-md) var(--r-md) 0;overflow-wrap:anywhere}
 .pr-rcgoal+.pr-rcgoal{margin-top:6px}
 .pr-rcsec .pr-rc:first-of-type{border-top:0}
+
+/* 項目設定：全部項目一列一個 */
+.pr-mrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.pr-mrow:first-child{border-top:0}
+.pr-mrow.kid{padding-left:26px}
+.pr-mrow>div{flex:1;min-width:0;display:grid}
+.pr-mrow b{color:var(--dark);letter-spacing:.03em;overflow-wrap:anywhere}
+.pr-mrow .pr-ico{width:34px;height:34px;flex:none}
+.pr-mrow .pr-sw{flex:none}
+.pr-mrow .btn{flex:none;min-height:40px}
