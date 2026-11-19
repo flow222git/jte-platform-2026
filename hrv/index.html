@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>心率變異 HRV · 練息場</title>
-<meta name="description" content="手指輕貼後鏡頭，約一分鐘，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
+<meta name="description" content="手指輕貼後鏡頭，約一分半，用相機量心率與心率變異（HRV），看看身體現在偏放鬆還是緊繃。健康參考，非醫療診斷。">
 <meta property="og:title" content="心率變異 HRV · 練息場">
-<meta property="og:description" content="手指貼鏡頭，一分鐘量身體狀態。">
+<meta property="og:description" content="手指貼鏡頭，一分半量身體狀態。">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,14 +190,18 @@
   .zm{display:grid;gap:6px}
   .zm-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
   .zm-top b{font-size:14px;font-weight:500;color:var(--ink)}
-  .zm-top span{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
-  .zm-top span small{font-family:"Noto Sans TC",sans-serif;font-size:12px;font-weight:400;color:var(--ink-faint);margin-left:3px}
-  .zm-tag{font-family:"Noto Sans TC",sans-serif;font-style:normal;font-size:11.5px;font-weight:500;border-radius:999px;padding:1px 8px;margin-left:6px;color:#fff;vertical-align:2px}
+  .zm-num{font-size:12.5px;color:var(--ink-faint);white-space:nowrap}
+  .zm-num small{font-size:11.5px;margin-left:2px}
+  .zm-state{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .zm-state em{flex:none;width:11px;height:11px;border-radius:3px;display:inline-block;transform:translateY(1px)}
+  .zm-state b{font-family:"Noto Serif TC",serif;font-size:19px;font-weight:700;color:var(--ink)}
+  .zm-state span{font-size:13.5px;color:var(--ink-soft)}
+  .zm-state i{font-style:normal;font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px}
   .zm-wrap{position:relative;padding-top:3px}
   .zm-bar{height:12px;border-radius:6px;overflow:hidden;display:flex}
   .zm-bar i{display:block;height:100%}
   .zm-mark{position:absolute;top:0;width:4px;height:18px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px var(--card);transform:translateX(-2px)}
-  .zm-legend{display:grid;gap:3px;font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .zm-legend{display:grid;gap:3px;font-size:12px;color:var(--ink-faint);line-height:1.6}
   .zm-legend>div{display:flex;gap:7px;align-items:baseline}
   .zm-legend em{flex:none;width:9px;height:9px;border-radius:2px;display:inline-block;transform:translateY(1px)}
   .zm-legend b{font-weight:500}
@@ -224,9 +228,9 @@
   .breath-item:first-of-type{margin-top:8px}
   .breath-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .breath-row .bn{font-size:13.5px;color:var(--ink-soft)}
-  .breath-row .bv{font-family:"Noto Serif TC",serif;color:var(--accent);font-size:17px;font-weight:600;white-space:nowrap}
-  .breath-row .bv small{font-size:12px;font-weight:500;color:var(--ink-faint);margin-left:2px}
-  .breath-row .bw{font-size:11.5px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:6px;font-family:"Noto Sans TC",sans-serif;font-weight:500}
+  .breath-row .bv{font-size:12.5px;color:var(--ink-faint);white-space:nowrap}
+  .breath-row .bv small{font-size:11.5px;margin-left:2px}
+  .breath-state{font-family:"Noto Serif TC",serif;font-size:17px;font-weight:700;color:var(--accent);margin-top:2px}
   .breath-mean{font-size:12.5px;color:var(--ink-soft);line-height:1.75;margin-top:3px}
   .facet-cell{border-top:1px solid var(--line);padding:11px 0 9px}
   .facet-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -307,7 +311,7 @@
 <body>
 <div class="wrap">
   <header><span class="logo">心率變異 HRV</span><span class="sub">CAMERA PPG</span></header>
-  <p class="tagline">手指貼鏡頭，一分鐘量身體狀態。</p>
+  <p class="tagline">手指貼鏡頭，一分半量身體狀態。</p>
   <div id="app"></div>
 </div>
 <div class="bar" id="bar"></div>
@@ -323,10 +327,11 @@ if(typeof window.jteT!=='function'){ window.jteT=function(k,fb){ return fb!==und
 const app=document.getElementById('app');
 const bar=document.getElementById('bar');
 const STATE_LABEL={ relaxed:'放鬆', balanced:'平衡', tense:'緊繃' };
-// 雙模式：快測 60 秒（預設，HR/RMSSD/身體能量——超短時 HRV 研究中 60 秒 RMSSD 與標準值相關 >0.9）
+// 雙模式：快測 90 秒（預設，HR/RMSSD/身體能量——超短時 HRV 研究中 60 秒 RMSSD 與標準值相關 >0.9；
+// 多 30 秒是給呼吸推算的緩衝：扣掉放穩手指與雜訊後，仍要湊滿 40 秒連續好訊號）
 // 深度測 180 秒（頻域四面相；LF 頻段 0.04Hz＝25 秒/週期，物理上就需要 2–3 分鐘）。
-// 誠實框架：不把 3 分鐘的指標塞進 1 分鐘——快測只出撐得住的，四面相留給深度測。
-const QUICK_SEC=60;
+// 誠實框架：不把 3 分鐘的指標塞進 1 分半——快測只出撐得住的，四面相留給深度測。
+const QUICK_SEC=90;
 const DEEP_SEC=180;
 const KEEP_SEC=12;          // 即時分析用的最近樣本視窗（秒）
 function measureSec(){ return session.measureMode==='deep' ? DEEP_SEC : QUICK_SEC; }
@@ -377,7 +382,7 @@ function renderIntro(){
   const leadP=document.createElement('p');
   leadP.innerHTML=jteT('intro.what.body','用手機後鏡頭看你<b>心跳的節奏變化</b>（心率變異 HRV），換算成今天的<b>身體能量</b>，也就是你現在的恢復與放鬆程度。還能從心跳的起伏，照出你這段時間<b>呼吸的快慢和節奏</b>。分數是跟你<b>自己平常</b>比，看趨勢就好。');
   const leadTag=document.createElement('div');leadTag.className='tag';
-  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分鐘 · 找個能坐穩、放鬆的地方')+'</span>';
+  leadTag.innerHTML='<i class="ti ti-clock-hour-4"></i><span>'+jteT('intro.what.tag','約一分半 · 找個能坐穩、放鬆的地方')+'</span>';
   lead.appendChild(leadH);lead.appendChild(leadP);lead.appendChild(leadTag);
   d.appendChild(lead);
 
@@ -388,7 +393,7 @@ function renderIntro(){
     {t:jteT('hrv.p1.t','什麼是 HRV？'),d:jteT('hrv.p1.d','心率變異＝每次心跳間隔的細微變化。變化越豐富，通常代表身體越能放鬆、恢復力越好。'),icon:'ti-heartbeat'},
     {t:jteT('hrv.p2.t','它反映什麼？'),d:jteT('hrv.p2.d','你的自律神經狀態——交感（油門·備戰）和副交感（剎車·休息）的平衡。'),icon:'ti-activity'},
     {t:jteT('hrv.p3.t','怎麼看才準？'),d:jteT('hrv.p3.d','跟自己平常比、看趨勢就好，不是跟別人比；多量幾次會越來越貼近你。'),icon:'ti-trending-up'},
-    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','快測（1 分鐘）看身體能量、心率、呼吸快慢與心跳呼吸比。深度測（3 分鐘）再加上放鬆、壓力、活力、彈性四面相，資料比較多，呼吸也比較容易照出來。'),icon:'ti-eye'}
+    {t:jteT('hrv.p4.t','量完看得到'),d:jteT('hrv.p4.d','快測（1 分半）看身體能量、心率、呼吸快慢與心跳呼吸比。深度測（3 分鐘）再加上放鬆、壓力、活力、彈性四面相，資料比較多，呼吸也比較容易照出來。'),icon:'ti-eye'}
   ];
   let gh='<h3><i class="ti ti-bulb"></i>'+_h(jteT('hrv.title','認識 HRV'))+'</h3><div class="steps">';
   hrvPts.forEach(function(s){
@@ -1299,13 +1304,14 @@ function buildBreath(b, hr){
     '<div class="breath-cap">'+_h(jteT('breath.cap','往上大致是吸氣、往下是吐氣。這條線從心跳推算，看的是節奏，形狀不是呼吸的精確翻版。'))+'</div>');
   function item(name, val, unit, word, mean, key){
     return '<div class="breath-item"><div class="breath-row"><span class="bn">'+_h(name)+'</span>'+
-      '<span class="bv">'+_h(val)+(unit?'<small>'+_h(unit)+'</small>':'')+(word?'<span class="bw">'+_h(word)+'</span>':'')+'</span></div>'+
+      (val?'<span class="bv">'+_h(val)+(unit?'<small>'+_h(unit)+'</small>':'')+'</span>':'')+'</div>'+
+      (word?'<div class="breath-state">'+_h(word)+'</div>':'')+
       '<div class="breath-mean">'+_h(mean)+'</div>'+metricInfo(key)+'</div>';
   }
   wrap.insertAdjacentHTML('beforeend',
     item(jteT('breath.rate','呼吸快慢'), String(rate), jteT('breath.unit','次/分'), breathRateWord(b.rate),
       jteT('breath.rate.m','這段時間你大約每 %1 秒呼吸一次。').replace('%1',String(secPer)), 'breathRate')+
-    item(jteT('breath.rhythm','節奏'), rh.w, '', '', rh.m, 'breathRhythm')+
+    item(jteT('breath.rhythm','節奏'), '', '', rh.w, rh.m, 'breathRhythm')+
     item(jteT('breath.rsa','帶動心跳'), '±'+(Math.round(b.rsa*10)/10), jteT('breath.unit','次/分'), breathRsaWord(b.rsa),
       jteT('breath.rsa.m','吸氣時心跳加快、吐氣時變慢，一口氣之間大約相差 %1 下。').replace('%1',String(swing)), 'breathRsa')+
     (hr>0 ? item(jteT('breath.prq','心跳呼吸比'), String(Math.round(hr/b.rate*10)/10), jteT('breath.prq.unit','下／口氣'), '',
@@ -1386,15 +1392,17 @@ function zoneBarHtml(z, val){
 function zoneItem(key, name, val, unit, z, info, extraTag, note){
   const cur=z.bands[window.HrvSentence.zoneIndex(z, val)];
   const el=document.createElement('div'); el.className='zm'; el.setAttribute('data-k',key);
-  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span>'+_h(String(val))+'<small>'+_h(unit)+'</small>'+
-      '<em class="zm-tag" style="background:'+ZONE_COLOR[cur.color]+'">'+_h(cur.label+(extraTag?' · '+extraTag:''))+'</em></span></div>'+
+  // 狀態是主角（區名＋這區的意思），數字縮小當參考
+  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span class="zm-num">'+_h(String(val))+'<small>'+_h(unit)+'</small></span></div>'+
+    '<div class="zm-state"><em style="background:'+ZONE_COLOR[cur.color]+'"></em><b>'+_h(cur.label)+'</b><span>'+_h(cur.desc)+'</span>'+
+      (extraTag?'<i>'+_h(extraTag)+'</i>':'')+'</div>'+
     zoneBarHtml(z, val)+(note?'<div class="zm-note">'+_h(note)+'</div>':'')+(info?metricInfo(info):'');
   return el;
 }
 // 還沒有個人分區時：只放數值與說明
 function plainItem(key, name, val, unit, note, info){
   const el=document.createElement('div'); el.className='zm'; el.setAttribute('data-k',key);
-  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span>'+_h(String(val))+'<small>'+_h(unit)+'</small></span></div>'+
+  el.innerHTML='<div class="zm-top"><b>'+_h(name)+'</b><span class="zm-num">'+_h(String(val))+'<small>'+_h(unit)+'</small></span></div>'+
     (note?'<div class="zm-note">'+_h(note)+'</div>':'')+(info?metricInfo(info):'');
   return el;
 }
@@ -1795,7 +1803,7 @@ window.JTE_I18N = {
   en: {
     'intro.what.title': 'What is this measuring?',
     'intro.what.body': 'Your phone\'s rear camera reads your <b>heart rhythm variations</b> (HRV) and converts them into today\'s <b>Body Energy</b>, your current recovery and relaxation level. It can also show <b>how fast and how evenly you were breathing</b>, read from the rise and fall of your heartbeat. The score is compared with <b>your own usual</b>, so watch your trend.',
-    'intro.what.tag': 'About 1 minute · Find a place to sit still and relax',
+    'intro.what.tag': 'About 1.5 minutes · Find a place to sit still and relax',
     'intro.steps.title': 'How to measure',
     'intro.step1.title': 'Cover the rear camera with your finger',
     'intro.step1.desc': 'Cover the flash too — don\'t press too hard.',
@@ -1804,10 +1812,10 @@ window.JTE_I18N = {
     'intro.step3.title': 'Make sure there\'s enough light',
     'intro.step3.desc': 'Especially important when iPhone can\'t use the flash.',
     'intro.step4.title': 'Wait for the signal light to turn green',
-    'intro.step4.desc': 'A ~1 minute countdown begins, and results appear automatically.',
+    'intro.step4.desc': 'A ~1.5 minute countdown begins, and results appear automatically.',
     'btn.start': 'Start Measuring',
     'btn.deep': 'Deep Measure · 3 min · All four facets',
-    'hrv.p4.d': 'Quick measure (1 min) shows Body Energy, heart rate, breathing rate and beats per breath. Deep measure (3 min) adds the four facets: relaxation, stress, vitality, flexibility. With more data, your breathing is also easier to show.',
+    'hrv.p4.d': 'Quick measure (1.5 min) shows Body Energy, heart rate, breathing rate and beats per breath. Deep measure (3 min) adds the four facets: relaxation, stress, vitality, flexibility. With more data, your breathing is also easier to show.',
     'facets.quick': 'Quick measure covers Body Energy and heart rate. The four facets (relaxation / stress / vitality / flexibility) need a longer signal — take one 3-minute Deep measure to see them.',
     'facets.partial.quick': 'Quick measure supports relaxation and flexibility; stress and vitality need a longer stable signal. Take a 3-minute Deep measure to see all four facets.',
     'btn.trend': 'View Trend',
@@ -1883,7 +1891,7 @@ window.JTE_I18N = {
     'sent.u.usual': 'your usual',
     'sent.u.recent': 'your last few',
     'sent.main.first': 'This is your first time, so let\'s get to know your heartbeat.',
-    'sent.sub.first': 'There is no "usual" to compare with yet, so this time we only describe what this minute showed.',
+    'sent.sub.first': 'There is no "usual" to compare with yet, so this time we only describe what this measurement showed.',
     'sent.main.slow': 'Your breathing slowed down, and your heartbeat rises and falls with it.',
     'sent.sub.slow': 'That is your body\'s brake at work. You look like you are settling down.',
     'sent.main.mixed': 'A little tired, but your heart is still steady.',
@@ -1968,7 +1976,7 @@ window.JTE_I18N = {
   ja: {
     'intro.what.title': 'これは何を測っているの？',
     'intro.what.body': 'スマホの背面カメラで<b>心拍リズムの変動</b>（HRV）を読み取り、今日の<b>からだのエネルギー</b>（いまの回復とリラックスの度合い）に換算します。心拍のゆらぎから、この間の<b>呼吸の速さとリズム</b>も映し出せます。スコアは<b>あなた自身の平均値</b>との比較なので、自分のトレンドを見ることが大切です。',
-    'intro.what.tag': '約1分 ・ 落ち着いて座れる場所で',
+    'intro.what.tag': '約1分半 ・ 落ち着いて座れる場所で',
     'intro.steps.title': '測り方',
     'intro.step1.title': '背面カメラに指を軽く当てる',
     'intro.step1.desc': 'フラッシュも一緒に覆ってください。強く押しすぎないように。',
@@ -1977,10 +1985,10 @@ window.JTE_I18N = {
     'intro.step3.title': '明るい場所で行う',
     'intro.step3.desc': 'iPhoneでフラッシュが使えない場合は特に重要です。',
     'intro.step4.title': 'シグナルランプが緑になるまで待つ',
-    'intro.step4.desc': '約1分のカウントダウンが始まり、自動的に結果が表示されます。',
+    'intro.step4.desc': '約1分半のカウントダウンが始まり、自動的に結果が表示されます。',
     'btn.start': '測定を開始',
     'btn.deep': 'じっくり測定 · 3分 · 4つの側面すべて',
-    'hrv.p4.d': 'クイック測定（1分）ではからだのエネルギー、心拍数、呼吸の速さ、脈拍呼吸比を確認できます。じっくり測定（3分）ではさらにリラックス・ストレス・活力・柔軟性の4側面が加わり、データが多いぶん呼吸も映し出しやすくなります。',
+    'hrv.p4.d': 'クイック測定（1分半）ではからだのエネルギー、心拍数、呼吸の速さ、脈拍呼吸比を確認できます。じっくり測定（3分）ではさらにリラックス・ストレス・活力・柔軟性の4側面が加わり、データが多いぶん呼吸も映し出しやすくなります。',
     'facets.quick': 'クイック測定で見られるのは、からだのエネルギーと心拍数です。4つの側面（リラックス／ストレス／活力／柔軟性）にはより長い信号が必要です — 3分のじっくり測定でご覧いただけます。',
     'facets.partial.quick': 'クイック測定ではリラックスと柔軟性まで算出できます。ストレス／活力にはより長い安定した信号が必要です — 4側面すべては3分のじっくり測定で。',
     'btn.trend': 'トレンドを見る',
@@ -2056,7 +2064,7 @@ window.JTE_I18N = {
     'sent.u.usual': 'いつも',
     'sent.u.recent': 'これまでの数回',
     'sent.main.first': '初めての測定です。まずはあなたの心拍を知るところから。',
-    'sent.sub.first': 'まだ比べる「いつも」がないので、今回はこの1分間に見えたことだけをお伝えします。',
+    'sent.sub.first': 'まだ比べる「いつも」がないので、今回はこの測定で見えたことだけをお伝えします。',
     'sent.main.slow': '呼吸がゆっくりになり、心拍もそれに合わせて大きくゆれています。',
     'sent.sub.slow': 'からだのブレーキが働いているサインで、落ち着いていくように見えます。',
     'sent.main.mixed': '少し疲れていますが、心拍はまだ安定しています。',

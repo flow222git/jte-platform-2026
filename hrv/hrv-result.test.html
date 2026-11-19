@@ -101,6 +101,9 @@ async function run(iw){
       const z=doc.querySelector('.zm[data-k="'+k+'"]');
       assert(z && z.querySelector('.zm-bar') && z.querySelector('.zm-mark'), k+' 應有色帶與標記');
       assert(z.textContent.indexOf('← 你這次')>=0, k+' 應標你這次');
+      const st=z.querySelector('.zm-state b'), num=z.querySelector('.zm-num');
+      assert(st && st.textContent.length>0 && num, k+' 應有狀態主標與數字參考');
+      assert(parseFloat(iw.getComputedStyle(st).fontSize)>parseFloat(iw.getComputedStyle(num).fontSize), k+' 狀態字應比數字大');
     });
     assert(doc.querySelector('.zm[data-k="rmssd"]').textContent.indexOf('你的常態')>=0, '恢復力分區以你的常態命名');
   });

@@ -54,15 +54,15 @@ function runTests(){
     assert(deep!==null,'找不到含「深度測」的按鈕');
   });
 
-  // TEST 2: 預設快測 → 倒數 60 秒
-  check('點「開始量測」→ 快測 60 秒',function(){
+  // TEST 2: 預設快測 → 倒數 90 秒
+  check('點「開始量測」→ 快測 90 秒',function(){
     iw.renderIntro();
     var start=findBtn(['開始量測']);
     assert(start!==null,'找不到開始量測鈕');
     start.click();
     var ring=iw.document.getElementById('ringSec');
     assert(ring!==null,'量測頁應有 ringSec');
-    eq(ring.textContent,'60','快測倒數秒數');
+    eq(ring.textContent,'90','快測倒數秒數');
   });
 
   // TEST 3: 深度測 → 倒數 180 秒

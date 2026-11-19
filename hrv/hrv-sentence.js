@@ -15,7 +15,7 @@
     'sent.u.usual':     '你平常',
     'sent.u.recent':    '你前幾次',
     'sent.main.first':  '這是你的第一次，先認識你的心跳。',
-    'sent.sub.first':   '還沒有「你的平常」可以比，所以這次只說這一分鐘看到了什麼。',
+    'sent.sub.first':   '還沒有「你的平常」可以比，所以這次只說量到了什麼。',
     'sent.main.slow':   '你的呼吸慢下來了，心跳也跟著大幅起伏。',
     'sent.sub.slow':    '這是身體的煞車在作用，看起來正在放鬆下來。',
     'sent.main.mixed':  '身體有點累，但心跳還很穩。',
