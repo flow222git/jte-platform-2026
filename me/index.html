@@ -30,7 +30,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 header.top{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"title art nav sw" "date art nav sw";align-items:center;column-gap:12px;row-gap:4px;padding:22px 0 14px}
 header.top h1{grid-area:title;font-size:clamp(30px,4vw,44px);line-height:1.15;letter-spacing:.01em}
 #heroline{grid-area:date;color:var(--blue-deep);font-weight:500;font-size:16px}
-header.top .pill{grid-area:nav;justify-self:end}
+header.top .pill{grid-area:nav;justify-self:end;position:relative}
+#acct{display:contents}
+.acctbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:none;font:inherit;font-size:14px;font-weight:500;letter-spacing:.04em;padding:7px 14px 7px 10px;border-radius:999px;color:var(--ink-2);max-width:9.5em;cursor:pointer}
+.acctbtn:hover{color:var(--blue)}
+.acctbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acctbtn i{width:9px;height:9px;border-radius:50%;flex:none;border:1.5px solid var(--ink-3)}
+.acctbtn.on i{background:#3f7a55;border-color:#3f7a55}
+@media(max-width:560px){.acctbtn{padding:7px 10px 7px 6px;gap:5px}.acctbtn.on span{max-width:1.15em;text-overflow:clip}.pill a{padding:7px 10px}.acctlab{display:none}}
+.acctlab{font-size:13px;color:var(--ink-3);padding:7px 12px 7px 6px;white-space:nowrap}
+.acctpop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(290px,86vw);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow);padding:16px;display:grid;gap:10px;text-align:left}
+.acctpop p{display:grid;gap:3px;margin:0;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.acctpop p b{font-size:15px;color:var(--dark)}
+.acctpop p span{overflow-wrap:anywhere}
 #themesw{grid-area:sw}
 .pill{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px;display:flex;gap:4px;align-items:center}
 .pill a{text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.04em;padding:7px 16px;border-radius:999px;color:var(--ink-2);white-space:nowrap}
@@ -436,7 +448,7 @@ dialog.authdlg .in{width:100%}
       <g class="fl"><polygon points="214,108 262,74 300,112 284,162 226,160" fill="#FFC3FE" stroke="#FFC3FE" stroke-width="26" stroke-linejoin="round"/></g>
       <g class="fl b"><rect x="296" y="24" width="92" height="92" rx="24" fill="#3786E6" transform="rotate(16 342 70)"/></g>
     </svg>
-    <nav class="pill" aria-label="主要導覽"><a href="../">回練息場</a></nav>
+    <nav class="pill" aria-label="主要導覽"><a href="../">回練息場</a><span id="acct"></span></nav>
     <p id="heroline"></p>
     <div id="themesw"></div>
   </header>
@@ -699,7 +711,13 @@ function renderActs(){var el=$('#actbox'),h='';
     (ask?'<div class="row"><span class="note">'+A.declineAsk+'</span><button class="btn sm fill" data-aa="no2">'+A.declineYes+'</button><button class="lnk" data-aa="cancel">'+A.cancel+'</button></div>':'<div class="row"><button class="btn sm fill" data-aa="keep">'+A.keep+'</button><button class="btn sm" data-aa="no">'+A.decline+'</button><button class="lnk" data-aa="later">'+A.later+'</button></div>')+'</div>'}).join('');
   el.hidden=!h;el.innerHTML=h}
 function setAct(a,status){return Promise.resolve().then(function(){if(DEMO){if(status==='declined')return {docId:a.docId,email:a.email,sessionId:a.sessionId,status:'declined'};a.status=status;return a}return JteCloud.decideAct(a,status)}).then(function(r){var i=S.acts.indexOf(a);if(i>-1)S.acts[i]=r;return r})}
-function renderAuth(){var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S.draft.length?'（'+S.draft.length+'/'+I.maxPhotos+'）':'');
+function renderAcct(){var el=$('#acct'),K=D.acct,u=S.user,h='';
+  if(DEMO)h='<span class="acctlab">'+K.demo+'</span>';
+  else if(S.cloudOk&&S.authReady){h='<button class="acctbtn'+(u?' on':'')+'" id="acctbtn" aria-haspopup="true" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+(u?(u.name||u.email||'')+' '+K.inNote:K.outTitle))+'"><i></i><span>'+esc(u?(u.name||u.email||K.noName):K.out)+'</span></button>';
+    if(S.acct)h+='<div class="acctpop" role="group" aria-label="'+K.label+'">'+(u?'<p><b>'+esc(u.name||K.noName)+'</b>'+(u.email?'<span>'+esc(u.email)+'</span>':'')+'<span>'+(u.verified===false?K.unverified:K.inNote)+'</span></p><button class="btn sm" data-ac="out">'+I.signOut+'</button>':'<p><b>'+K.outTitle+'</b><span>'+K.outNote+'</span></p><button class="btn sm fill" data-ac="google">'+I.signIn+'</button><button class="btn sm" data-ac="email">'+U.open+'</button>')+'</div>'}
+  el.innerHTML=h}
+function acctClose(){if(S.acct){S.acct=false;renderAcct()}}
+function renderAuth(){renderAcct();var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S.draft.length?'（'+S.draft.length+'/'+I.maxPhotos+'）':'');
   if(DEMO){a.textContent='';return}
   if(!S.cloudOk){a.textContent=I.offline;b.disabled=true;return}
   b.disabled=false;
@@ -1139,6 +1157,12 @@ $('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[]
   fs.reduce(function(pr,f){return pr.then(function(){return JteCloud.compress(f,I).then(function(d){syncCaps();if(S.draft.length>=I.maxPhotos)return;S.draft.push({data:d,caption:''});renderPics()}).catch(function(){toast(I.compressFail)})})},Promise.resolve())};
 $('#pics').onclick=function(e){var b=e.target.closest('[data-pa]');if(!b)return;syncCaps();var i=+b.closest('.pic').dataset.i,a=b.dataset.pa,d=S.draft;
   if(a==='remove')d.splice(i,1);if(a==='left'&&i>0)d.splice(i-1,0,d.splice(i,1)[0]);if(a==='right'&&i<d.length-1)d.splice(i+1,0,d.splice(i,1)[0]);renderPics()};
+$('#acct').onclick=function(e){e.stopPropagation();var b=e.target.closest('#acctbtn'),c=e.target.closest('[data-ac]');
+  if(b){S.acct=!S.acct;renderAcct();$('#acctbtn').focus();return}if(!c)return;var k=c.dataset.ac;S.acct=false;renderAcct();
+  if(k==='google')JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});
+  if(k==='email')openAuth();if(k==='out')JteCloud.signOut()};
+document.addEventListener('click',function(e){if(S.acct&&!e.target.closest('#acct'))acctClose()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.acct){acctClose();var b=$('#acctbtn');if(b)b.focus()}});
 $('#authline').onclick=function(e){if(e.target.id==='signin')JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});if(e.target.id==='signout')JteCloud.signOut();if(e.target.id==='emailin')openAuth()};
 $('#actbox').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='actbackin'&&!e.isComposing){e.preventDefault();var b=this.querySelector('[data-aa=backsave]');if(b)b.click()}});
 $('#actbox').onclick=function(e){var b=e.target.closest('[data-aa]');if(!b)return;var k=b.dataset.aa,card=b.closest('.acard'),a=card&&S.acts.filter(function(x){return x.docId===card.dataset.d})[0];
@@ -1321,7 +1345,7 @@ JteTheme.mount($('#themesw'));
 showPane(location.hash);
 (function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
 $('#introlnk').textContent=F.intro.again;$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
-if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
+if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null;S.user=u;S.authReady=true;if(nu!==prevUid){prevUid=nu;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
 renderAll();
 if(firstForced||DEMO||!S.cloudOk){if(firstNeeded())firstStart()}else S.firstWait=true;
