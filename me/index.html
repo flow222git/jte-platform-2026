@@ -138,7 +138,6 @@ label.note{font-weight:700;color:var(--ink-2)}
 .mk.k0{border-radius:50%;background:var(--teal)}.mk.k1{border-radius:50%;background:var(--blue-bright)}.mk.k2{border-radius:14px 14px 0 0;background:var(--blue-deep);height:8px}.mk.k3{border-radius:4px;background:var(--yellow)}.mk.k4{border-radius:50% 50% 0 50%;background:var(--orange-dark)}
 .rec .t{font-weight:700;color:var(--dark);letter-spacing:.03em}
 .actvis{display:block;max-width:min(420px,100%);max-height:320px;border-radius:var(--r-sm);border:1px solid var(--line);margin:4px 0 12px}
-.actvis.sm{display:inline-block;height:44px;width:auto;max-width:96px;object-fit:cover;margin:0 10px 0 0;vertical-align:middle}
 .rec .x{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rec .x b{font:700 20px var(--font-en);margin-right:6px;color:var(--dark)}
 .ej{display:flex;gap:4px;align-items:center}
@@ -1002,7 +1001,7 @@ function renderCapsule(){var ok=O.prefs.capsule!==false&&O.capsuleSkip!==TODAY&&
 /* 紀錄：列表 */
 function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.open===p.id,ki=D.kinds.indexOf(p.kind),t=S.triByRec[p.id];
   var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(isStar(p)?'<span class="stmk" aria-label="'+esc(D.prac.t.starFilter)+'">★</span>':'')+(p.qid&&questById(p.qid)?'<span class="pr-itag">'+D.explore.quest.mark+'</span>':'')+(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc((p.src==='Note'&&p.text.length>120?p.text.slice(0,120)+'…':p.text)||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
-  var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+(p.thumb?'<img class="actvis sm" src="'+esc(p.thumb)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
+  var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
   if(!open)return h+'</div>';
   h+='<div class="detail" data-id="'+esc(p.id)+'">';
   if(t&&corners(t).join)h+='<p class="note">起點：'+esc(joinLabel(t))+(t.join.kind==='from'?'（'+D.join.from+'）':'')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</p>';
