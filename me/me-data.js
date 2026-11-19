@@ -221,6 +221,9 @@
         'auth/invalid-email': '信箱格式不對。', 'auth/too-many-requests': '試太多次了，請晚一點再試。', other: '沒有成功，請再試一次。' } },
     prac: {
       max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60 },
+      // AI 讀心得：自己按才送。url 是平台的 AI 代理（ven-i/worker.js 的 /me-read）。
+      page: 30,
+      ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
       units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
       examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
       colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
@@ -272,7 +275,7 @@
         logged: '記下了：{n} {a} {u}', loggedOn: '記下了：{d} {n} {a} {u}', todayDid: '今天 {s} {u}',
         // 專區
         back: '回到練習', unitIs: '單位：{u}', unitEdit: '改', archivedTag: '已封存', notFound: '找不到這個項目，可能已經刪掉了。',
-        tabs: { log: '紀錄', write: '寫下的', set: '設定' }, tabsLabel: '這個項目的內容',
+        tabs: { log: '總覽', write: '紀錄與心得', set: '設定' }, tabsLabel: '這個項目的內容',
         // 紀錄分頁
         thisMonth: '這個月', allTime: '開始到現在', times: '次', total: '共 {s} {u}', since: '從 {d} 開始',
         noLogs: '還沒有紀錄。練完記一筆，或在月曆上點一天補記，這裡會慢慢長出你自己的月曆和長條圖。',
@@ -308,6 +311,20 @@
         recent: '最近寫下的', recentAll: '看全部 {n} 段',
         writeFromLog: '記一筆時寫的・{a} {u}', writeGo: '到紀錄裡改', writeLogEdit: '到那一天改',
         quickEmpty: '長期在練的事可以放進來，練完記一筆。先挑一個：', quickOwn: '自己取一個',
+        insTitle: '看得出來的', insNote: '照你的紀錄算出來的。只描述，不解釋原因。',
+        ins: { monthMore: '這個月練了 {a} 天，比上個月多 {d} 天。', monthLess: '這個月練了 {a} 天，比上個月少 {d} 天。', monthSame: '這個月和上個月一樣，都是 {a} 天。', monthOnly: '這個月練了 {a} 天。',
+          lastToday: '今天有練。', last: '上一次是 {d}，{n} 天前。', wd: '最常在{w}練，有 {n} 天。', gap: '隔最久的一次是 {d} 天（{a} 到 {b}）。',
+          top: '最常記的是「{n}」，{c} 筆。', avg: '每次平均 {v} {u}，最多一次 {m} {u}。', wr: '寫下 {n} 段，其中 {s} 段標了星星。', wr0: '寫下 {n} 段。',
+          tools: '平台工具另外留下：{list}。', toolOne: '{n} {c} 筆' },
+        wdFull: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+        wMore: '再看更早的（還有 {n} 筆）', wfWords: '有寫字的', tlTool: '平台工具', tlNone: '這裡還沒有東西。記一筆，或在上面寫一段。',
+        toolsLabel: '算進來的平台工具', toolsNote: '勾了之後，這些工具留下的紀錄會排進「紀錄與心得」。只並列，不和你記的數量加在一起。',
+        aiTitle: '請 AI 讀一讀', aiNote: '把這個項目寫下的內容交給 AI，整理出反覆出現的主題和你還在問的問題。',
+        aiBtn: '請 AI 讀一讀', aiFew: '寫下滿 {n} 段之後，才能請 AI 讀。現在有 {c} 段。',
+        aiAsk: '會送出去的是：項目名稱、目標那一句、{n} 段寫下的文字（共 {c} 字）和上面那幾句統計。不會送出你的姓名、信箱和照片。內容交給平台的 AI 服務（Anthropic）處理，平台自己不存。',
+        aiCut: '內容比較多，這次只送最近的 {n} 段。', aiYes: '送出，請 AI 讀', aiWait: 'AI 正在讀，大約半分鐘…',
+        aiFail: 'AI 現在沒有回應，稍後再試。你寫的內容沒有變動。', aiLimit: '今天請 AI 讀的次數到了，明天再來。', aiDemo: '示範模式不會送出資料。',
+        aiStamp: 'AI 讀後整理・僅供參考・沒有存下來，離開這一頁就不見', aiAgain: '再讀一次',
         kidSet: '底下再分小項目', kidSetNote: '例如太極底下分拳、劍、站樁。分了之後，數量記在小項目，這一頁變成彙整。', starFilter: '星星',
         setMore: '圖示、顏色、目標之後都可以在項目的「設定」裡改。',
         // 設定分頁
@@ -332,7 +349,7 @@
         itemFilter: '我的項目', itemOnly: '只看「{n}」的', itemPage: '到「{n}」的頁面', itemCount: '「{n}」的紀錄，{c} 筆。', itemAll: '看全部', itemSaved: '改好了', itemFail: '沒有改成，等一下再試。' },
       // 示範模式（?demo）的虛構資料；紀錄由 me-practice.js 用固定種子產生
       demo: {
-        items: [{ id: 'pi-demo-taichi', name: '太極', unit: '分鐘', color: '#34C8A0', icon: 'b25', goal: '把二十四式打順' }, { id: 'pi-demo-sit', name: '靜坐', unit: '分鐘', color: '#7A6BD8', icon: 'b11' },
+        items: [{ id: 'pi-demo-taichi', name: '太極', unit: '分鐘', color: '#34C8A0', icon: 'b25', goal: '把二十四式打順' }, { id: 'pi-demo-sit', name: '靜坐', unit: '分鐘', color: '#7A6BD8', icon: 'b11', tools: 'xiaoqi,breathe' },
           { id: 'pi-demo-form', name: '二十四式', unit: '遍', color: '#34C8A0', icon: 'c21', parent: 'pi-demo-taichi' }],
         logNotes: { 'pi-demo-taichi': ['雲手比較順了', '下雨，在客廳練', '老師說腰再鬆一點', '練完整個人很安靜', '只練了起勢，也算'], 'pi-demo-sit': ['數息數到一半就亂了，拉回來就好', '腿麻得比上次晚'] },
         notes: [{ id: 'pn-demo-1', itemId: 'pi-demo-taichi', days: 9, title: '二十四式的順序', body: '起勢\n左右野馬分鬃\n白鶴亮翅\n左右摟膝拗步\n手揮琵琶\n……\n\n（示範筆記）' },

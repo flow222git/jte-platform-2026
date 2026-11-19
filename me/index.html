@@ -1167,6 +1167,7 @@ $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.sea
 $('#fab').textContent='＋ '+D.quick;
 JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
   getInsp:function(){return O.memos.concat(S.cloud)},
+  getPages:function(){return S.pages},
   editMemo:function(id,text){var m=O.memos.filter(function(x){return x&&String(x.id)===String(id)})[0];if(m){m.text=text;save();renderAll()}},
   dropMemo:function(id){O.memos=O.memos.filter(function(x){return !(x&&String(x.id)===String(id))});forgetRec(id);renderAll()},
   addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),key:TODAY,text:text,itemId:itemId});save();renderAll()},

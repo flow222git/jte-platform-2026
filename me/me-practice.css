@@ -272,3 +272,18 @@
 .pr-rc span{overflow-wrap:anywhere}
 .pr-rc.star span{color:var(--dark);font-weight:700}
 .rec .x .stmk{color:#D9A300;margin-right:4px}
+
+/* 總覽：看得出來的、請 AI 讀；時間軸裡沒寫字的紀錄與平台工具的紀錄 */
+.pr-ins ul{margin:6px 0 8px;padding:0;list-style:none;display:grid;gap:6px}
+.pr-ins li{padding-left:14px;position:relative;line-height:1.7;max-width:70ch}
+.pr-ins li::before{content:"";position:absolute;left:0;top:.82em;width:6px;height:1px;background:var(--ink-3)}
+.pr-ai{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.pr-aistamp{font-size:12.5px;letter-spacing:.06em;color:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:3px 12px;display:inline-block;margin:6px 0 10px}
+.pr-aiout{line-height:1.85}
+.pr-w.plain{padding:8px 16px;background:transparent}
+.pr-w.plain .pr-whead .lnk{margin-left:auto}
+.pr-wamt{font-weight:700}
+.pr-wamt small{font-weight:400;color:var(--ink-3)}
+.pr-w.tool{border-style:dashed}
+.pr-tools{display:flex;flex-wrap:wrap;gap:6px 16px}
+.pr-tool{display:inline-flex;align-items:center;gap:6px;min-height:36px;cursor:pointer}

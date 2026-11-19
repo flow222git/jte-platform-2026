@@ -543,10 +543,63 @@
     });
     return best || loose;
   }
+  // 算進這個項目的平台工具：存成「a,b」這樣一串工具代號
+  function pracTools(v) {
+    var seen = {}, out = [];
+    String(Array.isArray(v) ? v.join(',') : (v || '')).split(',').forEach(function (k) {
+      k = k.trim();
+      if (/^[a-z]{2,12}$/.test(k) && !seen[k] && out.length < 8) { seen[k] = 1; out.push(k); }
+    });
+    return out.join(',');
+  }
+  // 照紀錄算出來的幾件事。只有數字，句子由畫面那一層用文案組；只描述，不解釋原因。
+  function pracInsights(logs, items, ids, todayKey) {
+    ids = Array.isArray(ids) ? ids : [ids];
+    var list = pracOf(logs, ids), seen = {}, days = [], unitOf = {}, per = {}, wd = [0, 0, 0, 0, 0, 0, 0], out, i;
+    arr(items).forEach(function (it) { if (it) unitOf[it.id] = it.unit || ''; });
+    list.forEach(function (l) { if (!seen[l.date]) { seen[l.date] = 1; days.push(l.date); } per[l.itemId] = (per[l.itemId] || 0) + 1; });
+    days.sort();
+    out = { n: list.length, days: days.length, last: days.length ? days[days.length - 1] : '', sinceLast: 0, moDays: 0, prevDays: 0, hasPrev: false, wd: null, gap: null, top: null, avg: null };
+    if (!list.length) return out;
+    out.sinceLast = daysBetween(out.last, todayKey);
+    var ym = todayKey.slice(0, 7), t = toDate(todayKey), pv = new Date(t.getFullYear(), t.getMonth() - 1, 1), pym = pv.getFullYear() + '-' + pad(pv.getMonth() + 1);
+    days.forEach(function (d) {
+      if (d.slice(0, 7) === ym) out.moDays++; else { out.hasPrev = true; if (d.slice(0, 7) === pym) out.prevDays++; }
+      wd[toDate(d).getDay()]++;
+    });
+    // 最常在星期幾：至少 6 天的紀錄，而且第一名比第二名多
+    if (days.length >= 6) {
+      var bi = 0, second = 0;
+      for (i = 1; i < 7; i++) if (wd[i] > wd[bi]) bi = i;
+      for (i = 0; i < 7; i++) if (i !== bi && wd[i] > second) second = wd[i];
+      if (wd[bi] >= 3 && wd[bi] > second) out.wd = { i: bi, n: wd[bi] };
+    }
+    // 隔最久的一次
+    if (days.length >= 3) {
+      var g = { days: 0, from: '', to: '' };
+      for (i = 1; i < days.length; i++) { var df = daysBetween(days[i - 1], days[i]); if (df > g.days) g = { days: df, from: days[i - 1], to: days[i] }; }
+      if (g.days >= 3) out.gap = g;
+    }
+    // 最常記的那一個（大項目底下有小項目時）
+    if (ids.length > 1) {
+      var best = '', b2 = 0;
+      ids.forEach(function (id) { if ((per[id] || 0) > (per[best] || 0)) best = id; });
+      ids.forEach(function (id) { if (id !== best && (per[id] || 0) > b2) b2 = per[id]; });
+      if (best && per[best] >= 2 && per[best] > b2) out.top = { id: best, n: per[best] };
+    }
+    // 每次平均：全部同一個單位才算
+    var u = unitOf[list[0].itemId] || '', same = list.every(function (l) { return (unitOf[l.itemId] || '') === u; });
+    if (same && list.length >= 2) {
+      var sum = 0, mx = 0;
+      list.forEach(function (l) { var a = Number(l.amount) || 0; sum += a; if (a > mx) mx = a; });
+      out.avg = { unit: u, v: Math.round(sum / list.length * 10) / 10, max: mx };
+    }
+    return out;
+  }
   function pracItemCheck(x, lim) {
     x = x || {};
     var item = { name: trimS(x.name), unit: trimS(x.unit), color: typeof x.color === 'string' ? x.color : '', icon: pracIcon(x.icon),
-      goal: trimS(x.goal), parent: /^[A-Za-z0-9_-]{1,40}$/.test(String(x.parent || '')) ? String(x.parent) : '' };
+      goal: trimS(x.goal), parent: /^[A-Za-z0-9_-]{1,40}$/.test(String(x.parent || '')) ? String(x.parent) : '', tools: pracTools(x.tools) };
     var err = '';
     if (!item.name || item.name.length > lim.name) err = 'name';
     else if (!item.unit || item.unit.length > lim.unit) err = 'unit';
@@ -755,5 +808,5 @@
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
-    pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon };
+    pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights };
 })(window);
