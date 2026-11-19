@@ -429,7 +429,7 @@
     var title = String(a.title || '活動');
     return { id: 'act-' + a.docId, key: a.date, src: 'Act', kind: '活動', title: title, label: title, doodle: 'mount', tool: '',
       text: String(a.feedback || a.takeaway || a.feeling || a.expect || '').slice(0, 40), sub: '', note: '', meta: [], feel: [], big: null,
-      link: safeUrl(a.photoUrl), visual: actImg(a.visualUrl, 640), thumb: actImg(a.visualUrl, 160), photos: [],
+      link: safeUrl(a.photoUrl), visual: actImg(a.visualUrl, 640), photos: [],
       act: { pre: sc2(a.pre), post: sc2(a.post), expect: String(a.expect || ''), feeling: String(a.feeling || ''), takeaway: String(a.takeaway || ''), feedback: String(a.feedback || '') } };
   }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
