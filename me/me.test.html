@@ -258,6 +258,11 @@ check('questAdd：空的、重複的、放滿了都不收；放下的不算在�
 check('questNotes：只拿掛在這個問題上的隨手記，新的在前',()=>{const ms=[{id:'1',key:'2026-11-01',text:'甲',qid:'q1'},{id:'2',key:'2026-11-10',text:'乙',qid:'q1'},{id:'3',key:'2026-11-10',text:'丙',qid:'q1'},{id:'4',key:'2026-11-12',text:'丁',qid:'q2'},{id:'5',key:'2026-11-12',text:'戊'},null];
   eq(M.questNotes(ms,'q1').map(m=>m.id).join(','),'3,2,1');eq(M.questNotes(ms,'q9').length,0);eq(M.questNotes(null,'q1').length,0);
   const ps=M.buildPages({},ms,[]);eq(ps.filter(p=>p.qid==='q1').length,3);ok(!ps.filter(p=>p.id==='5')[0].qid);});
+check('questTags／questTagSet：加、拿掉、不重複、有上限、算每個標籤幾個問題',()=>{const q={id:'a',text:'一',tags:['身體']};
+  eq(M.questTagSet(q,' 呼吸 ',true,5).join(','),'身體,呼吸');eq(M.questTagSet(q,'身體',true,5).join(','),'身體');eq(M.questTagSet(q,'身體',false,5).length,0);eq(M.questTagSet(q,'',true,5).join(','),'身體');
+  eq(M.questTagSet({tags:['1','2']},'3',true,2).length,2);eq(M.questTagSet({},'一二三四五六七八九十',true,5)[0].length,8);eq(q.tags.length,1);
+  const tc=M.questTags([{tags:['身體','呼吸']},{tags:['呼吸']},{},null]);eq(tc.map(x=>x.k+x.n).join(','),'身體1,呼吸2');eq(M.questTags(null).length,0);
+  const Q=D.explore.quest;['tagAdd','tagNew','tagJoin','tagDrop','tagFilter','tagAll'].forEach(k=>ok(Q[k],k));ok(Q.tagMax>=1);});
 check('探索問題的文案與上限都在資料檔',()=>{const Q=D.explore.quest;['title','note','tag','line','since','write','list','listN','writePh','save','cancel','none','saved','mark','rest','rested','restList','back','del','delAsk','delYes','delNo','newTitle','newNote','placeholder','add','added','same','full','empty','goals','goalsNote','goalGo','more'].forEach(k=>ok(Q[k],k));
   ok(Q.max>=3);ok(Q.chars>=40);ok(Q.obs>=100);ok(Q.show>=1);});
 check('pracTools：只留合法的工具代號，去重複',()=>{eq(M.pracTools('xiaoqi, breathe,xiaoqi,<b>,A1'),'xiaoqi,breathe');eq(M.pracTools(['hrv','']),'hrv');eq(M.pracTools(null),'');

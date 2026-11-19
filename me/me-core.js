@@ -555,6 +555,19 @@
     var d = new Date(now);
     return { ok: true, quest: { id: 'q-' + (+d) + '-' + Math.random().toString(36).slice(2, 6), text: t, created: keyOf(d) } };
   }
+  // 問題上的標籤：和紀錄共用同一組「我的主題」。回傳每個標籤掛了幾個問題，照第一次出現的順序。
+  function questTags(list) {
+    var out = [], at = {};
+    arr(list).forEach(function (q) { arr(q && q.tags).forEach(function (t) { if (at[t] === undefined) { at[t] = out.length; out.push({ k: t, n: 0 }); } out[at[t]].n++; }); });
+    return out;
+  }
+  function questTagSet(q, name, on, max) {
+    var t = String(name == null ? '' : name).replace(/\s+/g, ' ').trim().slice(0, 8), cur = arr(q && q.tags).slice(), i = cur.indexOf(t);
+    if (!t) return cur;
+    if (on && i < 0 && cur.length < (max || 5)) cur.push(t);
+    if (!on && i > -1) cur.splice(i, 1);
+    return cur;
+  }
   function questNotes(memos, qid) {
     var out = arr(memos).filter(function (m) { return m && m.qid && String(m.qid) === String(qid) && m.text; }).reverse();
     return out.map(function (m, i) { return { m: m, i: i }; }).sort(function (a, b) { return a.m.key < b.m.key ? 1 : a.m.key > b.m.key ? -1 : a.i - b.i; }).map(function (x) { return x.m; });
@@ -824,5 +837,5 @@
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
     pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
-    questText: questText, questAdd: questAdd, questNotes: questNotes };
+    questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
 })(window);
