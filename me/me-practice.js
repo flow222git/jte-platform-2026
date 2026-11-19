@@ -1158,7 +1158,7 @@
   }
 
   // 給 index.html 的靈感框、足跡、資料說明用
-  function activeItems() { return ordered(active()).map(function (x) { return { id: x.id, name: fullName(x) }; }); }
+  function activeItems() { return ordered(active()).map(function (x) { return { id: x.id, name: fullName(x), goal: x.goal || '' }; }); }
   // 在項目頁寫下的，也排進「我的地圖」的紀錄（要改、要刪回項目頁）
   function notePages() {
     return st.data.notes.filter(function (n) { return n && n.body && itemById(n.itemId); }).map(function (n) {

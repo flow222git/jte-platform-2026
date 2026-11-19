@@ -242,6 +242,22 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
 .wrow b{font-weight:700;color:var(--dark);letter-spacing:.03em}
 .wrow span{font-size:13px;color:var(--ink-2);display:block}
 .wrow q{quotes:"「" "」";font-size:13.5px;color:var(--blue-deep);display:block}
+/* 探索：想繼續探索的問題 */
+.qcard{display:grid;gap:12px;margin-bottom:14px}
+.qhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.qhead h3{margin:0;font-size:19px;line-height:1.5;font-weight:700;color:var(--dark);letter-spacing:.03em;overflow-wrap:anywhere}
+.qtag{flex:none;background:var(--bg-soft);color:var(--ink-2);white-space:nowrap}
+.qcard .row{flex-wrap:wrap}
+.qwrite{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.qwrite .qin{flex:1 1 240px;min-height:76px;resize:vertical;font:inherit}
+.qobs{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;margin:0}
+.qobs small{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
+.qobs span{overflow-wrap:anywhere;white-space:pre-wrap}
+.qnew{display:grid;gap:6px}
+.qnew>b{font-size:17px;color:var(--dark);letter-spacing:.03em}
+.qnew .jrow{border-top:0;padding-top:6px;margin-top:0}
+.qnew .in{flex:1 1 240px}
+.qside{margin:4px 0 14px}
 .quiet{background:var(--bg-soft);border:1px dashed rgba(20,34,56,.16);border-radius:var(--r-md);padding:16px 18px;color:var(--ink-2);font-size:13.5px}
 .quiet b{color:var(--dark)}
 .helpline{background:var(--yellow-soft);border-radius:var(--r-md);padding:14px 18px;font-weight:500;font-size:14px}
@@ -455,6 +471,12 @@ dialog.authdlg .in{width:100%}
 
   <!-- 探索：我對什麼感興趣 -->
   <div id="view-explore" hidden>
+    <section data-fold="que" aria-labelledby="h-que" id="sec-que">
+      <div class="sec"><div><h2 id="h-que"></h2></div><span id="quenote"></span></div>
+      <div id="quelist"></div>
+      <div class="panel qnew"><b id="quenewt"></b><p class="note" id="quenewn"></p>
+        <div class="jrow"><input class="in" id="quein"><button class="btn sm fill" id="queadd"></button></div><p class="note" id="quemsg" role="status"></p></div>
+    </section>
     <section data-fold="cur" aria-labelledby="h-cur">
       <div class="sec"><div><h2 id="h-cur"></h2></div><span id="curnote"></span></div>
       <div class="panel"><div id="curlist"></div>
@@ -628,7 +650,8 @@ function demoDaily(){var o={};function put(n,l){var k=rel(n);o[k]=o[k]||{moods:[
   put(22,{source:'Activity',recordId:'act-d2',activityName:'森林療癒・陽明山',org:'練息場'});
   put(30,{source:'TWCT',recordId:'tw-d1',typeName:'超理智型'});return o}
 function demoStore(){return{sw:{year:2026,happy:4,at:TODAY,strengths:{'務實謙遜':12,'真誠利他':15,'開放創造':16,'謹慎負責':13,'自信堅定':11,'活潑樂觀':14,'熱忱進取':13,'領導表達':10},perma:{P:62,E:71,R:58,M:66,A:54}},themes:[{n:'安定的力量',c:'#3f7a55'},{n:'好玩的事',c:'#dd5f47'}],words:{},states:{},prefs:{},firsts:{tri:true},
-  memos:[{id:'m-d1',key:rel(3),text:'同事的手沖咖啡，好酷。'},{id:'m-d2',key:rel(20),text:'累了就是累了。'}],
+  memos:[{id:'m-d1',key:rel(3),text:'同事的手沖咖啡，好酷。'},{id:'m-d2',key:rel(20),text:'累了就是累了。'},{id:'m-d3',key:rel(6),text:'站著等紅燈的時候，發現腳掌其實一直抓著地。',qid:'q-d2'},{id:'m-d4',key:rel(2),text:'今天打拳，肩膀放掉之後手反而比較穩。',qid:'q-d2'}],
+  quests:[{id:'q-d1',text:'我想找到讓自己安定下來的方法',created:rel(30)},{id:'q-d2',text:'練習時，如何減少不必要的用力？',created:rel(12)}],
   tris:[{id:'t-d1',key:rel(1),created:rel(1)+'T08:00:00',join:{kind:'state',state:'full'},why:['馬上能用'],tool:'xiaoqi',before:[],recId:'xq-d1',found:'三口呼吸之後，肩膀真的鬆了一點。',foundKey:rel(1)},
         {id:'t-d2',key:rel(8),created:rel(8)+'T08:00:00',join:{kind:'state',state:'empty'},why:['需要'],tool:'breathe',before:[],recId:'ba-d1'},
         {id:'t-d3',key:rel(3),created:rel(3)+'T08:00:00',join:{kind:'curious',text:'想學手沖咖啡'},why:['好奇','想創造'],tool:'',before:[],recId:''},
@@ -639,12 +662,12 @@ function toolKey(){var e='';try{e=localStorage.getItem('jte_user_email')||''}cat
 function readDaily(){var k=toolKey();return M.mergeDaily(readLS('jte_daily_v1'),k?readLS(k):null)}
 var daily=DEMO?demoDaily():readDaily();
 var O=DEMO?demoStore():(readLS('jte_me_v1')||{});
-['themes','memos','tris'].forEach(function(k){if(!Array.isArray(O[k]))O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){if(!O[k]||typeof O[k]!=='object')O[k]={}});
+['themes','memos','tris','quests'].forEach(function(k){if(!Array.isArray(O[k]))O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){if(!O[k]||typeof O[k]!=='object')O[k]={}});
 var persona=DEMO?{title:'巽・協作者',ts:rel(40)+'T10:00:00'}:readLS('bagua_persona_v1');
 function save(){if(DEMO)return;try{localStorage.setItem('jte_me_v1',JSON.stringify(O))}catch(e){}}
 function word(k){return O.words[k]||D.perma.words[k]}
 function ann(id){return O.ann[id]||(O.ann[id]={})}
-var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,q:'',swEdit:false,capFor:null,user:null,cloud:[],draft:[],cloudOk:false,delIns:false,cwipe:false,acts:[],actLater:{},actAsk:null};
+var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,qW:null,qL:null,qRest:false,qDel:null,q:'',swEdit:false,capFor:null,user:null,cloud:[],draft:[],cloudOk:false,delIns:false,cwipe:false,acts:[],actLater:{},actAsk:null};
 function toast(t){var e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){e.hidden=true},2200)}
 /* 靈感區：草稿照片、登入、雲端靈感 */
 var I=D.insp;
@@ -742,7 +765,27 @@ function showPane(v){var r=M.route(v);S.pane=r.pane;if(r.pane==='mymap')S.sub=r.
 function goPane(h){h=String(h||'today').replace(/^#/,'');var top=$('#panes').getBoundingClientRect().top+window.scrollY;if(location.hash!=='#'+h){try{location.hash=h}catch(e){}}showPane(h);
   if(window.innerWidth<=640||window.scrollY>top)window.scrollTo(0,window.innerWidth<=640?0:Math.max(0,top-10))}
 /* 探索：我對什麼感興趣 */
-function renderExplore(){var E=D.explore;$('#h-cur').textContent=E.curious.title;$('#curnote').textContent=E.curious.note;$('#exin').placeholder=E.curious.placeholder;$('#exin').setAttribute('aria-label',E.curious.title);$('#exadd').textContent=E.curious.add;
+function questById(id){return O.quests.filter(function(q){return q&&q.id===id})[0]}
+function fillT(t,o){return String(t).replace(/\{(\w+)\}/g,function(_,k){return o[k]==null?'':o[k]})}
+function renderQuest(){var Q=D.explore.quest;$('#h-que').textContent=Q.title;$('#quenote').textContent=Q.note;$('#quenewt').textContent=Q.newTitle;$('#quenewn').textContent=Q.newNote;
+  var qi=$('#quein');qi.placeholder=Q.placeholder;qi.maxLength=Q.chars;qi.setAttribute('aria-label',Q.newTitle);$('#queadd').textContent=Q.add;
+  var act=O.quests.filter(function(q){return q&&!q.rest}),rest=O.quests.filter(function(q){return q&&q.rest});
+  var h=act.map(function(q){var ns=M.questNotes(O.memos,q.id),open=S.qL===q.id,wr=S.qW===q.id;
+    var c='<div class="panel qcard" data-q="'+esc(q.id)+'"><div class="qhead"><h3>'+esc(q.text)+'</h3><span class="tag qtag">'+Q.tag+'</span></div><p class="note">'+Q.line+(q.created?'　'+esc(fillT(Q.since,{d:M.dlabel(q.created)})):'')+'</p>';
+    c+='<div class="row"><button class="btn sm fill" data-qa="write" aria-expanded="'+wr+'">'+Q.write+'</button><button class="btn sm" data-qa="list" aria-expanded="'+open+'">'+(ns.length?fillT(Q.listN,{n:ns.length}):Q.list)+'</button><button class="lnk" data-qa="rest">'+Q.rest+'</button></div>';
+    if(wr)c+='<div class="qwrite"><textarea class="in qin" maxlength="'+Q.obs+'" placeholder="'+esc(Q.writePh)+'" aria-label="'+esc(Q.write)+'"></textarea><button class="btn sm fill" data-qa="save">'+Q.save+'</button><button class="lnk" data-qa="write">'+Q.cancel+'</button></div>';
+    if(open)c+='<div>'+(ns.length?ns.slice(0,Q.show).map(function(m){return '<p class="qobs"><small>'+esc(M.dlabel(m.key))+'</small><span>'+esc(m.text)+'</span></p>'}).join('')+(ns.length>Q.show?'<p class="note"><button class="lnk" data-go="mymap-trail">'+fillT(Q.more,{n:ns.length})+'</button></p>':''):'<p class="note">'+Q.none+'</p>')+'</div>';
+    return c+'</div>'}).join('');
+  if(!act.length)h+='<p class="note qside">'+Q.empty+'</p>';
+  var gs=JtePrac.items().filter(function(it){return it&&it.goal});
+  if(gs.length)h+='<div class="panel qcard"><div class="qhead"><h3>'+Q.goals+'</h3></div><p class="note">'+Q.goalsNote+'</p><div>'+gs.map(function(it){return '<div class="wrow"><div><b>'+esc(it.goal)+'</b><span>'+esc(JtePrac.itemName(it.id))+'</span></div><button class="lnk" data-go="practice-item-'+esc(it.id)+'">'+Q.goalGo+'</button></div>'}).join('')+'</div></div>';
+  if(rest.length){h+='<p class="qside"><button class="lnk" data-qa="showrest" aria-expanded="'+S.qRest+'">'+fillT(Q.restList,{n:rest.length})+'</button></p>';
+    if(S.qRest)h+='<div class="panel qcard">'+rest.map(function(q){var d=S.qDel===q.id;return '<div class="wrow" data-q="'+esc(q.id)+'"><div><b>'+esc(q.text)+'</b>'+(d?'<span>'+Q.delAsk+'</span>':'')+'</div><div class="row">'+(d?'<button class="btn sm" data-qa="delyes">'+Q.delYes+'</button><button class="lnk" data-qa="delno">'+Q.delNo+'</button>':'<button class="btn sm" data-qa="back">'+Q.back+'</button><button class="lnk" data-qa="del">'+Q.del+'</button>')+'</div></div>'}).join('')+'</div>'}
+  $('#quelist').innerHTML=h}
+function questAddNow(){var Q=D.explore.quest,r=M.questAdd(O.quests,$('#quein').value,Date.now(),{max:Q.max,chars:Q.chars});
+  if(!r.ok){$('#quemsg').textContent=r.why==='same'?Q.same:r.why==='full'?fillT(Q.full,{n:Q.max}):'';$('#quein').focus();return}
+  O.quests.push(r.quest);save();$('#quein').value='';$('#quemsg').textContent='';renderQuest();toast(Q.added)}
+function renderExplore(){renderQuest();var E=D.explore;$('#h-cur').textContent=E.curious.title;$('#curnote').textContent=E.curious.note;$('#exin').placeholder=E.curious.placeholder;$('#exin').setAttribute('aria-label',E.curious.title);$('#exadd').textContent=E.curious.add;
   var cs=liveTris().filter(function(t){return t.join&&(t.join.kind==='curious'||t.join.kind==='from')&&t.join.text}).reverse();
   $('#curlist').innerHTML=cs.length?cs.slice(0,8).map(function(t){var rec=S.byId[t.recId];return '<div class="wrow">'+'<div><b>'+esc(t.join.text)+'</b><span>'+esc(M.dlabel(t.key))+'　'+(rec?'做了「'+esc(rec.title||rec.text||rec.kind)+'」'+(t.found?'，發現：'+esc(t.found):''):'還沒做，也不急')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</span></div>'+(rec?'':'<button class="lnk" data-go="today">到今天接著做</button>')+'</div>'}).join(''):'<p class="note">'+E.curious.none+'</p>';
   $('#h-thm').textContent=E.themes.title;$('#thmnote').textContent=E.themes.note;
@@ -867,7 +910,7 @@ function renderCapsule(){var ok=O.prefs.capsule!==false&&O.capsuleSkip!==TODAY&&
     '<div class="row" style="margin-top:10px"><input class="in" id="capin" style="flex:1" maxlength="80" placeholder="'+D.capsule.ask+'" aria-label="'+D.capsule.ask+'"><button class="btn sm fill" id="capsave">留下</button><button class="lnk" id="capskip">今天先不看</button><button class="lnk" id="capoff">不再出現</button></div>'}
 /* 紀錄：列表 */
 function rowHTML(p){var a=O.ann[p.id]||{},en=a.enjoy||[],tg=a.tags||[],open=S.open===p.id,ki=D.kinds.indexOf(p.kind),t=S.triByRec[p.id];
-  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(isStar(p)?'<span class="stmk" aria-label="'+esc(D.prac.t.starFilter)+'">★</span>':'')+(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc((p.src==='Note'&&p.text.length>120?p.text.slice(0,120)+'…':p.text)||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
+  var ph=p.photos||[],itn=p.itemId?JtePrac.itemName(p.itemId):'',isrc=itn?JtePrac.itemIcon(p.itemId):'',x=(isStar(p)?'<span class="stmk" aria-label="'+esc(D.prac.t.starFilter)+'">★</span>':'')+(p.qid&&questById(p.qid)?'<span class="pr-itag">'+D.explore.quest.mark+'</span>':'')+(itn?'<span class="pr-itag">'+(isrc?'<img src="'+isrc+'" alt="">':'')+esc(itn)+'</span>':'')+(p.big!=null?'<b>'+esc(p.big)+'</b>':'')+esc((p.src==='Note'&&p.text.length>120?p.text.slice(0,120)+'…':p.text)||((a.notes||[])[0]||{}).text||p.sub||(ph.length?I.photoCount.replace('{n}',ph.length):''));
   var h='<div class="rec"><button aria-expanded="'+open+'" data-id="'+esc(p.id)+'"><i class="mk k'+ki+'" title="'+p.kind+'"></i><span class="t">'+esc(p.title||p.kind)+'</span><span class="x">'+x+'</span><span class="ej">'+en.map(function(k){return '<i style="background:'+COL[k]+'" title="'+esc(word(k))+'"></i>'}).join('')+(t?triMark(t,20):'')+'</span></button>';
   if(!open)return h+'</div>';
   h+='<div class="detail" data-id="'+esc(p.id)+'">';
@@ -984,7 +1027,7 @@ function downloadData(){if(DEMO){toast('示範模式沒有你的資料可以下�
   var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='lianxichang-my-data-'+TODAY+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);toast(D.privacy.downloadNote)}
 function wipeMine(){var keepPrac=O.prac,keepCloud=O.prefs&&O.prefs.pracCloud;
   if(!DEMO){try{localStorage.removeItem('jte_me_v1')}catch(e){}}
-  Object.keys(O).forEach(function(k){delete O[k]});['themes','memos','tris'].forEach(function(k){O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){O[k]={}});
+  Object.keys(O).forEach(function(k){delete O[k]});['themes','memos','tris','quests'].forEach(function(k){O[k]=[]});['words','states','ann','prefs','firsts'].forEach(function(k){O[k]={}});
   /* 練習紀錄與它放哪裡的選擇不在「註記」裡，這裡不動 */
   if(keepPrac!==undefined)O.prac=keepPrac;if(keepCloud)O.prefs.pracCloud=keepCloud;if(!DEMO)save();
   S.wipe=false;S.gate=null;S.open=null;S.sub=null;S.closed=null;renderAll();toast(D.privacy.wiped)}
@@ -1024,6 +1067,20 @@ $('#welcome').onclick=function(e){if(e.target.id==='wmemo')$('#memo').focus()};
 $('#panes').onclick=function(e){var b=e.target.closest('[data-pane]');if(b)goPane(M.hashOf(b.dataset.pane,S.sub))};
 $('#subs').onclick=function(e){var b=e.target.closest('[data-sub]');if(b)goPane(M.hashOf('mymap',b.dataset.sub))};
 document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.lens){S.lens=b.dataset.lens;$('#legend').innerHTML='';renderMap()}goPane(b.dataset.go);if(b.dataset.focus==='memo')$('#memo').focus()});
+$('#queadd').onclick=questAddNow;$('#quein').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){e.preventDefault();questAddNow()}};
+$('#quelist').onclick=function(e){var b=e.target.closest('[data-qa]');if(!b)return;var k=b.dataset.qa,Q=D.explore.quest,row=b.closest('[data-q]'),id=row?row.dataset.q:'',q=id?questById(id):null,foc='';
+  if(k==='showrest'){S.qRest=!S.qRest;S.qDel=null;foc='[data-qa="showrest"]'}
+  else if(!q)return;
+  else if(k==='write'){S.qW=S.qW===id?null:id;foc=S.qW?'[data-q="'+id+'"] .qin':'[data-q="'+id+'"] [data-qa="write"]'}
+  else if(k==='list'){S.qL=S.qL===id?null:id;foc='[data-q="'+id+'"] [data-qa="list"]'}
+  else if(k==='save'){var ta=row.querySelector('.qin'),v=ta.value.trim().slice(0,Q.obs);if(!v){ta.focus();return}
+    O.memos.push({id:'m-'+Date.now(),key:TODAY,text:v,qid:id});S.qW=null;S.qL=id;save();renderAll();toast(Q.saved);var f=$('#quelist').querySelector('[data-q="'+id+'"] [data-qa="list"]');if(f)f.focus();return}
+  else if(k==='rest'){q.rest=true;if(S.qW===id)S.qW=null;if(S.qL===id)S.qL=null;save();toast(Q.rested);foc='[data-qa="showrest"]'}
+  else if(k==='back'){var r=M.questAdd(O.quests,q.text,Date.now(),{max:Q.max,chars:Q.chars});if(!r.ok&&r.why==='full'){toast(fillT(Q.full,{n:Q.max}));return}delete q.rest;save();foc='[data-q="'+id+'"] [data-qa="write"]'}
+  else if(k==='del'){S.qDel=id;foc='[data-q="'+id+'"] [data-qa="delno"]'}
+  else if(k==='delno'){S.qDel=null;foc='[data-q="'+id+'"] [data-qa="del"]'}
+  else if(k==='delyes'){O.quests=O.quests.filter(function(x){return x!==q});S.qDel=null;save();foc='[data-qa="showrest"]'}
+  renderQuest();var el=foc&&$('#quelist').querySelector(foc);if(el)el.focus()};
 $('#exadd').onclick=function(){var v=$('#exin').value.trim();if(!v){$('#exin').focus();return}newTri({kind:'curious',text:v},'');save();$('#exin').value='';renderAll();toast('記下來了，在「今天」的還開著的裡也看得到')};
 $('#bri3').onclick=function(){downloadData()};
 $('#circles').onclick=careClick;$('#cnew').onclick=cnewClick;$('#openlist').onclick=joinClick;
