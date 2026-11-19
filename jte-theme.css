@@ -63,5 +63,7 @@ background:var(--swash);opacity:.62;border-radius:40% 60% 55% 45%/60% 40% 60% 40
 .jte-theme-switch{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .jte-theme-switch button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-2);padding:6px 12px;min-height:32px;border-radius:999px;cursor:pointer}
 .jte-theme-switch button[aria-pressed="true"]{background:var(--dark);color:#fff}
+.jte-theme-switch button[data-theme-next]{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:500}
+.jte-theme-switch button[data-theme-next] b{font-weight:700;color:var(--dark)}
 .jte-theme-switch button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 :root[data-theme="sketch"] .jte-theme-switch,:root[data-theme="sketch"] .jte-theme-switch button{border-radius:var(--r-sm)}

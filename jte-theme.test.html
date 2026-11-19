@@ -23,10 +23,10 @@ check('手帳版真的換了設定：底色、邊線樣式、標題字體變數'
 check('set 不認得的值退回簡潔',()=>{eq(T.set('neon'),'simple');eq(H.getAttribute('data-theme'),'simple');eq(localStorage.getItem(K),'simple');
   eq(getComputedStyle(H).getPropertyValue('--bg-soft').trim(),'#F6F8FB')});
 check('存的值不認得時，get 當成簡潔',()=>{localStorage.setItem(K,'whatever');eq(T.get(),'simple');localStorage.setItem(K,'sketch');eq(T.get(),'sketch');localStorage.removeItem(K);eq(T.get(),'simple')});
-check('mount：每種風格一顆鈕，目前的那個是選取態，點了會換',()=>{const el=document.getElementById('sw');T.set('simple');T.mount(el);
-  const bs=el.querySelectorAll('button');eq(bs.length,3);eq(bs[0].textContent,'簡潔');eq(bs[1].textContent,'手帳');eq(bs[2].textContent,'手繪');
-  eq(bs[0].getAttribute('aria-pressed'),'true');eq(el.getAttribute('role'),'group');ok(el.getAttribute('aria-label'));
-  el.querySelectorAll('button')[1].click();eq(T.get(),'sketch');eq(el.querySelectorAll('button')[1].getAttribute('aria-pressed'),'true');eq(el.querySelectorAll('button')[0].getAttribute('aria-pressed'),'false')});
+check('mount：只有一顆「風格」鈕，寫著現在是哪一種，按一下換下一種，繞一圈回來',()=>{const el=document.getElementById('sw');T.set('simple');T.mount(el);
+  let bs=el.querySelectorAll('button');eq(bs.length,1);ok(bs[0].textContent.indexOf('風格')===0);ok(bs[0].textContent.indexOf('簡潔')>0);eq(el.getAttribute('role'),'group');ok(el.getAttribute('aria-label'));ok(bs[0].getAttribute('aria-label').indexOf('手帳')>0);
+  el.querySelector('button').click();eq(T.get(),'sketch');ok(el.querySelector('button').textContent.indexOf('手帳')>0);
+  el.querySelector('button').click();eq(T.get(),'doodle');el.querySelector('button').click();eq(T.get(),'simple');eq(T.next('doodle'),'simple');eq(T.next('nope'),'sketch')});
 check('另一個分頁改了風格（storage 事件），這一頁跟著換',()=>{T.set('sketch');
   window.dispatchEvent(new StorageEvent('storage',{key:K,newValue:'simple'}));eq(H.getAttribute('data-theme'),'simple');
   window.dispatchEvent(new StorageEvent('storage',{key:'other',newValue:'sketch'}));eq(H.getAttribute('data-theme'),'simple')});

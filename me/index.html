@@ -37,7 +37,8 @@ header.top .pill{grid-area:nav;justify-self:end;position:relative}
 .acctbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acctbtn i{width:9px;height:9px;border-radius:50%;flex:none;border:1.5px solid var(--ink-3)}
 .acctbtn.on i{background:#3f7a55;border-color:#3f7a55}
-@media(max-width:560px){.acctbtn{padding:7px 10px 7px 6px;gap:5px}.acctbtn.on span{max-width:1.15em;text-overflow:clip}.pill a{padding:7px 10px}.acctlab{display:none}}
+.acctbtn.half i{border-color:#3f7a55;background:linear-gradient(90deg,#3f7a55 50%,transparent 50%)}
+@media(max-width:560px){.acctbtn{padding:7px 10px 7px 6px;gap:5px}.acctbtn{max-width:5em}.pill a{padding:7px 10px}.acctlab{display:none}}
 .acctlab{font-size:13px;color:var(--ink-3);padding:7px 12px 7px 6px;white-space:nowrap}
 .acctpop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(290px,86vw);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow);padding:16px;display:grid;gap:10px;text-align:left}
 .acctpop p{display:grid;gap:3px;margin:0;font-size:13px;line-height:1.6;color:var(--ink-2)}
@@ -543,7 +544,7 @@ dialog.authdlg .in{width:100%}
       <div class="sec"><div><h2 id="h-sum">這個月</h2></div><span>數字只跟自己比。</span></div>
       <div class="bento two">
         <div class="tile t1"><span class="k">這個月留下</span><div class="num"><span id="st-month">0</span><small>頁</small></div><div class="trirow" id="st-tris"></div><p id="st-trip"></p><i class="geo"></i></div>
-        <div class="tile t2"><span class="k">身體能量</span><div class="num"><span id="st-hrv">—</span><small id="st-hrvl"></small></div><svg class="spark" id="spark" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="身體能量趨勢"></svg><p><a href="../hrv/">量一次</a></p></div>
+        <div class="tile t2"><span class="k">身體能量（HRV）</span><div class="num"><span id="st-hrv">—</span><small id="st-hrvl"></small></div><svg class="spark" id="spark" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="身體能量趨勢"></svg><p><a href="../hrv/">量一次</a></p></div>
       </div>
     </section>
     <section aria-labelledby="h-cap" id="sec-capsule" data-fold="cap" hidden>
@@ -704,17 +705,20 @@ function authDo(kind){if(authBusy)return;var em=$('#authmail').value.trim(),pw=$
   authBusySet(true);(kind==='up'?JteCloud.signUpEmail(em,pw):JteCloud.signInEmail(em,pw)).then(function(){$('#authdlg').close()},function(e){er.textContent=authErr(e)}).then(function(){authBusySet(false)})}
 function pendingActs(){return S.acts.filter(function(a){return a.status==='pending'&&!S.actLater[a.docId]})}
 function renderActs(){var el=$('#actbox'),h='';
-  if(!DEMO&&S.cloudOk&&!S.user&&O.prefs.actHint!==false)h='<p>'+esc(A.invite)+'</p><div class="row"><button class="btn sm fill" data-aa="google">'+I.signIn+'</button><button class="btn sm" data-aa="email">'+U.open+'</button><button class="lnk" data-aa="hide">'+A.inviteHide+'</button></div>';
+  if(!DEMO&&S.cloudOk&&!S.user&&O.prefs.actHint!==false)h='<p>'+esc(toolUser()?D.acct.toolInvite:A.invite)+'</p><div class="row"><button class="btn sm fill" data-aa="google">'+(toolUser()?D.acct.toolOpen:I.signIn)+'</button><button class="btn sm" data-aa="email">'+U.open+'</button><button class="lnk" data-aa="hide">'+A.inviteHide+'</button></div>';
   else if(!DEMO&&S.user&&!S.user.verified)h='<p>'+esc(U.verifyNote.replace('{e}',function(){return S.user.email}))+'</p><div class="row"><button class="btn sm fill" data-aa="refresh">'+U.refresh+'</button><button class="lnk" data-aa="resend">'+U.resend+'</button><button class="lnk" data-aa="signout">'+I.signOut+'</button></div>';
   else h=S.acts.filter(function(a){return a.docId===S.actBack&&a.status==='kept'}).map(function(a){return '<div class="acard" data-d="'+esc(a.docId)+'"><p><b>'+esc(A.backAsk)+'</b></p><div class="row"><input class="in" id="actbackin" style="flex:1" maxlength="'+A.backMax+'" placeholder="'+esc(A.backPh)+'" aria-label="'+esc(A.backAsk)+'"><button class="btn sm fill" data-aa="backsave">'+A.backSave+'</button><button class="lnk" data-aa="backskip">'+A.backSkip+'</button></div></div>'}).join('')+
     pendingActs().map(function(a){var ask=S.actAsk===a.docId,q=M.actQuote(a,A.quoteMax),fill=function(s){return s.replace('{t}',function(){return a.title||A.fallbackTitle}).replace('{d}',function(){return M.dlabel(a.date)})};return '<div class="acard" data-d="'+esc(a.docId)+'">'+(q?'<p><b>'+esc(fill(A.quoteHead))+'</b></p><blockquote class="aquote"><small>'+A.quoteLead[q.k]+'</small>'+esc(q.text)+'</blockquote><p>'+A.quoteAsk+'</p>':'<p><b>'+esc(fill(A.ask))+'</b></p>')+'<p class="note">'+(DEMO?A.demoNote:A.from)+'</p>'+
     (ask?'<div class="row"><span class="note">'+A.declineAsk+'</span><button class="btn sm fill" data-aa="no2">'+A.declineYes+'</button><button class="lnk" data-aa="cancel">'+A.cancel+'</button></div>':'<div class="row"><button class="btn sm fill" data-aa="keep">'+A.keep+'</button><button class="btn sm" data-aa="no">'+A.decline+'</button><button class="lnk" data-aa="later">'+A.later+'</button></div>')+'</div>'}).join('');
   el.hidden=!h;el.innerHTML=h}
 function setAct(a,status){return Promise.resolve().then(function(){if(DEMO){if(status==='declined')return {docId:a.docId,email:a.email,sessionId:a.sessionId,status:'declined'};a.status=status;return a}return JteCloud.decideAct(a,status)}).then(function(r){var i=S.acts.indexOf(a);if(i>-1)S.acts[i]=r;return r})}
-function renderAcct(){var el=$('#acct'),K=D.acct,u=S.user,h='';
+function toolUser(){try{var e=localStorage.getItem('jte_user_email')||'';return e?{email:e,name:localStorage.getItem('jte_user_name')||e}:null}catch(x){return null}}
+function hintMail(){var t=toolUser();return t?t.email:''}
+function renderAcct(){var el=$('#acct'),K=D.acct,u=S.user,t=u?null:toolUser(),w=u||t,h='';
   if(DEMO)h='<span class="acctlab">'+K.demo+'</span>';
-  else if(S.cloudOk&&S.authReady){h='<button class="acctbtn'+(u?' on':'')+'" id="acctbtn" aria-haspopup="true" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+(u?(u.name||u.email||'')+' '+K.inNote:K.outTitle))+'"><i></i><span>'+esc(u?(u.name||u.email||K.noName):K.out)+'</span></button>';
-    if(S.acct)h+='<div class="acctpop" role="group" aria-label="'+K.label+'">'+(u?'<p><b>'+esc(u.name||K.noName)+'</b>'+(u.email?'<span>'+esc(u.email)+'</span>':'')+'<span>'+(u.verified===false?K.unverified:K.inNote)+'</span></p><button class="btn sm" data-ac="out">'+I.signOut+'</button>':'<p><b>'+K.outTitle+'</b><span>'+K.outNote+'</span></p><button class="btn sm fill" data-ac="google">'+I.signIn+'</button><button class="btn sm" data-ac="email">'+U.open+'</button>')+'</div>'}
+  else if(!S.cloudOk||S.authReady||t){h='<button class="acctbtn'+(u?' on':t?' half':'')+'" id="acctbtn" aria-haspopup="true" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+(w?(w.name||w.email||'')+' '+K.inNote:K.outTitle))+'"><i></i><span>'+esc(w?(w.name||w.email||K.noName):K.out)+'</span></button>';
+    if(S.acct){var ins=S.cloudOk?'<button class="btn sm fill" data-ac="google">'+(t?K.toolOpen:I.signIn)+'</button><button class="btn sm" data-ac="email">'+U.open+'</button>':'<p><span>'+K.offline+'</span></p>';
+      h+='<div class="acctpop" role="group" aria-label="'+K.label+'">'+(u?'<p><b>'+esc(u.name||K.noName)+'</b>'+(u.email?'<span>'+esc(u.email)+'</span>':'')+'<span>'+(u.verified===false?K.unverified:K.inNote)+'</span></p><button class="btn sm" data-ac="out">'+I.signOut+'</button>':t?'<p><b>'+esc(t.name)+'</b><span>'+esc(t.email)+'</span><span>'+K.toolNote+'</span></p>'+ins:'<p><b>'+K.outTitle+'</b><span>'+K.outNote+'</span></p>'+ins)+'</div>'}}
   el.innerHTML=h}
 function acctClose(){if(S.acct){S.acct=false;renderAcct()}}
 function renderAuth(){renderAcct();var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S.draft.length?'（'+S.draft.length+'/'+I.maxPhotos+'）':'');
@@ -1152,21 +1156,21 @@ function keepInsp(v){var ins={key:TODAY,text:v,photos:S.draft.map(function(d){re
 function afterKeep(){var id=S.cloud[0].id;if(S.capFor){newTri({kind:'state',state:S.capFor},'',id);S.capFor=null;capLabel();save()}
   $('#memo').value='';$('#memoitem').value='';S.draft=[];renderPics();renderAll();toast(DEMO?I.keptLocal:I.kept)}
 $('#addpic').onclick=function(){if(S.draft.length>=I.maxPhotos){toast(I.full.replace('{n}',I.maxPhotos));return}
-  if(!DEMO&&!S.user){JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}$('#picin').click()};
+  if(!DEMO&&!S.user){JteCloud.signIn(hintMail()).catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}$('#picin').click()};
 $('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[],0,I.maxPhotos-S.draft.length);this.value='';syncCaps();
   fs.reduce(function(pr,f){return pr.then(function(){return JteCloud.compress(f,I).then(function(d){syncCaps();if(S.draft.length>=I.maxPhotos)return;S.draft.push({data:d,caption:''});renderPics()}).catch(function(){toast(I.compressFail)})})},Promise.resolve())};
 $('#pics').onclick=function(e){var b=e.target.closest('[data-pa]');if(!b)return;syncCaps();var i=+b.closest('.pic').dataset.i,a=b.dataset.pa,d=S.draft;
   if(a==='remove')d.splice(i,1);if(a==='left'&&i>0)d.splice(i-1,0,d.splice(i,1)[0]);if(a==='right'&&i<d.length-1)d.splice(i+1,0,d.splice(i,1)[0]);renderPics()};
 $('#acct').onclick=function(e){e.stopPropagation();var b=e.target.closest('#acctbtn'),c=e.target.closest('[data-ac]');
   if(b){S.acct=!S.acct;renderAcct();$('#acctbtn').focus();return}if(!c)return;var k=c.dataset.ac;S.acct=false;renderAcct();
-  if(k==='google')JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});
+  if(k==='google')JteCloud.signIn(hintMail()).catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});
   if(k==='email')openAuth();if(k==='out')JteCloud.signOut()};
 document.addEventListener('click',function(e){if(S.acct&&!e.target.closest('#acct'))acctClose()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.acct){acctClose();var b=$('#acctbtn');if(b)b.focus()}});
-$('#authline').onclick=function(e){if(e.target.id==='signin')JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});if(e.target.id==='signout')JteCloud.signOut();if(e.target.id==='emailin')openAuth()};
+$('#authline').onclick=function(e){if(e.target.id==='signin')JteCloud.signIn(hintMail()).catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});if(e.target.id==='signout')JteCloud.signOut();if(e.target.id==='emailin')openAuth()};
 $('#actbox').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='actbackin'&&!e.isComposing){e.preventDefault();var b=this.querySelector('[data-aa=backsave]');if(b)b.click()}});
 $('#actbox').onclick=function(e){var b=e.target.closest('[data-aa]');if(!b)return;var k=b.dataset.aa,card=b.closest('.acard'),a=card&&S.acts.filter(function(x){return x.docId===card.dataset.d})[0];
-  if(k==='google'){JteCloud.signIn().catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}
+  if(k==='google'){JteCloud.signIn(hintMail()).catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});return}
   if(k==='email'){openAuth();return}
   if(k==='hide'){O.prefs.actHint=false;save();renderActs();return}
   if(k==='signout'){JteCloud.signOut();return}

@@ -6,7 +6,7 @@
   'use strict';
   var KEY = 'jte_theme_v1';
   var NAMES = { simple: '簡潔', sketch: '手帳', doodle: '手繪' };
-  var LABEL = '網站風格';
+  var LABEL = '網站風格', WORD = '風格';
   var mounts = [];
 
   function normalize(v) { return typeof v === 'string' && Object.prototype.hasOwnProperty.call(NAMES, v) ? v : 'simple'; }
@@ -27,22 +27,20 @@
     var d = g.document && g.document.documentElement;
     return normalize(d && d.getAttribute('data-theme'));
   }
+  function next(name) { var ks = Object.keys(NAMES); return ks[(ks.indexOf(normalize(name)) + 1) % ks.length]; }
   function paint(el) {
-    var now = current(), h = '';
-    Object.keys(NAMES).forEach(function (k) {
-      h += '<button type="button" data-theme-pick="' + k + '" aria-pressed="' + (k === now) + '">' + NAMES[k] + '</button>';
-    });
-    el.innerHTML = h;
+    var now = current(), nx = next(now);
+    el.innerHTML = '<button type="button" data-theme-next="' + nx + '" aria-label="' + LABEL + '：現在是' + NAMES[now] + '，按一下換成' + NAMES[nx] + '">' + WORD + '<b>' + NAMES[now] + '</b></button>';
   }
-  // 在指定的元素裡畫出切換鈕（簡潔｜手帳）。樣式由 jte-theme.css 的 .jte-theme-switch 提供。
+  // 在指定的元素裡畫出一顆「風格」鈕，上面寫現在是哪一種，按一下換下一種。樣式由 jte-theme.css 的 .jte-theme-switch 提供。
   function mount(el) {
     if (!el) return;
     el.className = (el.className ? el.className + ' ' : '') + 'jte-theme-switch';
     el.setAttribute('role', 'group');
     el.setAttribute('aria-label', LABEL);
     el.addEventListener('click', function (e) {
-      var b = e.target.closest ? e.target.closest('[data-theme-pick]') : null;
-      if (b) set(b.getAttribute('data-theme-pick'));
+      var b = e.target.closest ? e.target.closest('[data-theme-next]') : null;
+      if (b) { set(b.getAttribute('data-theme-next')); var nb = el.querySelector('button'); if (nb && nb.focus) nb.focus(); }
     });
     mounts.push(el);
     paint(el);
@@ -52,5 +50,5 @@
   // 另一個分頁改了風格，這一頁跟著換。
   if (g.addEventListener) g.addEventListener('storage', function (e) { if (e.key === KEY) apply(normalize(e.newValue)); });
 
-  g.JteTheme = { get: get, set: set, normalize: normalize, mount: mount, names: NAMES, KEY: KEY };
+  g.JteTheme = { get: get, set: set, next: next, normalize: normalize, mount: mount, names: NAMES, KEY: KEY };
 })(window);
