@@ -9,7 +9,7 @@
   var box, quick, zone, secPrac, rest, live;
   // 畫面狀態：哪個項目的專區、哪個分頁、月曆的月份、哪一天、哪個表單開著
   var st = { data: { items: [], logs: [], notes: [] }, seen: null, item: '', tab: 'log', calY: 0, calM: 0, day: '', chart: 'week',
-    lf: null, itf: null, nopen: '', wstar: false, ask: '', busy: false, focus: '', select: false, user: null,
+    lf: null, itf: null, nopen: '', wf: '', wn: 0, ai: null, ask: '', busy: false, focus: '', select: false, user: null,
     mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, cloudOff: false, authed: false, nnid: '' };
   var dirty = { box: false, quick: false, zone: false };
   var TABS = ['log', 'write', 'set'];
@@ -137,7 +137,7 @@
     function rnd() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
     function ms(key) { var d = ymd(key); return new Date(d.y, d.m - 1, d.d, 7, 30).getTime(); }
     Dm.items.forEach(function (x, j) {
-      out.items.push({ id: x.id, name: x.name, unit: x.unit, color: x.color, icon: x.icon || '', parent: x.parent || '', goal: x.goal || '', archived: false, createdAt: ms(M.addDays(C.TODAY, -126 + j * 14)) });
+      out.items.push({ id: x.id, name: x.name, unit: x.unit, color: x.color, icon: x.icon || '', parent: x.parent || '', goal: x.goal || '', tools: x.tools || '', archived: false, createdAt: ms(M.addDays(C.TODAY, -126 + j * 14)) });
     });
     if (Dm.items[2]) for (i = 20; i >= 0; i -= 3) out.logs.push({ id: 'pl-demo-f' + i, itemId: Dm.items[2].id, date: M.addDays(C.TODAY, -i), amount: 1 + (i % 2), note: '', at: ms(M.addDays(C.TODAY, -i)) + 7200000 });
     for (i = 125; i >= 0; i--) {
@@ -394,6 +394,10 @@
       iconGroups().map(function (gp) {
         return '<b class="pr-icg">' + esc(gp.n) + '</b>' + gp.list.map(function (x) { return '<label class="pr-icn" title="' + esc(x.n) + '"><input type="radio" name="' + key + '-icon" value="' + x.k + '"' + (x.k === ico ? ' checked' : '') + '><img src="' + iconSrc(x.k) + '" alt="" width="40" height="40"><span class="pr-sr">' + esc(x.n) + '</span></label>'; }).join('');
       }).join('') + '</div></div>';
+    if (mode === 'edit') { var tk = M.pracTools(v.tools).split(',');
+      h += '<div class="pr-f"><span id="' + key + '-tl">' + esc(T.toolsLabel) + '</span><div class="pr-tools" role="group" aria-labelledby="' + key + '-tl">' +
+        Object.keys(D.tools).map(function (k) { return '<label class="pr-tool"><input type="checkbox" name="tool" value="' + k + '"' + (tk.indexOf(k) > -1 ? ' checked' : '') + fk(key + '-t-' + k) + '><span>' + esc(D.tools[k].name) + '</span></label>'; }).join('') +
+        '</div><p class="note">' + esc(T.toolsNote) + '</p></div>'; }
     if (mode === 'edit') h += '<p class="note">' + esc(T.unitWarn) + '</p>';
     if (mode === 'new' && !v.parent) h += '<div class="pr-ex"><span class="note">' + esc(T.examples) + '</span><div class="chips">' + P.examples.map(function (x, i) { return '<button type="button" class="chip" data-pa="ex" data-i="' + i + '">' + esc(x.name) + '・' + esc(x.unit) + '</button>'; }).join('') + '</div></div>';
     h += '<p class="pr-err" role="alert"></p><div class="row"><button class="btn fill" type="submit"' + fk(key + '-save') + '>' + esc(T.save) + '</button>' +
@@ -541,6 +545,79 @@
     return '<div class="pr-blk pr-recent"><div class="pr-chead"><h3 class="pr-h3">' + esc(T.recent) + '</h3><button class="lnk" data-pa="tab" data-t="write"' + fk('rall') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button></div>' +
       pick.map(function (w) { var t = (w.title ? w.title + ' ' : '') + w.body; return '<p class="pr-rc' + (w.star ? ' star' : '') + '"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small><span>' + (w.star ? '★ ' : '') + esc(t.length > 90 ? t.slice(0, 90) + '…' : t) + '</span></p>'; }).join('') + '</div>';
   }
+  function toolsOf(it) {
+    var seen = {}, out = [];
+    famIds(it).forEach(function (id) { var x = itemById(id); M.pracTools(x && x.tools).split(',').forEach(function (k) { if (k && D.tools[k] && !seen[k]) { seen[k] = 1; out.push(k); } }); });
+    return out;
+  }
+  function toolPages(it) {
+    var ks = toolsOf(it);
+    if (!ks.length || !C.getPages) return [];
+    return C.getPages().filter(function (p) { return p && p.tool && ks.indexOf(p.tool) > -1; });
+  }
+  // 看得出來的：照紀錄算出來的幾句白話
+  function insightLines(it) {
+    var I = T.ins, f = M.pracInsights(st.data.logs, items(), famIds(it), C.TODAY), out = [], w = writings(it), tp = toolPages(it), x;
+    if (f.n) {
+      if (!f.hasPrev || !f.prevDays) out.push(fill(I.monthOnly, { a: f.moDays }));
+      else if (f.moDays > f.prevDays) out.push(fill(I.monthMore, { a: f.moDays, d: f.moDays - f.prevDays }));
+      else if (f.moDays < f.prevDays) out.push(fill(I.monthLess, { a: f.moDays, d: f.prevDays - f.moDays }));
+      else out.push(fill(I.monthSame, { a: f.moDays }));
+      out.push(f.sinceLast <= 0 ? I.lastToday : fill(I.last, { d: M.dlabel(f.last), n: f.sinceLast }));
+      if (f.wd) out.push(fill(I.wd, { w: T.wdFull[f.wd.i], n: f.wd.n }));
+      if (f.gap) out.push(fill(I.gap, { d: f.gap.days, a: slash(f.gap.from), b: slash(f.gap.to) }));
+      if (f.top) { x = itemById(f.top.id); if (x) out.push(fill(I.top, { n: x.id === it.id ? fill(T.whole, { n: it.name }) : x.name, c: f.top.n })); }
+      if (f.avg) out.push(fill(I.avg, { v: M.pracFmt(f.avg.v), u: f.avg.unit, m: M.pracFmt(f.avg.max) }));
+    }
+    if (w.length) { x = w.filter(function (a) { return a.star; }).length; out.push(x ? fill(I.wr, { n: w.length, s: x }) : fill(I.wr0, { n: w.length })); }
+    if (tp.length) {
+      var by = {}, ord = [];
+      tp.forEach(function (p) { if (!by[p.tool]) { by[p.tool] = 0; ord.push(p.tool); } by[p.tool]++; });
+      out.push(fill(I.tools, { list: ord.map(function (k) { return fill(I.toolOne, { n: D.tools[k].name, c: by[k] }); }).join(T.listSep) }));
+    }
+    return out;
+  }
+  function insightsHTML(it) {
+    var ls = insightLines(it);
+    if (!ls.length) return '';
+    return '<div class="pr-blk pr-ins"><h3 class="pr-h3">' + esc(T.insTitle) + '</h3><ul>' + ls.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul><p class="note">' + esc(T.insNote) + '</p></div>';
+  }
+  // 請 AI 讀：自己按才送；送出去的只有文字與統計，沒有姓名、信箱、照片。結果不存。
+  function aiPack(it) {
+    var A = P.ai, all = writings(it).filter(function (w) { return w.body; }), left = A.maxChars, notes = [], i, t;
+    for (i = 0; i < all.length; i++) {
+      t = ((all[i].title ? all[i].title + '\n' : '') + all[i].body).slice(0, A.one);
+      if (t.length > left) break;
+      left -= t.length; notes.push({ d: all[i].key || '', t: t, star: !!all[i].star });
+    }
+    return { total: all.length, chars: A.maxChars - left, body: { item: fullName(it), goal: it.goal || '', stats: insightLines(it).join(''), notes: notes } };
+  }
+  function aiHTML(it) {
+    var a = st.ai && st.ai.item === it.id ? st.ai : null, pk = aiPack(it), h = '<div class="pr-blk pr-ai"><h3 class="pr-h3">' + esc(T.aiTitle) + '</h3>';
+    if (pk.total < P.ai.min) return h + '<p class="note">' + esc(fill(T.aiFew, { n: P.ai.min, c: pk.total })) + '</p></div>';
+    if (!a) return h + '<p class="note">' + esc(T.aiNote) + '</p><div class="row pr-gap"><button class="btn sm" data-pa="aiask"' + fk('aibtn') + '>' + esc(T.aiBtn) + '</button></div></div>';
+    if (a.state === 'ask') return h + '<p class="pr-warn">' + esc(fill(T.aiAsk, { n: pk.body.notes.length, c: pk.chars })) + (pk.body.notes.length < pk.total ? esc(fill(T.aiCut, { n: pk.body.notes.length })) : '') + '</p>' +
+      '<div class="row pr-gap"><button class="btn sm fill" data-pa="aigo"' + fk('aiyes') + '>' + esc(T.aiYes) + '</button><button class="lnk" data-pa="aino">' + esc(T.cancel) + '</button></div></div>';
+    if (a.state === 'wait') return h + '<p class="note" role="status">' + esc(T.aiWait) + '</p></div>';
+    if (a.state === 'fail') return h + '<p class="pr-warn" role="alert">' + esc(a.text || T.aiFail) + '</p><div class="row pr-gap"><button class="btn sm" data-pa="aiask"' + fk('aibtn') + '>' + esc(T.aiAgain) + '</button></div></div>';
+    return h + '<p class="pr-aistamp">' + esc(T.aiStamp) + '</p><div class="pr-wbody pr-aiout" tabindex="-1"' + fk('aiout') + '>' + esc(a.text) + '</div><div class="row pr-gap"><button class="btn sm" data-pa="aiask"' + fk('aibtn') + '>' + esc(T.aiAgain) + '</button></div></div>';
+  }
+  function aiRun() {
+    var it = itemById(st.item), id = st.item;
+    if (!it) return;
+    function done(state, text) { if (!st.ai || st.ai.item !== id) return; st.ai = { item: id, state: state, text: text }; st.focus = state === 'done' ? 'aiout' : 'aibtn'; render(true); }
+    if (C.DEMO) { st.ai = { item: id, state: 'fail', text: T.aiDemo }; st.focus = 'aibtn'; render(true); return; }
+    var body = aiPack(it).body;
+    st.ai = { item: id, state: 'wait' }; render(true);
+    timed(function () {
+      return fetch(P.ai.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) {
+        return r.json().then(function (j) { return { status: r.status, j: j || {} }; }, function () { return { status: r.status, j: {} }; });
+      });
+    }, 90000).then(function (r) {
+      if (r.status === 200 && typeof r.j.reply === 'string' && r.j.reply.trim()) done('done', r.j.reply.trim());
+      else done('fail', r.status === 429 ? T.aiLimit : T.aiFail);
+    }, function () { done('fail', T.aiFail); });
+  }
   function tabLog(it) {
     var lg = st.data.logs, ids = famOf(it), h = '', has, t, mo, al;
     if (ids) {
@@ -555,6 +632,7 @@
         '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + t.all.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.all.sum), u: it.unit })) + '<br>' + esc(fill(T.since, { d: slash(t.all.first) })) + '</span></div></div>';
     }
     if (!has) h += '<p class="pr-invite">' + esc(T.noLogs) + '</p>';
+    h += insightsHTML(it);
     h += recentHTML(it);
     h += '<div' + (has ? ' class="pr-two"' : '') + '><div class="pr-blk">' + calHTML(it) + '</div>';
     if (has) {
@@ -564,7 +642,7 @@
         '<button class="chip' + (!wk ? ' on' : '') + '" data-pa="chart" data-c="month" aria-pressed="' + !wk + '"' + fk('cm') + '>' + esc(T.byMonth) + '</button></div></div>' +
         '<div class="pr-chart" id="pr-chart"></div><p class="note pr-cap">' + esc(ids ? T.chartCapFam : fill(T.chartCap, { u: it.unit })) + '</p></div>';
     }
-    return h + '</div>';
+    return h + '</div>' + aiHTML(it);
   }
   function nowYM() { var d = ymd(C.TODAY); return { y: d.y, m: d.m }; }
   function calHTML(it) {
@@ -650,6 +728,18 @@
     });
     return out.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : b.at - a.at; });
   }
+  function timeline(it) {
+    var ids = famIds(it), out = writings(it);
+    st.data.logs.forEach(function (l) {
+      if (!l || l.note || ids.indexOf(l.itemId) < 0) return;
+      var li = itemById(l.itemId);
+      out.push({ id: l.id, kind: 'plain', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: '', star: false, photos: [], amount: M.pracFmt(l.amount), unit: li ? li.unit : '' });
+    });
+    toolPages(it).forEach(function (p) {
+      out.push({ id: 'tp-' + p.id, kind: 'tool', itemId: it.id, key: p.key, at: 0, title: p.title || '', body: [p.text, p.sub].concat(p.meta || []).filter(Boolean).join('・'), star: false, photos: [] });
+    });
+    return out.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : b.at - a.at; });
+  }
   function writeForm(it, w) {
     var key = w ? 'we-' + w.id : 'wr-' + it.id, ids = famIds(it), h;
     h = '<form class="pr-wform" data-form="write" data-id="' + esc(w ? w.id : '') + '" data-kind="' + (w ? w.kind : 'note') + '" novalidate>';
@@ -662,15 +752,21 @@
     return h;
   }
   function tabWrite(it) {
-    var all = writings(it), stars = all.filter(function (w) { return w.star; }), list = st.wstar ? stars : all, h = writeForm(it, null);
-    if (!all.length) return h + '<p class="note pr-gap">' + esc(T.writeNone) + '</p>';
-    if (stars.length || st.wstar) h += '<div class="chips pr-gap" role="group" aria-label="' + esc(T.tabs.write) + '">' +
-      '<button class="chip' + (st.wstar ? '' : ' on') + '" data-pa="wfilter" data-v="" aria-pressed="' + !st.wstar + '"' + fk('wf0') + '>' + esc(T.writeAll) + '</button>' +
-      '<button class="chip' + (st.wstar ? ' on' : '') + '" data-pa="wfilter" data-v="1" aria-pressed="' + !!st.wstar + '"' + fk('wf1') + '>★ ' + esc(T.writeStar) + '</button></div>';
-    if (!list.length) h += '<p class="note pr-gap">' + esc(T.starNone) + '</p>';
-    h += '<div class="pr-ws">' + list.map(function (w) {
+    var all = timeline(it), words = all.filter(function (w) { return w.kind !== 'plain' && w.kind !== 'tool'; }), stars = all.filter(function (w) { return w.star; });
+    var list = st.wf === '1' ? stars : st.wf === 'w' ? words : all, h = writeForm(it, null);
+    if (!all.length) return h + '<p class="note pr-gap">' + esc(T.tlNone) + '</p>';
+    function chip(v, label) { var on = st.wf === v; return '<button class="chip' + (on ? ' on' : '') + '" data-pa="wfilter" data-v="' + v + '" aria-pressed="' + on + '"' + fk('wf' + (v || '0')) + '>' + esc(label) + '</button>'; }
+    if (words.length < all.length || stars.length || st.wf) h += '<div class="chips pr-gap" role="group" aria-label="' + esc(T.tabs.write) + '">' + chip('', T.writeAll) +
+      (words.length && words.length < all.length || st.wf === 'w' ? chip('w', T.wfWords) : '') + (stars.length || st.wf === '1' ? chip('1', '★ ' + T.writeStar) : '') + '</div>';
+    if (!list.length) h += '<p class="note pr-gap">' + esc(st.wf === '1' ? T.starNone : T.writeNone) + '</p>';
+    var shown = list.slice(0, st.wn || P.page);
+    h += '<div class="pr-ws">' + shown.map(function (w) {
       var sub = w.itemId !== it.id ? itemById(w.itemId) : null, on = st.nopen === w.id, asking = st.ask === 'w:' + w.id;
       var ph = (w.photos || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); }).filter(function (p) { return /^data:image\//.test(String(p.data || '')); });
+      if (w.kind === 'plain') return '<div class="pr-w plain"><div class="pr-whead"><small>' + esc(M.dlabel(w.key)) + '</small>' + (sub ? '<span class="pr-itag">' + esc(sub.name) + '</span>' : '') +
+        '<b class="pr-wamt">' + esc(w.amount) + ' <small>' + esc(w.unit) + '</small></b><button class="lnk" data-pa="wlog" data-id="' + esc(w.id) + '"' + fk('wed-' + w.id) + '>' + esc(T.edit) + '</button></div></div>';
+      if (w.kind === 'tool') return '<div class="pr-w tool"><div class="pr-whead"><small>' + esc(M.dlabel(w.key)) + '</small><span class="pr-itag">' + esc(w.title) + '</span><span class="note">' + esc(T.tlTool) + '</span></div>' +
+        (w.body ? '<p class="pr-wbody">' + esc(w.body) + '</p>' : '') + '</div>';
       var r = '<div class="pr-w' + (w.star ? ' star' : '') + '"><div class="pr-whead"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small>' +
         (sub ? '<span class="pr-itag">' + esc(sub.name) + '</span>' : '') + (w.kind === 'memo' ? '<span class="note">' + esc(T.writeFromToday) + '</span>' : w.kind === 'log' ? '<span class="note">' + esc(fill(T.writeFromLog, { a: w.amount, u: w.unit })) + '</span>' : '') +
         '<button class="pr-star" data-pa="wstar" data-id="' + esc(w.id) + '" data-kind="' + w.kind + '" aria-pressed="' + w.star + '" aria-label="' + esc(w.star ? T.unstar : T.star) + '" title="' + esc(w.star ? T.unstar : T.star) + '"' + fk('ws-' + w.id) + '>' + (w.star ? '★' : '☆') + '</button></div>';
@@ -683,6 +779,7 @@
         : '<button class="lnk" data-pa="wedit" data-id="' + esc(w.id) + '"' + fk('wed-' + w.id) + '>' + esc(T.writeEdit) + '</button><button class="lnk" data-pa="wdel" data-id="' + esc(w.id) + '"' + fk('wd-' + w.id) + '>' + esc(T.writeDel) + '</button>') + '</div>';
       return r + '</div>';
     }).join('') + '</div>';
+    if (shown.length < list.length) h += '<div class="row pr-gap"><button class="btn sm" data-pa="wmore"' + fk('wmore') + '>' + esc(fill(T.wMore, { n: list.length - shown.length })) + '</button></div>';
     return h;
   }
 
@@ -764,7 +861,8 @@
   }
   function submitItem(form) {
     var mode = form.getAttribute('data-mode'), el = form.elements, col = form.querySelector('input[name$="-color"]:checked'), ic = form.querySelector('input[name$="-icon"]:checked');
-    var r = M.pracItemCheck({ name: el.name.value, unit: el.unit.value, color: col ? col.value : '', icon: ic ? ic.value : '', goal: el.goal ? el.goal.value : '',
+    var tks = []; each(form.querySelectorAll('input[name="tool"]:checked'), function (c) { tks.push(c.value); });
+    var r = M.pracItemCheck({ name: el.name.value, unit: el.unit.value, color: col ? col.value : '', icon: ic ? ic.value : '', goal: el.goal ? el.goal.value : '', tools: tks,
       parent: el.parent ? el.parent.value : mode === 'new' && st.itf ? st.itf.parent : (itemById(st.item) || {}).parent }, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
     var it, selfId = mode === 'new' ? '' : st.item, pr = itemById(r.item.parent);
@@ -773,7 +871,7 @@
     pr = itemById(r.item.parent);
     if (mode === 'new') it = { id: (st.itf && st.itf.id) || M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: pr ? safeColor(pr.color) : P.colors[topLevel(items()).length % P.colors.length],
       icon: M.pracGuessIcon(r.item.name, P.icons), goal: '', parent: r.item.parent, archived: false, createdAt: Date.now() };
-    else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = pr ? safeColor(pr.color) : col ? safeColor(r.item.color) : safeColor(it.color); it.icon = r.item.icon; it.goal = r.item.goal; it.parent = r.item.parent; }
+    else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = pr ? safeColor(pr.color) : col ? safeColor(r.item.color) : safeColor(it.color); it.icon = r.item.icon; it.goal = r.item.goal; it.parent = r.item.parent; if (r.item.tools) it.tools = r.item.tools; else delete it.tools; }
     run(form, store.putItem(it), function () {
       upsert(st.data.items, it);
       if (mode === 'new') { st.itf = null; st.focus = st.item ? 'kid-' + it.id : 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
@@ -858,7 +956,11 @@
       case 'photo': if (it) C.startPhoto(it.id); return;
       case 'wedit': st.nopen = id; st.ask = ''; st.focus = 'we-' + id; break;
       case 'wclose': x = st.nopen; st.nopen = ''; st.focus = 'wed-' + x; break;
-      case 'wfilter': st.wstar = b.getAttribute('data-v') === '1'; st.nopen = ''; st.ask = ''; st.focus = st.wstar ? 'wf1' : 'wf0'; break;
+      case 'wmore': st.wn = (st.wn || P.page) + P.page; st.focus = 'wmore'; break;
+      case 'wfilter': st.wf = b.getAttribute('data-v') || ''; st.wn = 0; st.nopen = ''; st.ask = ''; st.focus = 'wf' + (st.wf || '0'); break;
+      case 'aiask': st.ai = { item: st.item, state: 'ask' }; st.focus = 'aiyes'; break;
+      case 'aino': st.ai = null; st.focus = 'aibtn'; break;
+      case 'aigo': aiRun(); return;
       case 'wdel': st.ask = 'w:' + id; st.nopen = ''; st.focus = 'wy-' + id; break;
       case 'wdelyes':
         if (b.getAttribute('data-kind') === 'memo') { C.dropMemo(id); st.ask = ''; st.focus = 'wr-' + st.item; C.toast(T.deleted); announce(T.deleted); break; }
@@ -982,7 +1084,7 @@
     if (id) {
       if (st.item === id && !zone.hidden) return true;
       var cur = nowYM();
-      st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wstar = false; st.itf = null; st.calY = cur.y; st.calM = cur.m;
+      st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wf = ''; st.wn = 0; st.ai = null; st.itf = null; st.calY = cur.y; st.calM = cur.m;
       if (st.lf && st.lf.ctx !== 'quick') st.lf = null;
       st.focus = 'zh';
       render(true);
