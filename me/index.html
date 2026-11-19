@@ -595,12 +595,12 @@ dialog.authdlg .in{width:100%}
   <div id="view-care" hidden>
     <section data-fold="cir" aria-labelledby="h-cir">
       <div class="sec"><div><h2 id="h-cir"></h2></div><span id="cirnote"></span></div>
+      <div id="cnew" style="margin-bottom:14px"></div>
       <div id="circles"></div>
     </section>
     <section data-fold="opn" aria-labelledby="h-opn">
       <div class="sec"><div><h2 id="h-opn"></h2></div><span id="opnnote"></span></div>
       <div class="panel" id="openlist"></div>
-      <div class="panel" id="cnew" style="margin-top:14px"></div>
     </section>
     <section data-fold="rul" aria-labelledby="h-rul">
       <div class="sec"><div><h2 id="h-rul"></h2></div></div>
@@ -864,12 +864,12 @@ function renderCare(){var C=D.care,N=C.create;$('#h-cir').textContent=C.mine.tit
   $('#rules').innerHTML='<p>'+C.rules.see+'</p><p>'+C.rules.out+'</p><p>'+C.rules.hide+'</p><p>'+C.rules.tone+'</p>'+(DEMO?'<div class="row" style="margin-top:12px"><label class="note" for="nick">'+C.rules.nick+'</label><input class="in" id="nick" maxlength="12" value="'+esc(O.nick||'')+'" placeholder="'+C.rules.nickPh+'"></div>':'');
   if(!DEMO){$('#circles').innerHTML='<div class="quiet"><b>'+C.locked.title+'</b><br>'+C.locked.text+'<br><a href="?demo#care">'+C.locked.demo+'</a></div>';$('#openlist').innerHTML='<p class="note">'+C.locked.title+'。</p>';$('#cnew').hidden=true;return}
   renderCircles();
-  $('#cnew').innerHTML=S.cnew?'<h3 style="font-size:18px">'+N.title+'</h3><div class="cform"><label>'+N.name+'<input class="in" id="cn-name" maxlength="16" placeholder="'+N.namePh+'"></label>'+
+  $('#cnew').className=S.cnew?'panel':'';$('#cnew').innerHTML=S.cnew?'<h3 style="font-size:18px">'+N.title+'</h3><div class="cform"><label>'+N.name+'<input class="in" id="cn-name" maxlength="16" placeholder="'+N.namePh+'"></label>'+
     '<label>'+N.what+'<span class="chips" id="cn-what">'+D.toolbox.groups.reduce(function(a,g){return a.concat(g.tools)},[]).map(function(k){return '<button class="chip'+(S.cnw===k?' on':'')+'" data-cw="'+k+'">'+D.tools[k].name+'</button>'}).join('')+'<button class="chip'+(S.cnw==='own'?' on':'')+'" data-cw="own">'+N.own+'</button></span></label>'+
     '<label>'+N.span+'<span class="chips">'+C.spans.map(function(x,i){return '<button class="chip'+(S.cns===i?' on':'')+'" data-cs="'+i+'">'+x.name+'</button>'}).join('')+'</span></label>'+
     '<label>'+N.rhythm+'<span class="chips">'+C.rhythms.map(function(x,i){return '<button class="chip'+(S.cnr===i?' on':'')+'" data-cr="'+i+'">'+x+'</button>'}).join('')+'</span></label>'+
     '<label>'+N.who+'<span class="chips"><button class="chip'+(S.cno?' on':'')+'" data-co="1">'+N.open+'</button><button class="chip'+(S.cno?'':' on')+'" data-co="0">'+N.invite_only+'</button></span><span class="note" style="font-weight:400">'+N.openNote+'</span></label>'+
-    '<div class="row"><button class="btn sm fill" id="cn-go">'+N.go+'</button><button class="btn sm" id="cn-no">取消</button></div></div>':'<button class="btn fill" id="cn-open">＋ '+N.title+'</button>'}
+    '<div class="row"><button class="btn sm fill" id="cn-go">'+N.go+'</button><button class="btn sm" id="cn-no">取消</button></div></div>':'<div class="row"><button class="btn fill" id="cn-open">＋ '+N.title+'</button><span class="note">'+N.lead+'</span></div>'}
 function careClick(e){var b=e.target.closest('[data-ca]');if(!b)return;var box=b.closest('.circle'),c=circles.filter(function(x){return x.id===box.dataset.c})[0],k=b.dataset.ca;if(!c)return;
   if(k==='cheer'){var x=c.checkins.filter(function(i){return i.id===b.dataset.x})[0];if(!x)return;x.cheers=x.cheers||{};if(x.cheers[ME]===b.dataset.w)delete x.cheers[ME];else x.cheers[ME]=b.dataset.w;renderCircles();return}
   if(k==='check'){var v=box.querySelector('.cmine .in').value.trim();c.checkins.push({id:'c-me-'+Date.now(),who:ME,k:TODAY,at:TODAY+'T'+new Date().toTimeString().slice(0,8),text:v,cheers:{}});
