@@ -251,6 +251,15 @@ check('依名稱配圖示：一樣的優先，其次名稱裡包含圖示名，�
   eq(M.pracGuessIcon('腳底按摩',[{k:'x1',n:'按摩'},{k:'x2',n:'腳底按摩'}]),'x2');eq(M.pracGuessIcon('腳底',[{k:'x1',n:'腳底按摩'}]),'x1');
   D.prac.examples.forEach(x=>ok(typeof M.pracGuessIcon(x.name,I)==='string'));
   const T=D.prac.t;['whole','wholeAdd','loggedFam','daysUnit','recent','writeFromLog','quickEmpty','quickOwn','kidSet','starFilter','setMore'].forEach(k=>ok(T[k],k));ok(D.prac.err.fam);});
+check('questAdd：空的、重複的、放滿了都不收；放下的不算在上限裡',()=>{const now=new Date(2026,10,19,9,0,0);
+  eq(M.questAdd([],'   ',now).why,'empty');const r=M.questAdd([],'  練習時，如何減少\n不必要的用力？ ',now,{max:2,chars:80});ok(r.ok);eq(r.quest.text,'練習時，如何減少 不必要的用力？');eq(r.quest.created,'2026-11-19');ok(r.quest.id.indexOf('q-')===0);
+  eq(M.questAdd([r.quest],'練習時，如何減少 不必要的用力？',now).why,'same');eq(M.questAdd([{id:'a',text:'一'},{id:'b',text:'二'}],'三',now,{max:2}).why,'full');
+  ok(M.questAdd([{id:'a',text:'一',rest:true},{id:'b',text:'二'}],'一',now,{max:2}).ok);eq(M.questText('x'.repeat(100),80).length,80);});
+check('questNotes：只拿掛在這個問題上的隨手記，新的在前',()=>{const ms=[{id:'1',key:'2026-11-01',text:'甲',qid:'q1'},{id:'2',key:'2026-11-10',text:'乙',qid:'q1'},{id:'3',key:'2026-11-10',text:'丙',qid:'q1'},{id:'4',key:'2026-11-12',text:'丁',qid:'q2'},{id:'5',key:'2026-11-12',text:'戊'},null];
+  eq(M.questNotes(ms,'q1').map(m=>m.id).join(','),'3,2,1');eq(M.questNotes(ms,'q9').length,0);eq(M.questNotes(null,'q1').length,0);
+  const ps=M.buildPages({},ms,[]);eq(ps.filter(p=>p.qid==='q1').length,3);ok(!ps.filter(p=>p.id==='5')[0].qid);});
+check('探索問題的文案與上限都在資料檔',()=>{const Q=D.explore.quest;['title','note','tag','line','since','write','list','listN','writePh','save','cancel','none','saved','mark','rest','rested','restList','back','del','delAsk','delYes','delNo','newTitle','newNote','placeholder','add','added','same','full','empty','goals','goalsNote','goalGo','more'].forEach(k=>ok(Q[k],k));
+  ok(Q.max>=3);ok(Q.chars>=40);ok(Q.obs>=100);ok(Q.show>=1);});
 check('pracTools：只留合法的工具代號，去重複',()=>{eq(M.pracTools('xiaoqi, breathe,xiaoqi,<b>,A1'),'xiaoqi,breathe');eq(M.pracTools(['hrv','']),'hrv');eq(M.pracTools(null),'');
   eq(M.pracItemCheck({name:'呼吸',unit:'分鐘',tools:['xiaoqi','hrv']},D.prac.max).item.tools,'xiaoqi,hrv');});
 check('pracInsights：天數、上個月、隔最久、最常記的、平均',()=>{

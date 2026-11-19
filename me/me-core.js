@@ -94,6 +94,7 @@
       var pg = { id: String(m.id), key: m.key, src: ph.length ? 'Insp' : 'Memo', kind: '隨手記', title: '', label: text ? text.slice(0, 6) : '照片', doodle: '', tool: '',
         text: text, sub: '', note: '', meta: [], feel: [], big: null, link: '', photos: ph };
       if (m.itemId) pg.itemId = String(m.itemId);
+      if (m.qid) pg.qid = String(m.qid);
       if (m.pn) pg.src = 'Note'; // 在項目頁寫下的：要改、要刪回項目頁
       ps.push(pg);
     });
@@ -544,6 +545,20 @@
     return best || loose;
   }
   // 算進這個項目的平台工具：存成「a,b」這樣一串工具代號
+  // 想繼續探索的問題：不是任務，沒有完成率。觀察就是掛了 qid 的隨手記。
+  function questText(v, max) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max || 80); }
+  function questAdd(list, text, now, opt) {
+    var o = opt || {}, t = questText(text, o.chars), act = arr(list).filter(function (q) { return q && !q.rest; });
+    if (!t) return { ok: false, why: 'empty' };
+    if (act.some(function (q) { return q.text === t; })) return { ok: false, why: 'same' };
+    if (act.length >= (o.max || 12)) return { ok: false, why: 'full' };
+    var d = new Date(now);
+    return { ok: true, quest: { id: 'q-' + (+d) + '-' + Math.random().toString(36).slice(2, 6), text: t, created: keyOf(d) } };
+  }
+  function questNotes(memos, qid) {
+    var out = arr(memos).filter(function (m) { return m && m.qid && String(m.qid) === String(qid) && m.text; }).reverse();
+    return out.map(function (m, i) { return { m: m, i: i }; }).sort(function (a, b) { return a.m.key < b.m.key ? 1 : a.m.key > b.m.key ? -1 : a.i - b.i; }).map(function (x) { return x.m; });
+  }
   function pracTools(v) {
     var seen = {}, out = [];
     String(Array.isArray(v) ? v.join(',') : (v || '')).split(',').forEach(function (k) {
@@ -808,5 +823,6 @@
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
-    pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights };
+    pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
+    questText: questText, questAdd: questAdd, questNotes: questNotes };
 })(window);
