@@ -286,19 +286,21 @@
   }
   // text 可以是貼上的文字，也可以是已經拆好的二維陣列（從試算表讀來的）。sesCol 是「這一列屬於哪一場」的欄位名稱，可以不給。
   function actParse(text, cols, tlds, sesCol) {
-    var rows = Object.prototype.toString.call(text) === '[object Array]' ? text : tsvRows(text), si = -1, sessions = [], out = [], hi = -1, idx = {}, i, r;
+    var rows = Object.prototype.toString.call(text) === '[object Array]' ? text : tsvRows(text), si = -1, sessions = [], out = [], hi = -1, idx = {}, i, r, visual = '';
     function cellOf(row, k) { return idx[k] == null ? '' : String(row[idx[k]] == null ? '' : row[idx[k]]).trim(); }
     for (i = 0; i < rows.length; i++) {
       r = arr(rows[i]).map(function (x) { return String(x).trim(); });
       if (r.indexOf('Email') > -1 && r.indexOf('姓名') > -1) { hi = i; break; }
-      var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結');
+      var di = r.indexOf('活動日期'), pi = r.indexOf('活動照片連結'), vi = r.indexOf('活動主視覺連結');
+      if (vi > -1 && !visual) visual = safeUrl(r[vi + 1]); // 一個分頁一張主視覺，底下每一場共用
       if (di > -1 && actDate(r[di + 1])) sessions.push({ date: actDate(r[di + 1]), photoUrl: pi > -1 ? safeUrl(r[pi + 1]) : '' });
     }
+    sessions.forEach(function (x) { x.visualUrl = visual; });
     if (hi < 0) return { ok: false, sessions: sessions, rows: [], missingCols: [] };
     rows[hi].forEach(function (h, j) {
       h = String(h).trim();
       Object.keys(cols).forEach(function (k) { if (idx[k] == null && h.indexOf(cols[k]) === 0) idx[k] = j; });
-      if (sesCol && si < 0 && h.indexOf(sesCol) === 0) si = j;
+      if (sesCol && si < 0 && [].concat(sesCol).some(function (n) { return h.indexOf(n) === 0; })) si = j;
     });
     for (i = hi + 1; i < rows.length; i++) {
       r = arr(rows[i]);
@@ -336,7 +338,7 @@
       if (p.sessions.length > 1 && !p.hasSesCol) problems.push({ tab: name, why: 'noSesCol' });
       p.sessions.forEach(function (x) {
         seen[x.date] = (seen[x.date] || 0) + 1;
-        sessions.push({ title: actTabTitle(name), date: x.date, slug: 'g' + String(tab.gid).replace(/[^0-9a-z]/gi, '').toLowerCase() + (seen[x.date] > 1 ? '-' + seen[x.date] : ''), photoUrl: x.photoUrl, tab: name });
+        sessions.push({ title: actTabTitle(name), date: x.date, slug: 'g' + String(tab.gid).replace(/[^0-9a-z]/gi, '').toLowerCase() + (seen[x.date] > 1 ? '-' + seen[x.date] : ''), photoUrl: x.photoUrl, visualUrl: x.visualUrl || '', tab: name });
       });
       p.rows.forEach(function (r) {
         var k = -1, j;
@@ -353,9 +355,12 @@
   function sc2(o) { o = o || {}; return { body: o.body == null ? null : o.body, mood: o.mood == null ? null : o.mood }; }
   // 一列＋場次 → 一筆要寫進雲端的紀錄。這裡列出的就是全部欄位，沒有別的。
   function actRecord(row, ses, lim) {
-    return { email: String(row.email || ''), sessionId: String(ses.sessionId || ''), title: cut(ses.title, lim.maxTitle), date: String(ses.date || ''),
+    var rec = { email: String(row.email || ''), sessionId: String(ses.sessionId || ''), title: cut(ses.title, lim.maxTitle), date: String(ses.date || ''),
       photoUrl: safeUrl(ses.photoUrl).slice(0, lim.maxUrl), pre: sc2(row.pre), post: sc2(row.post),
       expect: cut(row.expect, lim.maxText), feeling: cut(row.feeling, lim.maxText), takeaway: cut(row.takeaway, lim.maxText), feedback: cut(row.feedback, lim.maxText) };
+    var v = safeUrl(ses.visualUrl).slice(0, lim.maxUrl);
+    if (v) rec.visualUrl = v; // 有主視覺才帶這個欄位
+    return rec;
   }
   function actDups(items) {
     var seen = {}, out = [];
@@ -367,10 +372,10 @@
   function actAlso(emails, recs, lim, tlds, sessions) {
     var ses = {}, order = [], have = {}, seen = {}, list = [], out = [];
     arr(sessions).forEach(function (x) {
-      if (x && x.sessionId && !ses[x.sessionId]) { ses[x.sessionId] = { sessionId: x.sessionId, title: x.title, date: x.date, photoUrl: x.photoUrl }; order.push(x.sessionId); }
+      if (x && x.sessionId && !ses[x.sessionId]) { ses[x.sessionId] = { sessionId: x.sessionId, title: x.title, date: x.date, photoUrl: x.photoUrl, visualUrl: x.visualUrl }; order.push(x.sessionId); }
     });
     arr(recs).forEach(function (r) {
-      if (!ses[r.sessionId]) { ses[r.sessionId] = { sessionId: r.sessionId, title: r.title, date: r.date, photoUrl: r.photoUrl }; order.push(r.sessionId); }
+      if (!ses[r.sessionId]) { ses[r.sessionId] = { sessionId: r.sessionId, title: r.title, date: r.date, photoUrl: r.photoUrl, visualUrl: r.visualUrl }; order.push(r.sessionId); }
       have[actDocId(r.sessionId, r.email)] = 1;
     });
     arr(emails).forEach(function (e) {
@@ -412,12 +417,19 @@
     }
     return null;
   }
+  // 主視覺連結 → 可以直接顯示的圖片網址。Google 雲端硬碟的檔案連結換成縮圖網址（檔案要開「知道連結的人都能看」）；
+  // 本來就是圖片檔的網址照用；其他的不顯示。
+  function actImg(url, w) {
+    var u = safeUrl(url), m = /^https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=|thumbnail\?(?:[^#]*&)?id=)([A-Za-z0-9_-]{10,80})/.exec(u);
+    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w' + (w || 640);
+    return /^https:\/\/[^\s"'<>]+\.(?:jpe?g|png|webp|gif)(?:\?[^\s"'<>]*)?$/i.test(u) ? u : '';
+  }
   function actPage(a) {
     if (!a || a.status !== 'kept' || !/^\d{4}-\d{2}-\d{2}$/.test(String(a.date || ''))) return null;
     var title = String(a.title || '活動');
     return { id: 'act-' + a.docId, key: a.date, src: 'Act', kind: '活動', title: title, label: title, doodle: 'mount', tool: '',
       text: String(a.feedback || a.takeaway || a.feeling || a.expect || '').slice(0, 40), sub: '', note: '', meta: [], feel: [], big: null,
-      link: safeUrl(a.photoUrl), photos: [],
+      link: safeUrl(a.photoUrl), visual: actImg(a.visualUrl, 640), thumb: actImg(a.visualUrl, 160), photos: [],
       act: { pre: sc2(a.pre), post: sc2(a.post), expect: String(a.expect || ''), feeling: String(a.feeling || ''), takeaway: String(a.takeaway || ''), feedback: String(a.feedback || '') } };
   }
   // 搜尋：在本人看得到的文字裡找（標題、內容、標籤、補的話、起點、動力、發現）。
@@ -837,5 +849,5 @@
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
     pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
-    questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
+    actImg: actImg, questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
 })(window);

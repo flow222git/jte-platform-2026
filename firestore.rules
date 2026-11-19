@@ -10,6 +10,7 @@
 //   4. /me 活動紀錄：activityRecords/{sessionId}__{email}、admins/{uid}，同樣只發布在 lianxichang-me。
 //   5. /me 我的練習：users/{uid}/practiceItems、users/{uid}/practiceLogs、users/{uid}/practiceNotes（只有本人能讀寫），同樣只發布在 lianxichang-me。
 //      另外 users/{uid}/inspirations 多了選填欄位 itemId（靈感掛到哪個練習項目）；發布規則時兩處都要一起更新。
+//   6. /me 一起練：circles/{cid}、circles/{cid}/members/{uid}、circles/{cid}/checkins/{日期_uid}，同樣只發布在 lianxichang-me。
 //   注意：首頁與部分工具另有 users/{email}/daily 的同步程式（未用 Firebase Auth）；線上規則可能與本檔不同，發布前請先對照線上現有規則，只加入 /me 靈感區那兩段，不要整份覆蓋。
 // 白名單由擁有者在 Console 直接編輯（Console 不受規則限制）。
 
@@ -102,13 +103,14 @@ service cloud.firestore {
     }
     // 上限與 me/me-data.js 的 act 一致。欄位清單就是全部：沒有姓名、企業、部門、職級，也沒有給主辦方的評分。
     function actOk(d, id) {
-      return d.keys().hasOnly(['email', 'sessionId', 'title', 'date', 'photoUrl', 'pre', 'post', 'expect', 'feeling', 'takeaway', 'feedback', 'status', 'importedAt', 'decidedAt'])
+      return d.keys().hasOnly(['email', 'sessionId', 'title', 'date', 'photoUrl', 'visualUrl', 'pre', 'post', 'expect', 'feeling', 'takeaway', 'feedback', 'status', 'importedAt', 'decidedAt'])
         && d.email is string && d.email.size() <= 200 && d.email == d.email.lower()
         && d.sessionId is string && d.sessionId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{1,30}$')
         && id == d.sessionId + '__' + d.email
         && d.title is string && d.title.size() <= 100
         && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && d.photoUrl is string && d.photoUrl.size() <= 500
+        && (!('visualUrl' in d) || (d.visualUrl is string && d.visualUrl.size() <= 500))
         && scoreOk(d.pre) && scoreOk(d.post)
         && d.expect is string && d.expect.size() <= 2000
         && d.feeling is string && d.feeling.size() <= 2000
@@ -136,6 +138,89 @@ service cloud.firestore {
             && request.resource.data.status == 'declined' && request.resource.data.decidedAt == request.time);
       // 本人選了「不用」的記號不能從用戶端刪（刪了重新匯入就會再問一次）；真的要清，由擁有者在 Console 處理。
       allow delete: if isAdmin() && resource.data.status != 'declined';
+    }
+
+    // ── /me 一起練 ──
+    // 團本身：任何登入的人用代號讀得到（邀請連結靠這個）；列出來只能列開放加入的、或自己在裡面的。
+    // 團員與打卡：只有團員讀得到。沒有排名、沒有連續天數；鼓勵詞只能是這四個（和 me-data.js 的 care.cheers 一致）。
+    function circlePath(cid) { return /databases/$(database)/documents/circles/$(cid); }
+    function inCircle(cid) { return request.auth != null && request.auth.uid in get(circlePath(cid)).data.members; }
+    function circleOk(d) {
+      return d.keys().hasOnly(['name', 'tool', 'what', 'rhythm', 'span', 'start', 'open', 'owner', 'members', 'lastIn', 'ended', 'createdAt'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.tool is string && (d.tool == '' || d.tool.matches('^[a-z]{2,12}$'))
+        && d.what is string && d.what.size() <= 20
+        && d.rhythm is string && d.rhythm.size() <= 12
+        && d.span in [0, 7, 21]
+        && d.start is string && d.start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.open is bool && d.owner is string && d.ended is bool
+        && d.members is list && d.members.size() >= 1 && d.members.size() <= 12
+        && d.lastIn is map && d.lastIn.size() <= 12;
+    }
+    // 打卡時只能動自己那一格「最後打卡日」
+    function lastInSelf(c0, c1) {
+      return c1.lastIn.diff(c0.lastIn).affectedKeys().hasOnly([request.auth.uid])
+        && (!(request.auth.uid in c1.lastIn) || (c1.lastIn[request.auth.uid] is string && c1.lastIn[request.auth.uid].matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')));
+    }
+    match /circles/{cid} {
+      allow get: if request.auth != null;
+      allow list: if request.auth != null && (resource.data.open == true || request.auth.uid in resource.data.members || isAdmin());
+      allow create: if myVerifiedEmail() != null && circleOk(request.resource.data)
+        && request.resource.data.owner == request.auth.uid && request.resource.data.members == [request.auth.uid]
+        && request.resource.data.lastIn.size() == 0 && request.resource.data.ended == false && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null && circleOk(request.resource.data) && (
+        // 加入：只把自己加進去
+        (myVerifiedEmail() != null && resource.data.ended == false && !(request.auth.uid in resource.data.members)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+          && request.resource.data.members.size() == resource.data.members.size() + 1
+          && request.resource.data.members.hasAll(resource.data.members) && request.auth.uid in request.resource.data.members)
+        // 打卡：只動自己那一格
+        || (request.auth.uid in resource.data.members
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastIn']) && lastInSelf(resource.data, request.resource.data))
+        // 離開（揪團的人不能離開，只能結束這個團）
+        || (request.auth.uid in resource.data.members && request.auth.uid != resource.data.owner
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'lastIn'])
+          && request.resource.data.members == resource.data.members.removeAll([request.auth.uid])
+          && lastInSelf(resource.data, request.resource.data))
+        // 揪團的人：請人離開、結束這個團（只能減少團員，不能加人、不能改別人的打卡日）
+        || (request.auth.uid == resource.data.owner
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'lastIn', 'ended'])
+          && resource.data.members.hasAll(request.resource.data.members) && resource.data.owner in request.resource.data.members
+          && request.resource.data.lastIn.diff(resource.data.lastIn).addedKeys().size() == 0
+          && request.resource.data.lastIn.diff(resource.data.lastIn).changedKeys().size() == 0
+          && (request.resource.data.ended == true || resource.data.ended == false))
+      );
+      allow delete: if isAdmin();
+
+      match /members/{mid} {
+        allow read: if inCircle(cid) || isAdmin();
+        allow create: if request.auth != null && request.auth.uid == mid
+          && request.auth.uid in getAfter(circlePath(cid)).data.members
+          && request.resource.data.keys().hasOnly(['nick', 'resting', 'joinedAt'])
+          && request.resource.data.nick is string && request.resource.data.nick.size() >= 1 && request.resource.data.nick.size() <= 12
+          && request.resource.data.resting == false && request.resource.data.joinedAt == request.time;
+        allow update: if request.auth != null && request.auth.uid == mid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nick', 'resting'])
+          && request.resource.data.nick is string && request.resource.data.nick.size() >= 1 && request.resource.data.nick.size() <= 12
+          && request.resource.data.resting is bool;
+        allow delete: if request.auth != null && (request.auth.uid == mid || request.auth.uid == get(circlePath(cid)).data.owner || isAdmin());
+      }
+      match /checkins/{kid} {
+        allow read: if inCircle(cid) || isAdmin();
+        allow create: if inCircle(cid)
+          && request.resource.data.keys().hasOnly(['uid', 'k', 'text', 'cheers', 'at'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.k is string && request.resource.data.k.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && kid == request.resource.data.k + '_' + request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() <= 80
+          && request.resource.data.cheers == {} && request.resource.data.at == request.time;
+        allow update: if inCircle(cid) && request.auth.uid != resource.data.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cheers'])
+          && request.resource.data.cheers is map && request.resource.data.cheers.size() <= 12
+          && request.resource.data.cheers.diff(resource.data.cheers).affectedKeys().hasOnly([request.auth.uid])
+          && (!(request.auth.uid in request.resource.data.cheers) || request.resource.data.cheers[request.auth.uid] in ['收到', '一起', '好耶', '辛苦了']);
+        allow delete: if request.auth != null && (request.auth.uid == resource.data.uid || request.auth.uid == get(circlePath(cid)).data.owner || isAdmin());
+      }
     }
 
     // 其餘一律禁止
