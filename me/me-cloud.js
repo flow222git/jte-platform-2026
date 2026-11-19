@@ -22,8 +22,9 @@
     auth.onAuthStateChanged(function (u) { user = shape(u); onUser(user); });
     return true;
   }
-  function signIn() {
+  function signIn(hint) {
     var p = new g.firebase.auth.GoogleAuthProvider();
+    if (hint && /^[^@\s]+@[^@\s]+$/.test(String(hint))) p.setCustomParameters({ login_hint: String(hint) });
     return auth.signInWithPopup(p).catch(function (e) {
       var c = e && e.code;
       if (c === 'auth/popup-blocked' || c === 'auth/operation-not-supported-in-this-environment') return auth.signInWithRedirect(p);
