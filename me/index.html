@@ -258,6 +258,11 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
 .qnew .jrow{border-top:0;padding-top:6px;margin-top:0}
 .qnew .in{flex:1 1 240px}
 .qside{margin:4px 0 14px}
+.qfilter{margin-bottom:14px}
+.qtags{flex-wrap:wrap;gap:6px 8px;align-items:center}
+.qtagpick{flex-wrap:wrap;gap:6px 8px;align-items:center}
+.qtagpick .in{flex:0 1 160px}
+.qcard .chip,.qfilter .chip{min-height:32px}
 .quiet{background:var(--bg-soft);border:1px dashed rgba(20,34,56,.16);border-radius:var(--r-md);padding:16px 18px;color:var(--ink-2);font-size:13.5px}
 .quiet b{color:var(--dark)}
 .helpline{background:var(--yellow-soft);border-radius:var(--r-md);padding:14px 18px;font-weight:500;font-size:14px}
@@ -651,7 +656,7 @@ function demoDaily(){var o={};function put(n,l){var k=rel(n);o[k]=o[k]||{moods:[
   put(30,{source:'TWCT',recordId:'tw-d1',typeName:'超理智型'});return o}
 function demoStore(){return{sw:{year:2026,happy:4,at:TODAY,strengths:{'務實謙遜':12,'真誠利他':15,'開放創造':16,'謹慎負責':13,'自信堅定':11,'活潑樂觀':14,'熱忱進取':13,'領導表達':10},perma:{P:62,E:71,R:58,M:66,A:54}},themes:[{n:'安定的力量',c:'#3f7a55'},{n:'好玩的事',c:'#dd5f47'}],words:{},states:{},prefs:{},firsts:{tri:true},
   memos:[{id:'m-d1',key:rel(3),text:'同事的手沖咖啡，好酷。'},{id:'m-d2',key:rel(20),text:'累了就是累了。'},{id:'m-d3',key:rel(6),text:'站著等紅燈的時候，發現腳掌其實一直抓著地。',qid:'q-d2'},{id:'m-d4',key:rel(2),text:'今天打拳，肩膀放掉之後手反而比較穩。',qid:'q-d2'}],
-  quests:[{id:'q-d1',text:'我想找到讓自己安定下來的方法',created:rel(30)},{id:'q-d2',text:'練習時，如何減少不必要的用力？',created:rel(12)}],
+  quests:[{id:'q-d1',text:'我想找到讓自己安定下來的方法',created:rel(30),tags:['安定的力量']},{id:'q-d2',text:'練習時，如何減少不必要的用力？',created:rel(12)}],
   tris:[{id:'t-d1',key:rel(1),created:rel(1)+'T08:00:00',join:{kind:'state',state:'full'},why:['馬上能用'],tool:'xiaoqi',before:[],recId:'xq-d1',found:'三口呼吸之後，肩膀真的鬆了一點。',foundKey:rel(1)},
         {id:'t-d2',key:rel(8),created:rel(8)+'T08:00:00',join:{kind:'state',state:'empty'},why:['需要'],tool:'breathe',before:[],recId:'ba-d1'},
         {id:'t-d3',key:rel(3),created:rel(3)+'T08:00:00',join:{kind:'curious',text:'想學手沖咖啡'},why:['好奇','想創造'],tool:'',before:[],recId:''},
@@ -667,7 +672,7 @@ var persona=DEMO?{title:'巽・協作者',ts:rel(40)+'T10:00:00'}:readLS('bagua_
 function save(){if(DEMO)return;try{localStorage.setItem('jte_me_v1',JSON.stringify(O))}catch(e){}}
 function word(k){return O.words[k]||D.perma.words[k]}
 function ann(id){return O.ann[id]||(O.ann[id]={})}
-var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,qW:null,qL:null,qRest:false,qDel:null,q:'',swEdit:false,capFor:null,user:null,cloud:[],draft:[],cloudOk:false,delIns:false,cwipe:false,acts:[],actLater:{},actAsk:null};
+var S={pages:[],byId:{},triByRec:{},open:null,sub:null,did:null,filter:'全部',view:'list',lens:'mine',calY:NOW.getFullYear(),calM:NOW.getMonth(),calDay:TODAY,gate:O.states[TODAY]||null,closed:null,cap:null,whyFor:null,wipe:false,pane:'today',sub:'trail',just:null,qW:null,qL:null,qRest:false,qDel:null,qT:null,qF:'',q:'',swEdit:false,capFor:null,user:null,cloud:[],draft:[],cloudOk:false,delIns:false,cwipe:false,acts:[],actLater:{},actAsk:null};
 function toast(t){var e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){e.hidden=true},2200)}
 /* 靈感區：草稿照片、登入、雲端靈感 */
 var I=D.insp;
@@ -770,8 +775,11 @@ function fillT(t,o){return String(t).replace(/\{(\w+)\}/g,function(_,k){return o
 function renderQuest(){var Q=D.explore.quest;$('#h-que').textContent=Q.title;$('#quenote').textContent=Q.note;$('#quenewt').textContent=Q.newTitle;$('#quenewn').textContent=Q.newNote;
   var qi=$('#quein');qi.placeholder=Q.placeholder;qi.maxLength=Q.chars;qi.setAttribute('aria-label',Q.newTitle);$('#queadd').textContent=Q.add;
   var act=O.quests.filter(function(q){return q&&!q.rest}),rest=O.quests.filter(function(q){return q&&q.rest});
-  var h=act.map(function(q){var ns=M.questNotes(O.memos,q.id),open=S.qL===q.id,wr=S.qW===q.id;
+  var tc=M.questTags(act),F=S.qF&&tc.some(function(x){return x.k===S.qF})?S.qF:'';S.qF=F;
+  var h=(tc.length?'<div class="chips qfilter" role="group" aria-label="'+Q.tagFilter+'"><button class="chip'+(F?'':' on')+'" data-qa="filter" data-t="" aria-pressed="'+!F+'">'+Q.tagAll+'</button>'+tc.map(function(x){return '<button class="chip'+(F===x.k?' on':'')+'" data-qa="filter" data-t="'+esc(x.k)+'" aria-pressed="'+(F===x.k)+'">'+esc(x.k)+' '+x.n+'</button>'}).join('')+'</div>':'')+act.filter(function(q){return !F||(q.tags||[]).indexOf(F)>-1}).map(function(q){var ns=M.questNotes(O.memos,q.id),open=S.qL===q.id,wr=S.qW===q.id,tg=q.tags||[];
     var c='<div class="panel qcard" data-q="'+esc(q.id)+'"><div class="qhead"><h3>'+esc(q.text)+'</h3><span class="tag qtag">'+Q.tag+'</span></div><p class="note">'+Q.line+(q.created?'　'+esc(fillT(Q.since,{d:M.dlabel(q.created)})):'')+'</p>';
+    c+='<div class="row qtags">'+tg.map(function(t){return '<button class="chip" data-qa="untag" data-t="'+esc(t)+'" aria-label="'+esc(fillT(Q.tagDrop,{t:t}))+'">'+esc(t)+' ×</button>'}).join('')+(tg.length<Q.tagMax?'<button class="lnk" data-qa="tag" aria-expanded="'+(S.qT===q.id)+'">'+Q.tagAdd+'</button>':'')+'</div>';
+    if(S.qT===q.id)c+='<div class="row qtagpick">'+O.themes.filter(function(x){return tg.indexOf(x.n)<0}).map(function(x){return '<button class="chip" data-qa="addtag" data-t="'+esc(x.n)+'">'+esc(x.n)+'</button>'}).join('')+'<input class="in qtin" maxlength="8" placeholder="'+Q.tagNew+'" aria-label="'+Q.tagNew+'"><button class="btn sm" data-qa="newtag">'+Q.tagJoin+'</button></div>';
     c+='<div class="row"><button class="btn sm fill" data-qa="write" aria-expanded="'+wr+'">'+Q.write+'</button><button class="btn sm" data-qa="list" aria-expanded="'+open+'">'+(ns.length?fillT(Q.listN,{n:ns.length}):Q.list)+'</button><button class="lnk" data-qa="rest">'+Q.rest+'</button></div>';
     if(wr)c+='<div class="qwrite"><textarea class="in qin" maxlength="'+Q.obs+'" placeholder="'+esc(Q.writePh)+'" aria-label="'+esc(Q.write)+'"></textarea><button class="btn sm fill" data-qa="save">'+Q.save+'</button><button class="lnk" data-qa="write">'+Q.cancel+'</button></div>';
     if(open)c+='<div>'+(ns.length?ns.slice(0,Q.show).map(function(m){return '<p class="qobs"><small>'+esc(M.dlabel(m.key))+'</small><span>'+esc(m.text)+'</span></p>'}).join('')+(ns.length>Q.show?'<p class="note"><button class="lnk" data-go="mymap-trail">'+fillT(Q.more,{n:ns.length})+'</button></p>':''):'<p class="note">'+Q.none+'</p>')+'</div>';
@@ -1069,18 +1077,26 @@ $('#subs').onclick=function(e){var b=e.target.closest('[data-sub]');if(b)goPane(
 document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.lens){S.lens=b.dataset.lens;$('#legend').innerHTML='';renderMap()}goPane(b.dataset.go);if(b.dataset.focus==='memo')$('#memo').focus()});
 $('#queadd').onclick=questAddNow;$('#quein').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){e.preventDefault();questAddNow()}};
 $('#quelist').onclick=function(e){var b=e.target.closest('[data-qa]');if(!b)return;var k=b.dataset.qa,Q=D.explore.quest,row=b.closest('[data-q]'),id=row?row.dataset.q:'',q=id?questById(id):null,foc='';
+  var all=false;
   if(k==='showrest'){S.qRest=!S.qRest;S.qDel=null;foc='[data-qa="showrest"]'}
+  else if(k==='filter'){S.qF=b.dataset.t||'';foc='[data-qa="filter"].on'}
   else if(!q)return;
   else if(k==='write'){S.qW=S.qW===id?null:id;foc=S.qW?'[data-q="'+id+'"] .qin':'[data-q="'+id+'"] [data-qa="write"]'}
   else if(k==='list'){S.qL=S.qL===id?null:id;foc='[data-q="'+id+'"] [data-qa="list"]'}
   else if(k==='save'){var ta=row.querySelector('.qin'),v=ta.value.trim().slice(0,Q.obs);if(!v){ta.focus();return}
     O.memos.push({id:'m-'+Date.now(),key:TODAY,text:v,qid:id});S.qW=null;S.qL=id;save();renderAll();toast(Q.saved);var f=$('#quelist').querySelector('[data-q="'+id+'"] [data-qa="list"]');if(f)f.focus();return}
+  else if(k==='tag'){S.qT=S.qT===id?null:id;foc=S.qT?'[data-q="'+id+'"] .qtin':'[data-q="'+id+'"] [data-qa="tag"]'}
+  else if(k==='addtag'||k==='untag'){q.tags=M.questTagSet(q,b.dataset.t,k==='addtag',Q.tagMax);S.qT=null;save();foc='[data-q="'+id+'"] [data-qa="tag"]'}
+  else if(k==='newtag'){var ti=row.querySelector('.qtin'),tv=ti.value.replace(/\s+/g,' ').trim().slice(0,8);if(!tv){ti.focus();return}
+    if(!O.themes.filter(function(t){return t.n===tv}).length)O.themes.push({n:tv,c:['#3f7a55','#dd5f47','#3d6fb0','#8a59ad','#c2932f'][O.themes.length%5]});
+    q.tags=M.questTagSet(q,tv,true,Q.tagMax);S.qT=null;save();all=true;foc='[data-q="'+id+'"] [data-qa="tag"]'}
   else if(k==='rest'){q.rest=true;if(S.qW===id)S.qW=null;if(S.qL===id)S.qL=null;save();toast(Q.rested);foc='[data-qa="showrest"]'}
   else if(k==='back'){var r=M.questAdd(O.quests,q.text,Date.now(),{max:Q.max,chars:Q.chars});if(!r.ok&&r.why==='full'){toast(fillT(Q.full,{n:Q.max}));return}delete q.rest;save();foc='[data-q="'+id+'"] [data-qa="write"]'}
   else if(k==='del'){S.qDel=id;foc='[data-q="'+id+'"] [data-qa="delno"]'}
   else if(k==='delno'){S.qDel=null;foc='[data-q="'+id+'"] [data-qa="del"]'}
   else if(k==='delyes'){O.quests=O.quests.filter(function(x){return x!==q});S.qDel=null;save();foc='[data-qa="showrest"]'}
-  renderQuest();var el=foc&&$('#quelist').querySelector(foc);if(el)el.focus()};
+  if(all)renderAll();else renderQuest();var el=foc&&$('#quelist').querySelector(foc);if(el)el.focus()};
+$('#quelist').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing&&e.target.classList.contains('qtin')){e.preventDefault();e.target.parentNode.querySelector('[data-qa="newtag"]').click()}};
 $('#exadd').onclick=function(){var v=$('#exin').value.trim();if(!v){$('#exin').focus();return}newTri({kind:'curious',text:v},'');save();$('#exin').value='';renderAll();toast('記下來了，在「今天」的還開著的裡也看得到')};
 $('#bri3').onclick=function(){downloadData()};
 $('#circles').onclick=careClick;$('#cnew').onclick=cnewClick;$('#openlist').onclick=joinClick;

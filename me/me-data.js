@@ -135,6 +135,7 @@
         newTitle: '新增一個想繼續探索的問題', newNote: '例如：什麼時候，我最能感覺自己真正放鬆？', placeholder: '我想慢慢理解……', add: '種下一個新問題', added: '種下了',
         same: '這個問題已經在上面了。', full: '先放下一個，再種新的。同時放在心上的最多 {n} 個。', empty: '還沒有種下問題。',
         goals: '項目裡訂的', goalsNote: '在「我的練習」各項目裡寫的目標或正在探索的。', goalGo: '到這個項目',
+        tagAdd: '＋ 標籤', tagNew: '取一個新的', tagJoin: '加入', tagDrop: '拿掉標籤「{t}」', tagFilter: '用標籤看問題', tagAll: '全部', tagMax: 5,
         max: 12, chars: 80, obs: 300, show: 5, more: '到體驗足跡看全部 {n} 筆' },
       curious: { title: '我的好奇', note: '看到什麼讓你想靠近，先記下來。', placeholder: '例如：同事的手沖咖啡', add: '記下來', none: '還沒有記過。' },
       themes: { title: '我在意的主題', note: '你自己取的標籤。', none: '在任一筆紀錄上加標籤，主題會出現在這裡。' },
