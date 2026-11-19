@@ -287,3 +287,16 @@
 .pr-w.tool{border-style:dashed}
 .pr-tools{display:flex;flex-wrap:wrap;gap:6px 16px}
 .pr-tool{display:inline-flex;align-items:center;gap:6px;min-height:36px;cursor:pointer}
+
+/* 今天：心得筆記 */
+.pr-rctabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.pr-rctab,.pr-rcone{display:inline-flex;align-items:center;gap:8px;flex:none;min-height:44px;padding:4px 14px 4px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font:inherit;color:var(--ink-2)}
+.pr-rctab{cursor:pointer}
+.pr-rctab[aria-selected="true"],.pr-rcone{background:var(--pt);border-color:var(--pc);color:var(--dark)}
+.pr-rctab .pr-ico,.pr-rcone .pr-ico{width:30px;height:30px}
+.pr-rcone{justify-self:start}
+.pr-rcbody{display:grid;gap:12px}
+.pr-rcsec>small{display:block;font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--ink-3);margin-bottom:2px}
+.pr-rcgoal{padding:8px 12px;border-left:3px solid var(--pc);background:var(--pt);border-radius:0 var(--r-md) var(--r-md) 0;overflow-wrap:anywhere}
+.pr-rcgoal+.pr-rcgoal{margin-top:6px}
+.pr-rcsec .pr-rc:first-of-type{border-top:0}
