@@ -9,7 +9,7 @@
   var box, quick, zone, secPrac, rest, live;
   // 畫面狀態：哪個項目的專區、哪個分頁、月曆的月份、哪一天、哪個表單開著
   var st = { data: { items: [], logs: [], notes: [] }, seen: null, item: '', tab: 'log', calY: 0, calM: 0, day: '', chart: 'week',
-    lf: null, itf: null, nopen: '', wf: '', wn: 0, ai: null, ask: '', busy: false, focus: '', select: false, user: null,
+    lf: null, itf: null, nopen: '', wf: '', wn: 0, ai: null, rc: '', want: '', ask: '', busy: false, focus: '', select: false, user: null,
     mode: 'local', uid: null, gen: 0, cloudState: '', moving: '', moveErr: '', wipeLeft: false, cloudOff: false, authed: false, nnid: '' };
   var dirty = { box: false, quick: false, zone: false };
   var TABS = ['log', 'write', 'set'];
@@ -471,6 +471,38 @@
   }
 
   // ── 今天的快速鍵 ──
+  // 「今天」的心得筆記：依項目分頁，看最近寫下的、還在探索的、標了星星的
+  function recallHTML(act) {
+    var list = act.filter(function (it) { return writings(it).length || famGoals(it).length; });
+    if (!list.length) return '';
+    var cur = list.filter(function (it) { return it.id === st.rc; })[0] || list[0], all = writings(cur), goals = famGoals(cur);
+    var f = M.pracInsights(st.data.logs, items(), famIds(cur), C.TODAY), recent = all.slice(0, P.recall.recent), shown = {}, stars;
+    recent.forEach(function (w) { shown[w.id] = 1; });
+    stars = all.filter(function (w) { return w.star && !shown[w.id]; }).slice(0, P.recall.star);
+    function row(w) {
+      var sub = w.itemId !== cur.id ? itemById(w.itemId) : null, t = (w.title ? w.title + ' ' : '') + w.body, max = P.recall.chars;
+      return '<p class="pr-rc' + (w.star ? ' star' : '') + '"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small><span>' + (sub ? '<span class="pr-itag">' + esc(sub.name) + '</span>' : '') + (w.star ? '★ ' : '') + esc(t.length > max ? t.slice(0, max) + '…' : t) + '</span></p>';
+    }
+    var h = '<div class="panel pr-quick pr-recall"><div class="pr-qhead"><b>' + esc(T.rcTitle) + '</b><span class="note">' + esc(T.rcNote) + '</span></div>';
+    if (list.length > 1) h += '<div class="pr-rctabs" role="tablist" aria-label="' + esc(T.rcTitle) + '">' + list.map(function (it) {
+      var on = it.id === cur.id;
+      return '<button role="tab" class="pr-rctab" aria-selected="' + on + '" data-pa="rc" data-id="' + esc(it.id) + '"' + cvars(it) + fk('rc-' + it.id) + '>' + sw(it) + '<b>' + esc(it.name) + '</b></button>';
+    }).join('') + '</div>';
+    else h += '<div class="pr-rcone"' + cvars(cur) + '>' + sw(cur) + '<b>' + esc(cur.name) + '</b></div>';
+    h += '<div class="pr-rcbody"' + cvars(cur) + '>';
+    if (f.n) h += '<p class="note">' + esc(f.sinceLast <= 0 ? T.ins.lastToday : fill(T.ins.last, { d: M.dlabel(f.last), n: f.sinceLast })) + '</p>';
+    if (goals.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcGoal) + '</small>' + goals.map(function (x) { return '<p class="pr-rcgoal">' + (x.it.id !== cur.id ? '<span class="pr-itag">' + esc(x.it.name) + '</span>' : '') + esc(x.goal) + '</p>'; }).join('') + '</div>';
+    if (recent.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcRecent) + '</small>' + recent.map(row).join('') + '</div>';
+    else h += '<p class="note">' + esc(T.rcNone) + '</p>';
+    if (stars.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcStar) + '</small>' + stars.map(row).join('') + '</div>';
+    h += '<div class="row pr-gap"><button class="btn sm" data-pa="rcwrite" data-id="' + esc(cur.id) + '"' + fk('rcw') + '>' + esc(T.rcWrite) + '</button>' +
+      (all.length ? '<button class="lnk" data-pa="rcall" data-id="' + esc(cur.id) + '"' + fk('rca') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button>' : '') + '</div></div></div>';
+    return h;
+  }
+  // 這個項目和它底下小項目訂的「目標或正在探索的」
+  function famGoals(it) {
+    return famIds(it).map(function (id) { return itemById(id); }).filter(function (x) { return x && x.goal; }).map(function (x) { return { it: x, goal: x.goal }; });
+  }
   function renderQuick() {
     var act = topLevel(active());
     if (pending() || restoring() || st.mode === 'out') { quick.hidden = true; quick.innerHTML = ''; return; }
@@ -490,7 +522,7 @@
         if (fam.length) { var fids = [it.id].concat(fam.map(function (x) { return x.id; })); st.data.logs.forEach(function (l) { if (l.date === C.TODAY && fids.indexOf(l.itemId) > -1) tc++; }); }
         return '<button class="pr-pill" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + cvars(it) + fk('qp-' + it.id) + '>' + sw(it) + '<b>' + esc(fullName(it)) + '</b><span>' + esc(T.log) + '</span>' +
           (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') + '</button>';
-      }).join('') + '</div>' + (openId ? logForm() : '') + '</div>';
+      }).join('') + '</div>' + (openId ? logForm() : '') + '</div>' + recallHTML(act);
   }
 
   // ── 專區 ──
@@ -956,6 +988,8 @@
       case 'photo': if (it) C.startPhoto(it.id); return;
       case 'wedit': st.nopen = id; st.ask = ''; st.focus = 'we-' + id; break;
       case 'wclose': x = st.nopen; st.nopen = ''; st.focus = 'wed-' + x; break;
+      case 'rc': st.rc = id; st.focus = 'rc-' + id; break;
+      case 'rcall': case 'rcwrite': st.want = b.getAttribute('data-pa') === 'rcwrite' ? 'focus' : 'tab'; C.goPane('practice-item-' + id); return;
       case 'wmore': st.wn = (st.wn || P.page) + P.page; st.focus = 'wmore'; break;
       case 'wfilter': st.wf = b.getAttribute('data-v') || ''; st.wn = 0; st.nopen = ''; st.ask = ''; st.focus = 'wf' + (st.wf || '0'); break;
       case 'aiask': st.ai = { item: st.item, state: 'ask' }; st.focus = 'aiyes'; break;
@@ -1084,9 +1118,9 @@
     if (id) {
       if (st.item === id && !zone.hidden) return true;
       var cur = nowYM();
-      st.item = id; st.tab = 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wf = ''; st.wn = 0; st.ai = null; st.itf = null; st.calY = cur.y; st.calM = cur.m;
+      st.item = id; st.tab = st.want ? 'write' : 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wf = ''; st.wn = 0; st.ai = null; st.itf = null; st.calY = cur.y; st.calM = cur.m;
       if (st.lf && st.lf.ctx !== 'quick') st.lf = null;
-      st.focus = 'zh';
+      st.focus = st.want === 'focus' ? 'wr-' + id : st.want ? 't-write' : 'zh'; st.want = '';
       render(true);
       return true;
     }

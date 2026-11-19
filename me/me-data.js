@@ -222,7 +222,7 @@
     prac: {
       max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60 },
       // AI 讀心得：自己按才送。url 是平台的 AI 代理（ven-i/worker.js 的 /me-read）。
-      page: 30,
+      page: 30, recall: { recent: 3, star: 2, chars: 140 },
       ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
       units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
       examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
@@ -317,6 +317,8 @@
           top: '最常記的是「{n}」，{c} 筆。', avg: '每次平均 {v} {u}，最多一次 {m} {u}。', wr: '寫下 {n} 段，其中 {s} 段標了星星。', wr0: '寫下 {n} 段。',
           tools: '平台工具另外留下：{list}。', toolOne: '{n} {c} 筆' },
         wdFull: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+        rcTitle: '心得筆記', rcNote: '練之前翻一下，接著上次的往下練。', rcGoal: '還在探索的', rcRecent: '最近寫下的', rcStar: '標了星星的',
+        rcNone: '這個項目還沒寫過。練完寫一句，下次就能從這裡接著練。', rcWrite: '寫一段',
         wMore: '再看更早的（還有 {n} 筆）', wfWords: '有寫字的', tlTool: '平台工具', tlNone: '這裡還沒有東西。記一筆，或在上面寫一段。',
         toolsLabel: '算進來的平台工具', toolsNote: '勾了之後，這些工具留下的紀錄會排進「紀錄與心得」。只並列，不和你記的數量加在一起。',
         aiTitle: '請 AI 讀一讀', aiNote: '把這個項目寫下的內容交給 AI，整理出反覆出現的主題和你還在問的問題。',
