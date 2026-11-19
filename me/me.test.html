@@ -265,6 +265,7 @@ check('questTags／questTagSet：加、拿掉、不重複、有上限、算每�
   const Q=D.explore.quest;['tagAdd','tagNew','tagJoin','tagDrop','tagFilter','tagAll'].forEach(k=>ok(Q[k],k));ok(Q.tagMax>=1);});
 check('右上角登入狀態的文案都在資料檔',()=>{['label','out','outTitle','outNote','inNote','unverified','demo','noName','toolNote','toolOpen','toolInvite','offline'].forEach(k=>ok(D.acct[k],k));eq(D.acct.out,'未登入');ok(D.acct.outNote.indexOf('不登入也能用')===0);});
 check('項目設定的文案都在資料檔',()=>{const t=D.prac.t;['mgr','mgrNote','mgrSet','mgrSetOf','mgrClose','add','addTitle'].forEach(k=>ok(t[k],k));eq(t.mgr,'項目設定');});
+check('揪團入口的文案在資料檔',()=>{eq(D.care.create.title,'揪團一起練');ok(D.care.create.lead);ok(D.care.create.go);});
 check('探索問題的文案與上限都在資料檔',()=>{const Q=D.explore.quest;['title','note','tag','line','since','write','list','listN','writePh','save','cancel','none','saved','mark','rest','rested','restList','back','del','delAsk','delYes','delNo','newTitle','newNote','placeholder','add','added','same','full','empty','goals','goalsNote','goalGo','more'].forEach(k=>ok(Q[k],k));
   ok(Q.max>=3);ok(Q.chars>=40);ok(Q.obs>=100);ok(Q.show>=1);});
 check('pracTools：只留合法的工具代號，去重複',()=>{eq(M.pracTools('xiaoqi, breathe,xiaoqi,<b>,A1'),'xiaoqi,breathe');eq(M.pracTools(['hrv','']),'hrv');eq(M.pracTools(null),'');
