@@ -443,6 +443,13 @@
     if (st.cloudOff) return '';
     return '<p class="note pr-where">' + esc(T.whereLocal) + ' <button class="lnk" data-pa="tocloud"' + fk('tc') + '>' + esc(T.toCloud) + '</button></p>';
   }
+  // 項目設定：全部項目列在一起，每個都能進它的設定；新增也從這裡
+  function mgrHTML() {
+    var list = ordered(active()).concat(ordered(items().filter(function (x) { return x.archived; })));
+    return '<div class="panel pr-newf pr-mgr"><h3 class="pr-h3">' + esc(T.mgr) + '</h3><p class="note">' + esc(T.mgrNote) + '</p><div>' + list.map(function (it) {
+      return '<div class="pr-mrow' + (parentId(it) ? ' kid' : '') + '"' + cvars(it) + '>' + sw(it) + '<div><b>' + esc(it.name) + '</b><span class="note">' + esc(it.unit) + (it.archived ? '・' + esc(T.archivedTag) : '') + '</span></div><button class="btn sm" data-pa="iset" data-id="' + esc(it.id) + '" aria-label="' + esc(fill(T.mgrSetOf, { n: fullName(it) })) + '"' + fk('is-' + it.id) + '>' + esc(T.mgrSet) + '</button></div>';
+    }).join('') + '</div><div class="row pr-gap"><button class="btn fill" data-pa="new"' + fk('new') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button><button class="lnk" data-pa="mgr">' + esc(T.mgrClose) + '</button></div></div>';
+  }
   function renderBox() {
     var act = topLevel(active()), arch = items().filter(function (x) { return x.archived; }), h = '';
     if (restoring()) { box.innerHTML = '<p class="note pr-moving" role="status">' + esc(T.loading) + '</p>'; return; }
@@ -463,8 +470,9 @@
       box.innerHTML = noticeHTML() + h + whereHTML(); return;
     }
     h = noticeHTML() + '<div class="pr-grid">' + act.map(cardHTML).join('');
-    if (!st.itf) h += '<button class="pr-card pr-new" data-pa="new"' + fk('new') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button>';
+    if (!st.itf) h += '<button class="pr-card pr-new" data-pa="mgr" aria-expanded="' + !!st.mgr + '"' + fk('mgr') + '>' + esc(T.mgr) + '</button>';
     h += '</div>';
+    if (st.mgr && !st.itf) h += mgrHTML();
     if (st.itf && !st.item) h += '<div class="panel pr-newf"><h3 class="pr-h3" id="pr-newh">' + esc(T.addTitle) + '</h3>' + itemForm('new') + '</div>';
     if (arch.length) h += '<details class="pr-arch"' + (st.archOpen ? ' open' : '') + '><summary' + fk('arch') + '>' + esc(fill(T.archivedN, { n: arch.length })) + '</summary><div class="pr-grid">' + arch.map(cardHTML).join('') + '</div></details>';
     box.innerHTML = h + whereHTML();
@@ -957,6 +965,8 @@
       case 'wiperetry': wipeAgain(); return;
       case 'cretry': if (st.uid) enterCloud(st.uid); return;
       case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
+      case 'mgr': st.mgr = !st.mgr; st.focus = 'mgr'; break;
+      case 'iset': st.want = 'set'; st.mgr = false; C.goPane('practice-item-' + id); return;
       case 'new': st.itf = newItf('', ''); st.lf = null; st.focus = 'if-new-name'; break;
       case 'ex':
         x = P.examples[+b.getAttribute('data-i')];
@@ -964,7 +974,7 @@
         form = b.closest('form');
         if (form) { form.elements.name.value = x.name; form.elements.unit.value = x.unit; syncUnits(form); return; }
         st.itf = newItf(x.name, x.unit); st.focus = 'if-new-save'; break;
-      case 'icancel': st.focus = st.itf && st.itf.parent && st.item ? 'kidnew' : 'new'; st.itf = null; break;
+      case 'icancel': st.focus = st.itf && st.itf.parent && st.item ? 'kidnew' : 'new'; if (!st.item) st.mgr = true; st.itf = null; break;
       case 'unit':
         form = b.closest('form');
         form.elements.unit.value = b.getAttribute('data-u'); syncUnits(form); return;
@@ -1118,9 +1128,9 @@
     if (id) {
       if (st.item === id && !zone.hidden) return true;
       var cur = nowYM();
-      st.item = id; st.tab = st.want ? 'write' : 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wf = ''; st.wn = 0; st.ai = null; st.itf = null; st.calY = cur.y; st.calM = cur.m;
+      st.item = id; st.tab = st.want === 'set' ? 'set' : st.want ? 'write' : 'log'; st.day = ''; st.ask = ''; st.nopen = ''; st.wf = ''; st.wn = 0; st.ai = null; st.itf = null; st.calY = cur.y; st.calM = cur.m;
       if (st.lf && st.lf.ctx !== 'quick') st.lf = null;
-      st.focus = st.want === 'focus' ? 'wr-' + id : st.want ? 't-write' : 'zh'; st.want = '';
+      st.focus = st.want === 'focus' ? 'wr-' + id : st.want === 'set' ? 't-set' : st.want ? 't-write' : 'zh'; st.want = '';
       render(true);
       return true;
     }
