@@ -259,12 +259,24 @@
         'auth/email-already-in-use': '這個信箱已經有帳號了，請直接登入。', 'auth/weak-password': '密碼至少要 6 個字。',
         'auth/invalid-email': '信箱格式不對。', 'auth/too-many-requests': '試太多次了，請晚一點再試。', other: '沒有成功，請再試一次。' } },
     prac: {
-      max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60 },
+      max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60, what: 30, ask: 6 },
       // AI 讀心得：自己按才送。url 是平台的 AI 代理（ven-i/worker.js 的 /me-read）。
-      page: 30, recall: { recent: 3, star: 2, chars: 140, row: 16 },
+      page: 30, recall: { recent: 3, star: 2, chars: 140, row: 16, what: 5, top: 8 },
       ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
       units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
-      examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }, { name: '閱讀', unit: '頁' }],
+      examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }, { name: '閱讀', unit: '頁' }, { name: '看展覽', unit: '場' }],
+      // 各種練習的預設（2026-11-26）：新增項目時照名稱配好單位，記一筆時多問一欄（ask：書名、展名、菜名…）。
+      // ks 是名稱裡會出現的字；icon 是名稱配不到圖示時用的那一個。使用者照預設就能用，也能在項目的設定裡把那一欄改名或關掉。
+      kinds: [
+        { n: '閱讀', unit: '頁', ask: '書名', icon: 'a14', ks: ['閱讀', '讀書', '看書', '共讀'] },
+        { n: '看展覽', unit: '場', ask: '展名', icon: 'd25', ks: ['看展', '展覽', '美術館', '博物館'] },
+        { n: '插花', unit: '件', ask: '作品', icon: 'e42', ks: ['插花', '花藝', '花道'] },
+        { n: '做菜', unit: '道', ask: '菜名', ks: ['做菜', '料理', '烹飪', '下廚', '煮飯'] },
+        { n: '品茶', unit: '泡', ask: '茶款', icon: 'd21', ks: ['品茶', '泡茶', '喝茶', '茶道', '茶席'] },
+        { n: '調精油', unit: '次', ask: '配方', icon: 'd15', ks: ['精油', '調香', '香氛'] }
+      ],
+      // 一次通常就是 1 的單位：第一次記的時候數量先帶 1，不用每次填。
+      ones: ['件', '道', '場', '幅', '盆'],
       colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
       // 項目可以挑的手繪圖示（檔案在 me/doodles/，k 是檔名）。只挑適合當練習項目的，不求全。
       icons: [{ k: 'b25', n: '太極' }, { k: 'b26', n: '弓步' }, { k: 'b32', n: '推手' }, { k: 'b13', n: '站樁' }, { k: 'b11', n: '靜坐' }, { k: 'b12', n: '呼吸' },
@@ -298,7 +310,7 @@
       // 換過畫風的圖示：舊代號 → 新代號。已經挑了舊圖的項目自動顯示新圖，不用重挑。
       iconAlias: { a32: 'e12', a22: 'e24', a44: 'e33', c6c: 'e41', d14: 'e42', d11: 'e44', c76: 'e51', c71: 'e52', c73: 'e53', c75: 'e54', c79: 'e63', c7b: 'e64' },
       weeks: 12, months: 12,
-      err: { name: '請填項目名稱（30 字以內）', unit: '請填單位（10 字以內）', date: '日期不對', future: '不能選未來的日子', amount: '請填大於 0 的數字', note: '這一句太長了（500 字以內）', title: '請填標題（100 字以內）', body: '內文太長了（20000 字以內）', goal: '這一句太長了（60 字以內）', empty: '先寫點什麼', fam: '至少填一格，要大於 0' },
+      err: { what: '這一欄太長了（30 字以內）', ask: '欄位名稱太長了（6 字以內）', name: '請填項目名稱（30 字以內）', unit: '請填單位（10 字以內）', date: '日期不對', future: '不能選未來的日子', amount: '請填大於 0 的數字', note: '這一句太長了（500 字以內）', title: '請填標題（100 字以內）', body: '內文太長了（20000 字以內）', goal: '這一句太長了（60 字以內）', empty: '先寫點什麼', fam: '至少填一格，要大於 0' },
       t: { title: '我的練習', note: '每個項目練得怎麼樣。點進去看分析與時間軸；要記一筆請到「練習」。',
         // 我的練習（練習空間最上面）
         empty: '還沒有項目。太極、靜坐、每天的散步……自己長期在練的事，都可以放進來，練完記一筆。', examples: '例如',
@@ -310,6 +322,9 @@
         icon: '圖示', iconNone: '不用圖示', color: '顏色', colorNames: ['藍', '青綠', '橘', '紫', '深橘', '綠'], save: '存起來', cancel: '取消', saved: '存起來了',
         // 記一筆
         log: '記一筆', logFor: '記一筆：{n}', quickTitle: '我的練習', quickNote: '按「記一筆」打數字。點項目看上次寫的。', quickGo: '看我的練習',
+        whatAny: '這次是哪一個', whatPick: '記過的{a}', askLabel: '記一筆時多問一欄', askPh: '例如：書名、菜名、茶款', askNote: '留空就不問。問了之後，這個項目的總覽會照這一欄整理。',
+        byWhat: '照{a}看', bwRow: '{n} 次・{s}', bwMore: '還有 {n} 個，在「紀錄與心得」裡都看得到。',
+        picCount: '（{n}/{m}）', picDel: '拿掉', picAlt: '要放的照片 {n}', picNote: '照片存到你的雲端。', picFail: '照片沒有存到，這一筆也還沒記下。請再試一次。', picManage: '照片到紀錄裡改',
         amountFor: '數量（{u}）', notePh: '一句（可以不寫）', date: '日期', submit: '記下來',
         logged: '記下了：{n} {a} {u}', loggedOn: '記下了：{d} {n} {a} {u}', todayDid: '今天 {s} {u}',
         // 專區
@@ -348,7 +363,7 @@
         daysUnit: '天', unitSum: '{s} {u}', monthSumFam: '這個月份 {n} 筆', dayHasFam: '{n} 筆', barAltFam: '{w} {n} 筆',
         chartCapFam: '每一根是那段時間記了幾筆，只跟自己的紀錄放在一起看。',
         recent: '最近寫下的', recentAll: '看全部 {n} 段',
-        writeFromLog: '記一筆時寫的・{a} {u}', writeGo: '到紀錄裡改', writeLogEdit: '到那一天改',
+        writeFromLog: '記一筆時寫的・{a} {u}', logOnly: '記一筆・{a} {u}', writeGo: '到紀錄裡改', writeLogEdit: '到那一天改',
         quickEmpty: '長期在練的事可以放進來，練完記一筆。先挑一個：', quickOwn: '自己取一個',
         insTitle: '看得出來的', insNote: '照你的紀錄算出來的。只描述，不解釋原因。',
         ins: { monthMore: '這個月練了 {a} 天，比上個月多 {d} 天。', monthLess: '這個月練了 {a} 天，比上個月少 {d} 天。', monthSame: '這個月和上個月一樣，都是 {a} 天。', monthOnly: '這個月練了 {a} 天。',
@@ -393,7 +408,11 @@
       // 示範模式（?demo）的虛構資料；紀錄由 me-practice.js 用固定種子產生
       demo: {
         items: [{ id: 'pi-demo-taichi', name: '太極', unit: '分鐘', color: '#34C8A0', icon: 'b25', goal: '把二十四式打順' }, { id: 'pi-demo-sit', name: '靜坐', unit: '分鐘', color: '#7A6BD8', icon: 'b11', tools: 'xiaoqi,breathe' },
-          { id: 'pi-demo-form', name: '二十四式', unit: '遍', color: '#34C8A0', icon: 'c21', parent: 'pi-demo-taichi' }],
+          { id: 'pi-demo-form', name: '二十四式', unit: '遍', color: '#34C8A0', icon: 'c21', parent: 'pi-demo-taichi' },
+          { id: 'pi-demo-read', name: '閱讀', unit: '頁', color: '#FF9925', icon: 'a14' }],
+        // 有「哪一個」的示範紀錄（閱讀的書名）
+        whatLogs: [{ itemId: 'pi-demo-read', days: 1, amount: 18, what: '小王子', note: '狐狸說的那一段，今天多讀了兩遍。' }, { itemId: 'pi-demo-read', days: 3, amount: 22, what: '小王子' },
+          { itemId: 'pi-demo-read', days: 6, amount: 12, what: '莊子', note: '庖丁解牛，跟練拳說的鬆有點像。' }, { itemId: 'pi-demo-read', days: 9, amount: 10, what: '莊子' }, { itemId: 'pi-demo-read', days: 13, amount: 15, what: '莊子' }],
         logNotes: { 'pi-demo-taichi': ['雲手比較順了', '下雨，在客廳練', '老師說腰再鬆一點', '練完整個人很安靜', '只練了起勢，也算'], 'pi-demo-sit': ['數息數到一半就亂了，拉回來就好', '腿麻得比上次晚'] },
         notes: [{ id: 'pn-demo-1', itemId: 'pi-demo-taichi', days: 9, title: '二十四式的順序', body: '起勢\n左右野馬分鬃\n白鶴亮翅\n左右摟膝拗步\n手揮琵琶\n……\n\n（示範筆記）' },
           { id: 'pn-demo-2', itemId: 'pi-demo-taichi', days: 31, title: '老師說的話', body: '鬆不是軟。\n先站穩，再動手。' },

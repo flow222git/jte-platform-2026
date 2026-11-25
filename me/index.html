@@ -1339,6 +1339,13 @@ JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goP
   dropMemo:function(id){O.memos=O.memos.filter(function(x){return !(x&&String(x.id)===String(id))});forgetRec(id);renderAll()},
   addMemo:function(text,itemId){O.memos.push({id:'m-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),key:TODAY,text:text,itemId:itemId});save();renderAll()},
   startPhoto:function(itemId){S.capItem=itemId;renderMemoItem();goPane('today');$('#memo').focus()},
+  /* 記一筆時放照片：和隨手記的照片同一條路（要登入、存雲端）。沒登入就打開頁首的帳號區。 */
+  photoOk:function(){return DEMO||!!(window.JteCloud&&S.cloudOk)},
+  photoReady:function(){if(DEMO||S.user)return true;toast(I.needLogin);S.acct=true;renderAcct();$('#acctpanel').scrollIntoView({block:'start'});return false},
+  savePhotos:function(ins){var chk=M.inspCheck(ins,I);if(!chk.ok)return Promise.reject(new Error('bad'));
+    if(DEMO){var d={id:'ins-demo-'+Date.now(),key:ins.key,text:ins.text,itemId:ins.itemId,cloud:true,photos:ins.photos.map(function(p,i){return {id:'dp-'+Date.now()+i,data:p.data,caption:p.caption||'',order:i}})};S.cloud.unshift(d);return Promise.resolve(d)}
+    if(!S.user)return Promise.reject(new Error('login'));var uid=S.user.uid;
+    return JteCloud.saveInsp(ins).then(function(saved){if(S.user&&S.user.uid===uid)S.cloud.unshift(saved);return saved})},
   unmarkInsp:function(itemId){var uid=S.user&&S.user.uid;S.cloud.forEach(function(x){if(x.itemId!==itemId)return;
     if(DEMO||!window.JteCloud){x.itemId='';return}
     JteCloud.setInspItem(x,'').then(function(){if(S.user&&S.user.uid===uid)renderAll()},function(){})})},

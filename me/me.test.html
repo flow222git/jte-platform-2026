@@ -338,7 +338,7 @@ check('區塊收放：沒動過照預設，動過照本人；預設收起的是�
   eq(M.foldState(null,F.closed,'rul'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({rul:false},F.closed,'rul'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
   eq(F.closed.join(),'open,mir,rul,bri');['sum','rec','org','mir'].forEach(k=>ok(F.sum[k],k));ok(F.keys.indexOf('data')<0,'我的資料改從頁首的登入鈕打開');ok(F.open&&F.close&&F.all);
   eq(F.keys.length,14);ok(F.keys.indexOf('wrk')<0&&F.keys.indexOf('out')<0&&F.keys.indexOf('cur')<0,'練習剩兩塊、探索的好奇併進問題');F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0,'我的練習預設不收');ok(F.closed.indexOf('open')>-1,'2026-11-25 起「還開著的」預設收成一行，今天只留練習與隨手記');});
-check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,11);ok(P.t.title);});
+check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,13);ok(P.err.what&&P.err.ask);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
   const src=x.responseText,bad=/進步|退步|加油|連續/;ok(!bad.test(src),'me-practice.js');
@@ -347,7 +347,7 @@ check('我的練習：畫面模組與文案不寫進步、退步、加油、連�
 check('我的練習：畫面文案與示範資料齊全',()=>{const t=D.prac.t;
   ['title','note','empty','add','log','submit','logged','loggedOn','back','thisMonth','allTime','noLogs','ym','dayAria','pickDay','addOn','delLogAsk','byWeek','byMonth','chartAltW','chartAltM','inspLabel','inspKeep','inspPhoto','notesNew','noteDelAsk','unitWarn','archive','unarchive','delItemAsk','fail'].forEach(k=>ok(t[k],'t.'+k));
   ['log','write','set'].forEach(k=>ok(t.tabs[k],'tabs.'+k));eq(t.wd.length,7);eq(t.colorNames.length,D.prac.colors.length);
-  const dm=D.prac.demo;eq(dm.items.length,3);eq(dm.items[2].parent,dm.items[0].id);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
+  const dm=D.prac.demo;eq(dm.items.length,4);dm.whatLogs.forEach(x=>{ok(dm.items.some(i=>i.id===x.itemId),x.itemId);ok(M.pracLogCheck({date:'2026-11-18',amount:x.amount,note:x.note,what:x.what},'2026-11-18',D.prac.max).ok)});eq(dm.items[2].parent,dm.items[0].id);dm.items.forEach(i=>{ok(/^[A-Za-z0-9_-]{1,40}$/.test(i.id),i.id);ok(D.prac.colors.indexOf(i.color)>-1,i.color);ok(M.pracItemCheck(i,D.prac.max).ok)});
   dm.notes.forEach(n=>ok(M.pracNoteCheck(n,D.prac.max).ok,n.title));ok(dm.memos.some(m=>m.itemId===dm.items[0].id));});
 check('雲端說明：詢問文案講到管理者、不再說只有你讀得到；資料與公開的雲端句仍在',()=>{
   const a=D.prac.t.cloudAsk;ok(a.indexOf('管理者')>-1,'管理者');ok(a.indexOf('只有你讀得到')<0,'只有你讀得到');ok(a.indexOf('{n}')>-1,'{n}');
@@ -425,6 +425,28 @@ check('資料檔：邀請卡的文案說清楚登入不等於加入',()=>{const 
 check('空間名稱：練習、探索、總覽、小練息們、陪伴；記錄只在「練習」',()=>{eq(D.panes.map(p=>p.name).join(),'練習,探索,總覽,小練息們,陪伴');ok(D.prac.t.zoneHint&&D.prac.t.zoneGo);ok(JSON.stringify(D).indexOf('「今天」')<0,'文案裡不再用「今天」稱呼空間');});
 
 check('起頭的例子裡有閱讀，單位是頁，配得到圖示',()=>{const x=D.prac.examples.filter(e=>e.name==='閱讀')[0];ok(x);eq(x.unit,'頁');ok(D.prac.units.indexOf('頁')>-1);ok(M.pracGuessIcon('閱讀',D.prac.icons));});
+
+check('各種練習的預設：資料齊全，單位和欄位名稱都在上限內',()=>{const P=D.prac;ok(P.kinds.length>=6);P.kinds.forEach(k=>{ok(k.n&&k.unit&&k.ask,k.n);ok(k.unit.length<=P.max.unit,k.n);ok(k.ask.length<=P.max.ask,k.n);ok(Array.isArray(k.ks)&&k.ks.length,k.n);if(k.icon)ok(P.icons.some(x=>x.k===k.icon),k.n+' icon');ok(M.pracItemCheck({name:k.n,unit:k.unit},P.max).ok,k.n)});
+  ['閱讀','看展覽','插花','做菜','品茶','調精油'].forEach(n=>ok(P.kinds.some(k=>k.n===n),n));P.ones.forEach(u=>ok(u.length<=P.max.unit,u));ok(P.ones.indexOf('場')>-1&&P.ones.indexOf('頁')<0);
+  const ex=P.examples.filter(e=>e.name==='看展覽')[0];ok(ex);eq(ex.unit,'場');ok(P.t.whatAny.length<=P.max.ask);['whatPick','askLabel','askPh','askNote','byWhat','bwRow','picFail','picNote','logOnly'].forEach(k=>ok(P.t[k],k));});
+check('pracKind：名稱一樣的優先，其次是含關鍵字（取最長的），對不到回 null',()=>{const K=D.prac.kinds;eq(M.pracKind('閱讀',K).ask,'書名');eq(M.pracKind('睡前看書',K).unit,'頁');eq(M.pracKind('週末看展',K).ask,'展名');eq(M.pracKind('逛美術館',K).unit,'場');eq(M.pracKind('日式花道',K).ask,'作品');eq(M.pracKind('下廚',K).unit,'道');eq(M.pracKind('泡茶',K).ask,'茶款');eq(M.pracKind('調香',K).ask,'配方');
+  eq(M.pracKind('太極',K),null);eq(M.pracKind('書法',K),null);eq(M.pracKind('',K),null);eq(M.pracKind('x',null),null);eq(M.pracKind('看展覽讀書會',[{n:'甲',ask:'a',ks:['讀書']},{n:'乙',ask:'b',ks:['看展覽']}]).n,'乙');});
+check('pracAsk：自己改的優先、減號是關掉、沒改照預設、記過就用通用說法',()=>{const k={ask:'書名'};eq(M.pracAsk('',k,false,'哪一個'),'書名');eq(M.pracAsk('作者',k,false,'哪一個'),'作者');eq(M.pracAsk('-',k,true,'哪一個'),'');eq(M.pracAsk('',null,false,'哪一個'),'');eq(M.pracAsk('',null,true,'哪一個'),'哪一個');eq(M.pracAsk(' 曲目 ',null,false,'x'),'曲目');});
+check('pracLogCheck：哪一個會整理空白、有上限，和那一句加起來不超過 note 的上限',()=>{const T='2026-11-18',L=D.prac.max;let r=M.pracLogCheck({date:T,amount:'32',note:' 第三章 ',what:'  小  王子 '},T,L);ok(r.ok);eq(r.log.what,'小 王子');eq(r.log.note,'第三章');
+  eq(M.pracLogCheck({date:T,amount:1},T,L).log.what,'');eq(M.pracLogCheck({date:T,amount:1,what:'字'.repeat(31)},T,L).err,'what');ok(M.pracLogCheck({date:T,amount:1,what:'字'.repeat(30)},T,L).ok);
+  ok(M.pracLogCheck({date:T,amount:1,note:'字'.repeat(500)},T,L).ok);eq(M.pracLogCheck({date:T,amount:1,note:'字'.repeat(500),what:'書'},T,L).err,'note');ok(M.pracLogCheck({date:T,amount:1,note:'字'.repeat(498),what:'書'},T,L).ok);eq(M.pracLogCheck({date:T,amount:1,note:'a\nb'},T,L).log.note,'a b');});
+check('pracNotePack／Unpack：放雲端時合成一欄，讀回來一模一樣；舊紀錄不受影響',()=>{eq(M.pracNotePack('小王子','狐狸'),'小王子\n狐狸');eq(M.pracNotePack('','狐狸'),'狐狸');eq(M.pracNotePack('小王子',''),'小王子\n');eq(M.pracNotePack(null,null),'');
+  [['小王子','狐狸那一段'],['莊子',''],['','只有一句'],['','']].forEach(x=>{const u=M.pracNoteUnpack(M.pracNotePack(x[0],x[1]));eq(u.what,x[0]);eq(u.note,x[1])});
+  const o=M.pracNoteUnpack('以前寫的一句');eq(o.what,'');eq(o.note,'以前寫的一句');eq(M.pracNoteUnpack(null).note,'');ok(M.pracNotePack('字'.repeat(30),'字'.repeat(469)).length<=D.prac.max.note);});
+check('pracWhats：記過的哪一個，最近的在前、不重複、可以限制幾個',()=>{const L=[{id:'1',itemId:'r',date:'2026-11-01',amount:1,what:'莊子',at:1},{id:'2',itemId:'r',date:'2026-11-05',amount:1,what:'小王子',at:1},{id:'3',itemId:'r',date:'2026-11-05',amount:1,what:'論語',at:9},{id:'4',itemId:'r',date:'2026-11-07',amount:1,what:'莊子',at:1},{id:'5',itemId:'x',date:'2026-11-09',amount:1,what:'別的項目',at:1},{id:'6',itemId:'r',date:'2026-11-08',amount:1,at:1}];
+  eq(M.pracWhats(L,'r').join(),'莊子,論語,小王子');eq(M.pracWhats(L,'r',2).join(),'莊子,論語');eq(M.pracWhats(L,'none').length,0);eq(M.pracWhats(null,'r').length,0);});
+check('pracByWhat：照哪一個整理，同單位才加總，最近記過的排前面，沒填的不算',()=>{const I=[{id:'r',unit:'頁'}],L=[{id:'1',itemId:'r',date:'2026-11-01',amount:10,what:'莊子'},{id:'2',itemId:'r',date:'2026-11-03',amount:15,what:'莊子'},{id:'3',itemId:'r',date:'2026-11-05',amount:22,what:'小王子'},{id:'4',itemId:'r',date:'2026-11-06',amount:5},{id:'5',itemId:'x',date:'2026-11-09',amount:9,what:'別的'}];
+  const r=M.pracByWhat(L,I,['r']);eq(r.length,2);eq(r[0].what,'小王子');eq(r[0].n,1);eq(r[0].last,'2026-11-05');eq(r[1].what,'莊子');eq(r[1].n,2);eq(r[1].units[0].sum,25);eq(r[1].units[0].unit,'頁');eq(r[1].last,'2026-11-03');eq(M.pracByWhat([],I,['r']).length,0);});
+check('pracPhotoJoin：記一筆時放的照片併回同項目、同一天的那一筆；對不到就自己一筆',()=>{const ph=[{id:'p1',data:'data:image/jpeg;base64,x'}],L=[{id:'a',itemId:'r',date:'2026-11-05',what:'小王子',at:1},{id:'b',itemId:'r',date:'2026-11-05',what:'莊子',at:5},{id:'c',itemId:'r',date:'2026-11-06',at:1}];
+  let j=M.pracPhotoJoin(L,[{id:'m1',itemId:'r',key:'2026-11-05',text:'小王子',photos:ph}]);eq(j.used.m1,'a');eq(j.byLog.a.length,1);
+  j=M.pracPhotoJoin(L,[{id:'m2',itemId:'r',key:'2026-11-05',text:'',photos:ph}]);eq(j.used.m2,'b','沒有字的併到那天最後一筆');
+  j=M.pracPhotoJoin(L,[{id:'m3',itemId:'r',key:'2026-11-05',text:'別本書',photos:ph},{id:'m4',itemId:'r',key:'2026-11-09',text:'',photos:ph},{id:'m5',itemId:'x',key:'2026-11-06',text:'',photos:ph},{id:'m6',itemId:'r',key:'2026-11-06',text:'只有字',photos:[]},{id:'m7',key:'2026-11-06',text:'',photos:ph}]);
+  eq(Object.keys(j.used).length,0);eq(Object.keys(j.byLog).length,0);j=M.pracPhotoJoin(L,[{id:'m8',itemId:'r',key:'2026-11-06',text:'',photos:ph},{id:'m9',itemId:'r',key:'2026-11-06',text:'',photos:ph}]);eq(j.byLog.c.length,2);eq(M.pracPhotoJoin(null,null).used.x,undefined);});
 
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}

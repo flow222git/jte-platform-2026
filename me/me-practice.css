@@ -68,6 +68,16 @@
 .pr-unit{font-size:15px}
 .pr-log .in{background:var(--bg)}
 .pr-lnote{flex:1;min-width:180px;padding:10px 12px}
+/* 記一筆多問的那一欄（書名、展名…）與記過的選項 */
+.pr-what{align-items:center}
+.pr-whatin{flex:1 1 9em;min-width:9em;max-width:20em;padding:10px 12px;font-weight:700}
+.pr-what .chips{display:inline-flex;gap:6px;flex-wrap:wrap}
+.pr-what .chip{font-size:13.5px;padding:6px 14px;max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-picbtn{background:var(--bg)}
+.pr-pics figure{width:72px;display:grid;gap:2px;justify-items:center}
+.pr-pics img{width:72px;height:72px}
+.pr-pics .lnk{font-size:12.5px;min-height:28px}
+.pr-fnote{margin-top:-6px}
 .pr-date{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pr-date .in{padding:6px 10px;min-height:40px}
 .pr-lbtn{display:inline-flex;gap:14px;align-items:center;margin-left:auto}
@@ -292,6 +302,13 @@
 .pr-rc small{flex:none;font-size:12.5px;color:var(--ink-3);min-width:5.5em}
 .pr-rc span{overflow-wrap:anywhere}
 .pr-rc.star span{color:var(--dark);font-weight:700}
+.pr-minis{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pr-minis img{width:56px;height:56px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line);display:block}
+/* 總覽：照「哪一個」整理 */
+.pr-bwrow{display:flex;gap:4px 14px;flex-wrap:wrap;align-items:baseline;margin:0;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.pr-bwrow b{color:var(--dark);overflow-wrap:anywhere}
+.pr-bwrow span{color:var(--ink-2)}
+.pr-bwrow small{margin-left:auto;font-size:12.5px;color:var(--ink-3);white-space:nowrap}
 .rec .x .stmk{color:#D9A300;margin-right:4px}
 
 /* 總覽：看得出來的、請 AI 讀；時間軸裡沒寫字的紀錄與平台工具的紀錄 */
