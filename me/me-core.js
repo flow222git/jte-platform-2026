@@ -493,10 +493,30 @@
     return { strengths: st, top: st.slice(0, 3), perma: pe, happy: happy, year: year, any: !!(st.length || pe.length || happy !== null) };
   }
   // 每個工具做過幾次、上次是哪一天
-  function toolUse(pages) {
-    var m = {};
-    arr(pages).forEach(function (p) { if (!p.tool) return; var x = m[p.tool] || (m[p.tool] = { count: 0, last: '' }); x.count++; if (p.key > x.last) x.last = p.key; });
+  // store（可省略）有的話，再帶出：本人有沒有在這個工具標過「對我有用」、最近寫下的一句發現。
+  function toolUse(pages, store) {
+    var m = {}, ann = (store && store.ann) || {}, byId = {};
+    arr(pages).forEach(function (p) {
+      byId[p.id] = p;
+      if (!p.tool) return;
+      var x = m[p.tool] || (m[p.tool] = { count: 0, last: '', useful: false, found: '', fk: '' });
+      x.count++; if (p.key > x.last) x.last = p.key;
+      if ((ann[p.id] || {}).useful) x.useful = true;
+    });
+    arr(store && store.tris).forEach(function (t) {
+      var p = t && !t.dropped && t.found && byId[t.recId], x = p && p.tool && m[p.tool], k = t && (t.foundKey || t.key || '');
+      if (x && k >= x.fk) { x.fk = k; x.found = String(t.found); }
+    });
     return m;
+  }
+  // 在一個方法（某個工具，或某場活動的名稱）上標「對我有用」：標在最近一筆；取消時把這個方法每一筆的標記都拿掉。
+  // pages 要是新到舊。沒有任何一筆時不做事，回 false。
+  function markUseful(pages, ann, pick, on) {
+    var ps = arr(pages).filter(pick);
+    if (!ps.length || !ann) return false;
+    if (on) (ann[ps[0].id] = ann[ps[0].id] || {}).useful = true;
+    else ps.forEach(function (p) { if (ann[p.id]) ann[p.id].useful = false; });
+    return true;
   }
 
   // 一起練：一個圈在今天與這七天的樣子。只數「練了」，不排名、不算誰沒練。
@@ -844,7 +864,7 @@
     toPage: toPage, buildPages: buildPages, hrvSeries: hrvSeries, monthCount: monthCount,
     addDays: addDays, daysBetween: daysBetween, triEnjoy: triEnjoy, triCorners: triCorners, triStage: triStage,
     linkTriangles: linkTriangles, capsulePick: capsulePick, manual: manual,
-    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
+    circleView: circleView, circleDay: circleDay, isMember: isMember, openCircles: openCircles, swView: swView, toolUse: toolUse, markUseful: markUseful, paneOf: paneOf, route: route, hashOf: hashOf, practiceView: practiceView, justPick: justPick, lastSame: lastSame, searchPages: searchPages, lensGroups: lensGroups, inspCheck: inspCheck, fitSize: fitSize, tsvRows: tsvRows, actDate: actDate, actEmail: actEmail, actScore: actScore, actParse: actParse, actSessionOk: actSessionOk, actDocId: actDocId, actRecord: actRecord, actDups: actDups, actPlan: actPlan, actAlso: actAlso, sheetId: sheetId, actTabTitle: actTabTitle, actSheet: actSheet, actLines: actLines, actQuote: actQuote, actPage: actPage,
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,

@@ -336,8 +336,8 @@ check('工具紀錄：登入工具後的那一份也讀得到，兩份排在一�
   const ps=M.buildPages(m,[],[]);ok(ps.some(p=>p.src==='BSRS'),'登入後存的那一筆排得進頁面');});
 check('區塊收放：沒動過照預設，動過照本人；預設收起的是兩面鏡子與我的資料，每一塊收起來都有一句',()=>{const F=D.fold;
   eq(M.foldState(null,F.closed,'data'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({data:false},F.closed,'data'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
-  eq(F.closed.join(),'open,mir,data,out,rul,bri');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);
-  eq(F.keys.length,18);F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0,'我的練習預設不收');ok(F.closed.indexOf('open')>-1,'2026-11-25 起「還開著的」預設收成一行，今天只留練習與隨手記');});
+  eq(F.closed.join(),'open,mir,data,rul,bri');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);
+  eq(F.keys.length,15);ok(F.keys.indexOf('wrk')<0&&F.keys.indexOf('out')<0&&F.keys.indexOf('cur')<0,'練習剩兩塊、探索的好奇併進問題');F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0,'我的練習預設不收');ok(F.closed.indexOf('open')>-1,'2026-11-25 起「還開著的」預設收成一行，今天只留練習與隨手記');});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,11);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
@@ -409,6 +409,17 @@ check('actQuote：照期待、過程、收穫、心得的順序取第一句；�
   eq(M.actQuote({expect:'  ',pre:{body:4}}),null);eq(M.actQuote(null),null);
   const long='字'.repeat(200);eq(M.actQuote({expect:long},120).text.length,121);ok(M.actQuote({expect:long},120).text.endsWith('…'));eq(M.actQuote({expect:'短'},120).text,'短');
   ['quoteHead','quoteAsk','backAsk','backPh','backSave','backSkip','backSaved'].forEach(k=>ok(D.act[k],'缺 '+k));['expect','feeling','takeaway','feedback'].forEach(k=>ok(D.act.quoteLead[k],'缺引言 '+k));});
+check('平台工具：卡片上看得到有沒有標對我有用、最近一句發現',()=>{
+  const ps=[{id:'b',tool:'xiaoqi',key:'2026-11-09'},{id:'a',tool:'xiaoqi',key:'2026-11-01'},{id:'h',tool:'hrv',key:'2026-11-06'},{id:'m',tool:'',key:'2026-11-07'}];
+  const u=M.toolUse(ps,{ann:{a:{useful:true}},tris:[{recId:'a',found:'舊的',foundKey:'2026-11-01'},{recId:'b',found:'新的',foundKey:'2026-11-09'},{recId:'h',found:'不算',dropped:true}]});
+  eq(u.xiaoqi.count,2);ok(u.xiaoqi.useful);eq(u.xiaoqi.found,'新的');ok(!u.hrv.useful);eq(u.hrv.found,'');ok(!u['']);});
+check('對我有用：標在最近一筆，取消時整個方法都拿掉，沒有紀錄時不做事',()=>{
+  const ps=[{id:'new',tool:'hrv'},{id:'old',tool:'hrv'},{id:'x',tool:'xiaoqi'}],ann={old:{useful:true,tags:['留著']}},isHrv=p=>p.tool==='hrv';
+  ok(M.markUseful(ps,ann,isHrv,true));ok(ann.new.useful);ok(ann.old.useful);
+  ok(M.markUseful(ps,ann,isHrv,false));ok(!ann.new.useful&&!ann.old.useful);eq(ann.old.tags[0],'留著');ok(!ann.x);
+  ok(!M.markUseful(ps,ann,p=>p.tool==='none',true));ok(!M.markUseful(null,ann,isHrv,true));ok(!M.markUseful(ps,null,isHrv,true));});
+check('資料檔：練習空間的文案只剩活動與標記；想靠近的事併進探索的問題',()=>{ok(D.practice.outside.title&&D.practice.star.on&&D.practice.star.off);ok(!D.practice.works);eq(D.toolbox.title,'平台工具');ok(D.explore.curious.go&&!D.explore.curious.add);ok(D.capture.note.indexOf('想靠近')<0);});
+
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });

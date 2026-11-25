@@ -320,6 +320,13 @@ footer{padding:30px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
 .tgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .tcard{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:var(--r-md);background:var(--bg-soft);border:1px solid var(--line);text-decoration:none;transition:border-color .2s,transform .2s}
 .tcard:hover{border-color:var(--blue-soft);transform:translateY(-1px)}
+.tgo{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:inherit;flex:1}
+.tcard q{quotes:"「" "」";font-size:12.5px;color:var(--blue-deep);margin-top:4px}
+.tstar{align-self:flex-start;margin-top:8px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.tstar:hover{border-color:var(--blue-soft);color:var(--blue)}
+.tstar[aria-pressed=true]{background:var(--blue-pale);border-color:var(--blue-soft);color:var(--blue);font-weight:700}
+.wrow .tstar{margin-top:0;align-self:center}
+.subh{font-size:13px;font-weight:700;color:var(--ink-3);letter-spacing:.08em;margin:18px 2px 8px}
 .tcard b{font-weight:700;color:var(--dark);letter-spacing:.03em}
 .tcard span{font-size:12.5px;color:var(--ink-2);line-height:1.55}
 .tcard small{font-size:11.5px;color:var(--blue);font-weight:500;margin-top:4px}
@@ -482,7 +489,7 @@ dialog.authdlg .in{width:100%}
           <div class="pics" id="pics"></div>
           <div class="row picrow" style="margin-top:10px"><button class="btn sm" id="addpic" type="button"></button><input type="file" id="picin" accept="image/*" multiple hidden><span class="note" id="authline"></span></div>
           <div class="row" id="memoitemrow" style="margin-top:10px" hidden><label class="note" for="memoitem" id="memoitemlab"></label><select class="in" id="memoitem"></select></div>
-          <div class="row" style="margin-top:12px"><button class="btn fill" id="keep"></button><button class="btn" id="jkeep"></button></div>
+          <div class="row" style="margin-top:12px"><button class="btn fill" id="keep"></button></div>
           <p class="note" id="keepnote" style="margin-top:8px"></p>
           <div id="useful" hidden></div>
         </div>
@@ -506,11 +513,6 @@ dialog.authdlg .in{width:100%}
       <div class="panel qnew"><b id="quenewt"></b><p class="note" id="quenewn"></p>
         <div class="jrow"><input class="in" id="quein"><button class="btn sm fill" id="queadd"></button></div><p class="note" id="quemsg" role="status"></p></div>
     </section>
-    <section data-fold="cur" aria-labelledby="h-cur">
-      <div class="sec"><div><h2 id="h-cur"></h2></div><span id="curnote"></span></div>
-      <div class="panel"><div id="curlist"></div>
-        <div class="jrow"><input class="in" id="exin" maxlength="40"><button class="btn sm fill" id="exadd"></button></div></div>
-    </section>
     <section data-fold="thm" aria-labelledby="h-thm">
       <div class="sec"><div><h2 id="h-thm"></h2></div><span id="thmnote"></span></div>
       <div class="panel" id="thmlist"></div>
@@ -527,21 +529,13 @@ dialog.authdlg .in{width:100%}
     <section data-fold="prac" aria-labelledby="h-prac" id="sec-prac">
       <div class="sec"><div><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
       <div id="pracbox"></div>
+      <div id="outwrap" hidden><p class="subh" id="h-out"></p><div class="panel" id="outlist"></div></div>
     </section>
     <div id="praczone" hidden></div>
     <div id="pracrest">
-    <section data-fold="wrk" aria-labelledby="h-wrk">
-      <div class="sec"><div><h2 id="h-wrk"></h2></div><span id="wrknote"></span></div>
-      <div class="panel" id="wrklist"></div>
-    </section>
     <section data-fold="tools" aria-labelledby="h-tools">
       <div class="sec"><div><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
       <div class="panel" id="toolbox"></div>
-    </section>
-    <section data-fold="out" aria-labelledby="h-out">
-      <div class="sec"><div><h2 id="h-out"></h2></div><span id="outnote"></span></div>
-      <div class="panel" id="outlist"></div>
-      <p style="margin-top:12px"><button class="lnk" data-go="mymap-map" data-lens="to" id="prreview"></button></p>
     </section>
     </div>
   </div>
@@ -824,23 +818,22 @@ function renderQuest(){var Q=D.explore.quest;$('#h-que').textContent=Q.title;$('
   if(gs.length)h+='<div class="panel qcard"><div class="qhead"><h3>'+Q.goals+'</h3></div><p class="note">'+Q.goalsNote+'</p><div>'+gs.map(function(it){return '<div class="wrow"><div><b>'+esc(it.goal)+'</b><span>'+esc(JtePrac.itemName(it.id))+'</span></div><button class="lnk" data-go="practice-item-'+esc(it.id)+'">'+Q.goalGo+'</button></div>'}).join('')+'</div></div>';
   if(rest.length){h+='<p class="qside"><button class="lnk" data-qa="showrest" aria-expanded="'+S.qRest+'">'+fillT(Q.restList,{n:rest.length})+'</button></p>';
     if(S.qRest)h+='<div class="panel qcard">'+rest.map(function(q){var d=S.qDel===q.id;return '<div class="wrow" data-q="'+esc(q.id)+'"><div><b>'+esc(q.text)+'</b>'+(d?'<span>'+Q.delAsk+'</span>':'')+'</div><div class="row">'+(d?'<button class="btn sm" data-qa="delyes">'+Q.delYes+'</button><button class="lnk" data-qa="delno">'+Q.delNo+'</button>':'<button class="btn sm" data-qa="back">'+Q.back+'</button><button class="lnk" data-qa="del">'+Q.del+'</button>')+'</div></div>'}).join('')+'</div>'}
+  var C2=D.explore.curious,cs=liveTris().filter(function(t){return t.join&&(t.join.kind==='curious'||t.join.kind==='from')&&t.join.text}).reverse();
+  if(cs.length)h+='<div class="panel qcard"><div class="qhead"><h3>'+C2.title+'</h3></div><p class="note">'+C2.note+'</p><div>'+cs.slice(0,8).map(function(t){var rec=S.byId[t.recId];return '<div class="wrow"><div><b>'+esc(t.join.text)+'</b><span>'+esc(M.dlabel(t.key))+'　'+(rec?'做了「'+esc(rec.title||rec.text||rec.kind)+'」'+(t.found?'，發現：'+esc(t.found):''):'還沒做，也不急')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</span></div>'+(rec?'':'<button class="lnk" data-go="today" data-unfold="open">'+C2.go+'</button>')+'</div>'}).join('')+'</div></div>';
   $('#quelist').innerHTML=h}
 function questAddNow(){var Q=D.explore.quest,r=M.questAdd(O.quests,$('#quein').value,Date.now(),{max:Q.max,chars:Q.chars});
   if(!r.ok){$('#quemsg').textContent=r.why==='same'?Q.same:r.why==='full'?fillT(Q.full,{n:Q.max}):'';$('#quein').focus();return}
   O.quests.push(r.quest);save();$('#quein').value='';$('#quemsg').textContent='';renderQuest();toast(Q.added)}
-function renderExplore(){renderQuest();var E=D.explore;$('#h-cur').textContent=E.curious.title;$('#curnote').textContent=E.curious.note;$('#exin').placeholder=E.curious.placeholder;$('#exin').setAttribute('aria-label',E.curious.title);$('#exadd').textContent=E.curious.add;
-  var cs=liveTris().filter(function(t){return t.join&&(t.join.kind==='curious'||t.join.kind==='from')&&t.join.text}).reverse();
-  $('#curlist').innerHTML=cs.length?cs.slice(0,8).map(function(t){var rec=S.byId[t.recId];return '<div class="wrow">'+'<div><b>'+esc(t.join.text)+'</b><span>'+esc(M.dlabel(t.key))+'　'+(rec?'做了「'+esc(rec.title||rec.text||rec.kind)+'」'+(t.found?'，發現：'+esc(t.found):''):'還沒做，也不急')+((t.why||[]).length?'　因為'+esc(t.why.join('、')):'')+'</span></div>'+(rec?'':'<button class="lnk" data-go="today">到今天接著做</button>')+'</div>'}).join(''):'<p class="note">'+E.curious.none+'</p>';
+function renderExplore(){renderQuest();var E=D.explore;
   $('#h-thm').textContent=E.themes.title;$('#thmnote').textContent=E.themes.note;
   var gs=M.lensGroups('mine',S.pages,O);$('#thmlist').innerHTML=gs.length?'<div class="chips">'+gs.map(function(g){return '<button class="chip" data-go="mymap-map" data-lens="mine">'+esc(g.k)+' '+g.ps.length+'</button>'}).join('')+'</div>':'<p class="note">'+E.themes.none+'</p>';
   $('#h-aro').textContent=E.around.title;$('#aronote').textContent=E.around.note;
   $('#arolist').innerHTML=E.cards.map(function(c,i){var inner=(c.tag?'<small>'+c.tag+'</small>':'')+'<b>'+c.name+'</b><span>'+c.desc+'</span>';return c.go?'<button class="ccard c'+i+'" data-go="'+c.go+'">'+inner+'<em>在這裡 →</em></button>':'<a class="ccard c'+i+'" href="'+D.links[c.link]+'" target="_blank" rel="noopener">'+inner+'<em>另外開啟 ↗</em></a>'}).join('');
   $('#exlater').textContent=E.later}
 /* 練習：什麼對我有效 */
-function renderPractice(){var P=D.practice,v=M.practiceView(S.pages,O);$('#h-wrk').textContent=P.works.title;$('#wrknote').textContent=P.works.note;$('#h-out').textContent=P.outside.title;$('#outnote').textContent=P.outside.note;$('#prreview').textContent=P.review;
-  function row(x){return '<div class="wrow"><div><b>'+esc(x.name)+'</b><span>做過 '+x.count+' 次，上次 '+esc(M.dlabel(x.last))+'</span>'+(x.found?'<q>'+esc(x.found)+'</q>':'')+'</div>'+(x.tool&&D.tools[x.tool]?'<a class="btn sm" data-door="'+x.tool+'" data-plain="1" href="'+D.tools[x.tool].href+'">再做一次</a>':(x.useful?'<span class="tag">對我有用</span>':''))+'</div>'}
-  $('#wrklist').innerHTML=v.works.length?v.works.map(row).join(''):'<p class="note">'+P.works.none+'</p>';
-  $('#outlist').innerHTML=v.outside.length?v.outside.map(row).join(''):'<p class="note">'+P.outside.none+'</p>'}
+function starBtn(kind,key,on){var T=D.practice.star;return '<button class="tstar" type="button" data-star="'+kind+'" data-key="'+esc(key)+'" aria-pressed="'+!!on+'">'+(on?T.on:T.off)+'</button>'}
+function renderPractice(){var P=D.practice,v=M.practiceView(S.pages,O);$('#outwrap').hidden=!v.outside.length;$('#h-out').textContent=P.outside.title;
+  $('#outlist').innerHTML=v.outside.map(function(x){return '<div class="wrow"><div><b>'+esc(x.name)+'</b><span>'+esc(P.outside.count.replace('{n}',x.count).replace('{d}',M.dlabel(x.last)))+'</span>'+(x.found?'<q>'+esc(x.found)+'</q>':'')+'</div>'+starBtn('act',x.name,x.useful)+'</div>'}).join('')}
 /* 陪伴：一起練。看得到正在進行的團、可以發起、可以加入。只有示範模式可以操作；正式版要等登入與後端 */
 var ME='me';
 function demoCircles(){function ci(who,n,h,text,cheers){return {id:'c-'+who+n+h,who:who,k:rel(n),at:rel(n)+'T'+h+':00',text:text||'',cheers:cheers||{}}}
@@ -981,9 +974,10 @@ function renderTiles(){var y=NOW.getFullYear(),m=NOW.getMonth(),pre=y+'-'+M.pad(
   else{$('#st-oct').textContent='還沒照過';$('#st-octp').innerHTML='<a href="'+D.tools.octenso.href+'">八態能格・25 題</a>'}
   }
 /* 所有工具：沿用現行首頁的分組。這裡只是門，不開三角形；做完回來由「剛剛」接手 */
-function renderToolbox(){var u=M.toolUse(S.pages);$('#h-tools').textContent=D.toolbox.title;$('#toolnote').textContent=D.toolbox.note;
-  $('#toolbox').innerHTML=D.toolbox.groups.map(function(g){return '<div class="tgroup">'+g.name+'</div><div class="tgrid">'+g.tools.map(function(k){var t=D.tools[k],x=u[k];
-    return '<a class="tcard" data-door="'+k+'" data-plain="1" href="'+t.href+'"><b>'+t.name+'</b><span>'+t.desc+'</span>'+(x?'<small>做過 '+x.count+' 次，上次 '+esc(M.dlabel(x.last))+'</small>':k==='octenso'&&persona&&persona.ts?'<small>上次 '+esc(M.dlabel(String(persona.ts).slice(0,10)))+'</small>':'')+'</a>'}).join('')+'</div>'}).join('')}
+function renderToolbox(){var u=M.toolUse(S.pages,O);$('#h-tools').textContent=D.toolbox.title;$('#toolnote').textContent=D.toolbox.note;
+  $('#toolbox').innerHTML=D.toolbox.groups.map(function(g){var ks=g.tools.slice().sort(function(a,b){return (u[b]&&u[b].useful?1:0)-(u[a]&&u[a].useful?1:0)});
+    return '<div class="tgroup">'+g.name+'</div><div class="tgrid">'+ks.map(function(k){var t=D.tools[k],x=u[k];
+      return '<div class="tcard"><a class="tgo" data-door="'+k+'" data-plain="1" href="'+t.href+'"><b>'+t.name+'</b><span>'+t.desc+'</span>'+(x?'<small>做過 '+x.count+' 次，上次 '+esc(M.dlabel(x.last))+'</small>':k==='octenso'&&persona&&persona.ts?'<small>上次 '+esc(M.dlabel(String(persona.ts).slice(0,10)))+'</small>':'')+(x&&x.found?'<q>'+esc(x.found)+'</q>':'')+'</a>'+(x?starBtn('tool',k,x.useful):'')+'</div>'}).join('')+'</div>'}).join('')}
 /* 優勢幸福力：本人照報告填入，和八態能格並列，不對映 */
 function renderSW(){var W=D.sw,v=M.swView(O.sw,W.strengths,ORDER),el=$('#sw'),h='<span class="k">'+W.name+'</span>';
   if(!v.any){h+='<h3>還沒填</h3><p style="margin:10px 0 14px">'+W.empty+'</p><div class="row"><button class="btn sm fill" data-sw="edit">'+W.fill+'</button></div>'}
@@ -1164,7 +1158,9 @@ document.addEventListener('click',function(e){var a=e.target.closest('a[data-doo
 $('#welcome').onclick=function(e){if(e.target.id==='wmemo')$('#memo').focus()};
 $('#panes').onclick=function(e){var b=e.target.closest('[data-pane]');if(b)goPane(M.hashOf(b.dataset.pane,S.sub))};
 $('#subs').onclick=function(e){var b=e.target.closest('[data-sub]');if(b)goPane(M.hashOf('mymap',b.dataset.sub))};
-document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.lens){S.lens=b.dataset.lens;$('#legend').innerHTML='';renderMap()}goPane(b.dataset.go);if(b.dataset.focus==='memo')$('#memo').focus()});
+document.addEventListener('click',function(e){var sb=e.target.closest('[data-star]');if(!sb)return;var key=sb.dataset.key,on=sb.getAttribute('aria-pressed')!=='true';
+  if(M.markUseful(S.pages,O.ann,sb.dataset.star==='tool'?function(p){return p.tool===key}:function(p){return p.kind==='活動'&&p.title===key},on)){save();renderAll();toast(on?'標好了':'拿掉了')}});
+document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.lens){S.lens=b.dataset.lens;$('#legend').innerHTML='';renderMap()}if(b.dataset.unfold)unfold(b.dataset.unfold);goPane(b.dataset.go);if(b.dataset.focus==='memo')$('#memo').focus()});
 $('#queadd').onclick=questAddNow;$('#quein').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing){e.preventDefault();questAddNow()}};
 $('#quelist').onclick=function(e){var b=e.target.closest('[data-qa]');if(!b)return;var k=b.dataset.qa,Q=D.explore.quest,row=b.closest('[data-q]'),id=row?row.dataset.q:'',q=id?questById(id):null,foc='';
   var all=false;
@@ -1187,7 +1183,6 @@ $('#quelist').onclick=function(e){var b=e.target.closest('[data-qa]');if(!b)retu
   else if(k==='delyes'){O.quests=O.quests.filter(function(x){return x!==q});S.qDel=null;save();foc='[data-qa="showrest"]'}
   if(all)renderAll();else renderQuest();var el=foc&&$('#quelist').querySelector(foc);if(el)el.focus()};
 $('#quelist').onkeydown=function(e){if(e.key==='Enter'&&!e.isComposing&&e.target.classList.contains('qtin')){e.preventDefault();e.target.parentNode.querySelector('[data-qa="newtag"]').click()}};
-$('#exadd').onclick=function(){var v=$('#exin').value.trim();if(!v){$('#exin').focus();return}newTri({kind:'curious',text:v},'');save();$('#exin').value='';renderAll();toast('記下來了，在「今天」的還開著的裡也看得到')};
 $('#bri3').onclick=function(){downloadData()};
 $('#circles').onclick=careClick;$('#cnew').onclick=cnewClick;$('#openlist').onclick=joinClick;
 $('#rules').addEventListener('input',function(e){if(e.target.id!=='nick')return;O.nick=e.target.value;save();renderCircles()});
@@ -1210,7 +1205,6 @@ $('#q').addEventListener('input',function(e){S.q=e.target.value;renderList()});
 function capLabel(){var n=S.capFor&&stName(S.capFor);$('#caplabel').textContent=n?D.capture.forState.replace('{s}',n):D.home.noteHint}
 $('#gates').onclick=function(e){var nb=e.target.closest('[data-note]');if(nb){S.capFor=nb.dataset.note;capLabel();$('#memo').focus();return}
   var b=e.target.closest('[data-g]');if(!b)return;if(S.capFor){S.capFor=null;capLabel()}S.gate=S.gate===b.dataset.g?null:b.dataset.g;if(S.gate)O.states[TODAY]=S.gate;else delete O.states[TODAY];save();renderGates();renderCal()};
-$('#jkeep').onclick=function(){var v=$('#memo').value.trim();if(!v){$('#memo').focus();return}newTri({kind:'curious',text:v.slice(0,40)},'');save();$('#memo').value='';renderAll();toast('起點留下了，在「還開著的」裡')};
 $('#keep').onclick=function(){var v=$('#memo').value.trim();syncCaps();if(S.draft.length){keepInsp(v);return}
   if(!v){$('#memo').focus();return}var mid='m-'+Date.now(),mi=$('#memoitem').value,mm={id:mid,key:TODAY,text:v};if(mi)mm.itemId=mi;O.memos.push(mm);if(S.capFor){newTri({kind:'state',state:S.capFor},'',mid);S.capFor=null;capLabel()}save();$('#memo').value='';$('#memoitem').value='';renderAll();toast('留下了')};
 function keepInsp(v){var ins={key:TODAY,text:v,photos:S.draft.map(function(d){return {data:d.data,caption:d.caption}})},chk=M.inspCheck(ins,I),mi=$('#memoitem').value;
@@ -1337,7 +1331,7 @@ window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O.lastVisit=TODAY;save()}
 $('#demo').hidden=!DEMO;$('#heroline').textContent=M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
 $('#caplabel').textContent=D.home.noteHint;$('#h-now').textContent=D.home.noteTitle;$('#nownote').textContent=D.home.noteNote;$('#gatehint').textContent=D.home.stateHint;
-$('#gatebtn').onclick=function(){S.gateOpen=!S.gateOpen;renderGates()};$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
+$('#gatebtn').onclick=function(){S.gateOpen=!S.gateOpen;renderGates()};$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;
 JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
