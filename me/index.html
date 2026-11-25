@@ -614,7 +614,6 @@ dialog.authdlg .in{width:100%}
     <section data-fold="bri" aria-labelledby="h-bri">
       <div class="sec"><div><h2 id="h-bri"></h2></div><span id="brinote"></span></div>
       <div class="panel"><div class="row"><button class="btn" data-go="mymap" id="bri1">這個月存成一張圖</button><button class="btn" data-go="mymap-map" id="bri2">我的使用說明書</button><button class="btn" id="bri3">下載我的資料</button></div></div>
-      <p class="helpline" id="helpline" style="margin-top:14px"></p>
     </section>
   </div>
 
@@ -624,8 +623,6 @@ dialog.authdlg .in{width:100%}
 
   <footer>
     <span class="stamp">v0.1 試作</span>
-    <span id="honest"></span>
-    <span id="crisis"></span>
     <a class="lnk" id="introlnk" href="intro.html" style="width:max-content"></a>
   </footer>
 </div>
@@ -894,7 +891,7 @@ function doJoin(id,nk){var C=D.care;O.nick=nk;save();S.joinFor=null;
   function done(){S.inv=null;S.invGone=false;S.invId='';dropInvParam();renderCircles();toast(C.open.joined);toCircles()}
   if(DEMO){var c=circles.filter(function(x){return x.id===id})[0];if(!c||M.isMember(c,ME)||c.members.length>=C.max)return;c.members.unshift({id:ME,name:nk});done();return}
   if(S.cBusy)return;cirRun(JteCircles.join(id,nk),done)}
-function renderCare(){var C=D.care,N=C.create;$('#h-cir').textContent=C.mine.title;$('#cirnote').textContent=C.note;$('#h-opn').textContent=C.open.title;$('#opnnote').textContent=C.open.note;$('#h-rul').textContent=C.rules.title;$('#h-bri').textContent=C.bring.title;$('#brinote').textContent=C.bring.note;$('#helpline').textContent=D.crisis;
+function renderCare(){var C=D.care,N=C.create;$('#h-cir').textContent=C.mine.title;$('#cirnote').textContent=C.note;$('#h-opn').textContent=C.open.title;$('#opnnote').textContent=C.open.note;$('#h-rul').textContent=C.rules.title;$('#h-bri').textContent=C.bring.title;$('#brinote').textContent=C.bring.note;
   $('#rules').innerHTML='<p>'+C.rules.see+'</p><p>'+C.rules.out+'</p><p>'+C.rules.hide+'</p><p>'+C.rules.tone+'</p>'+'<p>'+C.rules.admin+'</p>'+(DEMO||S.user?'<div class="row" style="margin-top:12px"><label class="note" for="nick">'+C.rules.nick+'</label><input class="in" id="nick" maxlength="12" value="'+esc(O.nick||'')+'" placeholder="'+C.rules.nickPh+'"></div>':'');
   if(!DEMO){var K=C.cloud;$('#cnew').hidden=true;
     if(!S.cloudOk||!window.JteCircles){$('#circles').innerHTML='<div class="quiet">'+K.offline+'</div>';$('#openlist').innerHTML='';return}
@@ -1416,7 +1413,7 @@ document.querySelector('.wrap').addEventListener('click',function(e){var t=e.tar
 JteTheme.mount($('#themesw'));
 showPane(S.invId&&!location.hash?'care':location.hash);
 (function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
-$('#introlnk').textContent=F.intro.again;$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
+$('#introlnk').textContent=F.intro.again;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null,wasV=S.user&&S.user.verified;S.user=u;S.authReady=true;if(u&&u.verified&&wasV===false){S.cState='idle'}if(nu!==prevUid){prevUid=nu;ME=u?u.uid:'me';circles=[];S.openC=[];S.inv=null;S.cState='idle';S.cAsk=null;S.cMem=null;S.joinFor=null;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
 renderPics();
 renderAll();

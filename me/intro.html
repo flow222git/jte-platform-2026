@@ -54,8 +54,6 @@ footer{padding:44px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
   <main id="main"></main>
   <footer>
     <span class="stamp">v0.1 試作</span>
-    <span id="honest"></span>
-    <span id="crisis"></span>
   </footer>
 </div>
 <script src="me-data.js"></script>
@@ -74,7 +72,7 @@ footer{padding:44px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
   h+='<section><div class="row"><a class="btn fill" href="./">'+esc(P.go)+'</a><a class="btn" href="../">'+esc(P.home)+'</a></div></section>';
   document.getElementById('ttl').textContent=P.title;document.getElementById('lead').textContent=P.lead;
   document.getElementById('main').innerHTML=h;
-  document.getElementById('honest').textContent=D.honest;document.getElementById('crisis').textContent=D.crisis;
+  
   JteTheme.mount(document.getElementById('themesw'));
 })();
 </script>
