@@ -108,6 +108,8 @@
   function presets() {
     var out = P.examples.slice();
     P.kinds.forEach(function (k) { if (!out.some(function (x) { return x.name === k.n; })) out.push({ name: k.n, unit: k.unit }); });
+    var F = g.JTE_FIRST_DATA, ex = F && F.q2 && F.q2.extra;
+    (Array.isArray(ex) ? ex : []).forEach(function (e) { if (e && e.name && e.unit && !out.some(function (x) { return x.name === e.name; })) out.push({ name: e.name, unit: e.unit }); });
     return out.filter(function (x) { return !items().some(function (o) { return o.name === x.name; }); });
   }
   // 一段寫下的東西顯示成一行字：「哪一個」放前面
@@ -547,7 +549,16 @@
         '<select class="in pr-qunit" data-qunit="' + esc(it.id) + '" aria-label="' + esc(fill(T.qunitOf, { n: fullName(it) })) + '"' + fk('qu-' + it.id) + '>' +
         us.map(function (u) { return '<option' + (u === it.unit ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join('') + '</select>' +
         '<button class="btn sm" data-pa="iset" data-id="' + esc(it.id) + '" aria-label="' + esc(fill(T.mgrSetOf, { n: fullName(it) })) + '"' + fk('qs-' + it.id) + '>' + esc(T.mgrSet) + '</button></div>';
-    }).join('') + '<div class="row pr-gap"><button class="btn sm fill" data-pa="qnew"' + fk('qnew') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button><button class="lnk" data-pa="qmgr">' + esc(T.mgrClose) + '</button></div></div>';
+    }).join('') + qpreHTML() + '<div class="row pr-gap"><button class="btn sm fill" data-pa="qnew"' + fk('qnew') + '><span aria-hidden="true">＋</span> ' + esc(T.quickOwn) + '</button><button class="lnk" data-pa="qmgr">' + esc(T.mgrClose) + '</button></div></div>';
+  }
+  // 平台先想好的練習：還沒加的列在項目設定裡，點一下就加進「我的練習」
+  function qpreHTML() {
+    var list = presets();
+    if (!list.length) return '';
+    return '<div class="pr-qpre"><b id="pr-qpre-h">' + esc(T.qpreTitle) + '</b><p class="note">' + esc(T.qpreNote) + '</p><div class="chips" role="group" aria-labelledby="pr-qpre-h">' + list.map(function (x, i) {
+      var k = iconFor(x.name);
+      return '<button type="button" class="chip" data-pa="qpre" data-i="' + i + '"' + fk('qpre' + i) + '>' + (k ? '<img src="' + iconSrc(k) + '" alt="" width="18" height="18">' : '') + esc(x.name) + '・' + esc(x.unit) + '</button>';
+    }).join('') + '</div></div>';
   }
   // 這個項目和它底下小項目訂的「目標或正在探索的」
   function famGoals(it) {
@@ -1152,6 +1163,13 @@
         if (!x) return;
         x = { id: M.pracId('pi-'), name: x.name, unit: x.unit, color: P.colors[0], icon: iconFor(x.name), goal: '', parent: '', archived: false, createdAt: Date.now() };
         run(null, store.putItem(x), function () { upsert(st.data.items, x); openLog('quick', x.id, null, 'qp-' + x.id); C.toast(fill(T.added, { n: x.name })); render(true); C.refresh(); });
+        return;
+      // 項目設定裡點一個預設的練習：直接加進來，留在原地（接著可以改單位）
+      case 'qpre':
+        x = presets()[+b.getAttribute('data-i')];
+        if (!x) return;
+        x = { id: M.pracId('pi-'), name: x.name, unit: x.unit, color: P.colors[topLevel(items()).length % P.colors.length], icon: iconFor(x.name), goal: '', parent: '', archived: false, createdAt: Date.now() };
+        run(null, store.putItem(x), function () { upsert(st.data.items, x); st.focus = 'qu-' + x.id; C.toast(fill(T.qpreAdded, { n: x.name })); announce(fill(T.qpreAdded, { n: x.name })); render(true); C.refresh(); });
         return;
       case 'goaledit': st.focus = 'if-edit-goal'; setTab('set'); return;
       case 'kidnew':
