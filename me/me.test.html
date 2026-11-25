@@ -424,6 +424,8 @@ check('資料檔：邀請卡的文案說清楚登入不等於加入',()=>{const 
 
 check('空間名稱：練習、探索、總覽、小練息們、陪伴；記錄只在「練習」',()=>{eq(D.panes.map(p=>p.name).join(),'練習,探索,總覽,小練息們,陪伴');ok(D.prac.t.zoneHint&&D.prac.t.zoneGo);ok(JSON.stringify(D).indexOf('「今天」')<0,'文案裡不再用「今天」稱呼空間');});
 
+check('起頭的例子裡有閱讀，單位是頁，配得到圖示',()=>{const x=D.prac.examples.filter(e=>e.name==='閱讀')[0];ok(x);eq(x.unit,'頁');ok(D.prac.units.indexOf('頁')>-1);ok(M.pracGuessIcon('閱讀',D.prac.icons));});
+
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });
