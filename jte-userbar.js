@@ -1,6 +1,6 @@
 /* =====================================================================
    jte-userbar.js — 練息場全平台共用「使用者列」
-   功能：每頁頂部顯示（左）回練息場、我的手帳，（右）登入資訊／登入鈕。
+   功能：每頁頂部顯示（左）回練息場、練息手帳，（右）登入資訊／登入鈕。
    設計：只讀寫共用的 localStorage（同網域 SSO），不重複初始化各頁的 GSI。
         登入/登出優先用頁面提供的 window.jteLogin / window.jteLogout，
         沒有的頁面才由本檔自行跳 Google 登入。
@@ -13,7 +13,7 @@
   window.__jteUserbarLoaded = true;
 
   var PLATFORM_URL = 'https://flow222git.github.io/jte-platform-2026/';
-  var ME_URL = PLATFORM_URL + 'me/';   // 我的手帳：工具做完的紀錄會出現在那裡，同一個視窗回去
+  var ME_URL = PLATFORM_URL + 'me/';   // 練息手帳：工具做完的紀錄會出現在那裡，同一個視窗回去
   var CLIENT_ID = '1052529942242-jvr7ik3f7r987l5lq889nrfkjheoovg7.apps.googleusercontent.com';
 
   function email(){ return localStorage.getItem('jte_user_email') || ''; }
@@ -78,7 +78,7 @@
     }
     var left = isHome() ? '<span></span>'
       : '<span class="jte-ub-left"><a class="jte-ub-pill" href="' + PLATFORM_URL + '" aria-label="回練息場">← 練息場</a>' +
-        '<a class="jte-ub-pill" href="' + ME_URL + '" aria-label="回我的手帳">我的手帳</a></span>';
+        '<a class="jte-ub-pill" href="' + ME_URL + '" aria-label="回練息手帳">練息手帳</a></span>';
 
     var right;
     if (email()){
