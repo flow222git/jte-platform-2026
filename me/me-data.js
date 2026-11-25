@@ -264,7 +264,7 @@
       page: 30, recall: { recent: 3, star: 2, chars: 140, row: 16 },
       ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
       units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
-      examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
+      examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }, { name: '閱讀', unit: '頁' }],
       colors: ['#2F6BD8', '#34C8A0', '#FF9925', '#7A6BD8', '#E8690B', '#4CAF19'],
       // 項目可以挑的手繪圖示（檔案在 me/doodles/，k 是檔名）。只挑適合當練習項目的，不求全。
       icons: [{ k: 'b25', n: '太極' }, { k: 'b26', n: '弓步' }, { k: 'b32', n: '推手' }, { k: 'b13', n: '站樁' }, { k: 'b11', n: '靜坐' }, { k: 'b12', n: '呼吸' },
