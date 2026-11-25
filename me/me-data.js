@@ -259,7 +259,7 @@
     prac: {
       max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60 },
       // AI 讀心得：自己按才送。url 是平台的 AI 代理（ven-i/worker.js 的 /me-read）。
-      page: 30, recall: { recent: 3, star: 2, chars: 140 },
+      page: 30, recall: { recent: 3, star: 2, chars: 140, row: 16 },
       ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
       units: ['分鐘', '次', '遍', '小時', '公里', '頁'],
       examples: [{ name: '太極', unit: '分鐘' }, { name: '靜坐', unit: '分鐘' }, { name: '呼吸', unit: '分鐘' }, { name: '書法', unit: '張' }],
@@ -307,7 +307,7 @@
         name: '名稱', namePh: '例如：太極', unit: '單位', unitOwn: '單位（也可以自己打）', unitPh: '自己打，例如：頁',
         icon: '圖示', iconNone: '不用圖示', color: '顏色', colorNames: ['藍', '青綠', '橘', '紫', '深橘', '綠'], save: '存起來', cancel: '取消', saved: '存起來了',
         // 記一筆
-        log: '記一筆', logFor: '記一筆：{n}', quickTitle: '我的練習', quickNote: '點一下，打數字，就記下了。', quickGo: '看我的練習',
+        log: '記一筆', logFor: '記一筆：{n}', quickTitle: '我的練習', quickNote: '按「記一筆」打數字。點項目看上次寫的。', quickGo: '看我的練習',
         amountFor: '數量（{u}）', notePh: '一句（可以不寫）', date: '日期', submit: '記下來',
         logged: '記下了：{n} {a} {u}', loggedOn: '記下了：{d} {n} {a} {u}', todayDid: '今天 {s} {u}',
         // 專區
@@ -356,6 +356,8 @@
         wdFull: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
         rcTitle: '心得筆記', rcNote: '練之前翻一下，接著上次的往下練。', rcGoal: '還在探索的', rcRecent: '最近寫下的', rcStar: '標了星星的',
         rcNone: '這個項目還沒寫過。練完寫一句，下次就能從這裡接著練。', rcWrite: '寫一段',
+        // 「今天」一項一列：列上帶上次哪一天與最近一句；項目設定在原地展開，預設收著
+        rowToday: '今天練了', qmgrNote: '單位選了就會存。名稱、圖示、小項目進「設定」改。', qunitOf: '{n}的單位', qunitDone: '{n}的單位改成「{u}」了',
         wMore: '再看更早的（還有 {n} 筆）', wfWords: '有寫字的', tlTool: '平台工具', tlNone: '這裡還沒有東西。記一筆，或在上面寫一段。',
         toolsLabel: '算進來的平台工具', toolsNote: '勾了之後，這些工具留下的紀錄會排進「紀錄與心得」。只並列，不和你記的數量加在一起。',
         aiTitle: '請 AI 讀一讀', aiNote: '把這個項目寫下的內容交給 AI，整理出反覆出現的主題和你還在問的問題。',

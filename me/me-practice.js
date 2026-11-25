@@ -479,33 +479,39 @@
   }
 
   // ── 今天的快速鍵 ──
-  // 「今天」的心得筆記：依項目分頁，看最近寫下的、還在探索的、標了星星的
-  function recallHTML(act) {
-    var list = act.filter(function (it) { return writings(it).length || famGoals(it).length; });
-    if (!list.length) return '';
-    var cur = list.filter(function (it) { return it.id === st.rc; })[0] || list[0], all = writings(cur), goals = famGoals(cur);
-    var f = M.pracInsights(st.data.logs, items(), famIds(cur), C.TODAY), recent = all.slice(0, P.recall.recent), shown = {}, stars;
+  // 「今天」一項一列（2026-11-26）：列上是上次哪一天與最近寫下的一句；點那一列才展開還在探索的、最近寫下的、標了星星的。
+  function rowSub(it) {
+    var f = M.pracInsights(st.data.logs, items(), famIds(it), C.TODAY), w = writings(it)[0];
+    var t = w ? ((w.title ? w.title + ' ' : '') + w.body).replace(/\s+/g, ' ').trim() : '', max = P.recall.row;
+    var when = f.n ? (f.sinceLast <= 0 ? T.rowToday : fill(T.last, { d: M.dlabel(f.last).split(' ')[0] })) : T.never;
+    return when + (t ? '・' + (t.length > max ? t.slice(0, max) + '…' : t) : '');
+  }
+  function rowDetail(cur) {
+    var all = writings(cur), goals = famGoals(cur), recent = all.slice(0, P.recall.recent), shown = {}, stars;
     recent.forEach(function (w) { shown[w.id] = 1; });
     stars = all.filter(function (w) { return w.star && !shown[w.id]; }).slice(0, P.recall.star);
     function row(w) {
       var sub = w.itemId !== cur.id ? itemById(w.itemId) : null, t = (w.title ? w.title + ' ' : '') + w.body, max = P.recall.chars;
       return '<p class="pr-rc' + (w.star ? ' star' : '') + '"><small>' + esc(w.key ? M.dlabel(w.key) : '') + '</small><span>' + (sub ? '<span class="pr-itag">' + esc(sub.name) + '</span>' : '') + (w.star ? '★ ' : '') + esc(t.length > max ? t.slice(0, max) + '…' : t) + '</span></p>';
     }
-    var h = '<div class="panel pr-quick pr-recall"><div class="pr-qhead"><b>' + esc(T.rcTitle) + '</b><span class="note">' + esc(T.rcNote) + '</span></div>';
-    if (list.length > 1) h += '<div class="pr-rctabs" role="tablist" aria-label="' + esc(T.rcTitle) + '">' + list.map(function (it) {
-      var on = it.id === cur.id;
-      return '<button role="tab" class="pr-rctab" aria-selected="' + on + '" data-pa="rc" data-id="' + esc(it.id) + '"' + cvars(it) + fk('rc-' + it.id) + '>' + sw(it) + '<b>' + esc(it.name) + '</b></button>';
-    }).join('') + '</div>';
-    else h += '<div class="pr-rcone"' + cvars(cur) + '>' + sw(cur) + '<b>' + esc(cur.name) + '</b></div>';
-    h += '<div class="pr-rcbody"' + cvars(cur) + '>';
-    if (f.n) h += '<p class="note">' + esc(f.sinceLast <= 0 ? T.ins.lastToday : fill(T.ins.last, { d: M.dlabel(f.last), n: f.sinceLast })) + '</p>';
+    var h = '<div class="pr-rowbody">';
     if (goals.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcGoal) + '</small>' + goals.map(function (x) { return '<p class="pr-rcgoal">' + (x.it.id !== cur.id ? '<span class="pr-itag">' + esc(x.it.name) + '</span>' : '') + esc(x.goal) + '</p>'; }).join('') + '</div>';
     if (recent.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcRecent) + '</small>' + recent.map(row).join('') + '</div>';
     else h += '<p class="note">' + esc(T.rcNone) + '</p>';
     if (stars.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcStar) + '</small>' + stars.map(row).join('') + '</div>';
     h += '<div class="row pr-gap"><button class="btn sm" data-pa="rcwrite" data-id="' + esc(cur.id) + '"' + fk('rcw') + '>' + esc(T.rcWrite) + '</button>' +
-      (all.length ? '<button class="lnk" data-pa="rcall" data-id="' + esc(cur.id) + '"' + fk('rca') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button>' : '') + '</div></div></div>';
+      (all.length ? '<button class="lnk" data-pa="rcall" data-id="' + esc(cur.id) + '"' + fk('rca') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button>' : '') + '</div></div>';
     return h;
+  }
+  // 「今天」上的項目設定：預設收著，按了在原地展開。單位直接改；其他的進各項目的設定。
+  function qmgrHTML() {
+    return '<div class="pr-qmgr"><p class="note">' + esc(T.qmgrNote) + '</p>' + ordered(active()).map(function (it) {
+      var us = P.units.slice(); if (us.indexOf(it.unit) < 0) us.unshift(it.unit);
+      return '<div class="pr-mrow' + (parentId(it) ? ' kid' : '') + '"' + cvars(it) + '>' + sw(it) + '<div><b>' + esc(it.name) + '</b></div>' +
+        '<select class="in pr-qunit" data-qunit="' + esc(it.id) + '" aria-label="' + esc(fill(T.qunitOf, { n: fullName(it) })) + '"' + fk('qu-' + it.id) + '>' +
+        us.map(function (u) { return '<option' + (u === it.unit ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join('') + '</select>' +
+        '<button class="btn sm" data-pa="iset" data-id="' + esc(it.id) + '" aria-label="' + esc(fill(T.mgrSetOf, { n: fullName(it) })) + '"' + fk('qs-' + it.id) + '>' + esc(T.mgrSet) + '</button></div>';
+    }).join('') + '<div class="row pr-gap"><button class="btn sm fill" data-pa="qnew"' + fk('qnew') + '><span aria-hidden="true">＋</span> ' + esc(T.add) + '</button><button class="lnk" data-pa="qmgr">' + esc(T.mgrClose) + '</button></div></div>';
   }
   // 這個項目和它底下小項目訂的「目標或正在探索的」
   function famGoals(it) {
@@ -524,13 +530,17 @@
     }
     if (!act.length) { quick.hidden = true; quick.innerHTML = ''; return; }
     var openId = st.lf && st.lf.ctx === 'quick' ? st.lf.item : '';
-    quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="qmgr"' + fk('qmgr') + '>' + esc(T.mgr) + '</button></div>' +
-      '<div class="pr-pills">' + act.map(function (it) {
-        var on = openId === it.id, ts = todaySum(it.id), fam = kidsOf(it.id), tc = 0;
+    quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="qmgr" aria-expanded="' + !!st.qmgr + '"' + fk('qmgr') + '>' + esc(T.mgr) + '</button></div>' +
+      (st.qmgr ? qmgrHTML() : '') +
+      '<div class="pr-rows">' + act.map(function (it) {
+        var on = openId === it.id, ex = st.qx === it.id, ts = todaySum(it.id), fam = kidsOf(it.id), tc = 0;
         if (fam.length) { var fids = [it.id].concat(fam.map(function (x) { return x.id; })); st.data.logs.forEach(function (l) { if (l.date === C.TODAY && fids.indexOf(l.itemId) > -1) tc++; }); }
-        return '<button class="pr-pill" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + cvars(it) + fk('qp-' + it.id) + '>' + sw(it) + '<b>' + esc(fullName(it)) + '</b><span>' + esc(T.log) + '</span>' +
-          (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') + '</button>';
-      }).join('') + '</div>' + (openId ? logForm() : '') + '</div>' + recallHTML(act);
+        return '<div class="pr-row' + (ex ? ' open' : '') + '"' + cvars(it) + '>' +
+          '<button class="pr-rowmain" data-pa="qrow" data-id="' + esc(it.id) + '" aria-expanded="' + ex + '"' + fk('qr-' + it.id) + '>' + sw(it) + '<span class="pr-rowtxt"><b>' + esc(fullName(it)) + '</b><span>' + esc(rowSub(it)) + '</span></span></button>' +
+          (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') +
+          '<button class="btn sm pr-rowlog" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + fk('qp-' + it.id) + '>' + esc(T.log) + '</button>' +
+          (on ? '<div class="pr-rowform">' + logForm() + '</div>' : '') + (ex ? rowDetail(it) : '') + '</div>';
+      }).join('') + '</div></div>';
   }
 
   // ── 專區 ──
@@ -948,6 +958,14 @@
     else if (k === 'write') submitWrite(form);
     else if (k === 'fam') submitFam(form);
   }
+  // 「今天」的項目設定裡直接換單位：選了就存
+  function onUnitPick(e) {
+    var t = e.target, id = t && t.getAttribute && t.getAttribute('data-qunit'), it = id && itemById(id), x;
+    if (!it || busy()) return;
+    if (!t.value || t.value === it.unit || t.value.length > P.max.unit) return;
+    x = copy(it); x.unit = t.value;
+    run(null, store.putItem(x), function () { upsert(st.data.items, x); st.focus = 'qu-' + x.id; C.toast(fill(T.qunitDone, { n: x.name, u: x.unit })); render(true); C.refresh(); });
+  }
   function onClick(e) {
     var b = e.target.closest('[data-pa]');
     if (!b || busy()) return;
@@ -965,9 +983,10 @@
       case 'wiperetry': wipeAgain(); return;
       case 'cretry': if (st.uid) enterCloud(st.uid); return;
       case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
-      // 「今天」上的項目設定：一下就到設定清單（名稱、單位、圖示、小項目、新增）
-      case 'qmgr': st.mgr = true; st.itf = null; st.focus = 'mgr'; C.goPane('practice');
-        setTimeout(function () { var m = document.querySelector('.pr-mgr'); if (m) m.scrollIntoView({ block: 'center' }); }, 80); break;
+      // 「今天」上的項目設定在原地開合；新增項目要填的東西多，帶到「練習」填
+      case 'qmgr': st.qmgr = !st.qmgr; st.focus = 'qmgr'; break;
+      case 'qrow': st.qx = st.qx === id ? '' : id; st.focus = 'qr-' + id; break;
+      case 'qnew': st.itf = newItf('', ''); st.lf = null; st.mgr = false; st.qmgr = false; st.focus = 'if-new-name'; C.goPane('practice'); break;
       case 'mgr': st.mgr = !st.mgr; st.focus = 'mgr'; break;
       case 'iset': st.want = 'set'; st.mgr = false; C.goPane('practice-item-' + id); return;
       case 'new': st.itf = newItf('', ''); st.lf = null; st.focus = 'if-new-name'; break;
@@ -1001,7 +1020,6 @@
       case 'photo': if (it) C.startPhoto(it.id); return;
       case 'wedit': st.nopen = id; st.ask = ''; st.focus = 'we-' + id; break;
       case 'wclose': x = st.nopen; st.nopen = ''; st.focus = 'wed-' + x; break;
-      case 'rc': st.rc = id; st.focus = 'rc-' + id; break;
       case 'rcall': case 'rcwrite': st.want = b.getAttribute('data-pa') === 'rcwrite' ? 'focus' : 'tab'; C.goPane('practice-item-' + id); return;
       case 'wmore': st.wn = (st.wn || P.page) + P.page; st.focus = 'wmore'; break;
       case 'wfilter': st.wf = b.getAttribute('data-v') || ''; st.wn = 0; st.nopen = ''; st.ask = ''; st.focus = 'wf' + (st.wf || '0'); break;
@@ -1161,6 +1179,7 @@
     [box, quick, zone].forEach(function (r) {
       r.addEventListener('click', onClick); r.addEventListener('submit', onSubmit);
       r.addEventListener('keydown', onKey); r.addEventListener('input', onInput); r.addEventListener('focusout', onFocusOut);
+      r.addEventListener('change', onUnitPick);
     });
     var tm = null;
     window.addEventListener('resize', function () { clearTimeout(tm); tm = setTimeout(function () { if (st.item && st.tab === 'log' && !zone.hidden) drawChart(); }, 150); });
