@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>我的練息場｜練息場 Join to Enjoy</title>
+<title>練息手帳｜練息場 Join to Enjoy</title>
 <!-- 字體比照線上課程站的設計系統：源柔黑體（emfont 動態子集）＋Inter。載不到時退回系統圓體／黑體。 -->
 <link rel="preconnect" href="https://font.emtech.cc" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://font.emtech.cc/css/GenJyuuGothic/500" rel="stylesheet"><link href="https://font.emtech.cc/css/GenJyuuGothic/700" rel="stylesheet">
@@ -62,6 +62,10 @@ section{padding:22px 0}
 /* 區塊收放：標題可以點，收起來只剩標題那一行和一句現況。 */
 [data-fold] .sec>div:first-child{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
 [data-fold] .sec h2{cursor:pointer}
+.now.one{grid-template-columns:1fr}
+.staterow{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;padding:18px 2px 4px}
+.staterow .chip{font-size:13.5px;padding:7px 16px}
+#gatepanel{margin-top:10px}
 .foldbtn{border:0;background:none;width:36px;height:36px;border-radius:50%;display:inline-grid;place-items:center;color:var(--ink-3);flex:none}
 .foldbtn:hover{color:var(--dark)}
 .foldbtn::before{content:"";width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
@@ -447,7 +451,7 @@ dialog.authdlg .in{width:100%}
 </svg>
 <div class="wrap">
   <header class="top">
-    <h1>我的練息場</h1>
+    <h1>練息手帳</h1>
     <svg class="blobs" viewBox="0 0 400 190" aria-hidden="true">
       <g class="fl"><circle cx="262" cy="62" r="40" fill="#D9D9D9"/></g>
       <g class="fl c" fill="#7A6BD8"><circle cx="34" cy="96" r="24"/><circle cx="82" cy="96" r="24"/><circle cx="58" cy="72" r="24"/><circle cx="58" cy="120" r="24"/><rect x="38" y="76" width="40" height="40"/></g>
@@ -468,13 +472,10 @@ dialog.authdlg .in{width:100%}
   <!-- 今天：我現在怎麼樣 -->
   <div id="view-today">
     <div class="panel just" id="just" hidden></div>
-    <div class="panel actbox" id="actbox" hidden></div>
-    <div class="welcome" id="welcome" hidden></div>
     <div id="pracquick" hidden></div>
     <section aria-labelledby="h-now">
-      <div class="sec"><div><h2 id="h-now">今天</h2></div><span>不用懂任何理論。選一個，或直接記一句。</span></div>
-      <div class="now">
-        <div class="panel"><div id="gates"></div></div>
+      <div class="sec"><div><h2 id="h-now"></h2></div><span id="nownote"></span></div>
+      <div class="now one">
         <div class="panel memo">
           <label class="note" for="memo" id="caplabel"></label>
           <textarea id="memo" maxlength="120"></textarea>
@@ -487,6 +488,10 @@ dialog.authdlg .in{width:100%}
         </div>
       </div>
     </section>
+    <div class="panel actbox" id="actbox" hidden></div>
+    <div class="welcome" id="welcome" hidden></div>
+    <div class="staterow"><button class="chip" id="gatebtn" type="button" aria-expanded="false" aria-controls="gatepanel"></button><span class="note" id="gatehint"></span></div>
+    <div class="panel" id="gatepanel" hidden><div id="gates"></div></div>
     <section data-fold="open" aria-labelledby="h-open" id="sec-open" hidden>
       <div class="sec"><div><h2 id="h-open">還開著的</h2></div><span>沒有期限。先放下也可以。</span></div>
       <div class="panel" id="open"></div>
@@ -771,12 +776,13 @@ function linkOctenso(){var n=0;O.tris.forEach(function(t){if(t.dropped||t.recId|
   var id='m-oct-'+t.id;O.memos.push({id:id,key:TODAY,text:'照了八態能格'+(persona.title?'：'+persona.title:'')});t.recId=id;n++});return n}
 
 /* 探索期：手帳是空的 */
-function renderWelcome(){var w=$('#welcome'),empty=!S.pages.length&&!O.tris.length;w.hidden=!empty;if(!empty)return;
+function renderWelcome(){var w=$('#welcome'),empty=false;w.hidden=true;if(!empty)return;
   w.innerHTML='<h2>'+D.welcome.title+'</h2><p>'+D.welcome.say+'</p><div class="row">'+D.welcome.doors.map(function(d,i){return '<a class="btn'+(i?'':' fill cta')+'" data-door="'+d.tool+'" data-jk="curious" data-jt="'+esc(d.why)+'" href="'+D.tools[d.tool].href+'">'+d.label+'</a>'}).join('')+'<button class="btn" id="wmemo">先寫一句</button></div>'}
 /* 此刻：三態（三張色卡，點開是一句理解＋自己上次做了什麼＋兩扇門） */
 function lastHTML(g){var l=M.lastSame(O.tris.filter(function(t){return t.key<TODAY||t.found}),S.byId,g.key,2);if(!l.length)return '';
   return '<div class="last"><small>'+D.last.title.replace('{s}',g.name)+'</small>'+l.map(function(x){var p=x.p;return '<p>'+esc(M.dlabel(p.key))+' 做了「'+esc(p.title||p.text||p.kind)+'」'+(x.t.found?'，發現：'+esc(x.t.found):'')+(p.tool&&D.tools[p.tool]?'　<a class="lnk" data-door="'+p.tool+'" data-jk="state" data-state="'+g.key+'" href="'+D.tools[p.tool].href+'">'+D.last.again+'</a>':'')+'</p>'}).join('')+'<small style="font-weight:400;margin-top:4px">'+D.last.note+'</small></div>'}
-function renderGates(){var on=D.states.filter(function(g){return g.key===S.gate})[0];
+function renderGates(){var on=D.states.filter(function(g){return g.key===S.gate})[0],gb=$('#gatebtn'),sn=stName(O.states[TODAY]);
+  gb.textContent=sn?D.home.stateBtnOn.replace('{s}',sn):D.home.stateBtn;gb.setAttribute('aria-expanded',String(!!S.gateOpen));$('#gatepanel').hidden=!S.gateOpen;$('#gatehint').hidden=!!S.gateOpen;
   $('#gates').innerHTML='<div class="gcards">'+D.states.map(function(g,i){var a=S.gate===g.key;return '<button class="gcard s-'+g.key+(a?' on':'')+'" aria-expanded="'+a+'" data-g="'+g.key+'"><small>0'+(i+1)+'</small><b>'+g.name+'</b><span>'+g.desc+'</span></button>'}).join('')+'</div>'+
   (on?'<div class="gbody"><p>'+on.say+'</p>'+lastHTML(on)+'<div class="row">'+on.doors.map(function(d,i){return d.note?'<button class="btn'+(i?' ghost':' fill')+'" data-note="'+on.key+'">'+d.label+'</button>':'<a class="btn'+(i?' ghost':' fill cta')+'" data-door="'+d.tool+'" data-jk="state" data-state="'+on.key+'" href="'+D.tools[d.tool].href+'">'+d.label+'</a>'}).join('')+'</div></div>':'')}
 /* 剛做完回來：趁還記得，只問一件事 */
@@ -784,7 +790,7 @@ function justNow(){var t=S.just&&triById(S.just);if(t&&!t.dropped&&t.recId&&S.by
   var sk=O.justSkip&&O.justSkip.k===TODAY?O.justSkip.ids:[],p=M.justPick(S.pages,S.triByRec,O.ann,TODAY,sk);return p?{t:null,p:p}:null}
 function renderJust(){var j=justNow(),el=$('#just');S.justShown=j&&j.t?j.t.id:null;el.hidden=!j;if(!j)return;
   el.dataset.id=j.p.id;el.innerHTML='<div><h2>'+D.just.title+'「'+esc(j.p.title||j.p.text||j.p.kind)+'」</h2>'+(j.t&&corners(j.t).join?'<p class="note">起點：'+esc(joinLabel(j.t))+'</p>':'')+'</div><div class="row"><input class="in fnd" maxlength="80" placeholder="'+D.just.ask+'" aria-label="'+D.just.ask+'"><button class="btn sm fill" data-ja="save">留下</button></div><div class="row">'+dotsHTML('data-ja="dot"')+'<button class="lnk" data-ja="skip">'+D.just.skip+'</button></div>'}
-function renderUseful(){var seen={},u=[];S.pages.forEach(function(p){if(p.tool&&D.tools[p.tool]&&(O.ann[p.id]||{}).useful&&!seen[p.tool]){seen[p.tool]=1;u.push(p.tool)}});var el=$('#useful');el.hidden=!u.length;
+function renderUseful(){var seen={},u=[];S.pages.forEach(function(p){if(p.tool&&D.tools[p.tool]&&(O.ann[p.id]||{}).useful&&!seen[p.tool]){seen[p.tool]=1;u.push(p.tool)}});var el=$('#useful');el.hidden=true;
   el.innerHTML='<span class="note">'+D.capture.useful+'</span><div class="chips">'+u.slice(0,4).map(function(t){return '<a class="chip" href="'+D.tools[t].href+'">'+D.tools[t].name+'</a>'}).join('')+'</div>'}
 /* 三個焦距 */
 var PICON={today:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4.6" fill="currentColor"/></svg>',
@@ -1115,7 +1121,7 @@ function renderData(){var p=D.privacy,T=p.table,mv=JtePrac.moving();
   $('#data').innerHTML=h}
 function downloadData(){if(DEMO){toast('示範模式沒有你的資料可以下載');return}
   if(JtePrac.pending()){toast(D.prac.t.notReady);return}
-  var blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),note:'練息場｜我的練息場。這個檔案只在你的裝置上產生。',jte_me_v1:O,jte_daily_v1:daily,bagua_persona_v1:persona||null,practice:JtePrac.exportData(),cloud_inspirations:S.cloud,cloud_activities:S.acts.filter(function(a){return a.status==='kept'})},null,2)],{type:'application/json'});
+  var blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),note:'練息場｜練息手帳。這個檔案只在你的裝置上產生。',jte_me_v1:O,jte_daily_v1:daily,bagua_persona_v1:persona||null,practice:JtePrac.exportData(),cloud_inspirations:S.cloud,cloud_activities:S.acts.filter(function(a){return a.status==='kept'})},null,2)],{type:'application/json'});
   var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='lianxichang-my-data-'+TODAY+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);toast(D.privacy.downloadNote)}
 function wipeMine(){var keepPrac=O.prac,keepCloud=O.prefs&&O.prefs.pracCloud;
   if(!DEMO){try{localStorage.removeItem('jte_me_v1')}catch(e){}}
@@ -1201,7 +1207,7 @@ function swClick(e){var b=e.target.closest('[data-sw]');if(!b)return;var k=b.dat
     O.sw=w;S.swEdit=false;save();renderSW();toast(M.swView(O.sw,D.sw.strengths,ORDER).any?'留下了，只存在這台裝置':'沒有可以顯示的數字')}}
 $('#sw').onclick=swClick;$('#swedit').onclick=swClick;
 $('#q').addEventListener('input',function(e){S.q=e.target.value;renderList()});
-function capLabel(){var n=S.capFor&&stName(S.capFor);$('#caplabel').textContent=n?D.capture.forState.replace('{s}',n):D.capture.label}
+function capLabel(){var n=S.capFor&&stName(S.capFor);$('#caplabel').textContent=n?D.capture.forState.replace('{s}',n):D.home.noteHint}
 $('#gates').onclick=function(e){var nb=e.target.closest('[data-note]');if(nb){S.capFor=nb.dataset.note;capLabel();$('#memo').focus();return}
   var b=e.target.closest('[data-g]');if(!b)return;if(S.capFor){S.capFor=null;capLabel()}S.gate=S.gate===b.dataset.g?null:b.dataset.g;if(S.gate)O.states[TODAY]=S.gate;else delete O.states[TODAY];save();renderGates();renderCal()};
 $('#jkeep').onclick=function(){var v=$('#memo').value.trim();if(!v){$('#memo').focus();return}newTri({kind:'curious',text:v.slice(0,40)},'');save();$('#memo').value='';renderAll();toast('起點留下了，在「還開著的」裡')};
@@ -1330,7 +1336,8 @@ window.addEventListener('pageshow',function(e){if(e.persisted)reload()});
 /* 開場 */
 var gap=O.lastVisit?M.daysBetween(O.lastVisit,TODAY):0;if(O.lastVisit!==TODAY){O.lastVisit=TODAY;save()}
 $('#demo').hidden=!DEMO;$('#heroline').textContent=M.dlabel(TODAY)+'。'+(gap>=D.back.days?D.back.say.replace('{n}',gap):'');
-$('#caplabel').textContent=D.capture.label;$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
+$('#caplabel').textContent=D.home.noteHint;$('#h-now').textContent=D.home.noteTitle;$('#nownote').textContent=D.home.noteNote;$('#gatehint').textContent=D.home.stateHint;
+$('#gatebtn').onclick=function(){S.gateOpen=!S.gateOpen;renderGates()};$('#memo').placeholder=D.capture.placeholder;$('#keep').textContent=D.capture.keep;$('#jkeep').textContent=D.capture.start;$('#keepnote').textContent=D.capture.note;
 $('#q').placeholder=D.search.placeholder;$('#q').setAttribute('aria-label',D.search.placeholder);$('#h-cap').textContent=D.capsule.title;
 $('#fab').textContent='＋ '+D.quick;
 JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goPane,
@@ -1373,8 +1380,8 @@ function renderFirst(){var el=$('#first'),h='',st=FS.step;
   else{h='<div id="fhome" aria-live="polite">'+fHome()+'</div>';
     if(st===1)h+='<div class="panel fq">'+fQ(1,F.q1)+'<div class="fsts">'+D.states.map(function(g){return '<button class="gcard s-'+g.key+'" data-fst="'+g.key+'"><b>'+g.name+'</b><span>'+g.desc+'</span></button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
     if(st===2){var names=D.prac.examples.concat(F.q2.extra).map(function(x){return x.name}).concat(FS.own);
-      h+='<div class="panel fq">'+fQ(2,F.q2)+'<div class="row" style="margin-top:12px">'+names.map(function(n){return '<button class="fchip" data-fit="'+esc(n)+'" aria-pressed="'+(fAll().indexOf(n)>-1)+'">'+esc(n)+'</button>'}).join('')+'</div><div class="row" style="margin-top:10px"><input class="in" id="fown" style="flex:1;min-height:44px" maxlength="'+D.prac.max.name+'" placeholder="'+F.q2.own+'" aria-label="'+F.q2.own+'"><button class="btn" id="fownadd">'+F.q2.ownAdd+'</button></div><div class="row" style="margin-top:14px"><button class="btn fill" data-fgo="next">'+F.done+'</button><button class="btn" data-fgo="none">'+F.q2.none+'</button><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>'}
-    if(st===3)h+='<div class="panel fq">'+fQ(3,F.q3)+'<div class="row" style="margin-top:12px">'+F.q3.opts.map(function(o){return '<button class="fchip" data-ffrom="'+o.key+'">'+esc(o.name)+'</button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
+      h+='<div class="panel fq">'+fQ(1,F.q2)+'<div class="row" style="margin-top:12px">'+names.map(function(n){return '<button class="fchip" data-fit="'+esc(n)+'" aria-pressed="'+(fAll().indexOf(n)>-1)+'">'+esc(n)+'</button>'}).join('')+'</div><div class="row" style="margin-top:10px"><input class="in" id="fown" style="flex:1;min-height:44px" maxlength="'+D.prac.max.name+'" placeholder="'+F.q2.own+'" aria-label="'+F.q2.own+'"><button class="btn" id="fownadd">'+F.q2.ownAdd+'</button></div><div class="row" style="margin-top:14px"><button class="btn fill" data-fgo="next">'+F.done+'</button><button class="btn" data-fgo="none">'+F.q2.none+'</button></div></div>'}
+    if(st===3)h+='<div class="panel fq">'+fQ(2,F.q3)+'<div class="row" style="margin-top:12px">'+F.q3.opts.map(function(o){return '<button class="fchip" data-ffrom="'+o.key+'">'+esc(o.name)+'</button>'}).join('')+'</div><div class="row"><button class="lnk" data-fgo="skip">'+F.skip+'</button></div></div>';
     if(st===4){var none=!FS.state&&!fAll().length&&FS.breath<3&&!FS.from;h+='<div class="fq"><h2 id="fqh" tabindex="-1">'+F.end.h+'</h2><p class="note">'+(none?F.end.empty:F.end.note)+'</p><div class="row" style="margin-top:12px"><button class="btn fill" data-fgo="finish">'+F.end.go+'</button><button class="lnk" data-fgo="again">'+F.end.back+'</button></div></div>'}}
   el.innerHTML=h;var f=$('#fqh');if(f&&st!==0)f.focus({preventScroll:true})}
 function firstStart(){FS={step:-1,state:null,items:[],own:[],units:{},none:false,from:null,breath:0,busy:false};document.body.classList.add('firsting');$('#first').hidden=false;renderFirst()}
@@ -1393,7 +1400,7 @@ function fBreathe(){var btn=$('#fstart');if(!btn||btn.disabled)return;btn.disabl
     setTimeout(function(){var r2=$('#fring'),s2=$('#fsay');if(!r2||FS!==me)return;r2.className='fring out';s2.textContent=F.q2.exhale+'　'+(n+1)+'／3';setTimeout(function(){n++;cycle()},4000)},4000)}
   cycle()}
 $('#first').onclick=function(e){if(!FS)return;var t=e.target,b;
-  if((b=t.closest('[data-fbook]'))){JteTheme.set(b.dataset.fbook);FS.step=1;renderFirst();return}
+  if((b=t.closest('[data-fbook]'))){JteTheme.set(b.dataset.fbook);FS.step=2;renderFirst();return}
   if((b=t.closest('[data-fst]'))){FS.state=D.states.filter(function(g){return g.key===b.dataset.fst})[0];FS.step=2;renderFirst();return}
   if((b=t.closest('[data-fit]'))){var n=b.dataset.fit,i=FS.items.indexOf(n),j=FS.own.indexOf(n);if(j>-1)FS.own.splice(j,1);else if(i>-1)FS.items.splice(i,1);else FS.items.push(n);FS.none=false;renderFirst();return}
   if(t.id==='fownadd'){fAddOwn();return}

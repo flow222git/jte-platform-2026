@@ -1,4 +1,4 @@
-/* 我的練息場 /me — canonical 資料檔（meta A 同源：頁內不散寫文案）
+/* 練息手帳 /me — canonical 資料檔（meta A 同源：頁內不散寫文案）
  * 色票比照線上課程站的 design-system.css。
  * 三態文案與首頁提案 home-2026-proposal.html 的前門一致；首頁正式改版時兩邊應共讀這一份。
  */
@@ -86,8 +86,9 @@
     // 養成期：舊紀錄不定期回來
     // 區塊收放（五個空間）：標題可以點，收成一行。closed 是一開始就收著的；sum 是收起來時標題旁邊那一句（沒有就不寫）。
     // 預設只收「說明性、偶爾才看」的：兩面鏡子、我的資料、平台以外的方法、別人看得到什麼、帶著自己的整理去。
+    // 2026-11-25 使用者要「今天」以練習為主、岔路更少：「還開著的」也預設收成一行。
     // 「所有工具」不收：還沒有紀錄的人，那是唯一的門。「今天」的狀態與靈感、剛剛做了、各種詢問不能收。
-    fold: { open: '展開', close: '收起', all: '全部展開', closed: ['mir', 'data', 'out', 'rul', 'bri'],
+    fold: { open: '展開', close: '收起', all: '全部展開', closed: ['open', 'mir', 'data', 'out', 'rul', 'bri'],
       keys: ['open', 'cur', 'thm', 'aro', 'prac', 'wrk', 'tools', 'out', 'sum', 'cap', 'rec', 'org', 'mir', 'data', 'cir', 'opn', 'rul', 'bri'],
       sum: { sum: '{n} 頁', rec: '{n} 筆', org: '視角與使用說明書', mir: '八態能格、優勢幸福力', data: '放哪裡、誰看得到', tools: '呼吸、內在、認識自己' } },
     capsule: { minDays: 14, title: '再次遇見', ask: '現在再看，想補什麼' },
@@ -95,7 +96,7 @@
     manual: { title: '我的使用說明書', empty: '這一頁會跟著你留下的東西慢慢長出來。' },
     // 資料與公開：預設私人；上傳、給特定的人、公開都由本人逐項決定，可以收回
     privacy: { now: '現在，所有內容只存在這台裝置的瀏覽器裡。清除瀏覽器資料會一併消失。',
-      cloud: '放了照片的靈感存在練息場的雲端，用你的登入辨認，只有你看得到。你收進來的活動紀錄也在雲端：內容是你在活動問卷裡填的，由主辦方匯入，主辦方本來就看得到。其他內容只存在這台裝置；練習紀錄另外寫在下面。',
+      cloud: '放了照片的隨手記存在練息場的雲端，用你的登入辨認，只有你看得到。你收進來的活動紀錄也在雲端：內容是你在活動問卷裡填的，由主辦方匯入，主辦方本來就看得到。其他內容只存在這台裝置；練習紀錄另外寫在下面。',
       choice: '要不要上傳、給特定的人看、或公開，每一項都由你決定，預設是不要。這些選項還沒開放；開放的時候會一項一項問你，也都收得回來。',
       download: '下載我的資料', downloadNote: '檔案裡有你全部的紀錄，要傳給誰由你決定。',
       practiceLocal: '練習紀錄（我的練習）存在這台裝置，清掉瀏覽器資料或換裝置就沒了，可以先下載一份。',
@@ -104,7 +105,7 @@
       table: {
         lead: '預設都留在這台裝置。要放到雲端的，一項一項由你決定，也都搬得回來。',
         head: { name: '內容', where: '現在放在', who: '誰看得到', act: '可以做的事' },
-        names: { states: '每天的狀態與註記', words: '靈感（只有文字）', photos: '靈感（有照片）', practice: '練習紀錄', acts: '活動紀錄', tools: '各工具的紀錄' },
+        names: { states: '每天的狀態與註記', words: '隨手記（只有文字）', photos: '隨手記（有照片）', practice: '練習紀錄', acts: '活動紀錄', tools: '各工具的紀錄' },
         hints: { states: '今天怎麼樣、動力、發現、想探索的問題、使用說明書。', photos: '照片比較大，裝置放不下，所以有照片的那一筆放雲端。不放照片就不會上去。',
           acts: '你在活動問卷裡填的，由主辦方匯入。', tools: '呼吸、身體量測、問易、心情溫度計、八態能格等。由各工具自己保管，這一頁只是把這台裝置上的那一份讀出來。' },
         where: { device: '這台裝置', cloud: '練息場的雲端', none: '還沒有', out: '雲端，登入後才讀得到', tools: '這台裝置。在工具裡登入的話，有些工具會同步到工具自己的雲端。' },
@@ -118,11 +119,16 @@
       wipe: '刪除這一頁的註記', wipeAsk: '確定刪除？各工具自己的紀錄不會被動到。', wipeYes: '確定刪除', wiped: '這一頁的註記刪掉了，工具的紀錄還在' },
     // 五個空間（資訊架構，取自構想稿第 04 節）。使用模式（主動記錄／活動串接／綜觀地圖）不放在同一層導覽：
     // 「記一句」每個空間都按得到；體驗足跡與生命地圖是「我的地圖」裡的切換。抵達時一律先到「今天」。
-    panes: [{ key: 'today', name: '今天', q: '我現在怎麼樣' }, { key: 'explore', name: '探索', q: '我對什麼感興趣' },
+    panes: [{ key: 'today', name: '今天', q: '今天練了什麼' }, { key: 'explore', name: '探索', q: '我對什麼感興趣' },
       { key: 'practice', name: '練習', q: '什麼對我有效' }, { key: 'mymap', name: '我的地圖', q: '認識了什麼樣的自己' },
       { key: 'care', name: '陪伴', q: '誰可以支持我' }],
     subs: [{ key: 'trail', name: '體驗足跡' }, { key: 'overview', name: '生命地圖' }],
-    quick: '記一句',
+    quick: '記一筆',
+    // 產品名稱（使用者 2026-11-25 定案）。
+    name: '練息手帳',
+    // 「今天」以練習為主（使用者 2026-11-25）：最上面是我的練習，再來是隨手記。狀態不再是主角，縮成一顆小按鈕。
+    home: { noteTitle: '隨手記', noteNote: '想到什麼就記。', noteHint: '一句話或一張照片都可以',
+      stateBtn: '現在怎麼樣？', stateBtnOn: '今天：{s}', stateHint: '不知道要做什麼的時候，選一個狀態，會給你兩個可以做的。' },
     // 站外連結。線上課程目前是封測網址，正式上線前要換。
     links: { course: 'https://sandbox-courses.flow-af1.workers.dev/course', tutor: 'https://sandbox-courses.flow-af1.workers.dev/',
       booking: 'https://sandbox-courses.flow-af1.workers.dev/booking', site: 'https://www.jointoenjoy.com/' },
@@ -200,7 +206,7 @@
     just: { title: '剛剛做了', ask: '趁還記得，這次發現了什麼？', skip: '先不寫' },
     // 需要的當下：同一個狀態，上次自己做了什麼
     last: { title: '你上次「{s}」的時候', note: '這是你自己留下的紀錄，不是建議。', again: '再做一次' },
-    capture: { label: '靈感', forState: '記下「{s}」的這一刻', placeholder: '一句話、一個詞都可以', keep: '留下', start: '這是我想靠近的事', note: '只有一句話時存在這台裝置；放了照片的那一筆會存到你的雲端。「想靠近的事」會留成一個起點，之後做了可以接回來。', useful: '你標過「對我有用」的' },
+    capture: { label: '隨手記', forState: '記下「{s}」的這一刻', placeholder: '一句話、一個詞都可以', keep: '記一筆', start: '這是我想靠近的事', note: '只有一句話時存在這台裝置；放了照片的那一筆會存到你的雲端。「想靠近的事」會留成一個起點，之後做了可以接回來。', useful: '你標過「對我有用」的' },
     // 靈感區：一句話，或幾張照片各自加註解。有照片的一筆存到本人的雲端（Firebase），只有本人看得到。
     // 上限與 firestore.rules 一致；改這裡要一起改規則。
     insp: { maxPhotos: 4, maxEdge: 1280, maxDataLen: 420000, maxCaption: 200, maxText: 500, saveTimeoutMs: 30000,
@@ -212,7 +218,7 @@
       deleted: '刪掉了', removed: '拿掉了', photoAlt: '照片', cancel: '取消',
       delPhoto: '拿掉這張', delIns: '刪除這一筆', delAsk: '確定刪除？雲端上的照片也會一起刪掉。', delYes: '確定刪除',
       full: '一筆最多 {n} 張', compressFail: '這張照片讀不出來，換一張試試',
-      wipe: '刪除我在雲端的靈感與照片', wipeAsk: '確定刪除？雲端上所有靈感與照片都會刪掉，不能復原。', wipeYes: '確定刪除', wiped: '雲端的靈感與照片刪掉了',
+      wipe: '刪除我在雲端的隨手記與照片', wipeAsk: '確定刪除？雲端上所有隨手記與照片都會刪掉，不能復原。', wipeYes: '確定刪除', wiped: '雲端的靈感與照片刪掉了',
       bad: { empty: '寫一句或放一張照片', text: '這一句太長了', count: '一筆最多 4 張', type: '只能放照片', size: '照片太大了', caption: '註解太長了' } },
     // 活動紀錄：參加者在活動問卷裡填的內容，由管理者匯入，本人登入後自己決定要不要收進手帳。
     // cols 是「只匯入這九欄」的白名單（比對試算表標題列的開頭）；其他欄位在瀏覽器裡就丟掉。上限與 firestore.rules 一致。
@@ -317,7 +323,7 @@
         barAlt: '{w} {s} {u}', listSep: '、', weekOf: '{d} 那一週', monthOf: '{y} 年 {m} 月', barTip: '{w}：{n} 次，共 {s} {u}', thisWeekShort: '本週', thisMonthShort: '本月', monthShort: '{m}月',
         // 心得靈感分頁
         inspLabel: '關於「{n}」，想留下的一句', inspKeep: '留下', inspPhoto: '要放照片', inspKept: '留下了',
-        inspNote: '只有一句話時存在這台裝置。要放照片，會帶你到「今天」的靈感框。', inspNone: '還沒有屬於這個項目的心得靈感。',
+        inspNote: '只有一句話時存在這台裝置。要放照片，會帶你到「今天」的隨手記。', inspNone: '還沒有屬於這個項目的心得靈感。',
         // 筆記分頁
         notesNew: '新增筆記', notesNone: '還沒有筆記。招式的順序、老師說的話、自己的體會，都可以寫成一份。',
         noteTitle: '標題', noteTitlePh: '例如：二十四式的順序', noteBody: '內文', noteClose: '收起來', noteDel: '刪除這份筆記',

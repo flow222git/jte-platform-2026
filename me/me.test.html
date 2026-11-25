@@ -127,7 +127,7 @@ check('資料檔：優勢幸福力的欄位與並列聲明',()=>{ok(D.sw.strengt
 
 check('資料檔：靈感區的上限與文案',()=>{const I=D.insp;eq(I.maxPhotos,4);eq(I.maxEdge,1280);eq(I.maxDataLen,420000);eq(I.maxCaption,200);eq(I.maxText,500);eq(I.saveTimeoutMs,30000);
   ['add','needLogin','signIn','signOut','signedIn','cloudNote','offline','caption','remove','left','right','saving','kept','slow','demoNote','keptLocal','fail','photoCount','delPhoto','delIns','delAsk','delYes','full','compressFail','wipe','wipeAsk','wipeYes','wiped','deleted','removed','photoAlt','cancel'].forEach(k=>ok(I[k],k));
-  ['empty','text','count','type','size','caption'].forEach(k=>ok(I.bad[k],'bad.'+k));eq(D.capture.label,'靈感');ok(D.privacy.cloud.indexOf('只有你看得到')>-1);
+  ['empty','text','count','type','size','caption'].forEach(k=>ok(I.bad[k],'bad.'+k));eq(D.capture.label,'隨手記');eq(D.capture.keep,'記一筆');eq(D.quick,'記一筆');eq(D.name,'練息手帳');ok(D.home.stateBtn&&D.home.noteTitle);ok(D.fold.closed.indexOf('open')>-1);ok(D.privacy.cloud.indexOf('只有你看得到')>-1);
   ok(I.cloudNote.indexOf('只有你看得到')>-1);});
 const JP='data:image/jpeg;base64,AAAA';
 check('靈感驗證：有一句或有照片才算；張數、類型、大小、註解、字數都有上限',()=>{const L=D.insp,c=x=>M.inspCheck(x,L).why;
@@ -336,8 +336,8 @@ check('工具紀錄：登入工具後的那一份也讀得到，兩份排在一�
   const ps=M.buildPages(m,[],[]);ok(ps.some(p=>p.src==='BSRS'),'登入後存的那一筆排得進頁面');});
 check('區塊收放：沒動過照預設，動過照本人；預設收起的是兩面鏡子與我的資料，每一塊收起來都有一句',()=>{const F=D.fold;
   eq(M.foldState(null,F.closed,'data'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({data:false},F.closed,'data'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
-  eq(F.closed.join(),'mir,data,out,rul,bri');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);
-  eq(F.keys.length,18);F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0&&F.closed.indexOf('open')<0);});
+  eq(F.closed.join(),'open,mir,data,out,rul,bri');['sum','rec','org','mir','data'].forEach(k=>ok(F.sum[k],k));ok(F.open&&F.close&&F.all);
+  eq(F.keys.length,18);F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0,'我的練習預設不收');ok(F.closed.indexOf('open')>-1,'2026-11-25 起「還開著的」預設收成一行，今天只留練習與隨手記');});
 check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,11);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
