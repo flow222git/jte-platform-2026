@@ -81,6 +81,27 @@
 .pr-qhead b{font-weight:700;color:var(--dark);letter-spacing:.06em}
 .pr-qhead .lnk{margin-left:auto}
 .pr-pills{display:flex;gap:8px;flex-wrap:wrap}
+/* 今天：一項一列，點了才展開 */
+.pr-rows{display:grid}
+.pr-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pr-row:first-child{border-top:0;padding-top:0}
+.pr-row:last-child{padding-bottom:0}
+.pr-rowmain{display:flex;align-items:center;gap:10px;min-height:48px;min-width:0;border:0;background:none;text-align:left;padding:2px 4px 2px 0;border-radius:var(--r-sm);color:var(--dark);cursor:pointer}
+.pr-rowmain .pr-ico{width:34px;height:34px;flex:none}
+.pr-rowmain .pr-sw{flex:none;margin:0 11px}
+.pr-rowtxt{display:grid;min-width:0;flex:1}
+.pr-rowtxt b{font-weight:700;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-rowtxt span{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-rowmain::after{content:"";width:8px;height:8px;border-right:2px solid var(--ink-4);border-bottom:2px solid var(--ink-4);transform:rotate(45deg);margin:0 4px 4px 6px;flex:none;transition:transform .2s}
+.pr-row.open .pr-rowmain::after{transform:rotate(-135deg);margin-bottom:-4px}
+.pr-row>em{font-style:normal;font-size:12px;font-weight:700;color:var(--dark);background:var(--pt2);border-radius:999px;padding:1px 9px;white-space:nowrap}
+.pr-rowlog{min-height:40px}
+.pr-rowform,.pr-rowbody{grid-column:1/-1;min-width:0}
+.pr-rowbody{background:var(--pt);border-radius:var(--r-md);padding:12px 16px;display:grid;gap:10px}
+.pr-qmgr{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 16px}
+.pr-qunit{flex:none;min-height:40px;max-width:6.5em}
+.pr-qmgr .pr-mrow{gap:8px}
+.pr-qmgr .pr-mrow.kid{padding-left:14px}
 .pr-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg-soft);border-radius:999px;padding:6px 16px 6px 14px;min-height:44px;color:var(--dark);transition:border-color .2s,background .2s;max-width:100%}
 .pr-pill b{font-weight:700;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pr-pill span{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
