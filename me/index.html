@@ -532,7 +532,7 @@ dialog.authdlg .in{width:100%}
     </section>
   </div>
 
-  <!-- 練習：什麼對我有效 -->
+  <!-- 總覽（代號 practice）：練得怎麼樣。項目的總覽與分析、這個月、所有紀錄。這裡不記錄，記錄都在「練習」 -->
   <div id="view-practice" hidden>
     <section data-fold="prac" aria-labelledby="h-prac" id="sec-prac">
       <div class="sec"><div><h2 id="h-prac"></h2></div><span id="pracnote"></span></div>
@@ -541,18 +541,6 @@ dialog.authdlg .in{width:100%}
     </section>
     <div id="praczone" hidden></div>
     <div id="pracrest">
-    <section data-fold="tools" aria-labelledby="h-tools">
-      <div class="sec"><div><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
-      <div class="panel" id="toolbox"></div>
-    </section>
-    </div>
-  </div>
-
-  <!-- 我的地圖：我逐漸認識了什麼樣的自己。體驗足跡與生命地圖是裡面的切換 -->
-  <div id="view-mymap" hidden>
-    <div class="subbar" id="subs" role="group" aria-label="體驗足跡或生命地圖"></div>
-    <!-- 體驗足跡：回頭看留下了什麼 -->
-    <div id="sub-trail">
     <section aria-labelledby="h-sum" data-fold="sum">
       <div class="sec"><div><h2 id="h-sum">這個月</h2></div><span>數字只跟自己比。</span></div>
       <div class="bento two">
@@ -574,19 +562,14 @@ dialog.authdlg .in{width:100%}
         <div class="sheet"><h3><span>這個月的樣子</span><button class="lnk" id="export">存成一張圖</button></h3><div id="collage"></div><div class="pick" id="pick2">點一個東西，看它是哪一筆紀錄。</div></div>
       </div>
     </section>
+    </div>
   </div>
 
-    <!-- 生命地圖：同一批紀錄，換一個角度看 -->
-    <div id="sub-overview" hidden>
-    <section aria-labelledby="h-org" data-fold="org">
-      <div class="sec"><div><h2 id="h-org">整理出來的樣子</h2></div><span>同一批紀錄，換一個角度看。</span></div>
-      <div class="lensbar"><div class="chips" id="lens" role="group" aria-label="切換視角"></div><span class="note" id="lensq"></span></div>
-      <div class="sheets two">
-        <div class="sheet"><h3><span id="lensname"></span></h3>
-          <div style="position:relative"><div id="lensmap"></div><div class="ov" id="ov" hidden></div></div>
-          <div class="pick" id="pick">點一個東西，看它是從哪一筆紀錄來的。</div><div class="legend" id="legend"></div></div>
-        <div class="sheet"><h3><span id="mtitle"></span></h3><div class="manual" id="manual"></div></div>
-      </div>
+  <!-- 小練息們（代號 mymap）：練息場的平台工具，和它們照出來的兩面鏡子 -->
+  <div id="view-mymap" hidden>
+    <section data-fold="tools" aria-labelledby="h-tools">
+      <div class="sec"><div><h2 id="h-tools"></h2></div><span id="toolnote"></span></div>
+      <div class="panel" id="toolbox"></div>
     </section>
     <section aria-labelledby="h-mir" data-fold="mir">
       <div class="sec"><div><h2 id="h-mir">兩面鏡子</h2></div><span>排在一起，不互相解釋。</span></div>
@@ -598,6 +581,19 @@ dialog.authdlg .in{width:100%}
     </section>
   </div>
 
+  <!-- 先收起來的：視角地圖與使用說明書。2026-11-26 重新審視後不放在畫面上，程式與資料都留著 -->
+  <div id="shelf" hidden>
+    <div class="subbar" id="subs"></div><div id="sub-trail"></div><div id="sub-overview"></div>
+    <section aria-labelledby="h-org" data-fold="org">
+      <div class="sec"><div><h2 id="h-org">整理出來的樣子</h2></div><span>同一批紀錄，換一個角度看。</span></div>
+      <div class="lensbar"><div class="chips" id="lens" role="group" aria-label="切換視角"></div><span class="note" id="lensq"></span></div>
+      <div class="sheets two">
+        <div class="sheet"><h3><span id="lensname"></span></h3>
+          <div style="position:relative"><div id="lensmap"></div><div class="ov" id="ov" hidden></div></div>
+          <div class="pick" id="pick">點一個東西，看它是從哪一筆紀錄來的。</div><div class="legend" id="legend"></div></div>
+        <div class="sheet"><h3><span id="mtitle"></span></h3><div class="manual" id="manual"></div></div>
+      </div>
+    </section>
   </div>
 
   <!-- 陪伴：一起練。揪團打卡、互相鼓勵、分享心得 -->
@@ -617,7 +613,7 @@ dialog.authdlg .in{width:100%}
     </section>
     <section data-fold="bri" aria-labelledby="h-bri">
       <div class="sec"><div><h2 id="h-bri"></h2></div><span id="brinote"></span></div>
-      <div class="panel"><div class="row"><button class="btn" data-go="mymap" id="bri1">這個月存成一張圖</button><button class="btn" data-go="mymap-map" id="bri2">我的使用說明書</button><button class="btn" id="bri3">下載我的資料</button></div></div>
+      <div class="panel"><div class="row"><button class="btn" data-go="practice" id="bri1">這個月存成一張圖</button><button class="btn" id="bri3">下載我的資料</button></div></div>
     </section>
   </div>
 
@@ -812,7 +808,7 @@ function renderQuest(){var Q=D.explore.quest;$('#h-que').textContent=Q.title;$('
     if(S.qT===q.id)c+='<div class="row qtagpick">'+O.themes.filter(function(x){return tg.indexOf(x.n)<0}).map(function(x){return '<button class="chip" data-qa="addtag" data-t="'+esc(x.n)+'">'+esc(x.n)+'</button>'}).join('')+'<input class="in qtin" maxlength="8" placeholder="'+Q.tagNew+'" aria-label="'+Q.tagNew+'"><button class="btn sm" data-qa="newtag">'+Q.tagJoin+'</button></div>';
     c+='<div class="row"><button class="btn sm fill" data-qa="write" aria-expanded="'+wr+'">'+Q.write+'</button><button class="btn sm" data-qa="list" aria-expanded="'+open+'">'+(ns.length?fillT(Q.listN,{n:ns.length}):Q.list)+'</button><button class="lnk" data-qa="rest">'+Q.rest+'</button></div>';
     if(wr)c+='<div class="qwrite"><textarea class="in qin" maxlength="'+Q.obs+'" placeholder="'+esc(Q.writePh)+'" aria-label="'+esc(Q.write)+'"></textarea><button class="btn sm fill" data-qa="save">'+Q.save+'</button><button class="lnk" data-qa="write">'+Q.cancel+'</button></div>';
-    if(open)c+='<div>'+(ns.length?ns.slice(0,Q.show).map(function(m){return '<p class="qobs"><small>'+esc(M.dlabel(m.key))+'</small><span>'+esc(m.text)+'</span></p>'}).join('')+(ns.length>Q.show?'<p class="note"><button class="lnk" data-go="mymap-trail">'+fillT(Q.more,{n:ns.length})+'</button></p>':''):'<p class="note">'+Q.none+'</p>')+'</div>';
+    if(open)c+='<div>'+(ns.length?ns.slice(0,Q.show).map(function(m){return '<p class="qobs"><small>'+esc(M.dlabel(m.key))+'</small><span>'+esc(m.text)+'</span></p>'}).join('')+(ns.length>Q.show?'<p class="note"><button class="lnk" data-go="practice">'+fillT(Q.more,{n:ns.length})+'</button></p>':''):'<p class="note">'+Q.none+'</p>')+'</div>';
     return c+'</div>'}).join('');
   if(!act.length)h+='<p class="note qside">'+Q.empty+'</p>';
   var gs=JtePrac.items().filter(function(it){return it&&it.goal});
@@ -827,7 +823,7 @@ function questAddNow(){var Q=D.explore.quest,r=M.questAdd(O.quests,$('#quein').v
   O.quests.push(r.quest);save();$('#quein').value='';$('#quemsg').textContent='';renderQuest();toast(Q.added)}
 function renderExplore(){renderQuest();var E=D.explore;
   $('#h-thm').textContent=E.themes.title;$('#thmnote').textContent=E.themes.note;
-  var gs=M.lensGroups('mine',S.pages,O);$('#thmlist').innerHTML=gs.length?'<div class="chips">'+gs.map(function(g){return '<button class="chip" data-go="mymap-map" data-lens="mine">'+esc(g.k)+' '+g.ps.length+'</button>'}).join('')+'</div>':'<p class="note">'+E.themes.none+'</p>';
+  var gs=M.lensGroups('mine',S.pages,O);$('#thmlist').innerHTML=gs.length?'<div class="chips">'+gs.map(function(g){return '<span class="tag">'+esc(g.k)+' '+g.ps.length+'</span>'}).join('')+'</div>':'<p class="note">'+E.themes.none+'</p>';
   $('#h-aro').textContent=E.around.title;$('#aronote').textContent=E.around.note;
   $('#arolist').innerHTML=E.cards.map(function(c,i){var inner=(c.tag?'<small>'+c.tag+'</small>':'')+'<b>'+c.name+'</b><span>'+c.desc+'</span>';return c.go?'<button class="ccard c'+i+'" data-go="'+c.go+'">'+inner+'<em>在這裡 →</em></button>':'<a class="ccard c'+i+'" href="'+D.links[c.link]+'" target="_blank" rel="noopener">'+inner+'<em>另外開啟 ↗</em></a>'}).join('');
   $('#exlater').textContent=E.later}
@@ -964,8 +960,7 @@ function renderOpen(){var open=liveTris().filter(function(t){var c=corners(t);re
 /* 一眼看見 */
 function renderTiles(){var y=NOW.getFullYear(),m=NOW.getMonth(),pre=y+'-'+M.pad(m+1)+'-';$('#st-month').textContent=M.monthCount(S.pages,y,m);
   var mt=liveTris().filter(function(t){return t.key.indexOf(pre)===0}),cl=mt.filter(whole).length;
-  $('#st-tris').innerHTML=mt.slice(-9).map(function(t){return triMark(t,20)}).join('');
-  $('#st-trip').textContent=mt.length?'三個角都有的 '+cl+' 個。不算連續天數。':'不算連續天數，留下就算。';
+  $('#st-tris').innerHTML='';$('#st-trip').textContent=D.home.monthNote;
   var hs=M.hrvSeries(daily),last=hs[hs.length-1];$('#st-hrv').textContent=last?last.energy:'—';$('#st-hrvl').textContent=last?(D.hrvLevel[last.level]||''):'還沒量過';
   var pts=hs.slice(-8),sp='';if(pts.length>1){var mn=Math.min.apply(null,pts.map(function(p){return p.energy})),mx=Math.max.apply(null,pts.map(function(p){return p.energy})),rg=Math.max(1,mx-mn);
     var xy=pts.map(function(p,i){return [(6+i*188/(pts.length-1)).toFixed(1),(38-(p.energy-mn)/rg*30).toFixed(1)]});
@@ -1158,7 +1153,7 @@ document.addEventListener('click',function(e){var a=e.target.closest('a[data-doo
   save();if(DEMO){e.preventDefault();demoReturn(tool)}});
 $('#welcome').onclick=function(e){if(e.target.id==='wmemo')$('#memo').focus()};
 $('#panes').onclick=function(e){var b=e.target.closest('[data-pane]');if(b)goPane(M.hashOf(b.dataset.pane,S.sub))};
-$('#subs').onclick=function(e){var b=e.target.closest('[data-sub]');if(b)goPane(M.hashOf('mymap',b.dataset.sub))};
+
 document.addEventListener('click',function(e){var sb=e.target.closest('[data-star]');if(!sb)return;var key=sb.dataset.key,on=sb.getAttribute('aria-pressed')!=='true';
   if(M.markUseful(S.pages,O.ann,sb.dataset.star==='tool'?function(p){return p.tool===key}:function(p){return p.kind==='活動'&&p.title===key},on)){save();renderAll();toast(on?'標好了':'拿掉了')}});
 document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;if(b.dataset.lens){S.lens=b.dataset.lens;$('#legend').innerHTML='';renderMap()}if(b.dataset.unfold)unfold(b.dataset.unfold);goPane(b.dataset.go);if(b.dataset.focus==='memo')$('#memo').focus()});

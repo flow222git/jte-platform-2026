@@ -186,12 +186,12 @@
     var h = String(hash || '').replace(/^#/, ''), mi = /^practice-item-([A-Za-z0-9_-]{1,40})$/.exec(h);
     if (mi) return { pane: 'practice', sub: 'trail', item: mi[1] };
     if (h === 'now') return { pane: 'today', sub: 'trail', item: '' };
-    if (h === 'trail') return { pane: 'mymap', sub: 'trail', item: '' };
-    if (h === 'map' || h === 'mymap-map') return { pane: 'mymap', sub: 'overview', item: '' };
+    // 紀錄與這個月搬到「總覽」（practice）了；舊的足跡、地圖網址都帶到那裡
+    if (h === 'trail' || h === 'map' || h === 'mymap-map' || h === 'mymap-trail') return { pane: 'practice', sub: 'trail', item: '' };
     return { pane: PANES.indexOf(h) > -1 ? h : 'today', sub: 'trail', item: '' };
   }
   function paneOf(hash) { return route(hash).pane; }
-  function hashOf(pane, sub) { return pane === 'mymap' && sub === 'overview' ? 'mymap-map' : (PANES.indexOf(pane) > -1 ? pane : 'today'); }
+  function hashOf(pane) { return PANES.indexOf(pane) > -1 ? pane : 'today'; }
   // 練習：每個方法（工具或活動）做過幾次、上次哪一天、本人有沒有標對我有用、最近一句發現。
   function practiceView(pages, store) {
     var ann = (store && store.ann) || {}, m = {}, ord = [], byId = {};
