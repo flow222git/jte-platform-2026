@@ -417,8 +417,6 @@
       '<span class="pr-meta">' + esc(kids.length ? (famN ? fill(T.monthFam, { n: famN }) : T.monthNone) : t.month.n ? fill(T.month, { n: t.month.n, s: M.pracFmt(t.month.sum), u: it.unit }) : T.monthNone) + '</span>' +
       (kids.length ? '<span class="pr-meta pr-kidsl">' + esc(fill(T.kidsOf, { list: kids.map(function (k) { return k.name; }).join(T.listSep) })) + '</span>' : '') +
       (it.goal ? '<span class="pr-meta pr-goall">' + esc(T.goalLabel) + '：' + esc(it.goal) + '</span>' : '') + '</button>';
-    if (!it.archived) h += '<button class="btn sm pr-clog" data-pa="copen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '" aria-label="' + fillH(T.logFor, { n: it.name }) + '"' + fk('cl-' + it.id) + '>' + esc(T.log) + '</button>';
-    if (on) h += logForm();
     return h + '</div>';
   }
   // 登入後的提示卡：放到雲端、把這台的紀錄放進去、失敗重試
@@ -479,7 +477,7 @@
   }
 
   // ── 今天的快速鍵 ──
-  // 「今天」一項一列（2026-11-26）：列上是上次哪一天與最近寫下的一句；點那一列才展開還在探索的、最近寫下的、標了星星的。
+  // 「練習」一項一列（2026-11-26）：列上是上次哪一天與最近寫下的一句；點那一列才展開還在探索的、最近寫下的、標了星星的。
   function rowSub(it) {
     var f = M.pracInsights(st.data.logs, items(), famIds(it), C.TODAY), w = writings(it)[0];
     var t = w ? ((w.title ? w.title + ' ' : '') + w.body).replace(/\s+/g, ' ').trim() : '', max = P.recall.row;
@@ -499,11 +497,12 @@
     if (recent.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcRecent) + '</small>' + recent.map(row).join('') + '</div>';
     else h += '<p class="note">' + esc(T.rcNone) + '</p>';
     if (stars.length) h += '<div class="pr-rcsec"><small>' + esc(T.rcStar) + '</small>' + stars.map(row).join('') + '</div>';
-    h += '<div class="row pr-gap"><button class="btn sm" data-pa="rcwrite" data-id="' + esc(cur.id) + '"' + fk('rcw') + '>' + esc(T.rcWrite) + '</button>' +
+    if (st.qw === cur.id) h += writeForm(cur, null);
+    h += '<div class="row pr-gap"><button class="btn sm" data-pa="rcwrite" data-id="' + esc(cur.id) + '" aria-expanded="' + (st.qw === cur.id) + '"' + fk('rcw') + '>' + esc(T.rcWrite) + '</button>' +
       (all.length ? '<button class="lnk" data-pa="rcall" data-id="' + esc(cur.id) + '"' + fk('rca') + '>' + esc(fill(T.recentAll, { n: all.length })) + '</button>' : '') + '</div></div>';
     return h;
   }
-  // 「今天」上的項目設定：預設收著，按了在原地展開。單位直接改；其他的進各項目的設定。
+  // 「練習」上的項目設定：預設收著，按了在原地展開。單位直接改；其他的進各項目的設定。
   function qmgrHTML() {
     return '<div class="pr-qmgr"><p class="note">' + esc(T.qmgrNote) + '</p>' + ordered(active()).map(function (it) {
       var us = P.units.slice(); if (us.indexOf(it.unit) < 0) us.unshift(it.unit);
@@ -558,8 +557,7 @@
       : '<button class="lnk pr-back" data-pa="back"' + fk('back') + '><span aria-hidden="true">‹ </span>' + esc(T.back) + '</button>') +
       '<div class="pr-zt">' + sw(it) + '<h2 id="pr-zh" tabindex="-1"' + fk('zh') + '>' + esc(it.name) + '</h2>' +
       (it.archived ? '<span class="tag">' + esc(T.archivedTag) + '</span>' : '') + '</div>' +
-      '<button class="btn fill" data-pa="zopen" aria-expanded="' + zl + '"' + fk('zl') + '>' + esc(T.log) + '</button></div>';
-    if (zl) h += '<div class="panel pr-zlog">' + logForm() + '</div>';
+      '<button class="btn" data-pa="gotoday"' + fk('zl') + '>' + esc(T.zoneGo) + '</button></div>';
     h += '<p class="pr-goal">' + (it.goal ? '<small>' + esc(T.goalLabel) + '</small><span>' + esc(it.goal) + '</span><button class="lnk" data-pa="goaledit"' + fk('ge') + '>' + esc(T.goalEdit) + '</button>'
       : '<button class="lnk" data-pa="goaledit"' + fk('ge') + '>' + esc(T.goalNone) + '</button>') + '</p>';
     if (!par) {
@@ -758,7 +756,7 @@
   }
 
   // ── 寫下的：心得、筆記、感想不分類，選好項目就寫；重要的標星星 ──
-  // 來源有兩種：在這裡寫的（跟著「我的練習」放本機或雲端），和在「今天」留下、標了這個項目的隨手記（可以帶照片）。
+  // 來源有兩種：在這裡寫的（跟著「我的練習」放本機或雲端），和在「練習」留下、標了這個項目的隨手記（可以帶照片）。
   function writings(it) {
     var ids = famIds(it), ann = C.O.ann || {}, out = [];
     st.data.notes.forEach(function (n) {
@@ -792,7 +790,7 @@
   }
   function writeForm(it, w) {
     var key = w ? 'we-' + w.id : 'wr-' + it.id, ids = famIds(it), h;
-    h = '<form class="pr-wform" data-form="write" data-id="' + esc(w ? w.id : '') + '" data-kind="' + (w ? w.kind : 'note') + '" novalidate>';
+    h = '<form class="pr-wform" data-form="write" data-item="' + esc(it.id) + '" data-id="' + esc(w ? w.id : '') + '" data-kind="' + (w ? w.kind : 'note') + '" novalidate>';
     if (!w) h += '<label class="note" for="pr-write">' + fillH(T.writeLabel, { n: it.name }) + '</label>';
     if (!w && ids.length > 1) h += '<label class="pr-win"><span class="note">' + esc(T.writeIn) + '</span><select class="in" name="item"' + fk(key + '-i') + '>' +
       ids.map(function (id) { var x = itemById(id); return '<option value="' + esc(id) + '">' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
@@ -803,7 +801,7 @@
   }
   function tabWrite(it) {
     var all = timeline(it), words = all.filter(function (w) { return w.kind !== 'plain' && w.kind !== 'tool'; }), stars = all.filter(function (w) { return w.star; });
-    var list = st.wf === '1' ? stars : st.wf === 'w' ? words : all, h = writeForm(it, null);
+    var list = st.wf === '1' ? stars : st.wf === 'w' ? words : all, h = '<p class="note">' + esc(T.zoneHint) + '</p>';
     if (!all.length) return h + '<p class="note pr-gap">' + esc(T.tlNone) + '</p>';
     function chip(v, label) { var on = st.wf === v; return '<button class="chip' + (on ? ' on' : '') + '" data-pa="wfilter" data-v="' + v + '" aria-pressed="' + on + '"' + fk('wf' + (v || '0')) + '>' + esc(label) + '</button>'; }
     if (words.length < all.length || stars.length || st.wf) h += '<div class="chips pr-gap" role="group" aria-label="' + esc(T.tabs.write) + '">' + chip('', T.writeAll) +
@@ -930,19 +928,19 @@
     });
   }
   function submitWrite(form) {
-    var id = form.getAttribute('data-id'), el = form.elements, old = id ? noteById(id) : null, cur = itemById(st.item);
+    var id = form.getAttribute('data-id'), el = form.elements, old = id ? noteById(id) : null, ctx = form.getAttribute('data-item') || st.item, cur = itemById(ctx);
     var r = M.pracWriteCheck({ body: el.body.value }, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], 'body'); return; }
     if (id && form.getAttribute('data-kind') === 'memo') {
-      // 在「今天」留下、只存在這台裝置的隨手記：就地改
+      // 在「練習」留下、只存在這台裝置的隨手記：就地改
       C.editMemo(id, r.note.body); st.nopen = ''; st.focus = 'wed-' + id; C.toast(T.saved); announce(T.saved); render(true); return;
     }
     if (id && !old) return;
-    var target = el.item && cur && famIds(cur).indexOf(el.item.value) > -1 ? el.item.value : st.item, n;
+    var target = el.item && cur && famIds(cur).indexOf(el.item.value) > -1 ? el.item.value : ctx, n;
     if (old) { n = copy(old); n.title = r.note.title; n.body = r.note.body; }
     else n = { id: st.nnid || (st.nnid = M.pracId('pn-')), itemId: target, title: r.note.title, body: r.note.body, updatedAt: Date.now() };
     run(form, store.putNote(n), function () {
-      upsert(st.data.notes, n); st.nopen = ''; st.nnid = ''; st.focus = old ? 'wed-' + n.id : 'wr-' + st.item;
+      upsert(st.data.notes, n); st.nopen = ''; st.nnid = ''; st.qw = ''; st.focus = old ? 'wed-' + n.id : st.item ? 'wr-' + st.item : 'qr-' + ctx;
       C.toast(old ? T.saved : T.writeKept); announce(old ? T.saved : T.writeKept); render(true); C.refresh();
     });
   }
@@ -958,7 +956,7 @@
     else if (k === 'write') submitWrite(form);
     else if (k === 'fam') submitFam(form);
   }
-  // 「今天」的項目設定裡直接換單位：選了就存
+  // 「練習」的項目設定裡直接換單位：選了就存
   function onUnitPick(e) {
     var t = e.target, id = t && t.getAttribute && t.getAttribute('data-qunit'), it = id && itemById(id), x;
     if (!it || busy()) return;
@@ -983,7 +981,7 @@
       case 'wiperetry': wipeAgain(); return;
       case 'cretry': if (st.uid) enterCloud(st.uid); return;
       case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
-      // 「今天」上的項目設定在原地開合；新增項目要填的東西多，帶到「練習」填
+      // 「練習」上的項目設定在原地開合；新增項目要填的東西多，帶到「練習」填
       case 'qmgr': st.qmgr = !st.qmgr; st.focus = 'qmgr'; break;
       case 'qrow': st.qx = st.qx === id ? '' : id; st.focus = 'qr-' + id; break;
       case 'qnew': st.itf = newItf('', ''); st.lf = null; st.mgr = false; st.qmgr = false; st.focus = 'if-new-name'; C.goPane('practice'); break;
@@ -1020,7 +1018,9 @@
       case 'photo': if (it) C.startPhoto(it.id); return;
       case 'wedit': st.nopen = id; st.ask = ''; st.focus = 'we-' + id; break;
       case 'wclose': x = st.nopen; st.nopen = ''; st.focus = 'wed-' + x; break;
-      case 'rcall': case 'rcwrite': st.want = b.getAttribute('data-pa') === 'rcwrite' ? 'focus' : 'tab'; C.goPane('practice-item-' + id); return;
+      case 'rcwrite': st.qw = st.qw === id ? '' : id; st.nnid = ''; st.focus = st.qw ? 'wr-' + id : 'rcw'; break;
+      case 'rcall': st.want = 'tab'; C.goPane('practice-item-' + id); return;
+      case 'gotoday': C.goPane('today'); return;
       case 'wmore': st.wn = (st.wn || P.page) + P.page; st.focus = 'wmore'; break;
       case 'wfilter': st.wf = b.getAttribute('data-v') || ''; st.wn = 0; st.nopen = ''; st.ask = ''; st.focus = 'wf' + (st.wf || '0'); break;
       case 'aiask': st.ai = { item: st.item, state: 'ask' }; st.focus = 'aiyes'; break;
@@ -1039,7 +1039,7 @@
           run(null, store.putNote(x), function () { upsert(st.data.notes, x); render(true); C.refresh(); });
           return;
         }
-        // 在「今天」留下的隨手記：星星和它的標籤一樣，記在這台裝置
+        // 在「練習」留下的隨手記：星星和它的標籤一樣，記在這台裝置
         if (!C.O.ann) C.O.ann = {};
         x = C.O.ann[id] || (C.O.ann[id] = {});
         if (x.star) delete x.star; else x.star = true;

@@ -71,9 +71,9 @@ check('資料檔：動力的詞、發現、資料與公開的文案齊全，使�
 check('五個空間：網址有指定就照網址，不認得的一律到今天；舊網址仍可用',()=>{
   eq(D.panes.map(p=>p.key).join(),'today,explore,practice,mymap,care');D.panes.forEach(p=>eq(M.paneOf('#'+p.key),p.key));
   eq(M.paneOf(''),'today');eq(M.paneOf('#nope'),'today');eq(M.paneOf(null),'today');
-  eq(M.route('#mymap').sub,'trail');eq(M.route('#mymap-map').sub,'overview');eq(M.route('#mymap-map').pane,'mymap');
-  eq(M.route('#now').pane,'today');eq(M.route('#trail').pane,'mymap');eq(M.route('#map').pane,'mymap');eq(M.route('#map').sub,'overview');
-  eq(M.hashOf('mymap','overview'),'mymap-map');eq(M.hashOf('mymap','trail'),'mymap');eq(M.hashOf('care'),'care');eq(M.hashOf('x'),'today');});
+  eq(M.route('#mymap').pane,'mymap');eq(M.route('#mymap-map').pane,'practice');eq(M.route('#mymap-trail').pane,'practice');
+  eq(M.route('#now').pane,'today');eq(M.route('#trail').pane,'practice');eq(M.route('#map').pane,'practice');
+  eq(M.hashOf('mymap','overview'),'mymap');eq(M.hashOf('mymap','trail'),'mymap');eq(M.hashOf('practice'),'practice');eq(M.hashOf('care'),'care');eq(M.hashOf('x'),'today');});
 check('練習：對我有效的只收本人標過的；活動算平台以外的方法；最近一句發現跟著方法',()=>{
   const ps=[{id:'a',title:'小憩・練息',tool:'xiaoqi',kind:'練習',key:'2026-11-01'},{id:'b',title:'小憩・練息',tool:'xiaoqi',kind:'練習',key:'2026-11-09'},{id:'c',title:'太極體驗',tool:'',kind:'活動',key:'2026-11-05'},{id:'h',title:'身體能量',tool:'hrv',kind:'練習',key:'2026-11-06'},{id:'m',title:'',tool:'',kind:'隨手記',key:'2026-11-07'}];
   const st={ann:{a:{useful:true},c:{useful:true}},tris:[{recId:'a',found:'舊的',foundKey:'2026-11-01'},{recId:'b',found:'新的',foundKey:'2026-11-09'},{recId:'h',found:'不算',dropped:true}]};
@@ -421,6 +421,8 @@ check('對我有用：標在最近一筆，取消時整個方法都拿掉，沒�
 check('資料檔：練習空間的文案只剩活動與標記；想靠近的事併進探索的問題',()=>{ok(D.practice.outside.title&&D.practice.star.on&&D.practice.star.off);ok(!D.practice.works);eq(D.toolbox.title,'平台工具');ok(D.explore.curious.go&&!D.explore.curious.add);ok(D.capture.note.indexOf('想靠近')<0);});
 
 check('資料檔：邀請卡的文案說清楚登入不等於加入',()=>{const K=D.care.cloud;ok(K.invitedTitle);ok(K.invited.indexOf('登入不等於加入')>-1);ok(D.care.rules.see&&D.care.rules.hide);});
+
+check('空間名稱：練習、探索、總覽、小練息們、陪伴；記錄只在「練習」',()=>{eq(D.panes.map(p=>p.name).join(),'練習,探索,總覽,小練息們,陪伴');ok(D.prac.t.zoneHint&&D.prac.t.zoneGo);ok(JSON.stringify(D).indexOf('「今天」')<0,'文案裡不再用「今天」稱呼空間');});
 
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
