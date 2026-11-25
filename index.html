@@ -58,7 +58,8 @@ window.JTE_I18N = {
     'cta.band': 'WEEKLY SIGNAL',
     'cta.title': 'Not chasing perfect — finding the path back.',
     'cta.sub': 'When records, practice, writing, and HRV are on one page, you start to read your own rhythm.',
-    'cta.btn': 'View My Records →',
+    'cta.btn': 'Open My Journal →',
+    'cal.tojournal': 'Your records now live in My Journal →',
 
     /* bottom nav */
     'bnav.home': 'Home',
@@ -75,7 +76,7 @@ window.JTE_I18N = {
     /* nav */
     'nav.home': 'ホーム',
     'nav.cal': 'カレンダー',
-    'nav.myrec': 'マイ記録',
+    'nav.myrec': 'マイ手帳',
     'nav.settings': '設定',
 
     /* carousel tag */
@@ -112,7 +113,8 @@ window.JTE_I18N = {
     'cta.band': 'WEEKLY SIGNAL',
     'cta.title': '完璧な状態を追うのではなく、回復への道を見つける。',
     'cta.sub': '記録、練習、書き込み、HRVを一つの画面にまとめることで、自分のリズムが見えてくる。',
-    'cta.btn': '記録を見る →',
+    'cta.btn': '手帳を開く →',
+    'cal.tojournal': '記録は手帳にまとめています →',
 
     /* bottom nav */
     'bnav.home': 'ホーム',
@@ -285,7 +287,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
     <button class="nav-btn" onclick="show('cal')" data-i18n="nav.cal">日曆</button>
   </div>
   <div id="nav-user-area">
-    <button class="nav-cta" onclick="show('cal')" data-i18n="nav.myrec">我的記錄</button>
+    <button class="nav-cta" onclick="location.href='me/'" data-i18n="nav.myrec">練息手帳</button>
   </div>
 </nav>
 
@@ -368,13 +370,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;min-height
       <div style="font-size:9px;letter-spacing:0.18em;color:rgba(168,201,238,0.6);font-family:'Inter',sans-serif;margin-bottom:8px" data-i18n="cta.band">WEEKLY SIGNAL</div>
       <div style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:white;line-height:1.5;margin-bottom:8px" data-i18n="cta.title">不是追求完美狀態，<br>而是看見恢復的路徑。</div>
       <div style="font-size:11px;color:rgba(168,201,238,0.8);line-height:1.6;margin-bottom:18px" data-i18n="cta.sub">把紀錄、練習、書寫與 HRV 放在同一個頁面後，你能慢慢讀懂自己的節奏。</div>
-      <button onclick="show('cal')" style="background:#FF8A00;color:white;border:none;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" data-i18n="cta.btn">查看我的記錄 →</button>
+      <button onclick="location.href='me/'" style="background:#FF8A00;color:white;border:none;padding:10px 22px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" data-i18n="cta.btn">打開練息手帳 →</button>
     </div>
   </div>
 
 </div>
 
 <div id="page-cal" class="page">
+  <a href="me/#mymap" data-i18n="cal.tojournal" style="display:block;margin:10px 14px 0;padding:10px 14px;border-radius:12px;background:#EAF1FC;color:#003864;font-size:12px;font-weight:600;text-decoration:none">紀錄現在整理在練息手帳，到那裡看 →</a>
   <div class="cal-hdr">
     <button class="cal-nav-btn" onclick="chMonth(-1)">‹</button>
     <span class="cal-month" id="cal-lbl"></span>
@@ -579,7 +582,7 @@ function renderUserArea(){
   area.innerHTML='';
   if(pic){var img=document.createElement('img');img.src=pic;img.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--pl);cursor:pointer';img.onclick=function(){show('cal')};area.appendChild(img);}
   var sp=document.createElement('span');sp.textContent=short;sp.style.cssText='font-size:11px;color:var(--p);font-weight:600;cursor:pointer;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';sp.onclick=function(){show('cal')};area.appendChild(sp);
-  var btn=document.createElement('button');btn.className='nav-cta';btn.style.cssText='font-size:10px;padding:5px 10px';btn.textContent='我的記錄';btn.onclick=function(){show('cal')};area.appendChild(btn);
+  var btn=document.createElement('button');btn.className='nav-cta';btn.style.cssText='font-size:10px;padding:5px 10px';btn.textContent='練息手帳';btn.onclick=function(){location.href='me/'};area.appendChild(btn);
 }
 
 function signOut(){
@@ -587,7 +590,7 @@ function signOut(){
   localStorage.removeItem('jte_user_email');localStorage.removeItem('jte_user_name');localStorage.removeItem('jte_user_picture');
   JTE_USER=null;JTE_KEY='jte_daily_v1';
   var area=document.getElementById('nav-user-area');
-  if(area){area.innerHTML='';var btn=document.createElement('button');btn.className='nav-cta';btn.textContent='我的記錄';btn.onclick=function(){show('cal')};area.appendChild(btn);}
+  if(area){area.innerHTML='';var btn=document.createElement('button');btn.className='nav-cta';btn.textContent='練息手帳';btn.onclick=function(){location.href='me/'};area.appendChild(btn);}
   toast('已登出');
 }
 
