@@ -524,7 +524,7 @@
     }
     if (!act.length) { quick.hidden = true; quick.innerHTML = ''; return; }
     var openId = st.lf && st.lf.ctx === 'quick' ? st.lf.item : '';
-    quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="gopr">' + esc(T.quickGo) + '</button></div>' +
+    quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="qmgr"' + fk('qmgr') + '>' + esc(T.mgr) + '</button></div>' +
       '<div class="pr-pills">' + act.map(function (it) {
         var on = openId === it.id, ts = todaySum(it.id), fam = kidsOf(it.id), tc = 0;
         if (fam.length) { var fids = [it.id].concat(fam.map(function (x) { return x.id; })); st.data.logs.forEach(function (l) { if (l.date === C.TODAY && fids.indexOf(l.itemId) > -1) tc++; }); }
@@ -965,6 +965,9 @@
       case 'wiperetry': wipeAgain(); return;
       case 'cretry': if (st.uid) enterCloud(st.uid); return;
       case 'uselocal': useLocal(); st.mode = 'local'; st.focus = 'new'; break;
+      // 「今天」上的項目設定：一下就到設定清單（名稱、單位、圖示、小項目、新增）
+      case 'qmgr': st.mgr = true; st.itf = null; st.focus = 'mgr'; C.goPane('practice');
+        setTimeout(function () { var m = document.querySelector('.pr-mgr'); if (m) m.scrollIntoView({ block: 'center' }); }, 80); break;
       case 'mgr': st.mgr = !st.mgr; st.focus = 'mgr'; break;
       case 'iset': st.want = 'set'; st.mgr = false; C.goPane('practice-item-' + id); return;
       case 'new': st.itf = newItf('', ''); st.lf = null; st.focus = 'if-new-name'; break;
