@@ -154,7 +154,15 @@
       if (OPTIONAL[f[i]] && !obj[f[i]]) continue; // 選填的欄位：沒有就不寫這一欄
       out[f[i]] = obj[f[i]] !== undefined ? obj[f[i]] : DEFAULTS[f[i]];
     }
+    // 紀錄的「哪一個」（書名、展名…）不另開欄位：和那一句合在 note 裡（第一行是哪一個），規則不用改。
+    if (kind === 'logs') out.note = g.JteMe.pracNotePack(obj.what, out.note);
     return out;
+  }
+  function unpackLog(x) {
+    var u = g.JteMe.pracNoteUnpack(x.note);
+    x.note = u.note;
+    if (u.what) x.what = u.what;
+    return x;
   }
   function pracLoad() {
     return safe(function () {
@@ -162,7 +170,7 @@
       var ks = ['items', 'logs', 'notes'];
       return Promise.all(ks.map(function (k) { return col(KINDS[k]).get(); })).then(function (r) {
         var out = { items: [], logs: [], notes: [] };
-        r.forEach(function (s, i) { s.forEach(function (d) { var x = d.data(); x.id = d.id; out[ks[i]].push(x); }); });
+        r.forEach(function (s, i) { s.forEach(function (d) { var x = d.data(); x.id = d.id; out[ks[i]].push(ks[i] === 'logs' ? unpackLog(x) : x); }); });
         return out;
       });
     });

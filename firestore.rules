@@ -67,6 +67,8 @@ service cloud.firestore {
         && request.resource.data.archived is bool
         && request.resource.data.createdAt is number;
     }
+    // 2026-11-26：紀錄的「哪一個」（書名、展名、菜名…）沒有另開欄位，和那一句一起放在 note：
+    // 第一行是哪一個、第二行是那一句（me-core.js 的 pracNotePack／pracNoteUnpack）。所以這一段規則不用改。
     match /users/{uid}/practiceLogs/{id} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid && id.size() <= 40

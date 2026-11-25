@@ -673,13 +673,83 @@
   }
   function pracLogCheck(x, todayKey, lim) {
     x = x || {};
-    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note);
+    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note).replace(/[\r\n]+/g, ' '), what = pracWhat(x.what);
     var err = '';
     if (!realDate(date)) err = 'date';
     else if (date > todayKey) err = 'future';
     else if (amount === null) err = 'amount';
-    else if (note.length > lim.note) err = 'note';
-    return { ok: !err, err: err, log: { date: date, amount: amount, note: note } };
+    else if (lim.what && what.length > lim.what) err = 'what';
+    // 放雲端時「哪一個」和那一句合在同一欄（見 pracNotePack），所以兩個加起來不能超過那一欄的上限
+    else if (note.length + (what ? what.length + 1 : 0) > lim.note) err = 'note';
+    return { ok: !err, err: err, log: { date: date, amount: amount, note: note, what: what } };
+  }
+  // ── 各種練習的預設與「哪一個」（書名、展名、菜名、茶款…）──
+  // 名稱對到哪一種預設：名稱一樣的優先，其次是名稱裡含關鍵字（取最長的）。對不到回 null。
+  function pracKind(name, kinds) {
+    var n = trimS(name), best = null, bl = 0;
+    if (!n) return null;
+    arr(kinds).forEach(function (k) {
+      if (!k || !k.n) return;
+      if (k.n === n) { best = k; bl = 999; return; }
+      arr(k.ks).concat([k.n]).forEach(function (w) { if (w && n.indexOf(w) > -1 && w.length > bl) { best = k; bl = w.length; } });
+    });
+    return best;
+  }
+  // 記一筆時多問的那一欄叫什麼。own 是本人在設定裡改的（'-' 是關掉）；沒改就照預設；
+  // 沒有預設、但這個項目已經記過這一欄，就用通用的說法（any），免得記過的看不到。回空字串就是不問。
+  function pracAsk(own, kind, used, any) {
+    own = trimS(own);
+    if (own === '-') return '';
+    if (own) return own;
+    if (kind && kind.ask) return kind.ask;
+    return used ? String(any || '') : '';
+  }
+  function pracWhat(v) { return trimS(v).replace(/\s+/g, ' '); }
+  // 雲端的紀錄只有 note 一欄可以放字（規則不用改）：「哪一個」放第一行，那一句放第二行；讀回來再拆開。
+  function pracNotePack(what, note) {
+    what = pracWhat(what); note = String(note == null ? '' : note).replace(/[\r\n]+/g, ' ');
+    return what ? what + '\n' + note : note;
+  }
+  function pracNoteUnpack(s) {
+    s = String(s == null ? '' : s);
+    var i = s.indexOf('\n');
+    return i < 0 ? { what: '', note: s } : { what: pracWhat(s.slice(0, i)), note: s.slice(i + 1).replace(/[\r\n]+/g, ' ') };
+  }
+  // 這個項目記過哪些（最近的在前、不重複），給記一筆時直接點
+  function pracWhats(logs, itemId, n) {
+    var seen = {}, out = [];
+    pracOf(logs, itemId).filter(function (l) { return pracWhat(l.what); })
+      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.at || 0) - (a.at || 0); })
+      .forEach(function (l) { var w = pracWhat(l.what); if (!seen[w]) { seen[w] = 1; out.push(w); } });
+    return n ? out.slice(0, n) : out;
+  }
+  // 照「哪一個」整理：幾次、同單位才加總的合計、最後一次是哪天。最近記過的排前面。只並列，不比較。
+  function pracByWhat(logs, items, ids) {
+    var by = {}, ord = [];
+    pracOf(logs, ids).forEach(function (l) { var w = pracWhat(l.what); if (!w) return; if (!by[w]) { by[w] = []; ord.push(w); } by[w].push(l); });
+    return ord.map(function (w) {
+      var r = pracRollup(by[w], items, ids), last = '';
+      by[w].forEach(function (l) { if (l.date > last) last = l.date; });
+      return { what: w, n: r.n, days: r.days, units: r.units, first: r.first, last: last };
+    }).sort(function (a, b) { return a.last < b.last ? 1 : a.last > b.last ? -1 : b.n - a.n; });
+  }
+  // 記一筆時放的照片，存成一筆「有照片的隨手記」（同項目、同一天，字是「哪一個」或空白）。
+  // 顯示時把它併回那一天的那一筆；找不到對應的紀錄（例如紀錄刪了、改了日期）就照原樣自己一筆。
+  function pracPhotoJoin(logs, memos) {
+    var byLog = {}, used = {};
+    arr(memos).forEach(function (m) {
+      if (!m || !m.itemId || !arr(m.photos).length) return;
+      var t = pracWhat(m.text), best = null;
+      arr(logs).forEach(function (l) {
+        if (!l || l.itemId !== m.itemId || l.date !== m.key) return;
+        if (t && pracWhat(l.what) !== t) return;
+        if (!best || (l.at || 0) > (best.at || 0)) best = l;
+      });
+      if (!best) return;
+      used[String(m.id)] = best.id;
+      byLog[best.id] = (byLog[best.id] || []).concat(m.photos);
+    });
+    return { byLog: byLog, used: used };
   }
   function pracNoteCheck(x, lim) {
     x = x || {};
@@ -868,6 +938,7 @@
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
+    pracKind: pracKind, pracAsk: pracAsk, pracWhat: pracWhat, pracNotePack: pracNotePack, pracNoteUnpack: pracNoteUnpack, pracWhats: pracWhats, pracByWhat: pracByWhat, pracPhotoJoin: pracPhotoJoin,
     pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
     actImg: actImg, questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
 })(window);
