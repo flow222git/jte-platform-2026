@@ -38,12 +38,14 @@ header.top .pill{grid-area:nav;justify-self:end;position:relative}
 .acctbtn i{width:9px;height:9px;border-radius:50%;flex:none;border:1.5px solid var(--ink-3)}
 .acctbtn.on i{background:#3f7a55;border-color:#3f7a55}
 .acctbtn.half i{border-color:#3f7a55;background:linear-gradient(90deg,#3f7a55 50%,transparent 50%)}
-@media(max-width:560px){.acctbtn{padding:7px 10px 7px 6px;gap:5px}.acctbtn{max-width:5em}.pill a{padding:7px 10px}.acctlab{display:none}}
+@media(max-width:560px){.acctbtn{padding:7px 10px 7px 6px;gap:5px}.acctbtn{max-width:6.6em}.pill a{padding:7px 10px}.acctlab{display:none}}
 .acctlab{font-size:13px;color:var(--ink-3);padding:7px 12px 7px 6px;white-space:nowrap}
-.acctpop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(290px,86vw);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow);padding:16px;display:grid;gap:10px;text-align:left}
-.acctpop p{display:grid;gap:3px;margin:0;font-size:13px;line-height:1.6;color:var(--ink-2)}
-.acctpop p b{font-size:15px;color:var(--dark)}
-.acctpop p span{overflow-wrap:anywhere}
+.acctpanel{margin:0 0 14px}
+.acctinfo{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.acctinfo p{display:grid;gap:3px;margin:0;font-size:13px;line-height:1.6;color:var(--ink-2);flex:1;min-width:200px}
+.acctinfo p b{font-size:15px;color:var(--dark)}
+.acctinfo p span{overflow-wrap:anywhere}
+.acctbtn[aria-expanded="true"]{background:var(--bg-soft);color:var(--dark)}
 #themesw{grid-area:sw}
 .pill{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px;display:flex;gap:4px;align-items:center}
 .pill a{text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.04em;padding:7px 16px;border-radius:999px;color:var(--ink-2);white-space:nowrap}
@@ -470,6 +472,12 @@ dialog.authdlg .in{width:100%}
     <p id="heroline"></p>
     <div id="themesw"></div>
   </header>
+  <section class="panel acctpanel" id="acctpanel" aria-labelledby="h-data" hidden>
+    <div id="acctinfo"></div>
+    <div class="sec"><div><h2 id="h-data">我的資料</h2></div><span>要不要給別人看，由你決定。</span></div>
+    <div id="data"></div>
+    <div class="row" style="margin-top:16px"><button class="btn sm" id="acctclose" type="button">收起</button></div>
+  </section>
   <div class="banner" id="demo" hidden>這是示範資料，不會儲存。拿掉網址裡的 demo，就會讀這台裝置上的紀錄。</div>
 
   <div id="first" hidden></div>
@@ -587,10 +595,6 @@ dialog.authdlg .in{width:100%}
         <div class="tile t4 sw" id="sw"></div>
       </div>
       <div class="panel" id="swedit" hidden style="margin-top:14px"></div>
-    </section>
-    <section aria-labelledby="h-data" data-fold="data">
-      <div class="sec"><div><h2 id="h-data">我的資料</h2></div><span>要不要給別人看，由你決定。</span></div>
-      <div class="panel" id="data"></div>
     </section>
   </div>
 
@@ -717,12 +721,12 @@ function renderActs(){var el=$('#actbox'),h='';
 function setAct(a,status){return Promise.resolve().then(function(){if(DEMO){if(status==='declined')return {docId:a.docId,email:a.email,sessionId:a.sessionId,status:'declined'};a.status=status;return a}return JteCloud.decideAct(a,status)}).then(function(r){var i=S.acts.indexOf(a);if(i>-1)S.acts[i]=r;return r})}
 function toolUser(){try{var e=localStorage.getItem('jte_user_email')||'';return e?{email:e,name:localStorage.getItem('jte_user_name')||e}:null}catch(x){return null}}
 function hintMail(){var t=toolUser();return t?t.email:''}
-function renderAcct(){var el=$('#acct'),K=D.acct,u=S.user,t=u?null:toolUser(),w=u||t,h='';
-  if(DEMO)h='<span class="acctlab">'+K.demo+'</span>';
-  else if(!S.cloudOk||S.authReady||t){h='<button class="acctbtn'+(u?' on':t?' half':'')+'" id="acctbtn" aria-haspopup="true" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+(w?(w.name||w.email||'')+' '+K.inNote:K.outTitle))+'"><i></i><span>'+esc(w?(w.name||w.email||K.noName):K.out)+'</span></button>';
-    if(S.acct){var ins=S.cloudOk?'<button class="btn sm fill" data-ac="google">'+(t?K.toolOpen:I.signIn)+'</button><button class="btn sm" data-ac="email">'+U.open+'</button>':'<p><span>'+K.offline+'</span></p>';
-      h+='<div class="acctpop" role="group" aria-label="'+K.label+'">'+(u?'<p><b>'+esc(u.name||K.noName)+'</b>'+(u.email?'<span>'+esc(u.email)+'</span>':'')+'<span>'+(u.verified===false?K.unverified:K.inNote)+'</span></p><button class="btn sm" data-ac="out">'+I.signOut+'</button>':t?'<p><b>'+esc(t.name)+'</b><span>'+esc(t.email)+'</span><span>'+K.toolNote+'</span></p>'+ins:'<p><b>'+K.outTitle+'</b><span>'+K.outNote+'</span></p>'+ins)+'</div>'}}
-  el.innerHTML=h}
+function renderAcct(){var el=$('#acct'),K=D.acct,u=S.user,t=u?null:toolUser(),w=u||t,h='',info='';
+  if(DEMO)h='<button class="acctbtn" id="acctbtn" aria-controls="acctpanel" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+K.demo)+'"><span>'+K.demo+'</span></button>';
+  else if(!S.cloudOk||S.authReady||t){h='<button class="acctbtn'+(u?' on':t?' half':'')+'" id="acctbtn" aria-controls="acctpanel" aria-expanded="'+!!S.acct+'" aria-label="'+esc(K.label+'：'+(w?(w.name||w.email||'')+' '+K.inNote:K.outTitle))+'"><i></i><span>'+esc(w?(w.name||w.email||K.noName):K.out)+'</span></button>';
+    var ins=S.cloudOk?'<button class="btn sm fill" data-ac="google">'+(t?K.toolOpen:I.signIn)+'</button><button class="btn sm" data-ac="email">'+U.open+'</button>':'<p><span>'+K.offline+'</span></p>';
+    info=u?'<p><b>'+esc(u.name||K.noName)+'</b>'+(u.email?'<span>'+esc(u.email)+'</span>':'')+'<span>'+(u.verified===false?K.unverified:K.inNote)+'</span></p><button class="btn sm" data-ac="out">'+I.signOut+'</button>':t?'<p><b>'+esc(t.name)+'</b><span>'+esc(t.email)+'</span><span>'+K.toolNote+'</span></p>'+ins:'<p><b>'+K.outTitle+'</b><span>'+K.outNote+'</span></p>'+ins}
+  el.innerHTML=h;var ai=$('#acctinfo');ai.innerHTML=info?'<div class="acctinfo" role="group" aria-label="'+K.label+'">'+info+'</div>':'';$('#acctpanel').hidden=!S.acct}
 function acctClose(){if(S.acct){S.acct=false;renderAcct()}}
 function renderAuth(){renderAcct();var a=$('#authline'),b=$('#addpic');b.textContent=I.add+(S.draft.length?'（'+S.draft.length+'/'+I.maxPhotos+'）':'');
   if(DEMO){a.textContent='';return}
@@ -1221,11 +1225,13 @@ $('#picin').onchange=function(){var fs=Array.prototype.slice.call(this.files||[]
   fs.reduce(function(pr,f){return pr.then(function(){return JteCloud.compress(f,I).then(function(d){syncCaps();if(S.draft.length>=I.maxPhotos)return;S.draft.push({data:d,caption:''});renderPics()}).catch(function(){toast(I.compressFail)})})},Promise.resolve())};
 $('#pics').onclick=function(e){var b=e.target.closest('[data-pa]');if(!b)return;syncCaps();var i=+b.closest('.pic').dataset.i,a=b.dataset.pa,d=S.draft;
   if(a==='remove')d.splice(i,1);if(a==='left'&&i>0)d.splice(i-1,0,d.splice(i,1)[0]);if(a==='right'&&i<d.length-1)d.splice(i+1,0,d.splice(i,1)[0]);renderPics()};
-$('#acct').onclick=function(e){e.stopPropagation();var b=e.target.closest('#acctbtn'),c=e.target.closest('[data-ac]');
-  if(b){S.acct=!S.acct;renderAcct();$('#acctbtn').focus();return}if(!c)return;var k=c.dataset.ac;S.acct=false;renderAcct();
+function acctDo(k){S.acct=false;renderAcct();
   if(k==='google')JteCloud.signIn(hintMail()).catch(function(e){if(e&&(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'))return;toast(I.offline)});
-  if(k==='email')openAuth();if(k==='out')JteCloud.signOut()};
-document.addEventListener('click',function(e){if(S.acct&&!e.target.closest('#acct'))acctClose()});
+  if(k==='email')openAuth();if(k==='out')JteCloud.signOut()}
+$('#acct').onclick=function(e){var b=e.target.closest('#acctbtn');if(!b)return;S.acct=!S.acct;renderAcct();
+  if(S.acct){var pn=$('#acctpanel');if(pn.getBoundingClientRect().top<0||pn.getBoundingClientRect().top>window.innerHeight*.6)pn.scrollIntoView({block:'start'})}$('#acctbtn').focus({preventScroll:true})};
+$('#acctpanel').addEventListener('click',function(e){var c=e.target.closest('[data-ac]');if(c){acctDo(c.dataset.ac);return}
+  if(e.target.id==='acctclose'){acctClose();var b=$('#acctbtn');if(b)b.focus()}});
 document.addEventListener('error',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('actvis'))t.remove()},true);
 function isTyping(el){if(!el||!el.tagName)return false;var t=el.tagName;if(t==='TEXTAREA'||el.isContentEditable)return true;return t==='INPUT'&&!/^(checkbox|radio|button|submit|reset|range|file|color|image|hidden)$/i.test(el.type||'')}
 document.addEventListener('focusin',function(e){if(isTyping(e.target))document.body.classList.add('typing')});
@@ -1412,6 +1418,7 @@ document.querySelector('.wrap').addEventListener('click',function(e){var t=e.tar
   if(e.target.id==='foldall'){[].forEach.call(document.querySelectorAll('[data-fold]'),function(x){if(x.offsetParent===null)return;if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};O.prefs.fold[x.dataset.fold]=false});foldForce={};save();renderFold()}});
 JteTheme.mount($('#themesw'));
 showPane(S.invId&&!location.hash?'care':location.hash);
+if(foldForce.data){S.acct=true;renderAcct();setTimeout(function(){$('#acctpanel').scrollIntoView({block:'start'})},400)}
 (function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
 $('#introlnk').textContent=F.intro.again;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null,wasV=S.user&&S.user.verified;S.user=u;S.authReady=true;if(u&&u.verified&&wasV===false){S.cState='idle'}if(nu!==prevUid){prevUid=nu;ME=u?u.uid:'me';circles=[];S.openC=[];S.inv=null;S.cState='idle';S.cAsk=null;S.cMem=null;S.joinFor=null;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}

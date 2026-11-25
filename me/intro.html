@@ -67,7 +67,7 @@ footer{padding:44px 0 60px;color:var(--ink-3);font-size:12.5px;display:grid;gap:
   var h=sec('what',P.what,cards(P.what.items));
   h+=sec('book',P.book,cards(D.panes.map(function(p){return {b:p.name,t:p.q+'？'}}))+'<div class="row" style="margin-top:16px"><a class="btn fill" href="./">'+esc(P.go)+'</a></div>');
   h+=sec('tools',P.tools,D.toolbox.groups.map(function(g){return '<h3>'+esc(g.name)+'</h3><div class="grid">'+g.tools.map(function(k){var t=D.tools[k];return '<a class="card" href="'+esc(t.href)+'"><b>'+esc(t.name)+'</b><span>'+esc(t.desc)+'</span></a>'}).join('')+'</div>'}).join('')+'<p class="stampnote">'+esc(P.tools.octenso)+'</p>');
-  h+=sec('keep',P.keep,cards(P.keep.items)+'<div class="row" style="margin-top:14px"><a class="lnk" href="./?show=data#mymap-map">'+esc(P.data)+'</a></div>');
+  h+=sec('keep',P.keep,cards(P.keep.items)+'<div class="row" style="margin-top:14px"><a class="lnk" href="./?show=data">'+esc(P.data)+'</a></div>');
   h+=sec('look',P.look,'');
   h+='<section><div class="row"><a class="btn fill" href="./">'+esc(P.go)+'</a><a class="btn" href="../">'+esc(P.home)+'</a></div></section>';
   document.getElementById('ttl').textContent=P.title;document.getElementById('lead').textContent=P.lead;
