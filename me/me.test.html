@@ -420,6 +420,8 @@ check('對我有用：標在最近一筆，取消時整個方法都拿掉，沒�
   ok(!M.markUseful(ps,ann,p=>p.tool==='none',true));ok(!M.markUseful(null,ann,isHrv,true));ok(!M.markUseful(ps,null,isHrv,true));});
 check('資料檔：練習空間的文案只剩活動與標記；想靠近的事併進探索的問題',()=>{ok(D.practice.outside.title&&D.practice.star.on&&D.practice.star.off);ok(!D.practice.works);eq(D.toolbox.title,'平台工具');ok(D.explore.curious.go&&!D.explore.curious.add);ok(D.capture.note.indexOf('想靠近')<0);});
 
+check('資料檔：邀請卡的文案說清楚登入不等於加入',()=>{const K=D.care.cloud;ok(K.invitedTitle);ok(K.invited.indexOf('登入不等於加入')>-1);ok(D.care.rules.see&&D.care.rules.hide);});
+
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });

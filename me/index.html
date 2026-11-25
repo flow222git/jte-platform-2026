@@ -366,7 +366,7 @@ dialog.zoom img{max-width:100%;max-height:82vh;display:block;border-radius:var(-
 dialog.zoom p{color:#fff;margin:8px 2px 0;font-size:14px}
 /* 右上角：導覽＋風格切換 */
 /* 第一次進來：先挑一本，再點三下。進行中先把五個空間收起來，答完才出現。 */
-.firsting #panes,.firsting [id^="view-"]{display:none!important}
+.firsting #panes,.firsting [id^="view-"],.firsting #fab,.firsting #foldall{display:none!important}
 #first{display:grid;gap:14px;margin:6px 0 28px;max-width:680px}
 #first{--frame-cover:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='r' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='2' seed='7' result='w'/><feDisplacementMap in='SourceGraphic' in2='w' scale='5'/></filter><filter id='q' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='.07' numOctaves='2' seed='21' result='w'/><feDisplacementMap in='SourceGraphic' in2='w' scale='6'/></filter><rect x='9' y='9' width='102' height='102' rx='17' fill='none' stroke='%236B4226' stroke-opacity='.72' stroke-width='2.2' stroke-linecap='round' filter='url(%23r)'/><rect x='10' y='8' width='101' height='104' rx='20' fill='none' stroke='%236B4226' stroke-opacity='.3' stroke-width='1.5' filter='url(%23q)'/></svg>")}
 #first .fbooks{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -870,7 +870,7 @@ function circleTail(c,me){var C=D.care,K=C.cloud,own=c.owner===ME,ask=S.cAsk||''
     return '<div class="wrow" data-m="'+esc(m.id)+'"><div><b>'+esc(nm)+'</b>'+(m.id===c.owner?'<span>'+K.owner+'</span>':'')+(k?'<span>'+esc(K.kickAsk.replace('{n}',nm))+'</span>':'')+'</div>'+
       (own&&m.id!==ME?(k?'<div class="row"><button class="btn sm fill" data-ca="kickyes">'+K.kickYes+'</button><button class="lnk" data-ca="no">'+K.stay+'</button></div>':'<button class="lnk" data-ca="kick">'+K.kick+'</button>'):'')+'</div>'}).join('')+'</div>';
   return h}
-function nickRow(ok,no){var K=D.care.cloud;return '<div class="row cnick"><input class="in" maxlength="12" value="'+esc(O.nick||'')+'" placeholder="'+K.nickPh+'" aria-label="'+K.nickAsk+'"><button class="btn sm fill" '+ok+'>'+K.joinOk+'</button><button class="lnk" '+no+'>'+K.cancel+'</button></div><span class="note">'+K.nickAsk+'</span>'}
+function nickRow(ok,no){var K=D.care.cloud;return '<div class="row cnick"><input class="in" maxlength="12" value="'+esc(O.nick||'')+'" placeholder="'+K.nickPh+'" aria-label="'+K.nickAsk+'"><button class="btn sm fill" '+ok+'>'+K.joinOk+'</button><button class="lnk" '+no+'>'+K.cancel+'</button></div><span class="note">'+K.nickAsk+'</span><p class="note" style="margin-top:6px">'+D.care.rules.see+'<br>'+D.care.rules.hide+'</p>'}
 function inviteHTML(c){var C=D.care,K=C.cloud;return '<div class="panel circle cinv" data-inv="'+esc(c.id)+'"><h3 style="font-size:19px">'+esc(K.inviteTitle.replace('{n}',c.name))+'</h3><p class="note">'+esc(cWhat(c))+'・'+esc(c.rhythm)+'・'+c.members.length+' 個人・'+cDay(M.circleDay(c,TODAY))+'</p>'+
   (c.members.length>=C.max?'<p class="note">'+C.open.full+'</p><div class="row"><button class="lnk" data-ia="no">'+K.ok+'</button></div>':nickRow('data-ia="join"','data-ia="no"'))+'</div>'}
 function renderCircles(){var C=D.care,K=C.cloud,mine=circles.filter(function(c){return M.isMember(c,ME)}),h='';
@@ -898,7 +898,7 @@ function renderCare(){var C=D.care,N=C.create;$('#h-cir').textContent=C.mine.tit
   $('#rules').innerHTML='<p>'+C.rules.see+'</p><p>'+C.rules.out+'</p><p>'+C.rules.hide+'</p><p>'+C.rules.tone+'</p>'+'<p>'+C.rules.admin+'</p>'+(DEMO||S.user?'<div class="row" style="margin-top:12px"><label class="note" for="nick">'+C.rules.nick+'</label><input class="in" id="nick" maxlength="12" value="'+esc(O.nick||'')+'" placeholder="'+C.rules.nickPh+'"></div>':'');
   if(!DEMO){var K=C.cloud;$('#cnew').hidden=true;
     if(!S.cloudOk||!window.JteCircles){$('#circles').innerHTML='<div class="quiet">'+K.offline+'</div>';$('#openlist').innerHTML='';return}
-    if(!S.user){$('#circles').innerHTML='<div class="quiet"><b>'+C.locked.title+'</b><br>'+(S.invId?K.invited:K.login)+'<div class="row" style="margin-top:10px"><button class="btn sm fill" data-cl="google">'+(toolUser()?D.acct.toolOpen:I.signIn)+'</button><button class="btn sm" data-cl="email">'+U.open+'</button><a class="lnk" href="?demo#care">'+C.locked.demo+'</a></div></div>';$('#openlist').innerHTML='<p class="note">'+K.loginShort+'</p>';return}
+    if(!S.user){$('#circles').innerHTML='<div class="quiet"><b>'+(S.invId?K.invitedTitle:C.locked.title)+'</b><br>'+(S.invId?K.invited+'<p class="note" style="margin-top:8px">'+C.rules.see+'<br>'+C.rules.hide+'</p>':K.login)+'<div class="row" style="margin-top:10px"><button class="btn sm fill" data-cl="google">'+(toolUser()?D.acct.toolOpen:I.signIn)+'</button><button class="btn sm" data-cl="email">'+U.open+'</button>'+(S.invId?'':'<a class="lnk" href="?demo#care">'+C.locked.demo+'</a>')+'</div></div>';$('#openlist').innerHTML='<p class="note">'+K.loginShort+'</p>';return}
     if(S.user.verified===false){$('#circles').innerHTML='<div class="quiet">'+K.verify+'</div>';$('#openlist').innerHTML='';return}
     if(S.cState!=='ok'){$('#circles').innerHTML=S.cState==='error'?'<div class="quiet">'+K.fail+' <button class="lnk" data-cl="retry">'+K.retry+'</button></div>':'<p class="note">'+K.loading+'</p>';$('#openlist').innerHTML='';if(S.cState==='idle')loadCircles();return}
     $('#cnew').hidden=false}
@@ -1350,7 +1350,7 @@ JtePrac.init({D:D,M:M,O:O,save:save,DEMO:DEMO,TODAY:TODAY,toast:toast,goPane:goP
    回答先排成預覽；按「好，開始用」才一次寫進去：狀態進今天、項目進「我的練習」。之後不再問。 */
 var F=window.JTE_FIRST_DATA,FS=null,firstForced=/[?&]first\b/.test(location.search);
 function firstBlank(){return !S.pages.length&&!O.tris.length&&!O.memos.length&&!Object.keys(O.states).length&&!Object.keys(O.ann).length&&!JtePrac.items().length}
-function firstNeeded(){if(firstForced)return true;return !DEMO&&O.prefs.first!=='done'&&firstBlank()}
+function firstNeeded(){if(firstForced)return true;return !DEMO&&!S.invId&&O.prefs.first!=='done'&&firstBlank()}
 // 有登入的人，手帳是不是空的要等雲端的東西回來才知道：這台裝置是空的，不代表他是新來的。
 // 所以先等登入狀態；沒登入就直接問，有登入就等雲端讀完再看。問到一半（還在挑本子）才發現他有東西，就自己收起來。
 function firstAuth(u){if(!S.firstWait)return;S.firstWait=false;if(!u){if(firstNeeded())firstStart();return}
@@ -1414,7 +1414,7 @@ document.querySelector('.wrap').addEventListener('click',function(e){var t=e.tar
   if(s){setFold(s.dataset.fold,!folded(s.dataset.fold));return}
   if(e.target.id==='foldall'){[].forEach.call(document.querySelectorAll('[data-fold]'),function(x){if(x.offsetParent===null)return;if(!O.prefs.fold||typeof O.prefs.fold!=='object')O.prefs.fold={};O.prefs.fold[x.dataset.fold]=false});foldForce={};save();renderFold()}});
 JteTheme.mount($('#themesw'));
-showPane(location.hash);
+showPane(S.invId&&!location.hash?'care':location.hash);
 (function(){var k=Object.keys(foldForce)[0],s=k&&document.querySelector('[data-fold="'+k+'"]');if(s)setTimeout(function(){s.scrollIntoView({block:'start'})},400)})();
 $('#introlnk').textContent=F.intro.again;$('#honest').textContent=D.honest;$('#crisis').textContent=D.crisis;
 if(DEMO){S.cloud=demoInsp();S.acts=demoActs();S.cloudOk=true}else if(window.JteCloud){var prevUid=null;S.cloudOk=JteCloud.init(function(u){var nu=u?u.uid:null,wasV=S.user&&S.user.verified;S.user=u;S.authReady=true;if(u&&u.verified&&wasV===false){S.cState='idle'}if(nu!==prevUid){prevUid=nu;ME=u?u.uid:'me';circles=[];S.openC=[];S.inv=null;S.cState='idle';S.cAsk=null;S.cMem=null;S.joinFor=null;S.cloud=[];S.acts=[];S.actLater={};S.actAsk=null;S.draft=[];S.cwipe=false;S.open=null;S.sub=null;renderPics()}JtePrac.setUser(u);renderAuth();renderData();loadCloud();firstAuth(u)});if(!S.cloudOk)JtePrac.setUser(null)}
