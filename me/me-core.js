@@ -648,7 +648,7 @@
       if (best && per[best] >= 2 && per[best] > b2) out.top = { id: best, n: per[best] };
     }
     // 每次平均：全部同一個單位才算
-    var u = unitOf[list[0].itemId] || '', same = list.every(function (l) { return (unitOf[l.itemId] || '') === u; });
+    var u = list[0].unit || unitOf[list[0].itemId] || '', same = list.every(function (l) { return (l.unit || unitOf[l.itemId] || '') === u; });
     if (same && list.length >= 2) {
       var sum = 0, mx = 0;
       list.forEach(function (l) { var a = Number(l.amount) || 0; sum += a; if (a > mx) mx = a; });
@@ -673,15 +673,16 @@
   }
   function pracLogCheck(x, todayKey, lim) {
     x = x || {};
-    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note).replace(/[\r\n]+/g, ' '), what = pracWhat(x.what);
+    var date = String(x.date == null ? '' : x.date), amount = pracAmount(x.amount, lim.amount), note = trimS(x.note).replace(/[\r\n]+/g, ' '), what = pracWhat(x.what), unit = pracWhat(x.unit);
     var err = '';
     if (!realDate(date)) err = 'date';
     else if (date > todayKey) err = 'future';
     else if (amount === null) err = 'amount';
     else if (lim.what && what.length > lim.what) err = 'what';
     // 放雲端時「哪一個」和那一句合在同一欄（見 pracNotePack），所以兩個加起來不能超過那一欄的上限
-    else if (note.length + (what ? what.length + 1 : 0) > lim.note) err = 'note';
-    return { ok: !err, err: err, log: { date: date, amount: amount, note: note, what: what } };
+    else if (unit.length > lim.unit) err = 'unit';
+    else if (note.length + pracNotePack(what, '', unit).length > lim.note) err = 'note';
+    return { ok: !err, err: err, log: { date: date, amount: amount, note: note, what: what, unit: unit } };
   }
   // ── 各種練習的預設與「哪一個」（書名、展名、菜名、茶款…）──
   // 名稱對到哪一種預設：名稱一樣的優先，其次是名稱裡含關鍵字（取最長的）。對不到回 null。
@@ -711,15 +712,27 @@
     return own || String((kind && kind.hint) || '');
   }
   function pracWhat(v) { return trimS(v).replace(/\s+/g, ' '); }
-  // 雲端的紀錄只有 note 一欄可以放字（規則不用改）：「哪一個」放第一行，那一句放第二行；讀回來再拆開。
-  function pracNotePack(what, note) {
-    what = pracWhat(what); note = String(note == null ? '' : note).replace(/[\r\n]+/g, ' ');
-    return what ? what + '\n' + note : note;
+  // 雲端的紀錄只有 note 一欄可以放字（規則不用改）：第一行是「哪一個」，後面用 tab 接這一筆用的單位（和項目的主要單位不同時才有），
+  // 第二行是那一句；讀回來再拆開。舊紀錄的 note 沒有換行，照原樣是那一句。
+  function pracNotePack(what, note, unit) {
+    what = pracWhat(what); unit = pracWhat(unit); note = String(note == null ? '' : note).replace(/[\r\n]+/g, ' ');
+    var head = what + (unit ? '\t' + unit : '');
+    return head ? head + '\n' + note : note;
   }
   function pracNoteUnpack(s) {
     s = String(s == null ? '' : s);
-    var i = s.indexOf('\n');
-    return i < 0 ? { what: '', note: s } : { what: pracWhat(s.slice(0, i)), note: s.slice(i + 1).replace(/[\r\n]+/g, ' ') };
+    var i = s.indexOf('\n'), head;
+    if (i < 0) return { what: '', unit: '', note: s };
+    head = s.slice(0, i).split('\t');
+    return { what: pracWhat(head[0]), unit: pracWhat(head[1]), note: s.slice(i + 1).replace(/[\r\n]+/g, ' ') };
+  }
+  // 一個項目用到的單位：主要單位在最前面，接著是本人另外加的，再來是紀錄裡出現過的。不重複。
+  function pracUnits(primary, extras, logs, itemId) {
+    var out = [];
+    function add(u) { u = pracWhat(u); if (u && out.indexOf(u) < 0) out.push(u); }
+    add(primary); arr(extras).forEach(add);
+    arr(logs).forEach(function (l) { if (l && l.itemId === itemId && l.unit) add(l.unit); });
+    return out;
   }
   // 這個項目記過哪些（最近的在前、不重複），給記一筆時直接點
   function pracWhats(logs, itemId, n) {
@@ -813,7 +826,7 @@
     arr(items).forEach(function (x) { if (x && x.id) unitOf[x.id] = String(x.unit || ''); });
     pracOf(logs, ids).forEach(function (l) {
       if (ym && l.date.slice(0, 7) !== ym) return;
-      var u = unitOf[l.itemId] || '';
+      var u = l.unit || unitOf[l.itemId] || '';
       if (!by[u]) { by[u] = { unit: u, n: 0, sum: 0 }; ord.push(u); }
       by[u].n++; by[u].sum += Number(l.amount) || 0;
       days[l.date] = 1; n++;
@@ -944,7 +957,7 @@
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
-    pracKind: pracKind, pracAsk: pracAsk, pracHint: pracHint, pracWhat: pracWhat, pracNotePack: pracNotePack, pracNoteUnpack: pracNoteUnpack, pracWhats: pracWhats, pracByWhat: pracByWhat, pracPhotoJoin: pracPhotoJoin,
+    pracKind: pracKind, pracAsk: pracAsk, pracHint: pracHint, pracWhat: pracWhat, pracNotePack: pracNotePack, pracNoteUnpack: pracNoteUnpack, pracUnits: pracUnits, pracWhats: pracWhats, pracByWhat: pracByWhat, pracPhotoJoin: pracPhotoJoin,
     pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
     actImg: actImg, questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
 })(window);

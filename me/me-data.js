@@ -259,7 +259,7 @@
         'auth/email-already-in-use': '這個信箱已經有帳號了，請直接登入。', 'auth/weak-password': '密碼至少要 6 個字。',
         'auth/invalid-email': '信箱格式不對。', 'auth/too-many-requests': '試太多次了，請晚一點再試。', other: '沒有成功，請再試一次。' } },
     prac: {
-      max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60, what: 30, ask: 6, hint: 40 },
+      max: { name: 30, unit: 10, note: 500, title: 100, body: 20000, amount: 100000, goal: 60, what: 30, ask: 6, hint: 40, units: 4 },
       // AI 讀心得：自己按才送。url 是平台的 AI 代理（ven-i/worker.js 的 /me-read）。
       page: 30, recall: { recent: 3, star: 2, chars: 140, row: 16, what: 5, top: 8 },
       ai: { url: 'https://calm-sunset-97f8.simon-ec6.workers.dev/me-read', min: 3, maxChars: 12000, one: 2000 },
@@ -322,6 +322,9 @@
         icon: '圖示', iconNone: '不用圖示', color: '顏色', colorNames: ['藍', '青綠', '橘', '紫', '深橘', '綠'], save: '存起來', cancel: '取消', saved: '存起來了',
         // 記一筆
         log: '記一筆', logFor: '記一筆：{n}', quickTitle: '我的練習', quickNote: '按「記一筆」打數字。點項目看上次寫的。', quickGo: '看我的練習',
+        uxAdd: '＋單位', uxAlso: '也用：{list}', uxTitle: '「{n}」還會用到的單位', uxNote: '記一筆時可以選這次用哪一種。合計照單位分開算，不換算。', uxOwn: '自己填', uxOwnAdd: '加', uxDone: '好了',
+        uxUsed: '「{u}」已經有紀錄，拿不掉。', uxFull: '最多再加 {n} 種。', uxSame: '這個單位已經有了。', unitPick: '這次的單位', amountAny: '數量',
+        chartCapMix: '這個項目用了不只一種單位，每一根是那段時間記了幾筆。', monthMix: '這個月 {n} 次・{s}', todayMix: '今天 {s}',
         writeMaybe: '也許是：{h}', hintLabel: '寫一段時的提示', hintPh: '例如：沖法、香氣、回甘', hintNote: '只是淡淡的提醒，一打字就消失。留空就不提示。',
         whatAny: '這次是哪一個', whatPick: '記過的{a}', askLabel: '記一筆時多問一欄', askPh: '例如：書名、菜名、茶款', askNote: '留空就不問。問了之後，這個項目的總覽會照這一欄整理。',
         byWhat: '照{a}看', bwRow: '{n} 次・{s}', bwMore: '還有 {n} 個，在「紀錄與心得」裡都看得到。',

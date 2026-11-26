@@ -74,18 +74,50 @@
     list.push(obj);
   }
   function drop(list, id) { return list.filter(function (x) { return x.id !== id; }); }
-  function lastAmount(itemId) {
+  function lastLogOf(itemId) {
     var best = null;
     st.data.logs.forEach(function (l) {
       if (l.itemId !== itemId) return;
       if (!best || l.date > best.date || (l.date === best.date && (l.at || 0) > (best.at || 0))) best = l;
     });
-    return best ? M.pracFmt(best.amount) : '';
+    return best;
   }
-  function todaySum(itemId) {
-    var s = 0, n = 0;
-    st.data.logs.forEach(function (l) { if (l.itemId === itemId && l.date === C.TODAY) { n++; s += Number(l.amount) || 0; } });
-    return n ? Math.round(s * 10) / 10 : 0;
+  function lastAmount(itemId) { var b = lastLogOf(itemId); return b ? M.pracFmt(b.amount) : ''; }
+  // ── 一個項目可以有不只一種單位（2026-11-27）──
+  // 主要單位在項目上（unit）；另外加的存在這台裝置（prefs.pracUnits）；每一筆記下它用的單位（和主要單位一樣就不另外記）。
+  function extraUnits(it) { var p = C.O.prefs && C.O.prefs.pracUnits, a = p && typeof p === 'object' && it ? p[it.id] : null; return Array.isArray(a) ? a : []; }
+  function unitsOf(it) { return M.pracUnits(it.unit, extraUnits(it), st.data.logs, it.id); }
+  function luOf(l) { var it = itemById(l.itemId); return l.unit || (it ? it.unit : ''); }
+  // 這個項目的紀錄實際用了哪些單位（各幾次、各合計多少）
+  function logUnits(it) { return M.pracRollup(st.data.logs, items(), [it.id]).units; }
+  // 紀錄只有一種單位時，合計用它來寫（可能不是主要單位）
+  function uo(it) { var u = logUnits(it); return u.length === 1 ? u[0].unit : it.unit; }
+  // 主要單位換了之後，另外加的清單裡不留同一個
+  function tidyUnits(it) { var a = extraUnits(it), b = a.filter(function (u) { return u !== it.unit; }); if (b.length !== a.length) setOwn('pracUnits', it.id, b.length ? b : ''); }
+  function todayText(itemId) {
+    var by = {}, ord = [], it = itemById(itemId);
+    st.data.logs.forEach(function (l) {
+      if (l.itemId !== itemId || l.date !== C.TODAY) return;
+      var u = l.unit || (it ? it.unit : '');
+      if (!by[u]) { by[u] = { unit: u, sum: 0 }; ord.push(u); }
+      by[u].sum += Number(l.amount) || 0;
+    });
+    return ord.length ? fill(T.todayMix, { s: unitsText(ord.map(function (u) { return { unit: u, sum: Math.round(by[u].sum * 10) / 10 }; })) }) : '';
+  }
+  function monthText(it) {
+    var ru = M.pracRollup(st.data.logs, items(), [it.id], C.TODAY.slice(0, 7));
+    if (!ru.n) return T.monthNone;
+    return ru.units.length > 1 ? fill(T.monthMix, { n: ru.n, s: unitsText(ru.units) }) : fill(T.month, { n: ru.n, s: M.pracFmt(ru.units[0].sum), u: ru.units[0].unit });
+  }
+  // 加單位的小編輯區：常用單位點了就加、再點拿掉；也可以自己填。改了馬上存。
+  function uxHTML(it, where) {
+    var all = unitsOf(it), cand = [], hid = 'pr-ux-' + where + '-' + it.id;
+    P.units.concat(all).forEach(function (u) { if (u !== it.unit && cand.indexOf(u) < 0) cand.push(u); });
+    return '<div class="pr-ux"><b id="' + esc(hid) + '">' + esc(fill(T.uxTitle, { n: it.name })) + '</b><p class="note">' + esc(T.uxNote) + '</p><div class="chips" role="group" aria-labelledby="' + esc(hid) + '">' +
+      cand.map(function (u) { var on = all.indexOf(u) > -1; return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-pa="uxt" data-id="' + esc(it.id) + '" data-u="' + esc(u) + '" aria-pressed="' + on + '"' + fk('ux-' + where + '-' + it.id + '-' + u) + '>' + esc(u) + '</button>'; }).join('') +
+      '</div><div class="pr-uxrow"><input class="in pr-uxin" maxlength="' + P.max.unit + '" autocomplete="off" placeholder="' + esc(T.uxOwn) + '" aria-label="' + esc(T.uxOwn) + '"' + fk('uxi-' + where + '-' + it.id) + '>' +
+      '<button type="button" class="btn sm" data-pa="uxadd" data-id="' + esc(it.id) + '"' + fk('uxa-' + where + '-' + it.id) + '>' + esc(T.uxOwnAdd) + '</button>' +
+      (where === 'q' ? '<button type="button" class="lnk" data-pa="uxdone" data-id="' + esc(it.id) + '">' + esc(T.uxDone) + '</button>' : '') + '</div></div>';
   }
   function newItf(name, unit) { return { name: name, unit: unit, id: M.pracId('pi-') }; }
   // ── 各種練習的預設，與記一筆時多問的那一欄（書名、展名、菜名…）──
@@ -338,7 +370,7 @@
     for (k in map) {
       el = map[k];
       if (el.type === 'radio') s.checked[k] = el.checked;
-      else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') s.vals[k] = el.value;
+      else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') s.vals[k] = el.value;
     }
     if (a && a.getAttribute && a.getAttribute('data-k') && map[a.getAttribute('data-k')] === a) {
       s.focus = a.getAttribute('data-k');
@@ -348,7 +380,11 @@
   }
   function restore(s) {
     var map = keyed(), k, el;
-    for (k in s.vals) if (map[k] && map[k].value !== s.vals[k]) map[k].value = s.vals[k];
+    for (k in s.vals) if (map[k] && map[k].value !== s.vals[k]) {
+      // 下拉選單：原本選的那一個還在才還原，不在就照新畫出來的
+      if (map[k].tagName === 'SELECT' && !Array.prototype.some.call(map[k].options, function (o) { return o.value === s.vals[k]; })) continue;
+      map[k].value = s.vals[k];
+    }
     for (k in s.checked) if (map[k]) map[k].checked = s.checked[k];
     if (st.focus) {
       el = map[st.focus]; st.focus = '';
@@ -395,14 +431,16 @@
     if (!it) return '';
     if (isFam(f)) return famForm();
     var amt = lg ? M.pracFmt(lg.amount) : (lastAmount(it.id) || (P.ones.indexOf(it.unit) > -1 ? '1' : '')), date = lg ? lg.date : (f.date || C.TODAY), eid = 'pr-e-' + f.ctx;
+    var us = unitsOf(it), last = lastLogOf(it.id), lu = lg ? luOf(lg) : (last ? luOf(last) : it.unit);
     var ask = askOf(it), wv = lg ? (lg.what || '') : '', whats = ask ? M.pracWhats(st.data.logs, it.id, P.recall.what) : [], pics = f.pics || [], canPic = !lg && C.photoOk();
     var h = '<form class="pr-log" data-form="log" novalidate' + cvars(it) + '>';
     // 多問的那一欄（書名、展名…）：記過的直接點
     if (ask) h += '<div class="pr-lrow pr-what"><input class="in pr-whatin" name="what" maxlength="' + P.max.what + '" autocomplete="off" placeholder="' + esc(ask) + '" aria-label="' + esc(ask) + '" value="' + esc(wv) + '"' + fk(key + '-w') + '>' +
       (whats.length ? '<span class="chips" role="group" aria-label="' + esc(fill(T.whatPick, { a: ask })) + '">' + whats.map(function (w) { return '<button type="button" class="chip' + (w === wv ? ' on' : '') + '" data-pa="what" data-v="' + esc(w) + '" aria-pressed="' + (w === wv) + '">' + esc(w) + '</button>'; }).join('') + '</span>' : '') + '</div>';
-    h += '<div class="pr-lrow"><label class="pr-amt"><span class="pr-sr">' + fillH(T.amountFor, { u: it.unit }) + '</span>' +
+    h += '<div class="pr-lrow"><label class="pr-amt"><span class="pr-sr">' + (us.length > 1 ? esc(T.amountAny) : fillH(T.amountFor, { u: it.unit })) + '</span>' +
       '<input class="in" name="amount" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="9" value="' + esc(amt) + '" aria-describedby="' + eid + '"' + fk(key + '-a') + '>' +
-      '<span class="pr-unit" aria-hidden="true">' + esc(it.unit) + '</span></label>' +
+      (us.length > 1 ? '</label><select class="in pr-usel" name="unit" aria-label="' + esc(T.unitPick) + '"' + fk(key + '-u') + '>' + us.map(function (u) { return '<option' + (u === lu ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join('') + '</select>'
+        : '<span class="pr-unit" aria-hidden="true">' + esc(it.unit) + '</span></label>') +
       '<input class="in pr-lnote" name="note" maxlength="' + P.max.note + '" placeholder="' + esc(T.notePh) + '" aria-label="' + esc(T.notePh) + '" value="' + esc(lg ? lg.note : '') + '"' + fk(key + '-n') + '></div>';
     h += '<div class="pr-lrow">';
     if (f.ctx === 'day') h += '<input type="hidden" name="date" value="' + esc(date) + '">';
@@ -427,6 +465,7 @@
     h += '<div class="pr-f"><span id="' + key + '-ul">' + esc(T.unit) + '</span><div class="pr-units"><div class="chips" role="group" aria-labelledby="' + key + '-ul">' +
       P.units.map(function (u) { var on = u === unit; return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-pa="unit" data-u="' + esc(u) + '" aria-pressed="' + on + '">' + esc(u) + '</button>'; }).join('') +
       '</div><input class="in pr-uin" name="unit" maxlength="' + P.max.unit + '" autocomplete="off" placeholder="' + esc(T.unitPh) + '" aria-label="' + esc(T.unitOwn) + '" value="' + esc(unit) + '"' + fk(key + '-unit') + '></div></div>';
+    if (mode === 'edit') h += uxHTML(v, 'f');
     if (mode === 'edit' && !par) h += '<div class="pr-f"><span id="' + key + '-cl">' + esc(T.color) + '</span><div class="pr-cols" role="radiogroup" aria-labelledby="' + key + '-cl">' +
       P.colors.map(function (c, i) { return '<label class="pr-col"><input type="radio" name="' + key + '-color" value="' + c + '"' + (c.toLowerCase() === color.toLowerCase() ? ' checked' : '') + fk(key + '-c' + i) + '><i style="background:' + c + '"></i><span class="pr-sr">' + esc(T.colorNames[i] || c) + '</span></label>'; }).join('') + '</div></div>';
     var ico = iconOf(v);
@@ -455,7 +494,7 @@
       '<button class="pr-open" data-pa="open" data-id="' + esc(it.id) + '"' + fk('co-' + it.id) + '>' +
       '<span class="pr-name">' + sw(it) + esc(it.name) + '</span>' +
       '<span class="pr-meta">' + esc(last ? fill(T.last, { d: M.dlabel(last) }) : T.never) + '</span>' +
-      '<span class="pr-meta">' + esc(kids.length ? (famN ? fill(T.monthFam, { n: famN }) : T.monthNone) : t.month.n ? fill(T.month, { n: t.month.n, s: M.pracFmt(t.month.sum), u: it.unit }) : T.monthNone) + '</span>' +
+      '<span class="pr-meta">' + esc(kids.length ? (famN ? fill(T.monthFam, { n: famN }) : T.monthNone) : monthText(it)) + '</span>' +
       (kids.length ? '<span class="pr-meta pr-kidsl">' + esc(fill(T.kidsOf, { list: kids.map(function (k) { return k.name; }).join(T.listSep) })) + '</span>' : '') +
       (it.goal ? '<span class="pr-meta pr-goall">' + esc(T.goalLabel) + '：' + esc(it.goal) + '</span>' : '') + '</button>';
     return h + '</div>';
@@ -550,10 +589,12 @@
   function qmgrHTML() {
     return '<div class="pr-qmgr"><p class="note">' + esc(T.qmgrNote) + '</p>' + ordered(active()).map(function (it) {
       var us = P.units.slice(); if (us.indexOf(it.unit) < 0) us.unshift(it.unit);
-      return '<div class="pr-mrow' + (parentId(it) ? ' kid' : '') + '"' + cvars(it) + '>' + sw(it) + '<div><b>' + esc(it.name) + '</b></div>' +
+      var more = unitsOf(it).slice(1), uxOn = st.qu === it.id;
+      return '<div class="pr-mrow' + (parentId(it) ? ' kid' : '') + '"' + cvars(it) + '>' + sw(it) + '<div><b>' + esc(it.name) + '</b>' +
+        '<button type="button" class="lnk pr-uxl" data-pa="uxopen" data-id="' + esc(it.id) + '" aria-expanded="' + uxOn + '"' + fk('uxo-' + it.id) + '>' + esc(more.length ? fill(T.uxAlso, { list: more.join(T.listSep) }) : T.uxAdd) + '</button></div>' +
         '<select class="in pr-qunit" data-qunit="' + esc(it.id) + '" aria-label="' + esc(fill(T.qunitOf, { n: fullName(it) })) + '"' + fk('qu-' + it.id) + '>' +
         us.map(function (u) { return '<option' + (u === it.unit ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join('') + '</select>' +
-        '<button class="btn sm" data-pa="iset" data-id="' + esc(it.id) + '" aria-label="' + esc(fill(T.mgrSetOf, { n: fullName(it) })) + '"' + fk('qs-' + it.id) + '>' + esc(T.mgrSet) + '</button></div>';
+        '<button class="btn sm" data-pa="iset" data-id="' + esc(it.id) + '" aria-label="' + esc(fill(T.mgrSetOf, { n: fullName(it) })) + '"' + fk('qs-' + it.id) + '>' + esc(T.mgrSet) + '</button></div>' + (uxOn ? uxHTML(it, 'q') : '');
     }).join('') + qpreHTML() + '<div class="row pr-gap"><button class="btn sm fill" data-pa="qnew"' + fk('qnew') + '><span aria-hidden="true">＋</span> ' + esc(T.quickOwn) + '</button><button class="lnk" data-pa="qmgr">' + esc(T.mgrClose) + '</button></div></div>';
   }
   // 平台先想好的練習：還沒加的列在項目設定裡，點一下就加進「我的練習」
@@ -585,12 +626,15 @@
     quick.innerHTML = '<div class="panel pr-quick"><div class="pr-qhead"><b>' + esc(T.quickTitle) + '</b><span class="note">' + esc(T.quickNote) + '</span><button class="lnk" data-pa="qmgr" aria-expanded="' + !!st.qmgr + '"' + fk('qmgr') + '>' + esc(T.mgr) + '</button></div>' +
       (st.qmgr ? qmgrHTML() : '') +
       '<div class="pr-rows">' + act.map(function (it) {
-        var on = openId === it.id, ex = st.qx === it.id, ts = todaySum(it.id), fam = kidsOf(it.id), tc = 0;
+        var on = openId === it.id, ex = st.qx === it.id, tt = todayText(it.id), fam = kidsOf(it.id), tc = 0;
+        // 今天用了不只一種單位：那一句比較長，放到名稱下面一行，不擠掉名稱
+        var wide = !fam.length && tt.indexOf(T.listSep) > -1;
         if (fam.length) { var fids = [it.id].concat(fam.map(function (x) { return x.id; })); st.data.logs.forEach(function (l) { if (l.date === C.TODAY && fids.indexOf(l.itemId) > -1) tc++; }); }
         return '<div class="pr-row' + (ex ? ' open' : '') + '"' + cvars(it) + '>' +
           '<button class="pr-rowmain" data-pa="qrow" data-id="' + esc(it.id) + '" aria-expanded="' + ex + '"' + fk('qr-' + it.id) + '>' + sw(it) + '<span class="pr-rowtxt"><b>' + esc(fullName(it)) + '</b><span>' + esc(rowSub(it)) + '</span></span></button>' +
-          (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : ts ? '<em>' + esc(fill(T.todayDid, { s: M.pracFmt(ts), u: it.unit })) + '</em>' : '') +
+          (fam.length ? (tc ? '<em>' + esc(fill(T.todayFam, { c: tc })) + '</em>' : '') : tt && !wide ? '<em>' + esc(tt) + '</em>' : '') +
           '<button class="btn sm pr-rowlog" data-pa="qopen" data-id="' + esc(it.id) + '" aria-expanded="' + on + '"' + fk('qp-' + it.id) + '>' + esc(T.log) + '</button>' +
+          (wide ? '<em class="wide">' + esc(tt) + '</em>' : '') +
           (on ? '<div class="pr-rowform">' + logForm() + '</div>' : '') + (ex ? rowDetail(it) : '') + '</div>';
       }).join('') + '</div></div>';
   }
@@ -618,7 +662,7 @@
       if (kids.length || adding) h += '<div class="pr-kids"><b class="pr-h3">' + esc(T.kids) + '</b>' + kids.map(function (k) {
         var kt = M.pracTotals(st.data.logs, k.id, C.TODAY);
         return '<button class="pr-kid' + (k.archived ? ' arch' : '') + '" data-pa="open" data-id="' + esc(k.id) + '"' + cvars(k) + fk('kid-' + k.id) + '>' + sw(k) + '<b>' + esc(k.name) + '</b><span>' +
-          esc(kt.month.n ? fill(T.month, { n: kt.month.n, s: M.pracFmt(kt.month.sum), u: k.unit }) : T.monthNone) + '</span></button>';
+          esc(monthText(k)) + '</span></button>';
       }).join('') + (adding || it.archived ? '' : '<button class="pr-kid pr-kidadd" data-pa="kidnew"' + fk('kidnew') + '><span aria-hidden="true">＋</span> ' + esc(T.kidAdd) + '</button>') + '</div>';
       if (adding) h += '<div class="panel pr-newf"><h3 class="pr-h3">' + esc(fill(T.kidAddTitle, { n: it.name })) + '</h3>' + itemForm('new') + '<p class="note">' + esc(T.kidNote) + '</p></div>';
     }
@@ -633,9 +677,11 @@
   }
 
   function famOf(it) {
-    if (!it || parentId(it)) return null;
-    var k = M.pracKids(items(), it.id);
-    return k.length ? [it.id].concat(k.map(function (x) { return x.id; })) : null;
+    if (!it) return null;
+    var k = parentId(it) ? [] : M.pracKids(items(), it.id);
+    if (k.length) return [it.id].concat(k.map(function (x) { return x.id; }));
+    // 沒有小項目、但紀錄用了不只一種單位：一樣照單位分開算（清單裡只有它自己）
+    return logUnits(it).length > 1 ? [it.id] : null;
   }
   function unitsText(us) { return us.map(function (u) { return fill(T.unitSum, { s: M.pracFmt(u.sum), u: u.unit }); }).join(T.listSep); }
   // 最近寫下的：星星的排前面，最多三段
@@ -729,8 +775,8 @@
     } else {
       t = M.pracTotals(lg, it.id, C.TODAY); has = t.all.n > 0;
       if (has) h += '<div class="pr-stats">' +
-        '<div class="pr-stat"><small>' + esc(T.thisMonth) + '</small><p><b>' + t.month.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.month.sum), u: it.unit })) + '</span></div>' +
-        '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + t.all.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.all.sum), u: it.unit })) + '<br>' + esc(fill(T.since, { d: slash(t.all.first) })) + '</span></div></div>';
+        '<div class="pr-stat"><small>' + esc(T.thisMonth) + '</small><p><b>' + t.month.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.month.sum), u: uo(it) })) + '</span></div>' +
+        '<div class="pr-stat"><small>' + esc(T.allTime) + '</small><p><b>' + t.all.n + '</b> ' + esc(T.times) + '</p><span>' + esc(fill(T.total, { s: M.pracFmt(t.all.sum), u: uo(it) })) + '<br>' + esc(fill(T.since, { d: slash(t.all.first) })) + '</span></div></div>';
     }
     if (!has) h += '<p class="pr-invite">' + esc(T.noLogs) + '</p>';
     h += insightsHTML(it);
@@ -742,7 +788,7 @@
       h += '<div class="pr-blk"><div class="pr-chead"><h3 class="pr-h3">' + esc(T.trend) + '</h3><div class="chips" role="group" aria-label="' + esc(T.trend) + '">' +
         '<button class="chip' + (wk ? ' on' : '') + '" data-pa="chart" data-c="week" aria-pressed="' + wk + '"' + fk('cw') + '>' + esc(T.byWeek) + '</button>' +
         '<button class="chip' + (!wk ? ' on' : '') + '" data-pa="chart" data-c="month" aria-pressed="' + !wk + '"' + fk('cm') + '>' + esc(T.byMonth) + '</button></div></div>' +
-        '<div class="pr-chart" id="pr-chart"></div><p class="note pr-cap">' + esc(ids ? T.chartCapFam : fill(T.chartCap, { u: it.unit })) + '</p></div>';
+        '<div class="pr-chart" id="pr-chart"></div><p class="note pr-cap">' + esc(ids ? (ids.length > 1 ? T.chartCapFam : T.chartCapMix) : fill(T.chartCap, { u: uo(it) })) + '</p></div>';
     }
     return h + '</div>' + aiHTML(it);
   }
@@ -758,13 +804,13 @@
   function calHTML(it) {
     var ids = famOf(it), mo = M.pracMonth(st.data.logs, ids || it.id, st.calY, st.calM), cur = nowYM(), atNow = st.calY > cur.y || (st.calY === cur.y && st.calM >= cur.m), i, h;
     h = '<div class="pr-calnav"><button type="button" data-pa="cprev" aria-label="' + esc(T.prevMonth) + '"' + fk('cp') + '>‹</button>' +
-      '<div><b>' + esc(fill(T.ym, { y: st.calY, m: st.calM })) + '</b><span class="note">' + esc(!mo.n ? T.monthEmpty : ids ? fill(T.monthSumFam, { n: mo.n }) : fill(T.monthSum, { n: mo.n, s: M.pracFmt(mo.sum), u: it.unit })) + '</span></div>' +
+      '<div><b>' + esc(fill(T.ym, { y: st.calY, m: st.calM })) + '</b><span class="note">' + esc(!mo.n ? T.monthEmpty : ids ? fill(T.monthSumFam, { n: mo.n }) : fill(T.monthSum, { n: mo.n, s: M.pracFmt(mo.sum), u: uo(it) })) + '</span></div>' +
       '<button type="button" data-pa="cnext" aria-label="' + esc(T.nextMonth) + '"' + (atNow ? ' disabled' : '') + fk('cn') + '>›</button></div>';
     h += '<div class="pr-cal">' + T.wd.map(function (w) { return '<span class="pr-wd" aria-hidden="true">' + esc(w) + '</span>'; }).join('');
     for (i = 0; i < mo.lead; i++) h += '<span></span>';
     mo.days.forEach(function (d) {
       var fut = d.key > C.TODAY, today = d.key === C.TODAY, sel = st.day === d.key;
-      var aria = fill(T.dayAria, { m: st.calM, d: d.d, x: !d.n ? T.dayNone : ids ? fill(T.dayHasFam, { n: d.n }) : fill(T.dayHas, { n: d.n, s: M.pracFmt(d.sum), u: it.unit }) }) + (today ? T.todayAria : '');
+      var aria = fill(T.dayAria, { m: st.calM, d: d.d, x: !d.n ? T.dayNone : ids ? fill(T.dayHasFam, { n: d.n }) : fill(T.dayHas, { n: d.n, s: M.pracFmt(d.sum), u: uo(it) }) }) + (today ? T.todayAria : '');
       h += '<button type="button" class="pr-day' + (d.n ? ' has' : '') + (today ? ' today' : '') + '" data-pa="day" data-d="' + d.key + '" aria-pressed="' + sel + '" aria-label="' + esc(aria) + '"' + (fut ? ' disabled' : '') + fk('d-' + d.key) + '>' +
         '<span>' + d.d + '</span>' + (d.n ? '<small>' + esc(ids ? String(d.n) : M.pracFmt(d.sum)) + '</small>' : '') + '</button>';
     });
@@ -780,7 +826,7 @@
       if (st.lf && st.lf.ctx === 'edit' && st.lf.log === l.id) { h += '<div class="pr-lg ed">' + logForm() + '</div>'; return; }
       var asking = st.ask === 'log:' + l.id;
       var li = itemById(l.itemId) || it;
-      h += '<div class="pr-lg"><b>' + esc(M.pracFmt(l.amount)) + '<small> ' + esc(li.unit) + '</small></b>' + (ids ? '<span class="pr-itag">' + esc(li.id === it.id ? fill(T.whole, { n: it.name }) : li.name) + '</span>' : '') + '<span class="pr-lgn">' + (l.what ? '<span class="pr-itag">' + esc(l.what) + '</span>' : '') + esc(l.note) + '</span>' +
+      h += '<div class="pr-lg"><b>' + esc(M.pracFmt(l.amount)) + '<small> ' + esc(luOf(l)) + '</small></b>' + (ids && ids.length > 1 ? '<span class="pr-itag">' + esc(li.id === it.id ? fill(T.whole, { n: it.name }) : li.name) + '</span>' : '') + '<span class="pr-lgn">' + (l.what ? '<span class="pr-itag">' + esc(l.what) + '</span>' : '') + esc(l.note) + '</span>' +
         (asking ? '<span class="pr-lga"><span class="note">' + esc(T.delLogAsk) + '</span><button class="btn sm fill" data-pa="ldelyes" data-log="' + esc(l.id) + '"' + fk('ly-' + l.id) + '>' + esc(T.delYes) + '</button><button class="lnk" data-pa="nask" data-back="' + esc('ld-' + l.id) + '">' + esc(T.cancel) + '</button></span>'
           : '<span class="pr-lga"><button class="lnk" data-pa="ledit" data-log="' + esc(l.id) + '"' + fk('le-' + l.id) + '>' + esc(T.edit) + '</button><button class="lnk" data-pa="ldel" data-log="' + esc(l.id) + '"' + fk('ld-' + l.id) + '>' + esc(T.del) + '</button></span>') + '</div>';
     });
@@ -803,10 +849,10 @@
       var cx = padX + slot * i + slot / 2, last = i === n - 1, lab, full, p;
       if (wk) { p = ymd(r.start); lab = last ? T.thisWeekShort : p.m + '/' + p.d; full = fill(T.weekOf, { d: M.dlabel(r.start) }); }
       else { p = r.ym.split('-').map(Number); lab = last ? T.thisMonthShort : fill(T.monthShort, { m: p[1] }); full = fill(T.monthOf, { y: p[0], m: p[1] }); }
-      if (r.n) alt.push(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barAlt, { w: full, s: M.pracFmt(r.sum), u: it.unit }));
+      if (r.n) alt.push(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barAlt, { w: full, s: M.pracFmt(r.sum), u: uo(it) }));
       if (r.n && max) {
         var bh = Math.max(3, (val(r) / max) * (H - top - bot)), y = H - bot - bh;
-        h += '<g><title>' + esc(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barTip, { w: full, n: r.n, s: M.pracFmt(r.sum), u: it.unit })) + '</title>' +
+        h += '<g><title>' + esc(ids ? fill(T.barAltFam, { w: full, n: r.n }) : fill(T.barTip, { w: full, n: r.n, s: M.pracFmt(r.sum), u: uo(it) })) + '</title>' +
           '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="' + Math.min(6, bw / 3).toFixed(1) + '" fill="' + color + '"/>' +
           '<text x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" text-anchor="middle" class="v" style="font-size:' + fs + 'px">' + esc(M.pracFmt(val(r))) + '</text></g>';
       }
@@ -836,7 +882,7 @@
       if (!l || ids.indexOf(l.itemId) < 0) return;
       var li = itemById(l.itemId), ph = join.byLog[l.id] || [];
       if (!l.note && !ph.length) return;
-      out.push({ id: l.id, kind: 'log', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: l.note || '', what: l.what || '', star: !!(ann[l.id] && ann[l.id].star), photos: ph, amount: M.pracFmt(l.amount), unit: li ? li.unit : '' });
+      out.push({ id: l.id, kind: 'log', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: l.note || '', what: l.what || '', star: !!(ann[l.id] && ann[l.id].star), photos: ph, amount: M.pracFmt(l.amount), unit: luOf(l) });
     });
     return out.sort(function (a, b) { return a.key < b.key ? 1 : a.key > b.key ? -1 : b.at - a.at; });
   }
@@ -846,7 +892,7 @@
     st.data.logs.forEach(function (l) {
       if (!l || has[l.id] || ids.indexOf(l.itemId) < 0) return;
       var li = itemById(l.itemId);
-      out.push({ id: l.id, kind: 'plain', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: '', what: l.what || '', star: false, photos: [], amount: M.pracFmt(l.amount), unit: li ? li.unit : '' });
+      out.push({ id: l.id, kind: 'plain', itemId: l.itemId, key: l.date, at: l.at || 0, title: '', body: '', what: l.what || '', star: false, photos: [], amount: M.pracFmt(l.amount), unit: luOf(l) });
     });
     toolPages(it).forEach(function (p) {
       out.push({ id: 'tp-' + p.id, kind: 'tool', itemId: it.id, key: p.key, at: 0, title: p.title || '', body: [p.text, p.sub].concat(p.meta || []).filter(Boolean).join('・'), star: false, photos: [] });
@@ -939,17 +985,18 @@
     if (!it) return;
     var old = f.log ? logById(f.log) : null, el = form.elements;
     // 那一欄沒顯示（設定裡關掉了）時，改舊紀錄不動它原本記的「哪一個」
-    var r = M.pracLogCheck({ date: el.date.value, amount: el.amount.value, note: el.note.value, what: el.what ? el.what.value : (old ? old.what : '') }, C.TODAY, P.max);
+    var r = M.pracLogCheck({ date: el.date.value, amount: el.amount.value, note: el.note.value, what: el.what ? el.what.value : (old ? old.what : ''), unit: el.unit ? el.unit.value : (old ? old.unit : '') }, C.TODAY, P.max);
     if (!r.ok) { setErr(form, P.err[r.err], r.err === 'future' || r.err === 'date' ? (el.date.type === 'hidden' ? '' : 'date') : r.err === 'note' ? 'note' : r.err === 'what' ? 'what' : 'amount'); return; }
     var lg = { id: old ? old.id : (f.nid || (f.nid = M.pracId('pl-'))), itemId: it.id, date: r.log.date, amount: r.log.amount, note: r.log.note, at: old ? (old.at || Date.now()) : Date.now() };
     if (r.log.what) lg.what = r.log.what;
+    if (r.log.unit && r.log.unit !== it.unit) lg.unit = r.log.unit;
     // 照片先存（存成同項目、同一天的一筆隨手記）；存不成就停在表單上，這一筆也不記。存過了重試時不再存第二次。
     var pics = !old && f.pics && f.pics.length ? f.pics.slice() : null, job = Promise.resolve();
     if (pics && !f.picDone) job = timed(function () { return C.savePhotos({ key: lg.date, text: lg.what || '', itemId: it.id, photos: pics }); }, D.insp.saveTimeoutMs)
       .then(function () { f.picDone = true; }, function () { throw new Error('pic'); });
     run(form, job.then(function () { return store.putLog(lg); }), function () {
       upsert(st.data.logs, lg);
-      var msg = lg.date === C.TODAY ? fill(T.logged, { n: it.name, a: M.pracFmt(lg.amount), u: it.unit }) : fill(T.loggedOn, { d: M.dlabel(lg.date), n: it.name, a: M.pracFmt(lg.amount), u: it.unit });
+      var msg = lg.date === C.TODAY ? fill(T.logged, { n: it.name, a: M.pracFmt(lg.amount), u: lg.unit || it.unit }) : fill(T.loggedOn, { d: M.dlabel(lg.date), n: it.name, a: M.pracFmt(lg.amount), u: lg.unit || it.unit });
       if (f.ctx === 'zone' || f.ctx === 'day' || f.ctx === 'edit') { var d = ymd(lg.date); st.calY = d.y; st.calM = d.m; st.day = lg.date; }
       closeLog();
       if (f.ctx === 'edit') st.focus = 'le-' + lg.id;
@@ -1018,6 +1065,7 @@
       upsert(st.data.items, it);
       // 多問的那一欄有改才記：和預設一樣就不另外存，清空就是關掉
       if (askV !== null && askV !== askWas) { var kd = kindOf(it); setAsk(it.id, askV ? (kd && kd.ask === askV ? '' : askV) : '-'); }
+      tidyUnits(it);
       if (hintV !== null && hintV !== hintWas) { var kh = kindOf(it); setOwn('pracHint', it.id, hintV ? (kh && kh.hint === hintV ? '' : hintV) : (kh && kh.hint ? '-' : '')); }
       if (mode === 'new') { st.itf = null; st.focus = st.item ? 'kid-' + it.id : 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
       else C.toast(T.saved);
@@ -1060,7 +1108,7 @@
     if (!it || busy()) return;
     if (!t.value || t.value === it.unit || t.value.length > P.max.unit) return;
     x = copy(it); x.unit = t.value;
-    run(null, store.putItem(x), function () { upsert(st.data.items, x); st.focus = 'qu-' + x.id; C.toast(fill(T.qunitDone, { n: x.name, u: x.unit })); render(true); C.refresh(); });
+    run(null, store.putItem(x), function () { upsert(st.data.items, x); tidyUnits(x); st.focus = 'qu-' + x.id; C.toast(fill(T.qunitDone, { n: x.name, u: x.unit })); render(true); C.refresh(); });
   }
   function onClick(e) {
     var b = e.target.closest('[data-pa]');
@@ -1101,6 +1149,23 @@
         x = presets()[+b.getAttribute('data-i')]; form = b.closest('form');
         if (!x || !form) return;
         form.elements.name.value = x.name; form.elements.unit.value = x.unit; form.setAttribute('data-au', x.unit); syncUnits(form); return;
+      // 加單位：打開／收起某個項目的小編輯區；常用單位點了就加、再點拿掉；自己填的按「加」
+      case 'uxopen': st.qu = st.qu === id ? '' : id; st.focus = 'uxo-' + id; break;
+      case 'uxdone': st.qu = ''; st.focus = 'uxo-' + id; break;
+      case 'uxt': case 'uxadd':
+        x = itemById(id); if (!x) return;
+        var uxl = extraUnits(x).slice(), uxin = a === 'uxadd' ? b.parentNode.querySelector('.pr-uxin') : null, uxu = M.pracWhat(a === 'uxadd' ? (uxin ? uxin.value : '') : b.getAttribute('data-u'));
+        if (!uxu || uxu.length > P.max.unit) { C.toast(P.err.unit); if (uxin) uxin.focus(); return; }
+        if (unitsOf(x).indexOf(uxu) > -1) {
+          if (a === 'uxadd' || uxu === x.unit) { C.toast(T.uxSame); return; }
+          if (logUnits(x).some(function (o) { return o.unit === uxu; })) { C.toast(fill(T.uxUsed, { u: uxu })); return; }
+          uxl = uxl.filter(function (u) { return u !== uxu; });
+        } else {
+          if (uxl.length >= P.max.units) { C.toast(fill(T.uxFull, { n: P.max.units })); return; }
+          uxl.push(uxu);
+        }
+        if (uxin) uxin.value = '';
+        setOwn('pracUnits', x.id, uxl.length ? uxl : ''); st.focus = b.getAttribute('data-k') || ''; break;
       // 記一筆：點記過的「哪一個」就填進去，再點一次清掉
       case 'what':
         form = b.closest('form'); x = b.getAttribute('data-v');
@@ -1245,6 +1310,7 @@
       if (n > -1) { e.preventDefault(); setTab(TABS[n], true); }
       return;
     }
+    if (e.key === 'Enter' && t.classList && t.classList.contains('pr-uxin')) { e.preventDefault(); var ub = t.parentNode.querySelector('[data-pa=uxadd]'); if (ub) ub.click(); return; }
     if (e.key === 'Escape' && st.lf && t.closest && t.closest('form[data-form=log]')) { e.preventDefault(); closeLog(); render(true); }
   }
   function onInput(e) {
