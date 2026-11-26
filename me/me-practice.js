@@ -109,6 +109,15 @@
     if (!ru.n) return T.monthNone;
     return ru.units.length > 1 ? fill(T.monthMix, { n: ru.n, s: unitsText(ru.units) }) : fill(T.month, { n: ru.n, s: M.pracFmt(ru.units[0].sum), u: ru.units[0].unit });
   }
+  // 記一筆時選這次的單位：全部並排成按鈕（下拉選單一次只看得到一個，會以為沒得選）
+  function unitPick(name, us, lu, key, label) {
+    return '<span class="chips pr-ups" role="group" aria-label="' + esc(label) + '" data-ug="1"><input type="hidden" name="' + esc(name) + '" value="' + esc(lu) + '"' + fk(key) + '>' +
+      us.map(function (u) { var on = u === lu; return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-pa="lunit" data-v="' + esc(u) + '" aria-pressed="' + on + '">' + esc(u) + '</button>'; }).join('') + '</span>';
+  }
+  function syncUps(g) {
+    var inp = g.querySelector('input[type=hidden]'), v = inp ? inp.value : '';
+    each(g.querySelectorAll('[data-pa=lunit]'), function (c) { var on = c.getAttribute('data-v') === v; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+  }
   // 加單位的小編輯區：常用單位點了就加、再點拿掉；也可以自己填。改了馬上存。
   function uxHTML(it, where) {
     var all = unitsOf(it), cand = [], hid = 'pr-ux-' + where + '-' + it.id;
@@ -415,9 +424,13 @@
     var f = st.lf, it = itemById(f.item), key = lfKey(), rows = famRows(it, f), date = f.date || C.TODAY, eid = 'pr-e-' + f.ctx;
     var h = '<form class="pr-log pr-fam" data-form="fam" novalidate' + cvars(it) + '>';
     h += rows.map(function (k) {
-      var nm = k.id === it.id ? fill(T.whole, { n: it.name }) : k.name;
-      return '<label class="pr-famr"><span class="pr-famn">' + sw(k) + '<b>' + esc(nm) + '</b></span><span class="pr-amt"><input class="in" name="a-' + esc(k.id) + '" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="' + esc(lastAmount(k.id)) +
-        '" aria-label="' + esc(nm + ' ' + fill(T.amountFor, { u: k.unit })) + '" aria-describedby="' + eid + '"' + fk(key + '-a-' + k.id) + '><span class="pr-unit" aria-hidden="true">' + esc(k.unit) + '</span></span></label>';
+      var nm = k.id === it.id ? fill(T.whole, { n: it.name }) : k.name, us = unitsOf(k), last = lastLogOf(k.id), lu = last ? luOf(last) : k.unit;
+      // 這一列的項目有不只一種單位：單位並排成按鈕，先選上次用的（這時整列不包成 label，裡面不只一個可以按的東西）
+      var multi = us.length > 1, tag = multi ? 'div' : 'label';
+      return '<' + tag + ' class="pr-famr"><span class="pr-famn">' + sw(k) + '<b>' + esc(nm) + '</b></span><span class="pr-amt"><input class="in" name="a-' + esc(k.id) + '" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="' + esc(lastAmount(k.id)) +
+        '" aria-label="' + esc(nm + ' ' + (multi ? T.amountAny : fill(T.amountFor, { u: k.unit }))) + '" aria-describedby="' + eid + '"' + fk(key + '-a-' + k.id) + '>' +
+        (multi ? '' : '<span class="pr-unit" aria-hidden="true">' + esc(k.unit) + '</span>') + '</span>' +
+        (multi ? unitPick('u-' + k.id, us, lu, key + '-u-' + k.id, nm + ' ' + T.unitPick) : '') + '</' + tag + '>';
     }).join('');
     if (rows.indexOf(it) < 0) h += '<button class="lnk pr-famw" type="button" data-pa="famwhole"' + fk('famw') + '>' + esc(T.wholeAdd) + '</button>';
     h += '<input class="in pr-lnote" name="note" maxlength="' + P.max.note + '" placeholder="' + esc(T.notePh) + '" aria-label="' + esc(T.notePh) + '"' + fk(key + '-n') + '>';
@@ -439,7 +452,7 @@
       (whats.length ? '<span class="chips" role="group" aria-label="' + esc(fill(T.whatPick, { a: ask })) + '">' + whats.map(function (w) { return '<button type="button" class="chip' + (w === wv ? ' on' : '') + '" data-pa="what" data-v="' + esc(w) + '" aria-pressed="' + (w === wv) + '">' + esc(w) + '</button>'; }).join('') + '</span>' : '') + '</div>';
     h += '<div class="pr-lrow"><label class="pr-amt"><span class="pr-sr">' + (us.length > 1 ? esc(T.amountAny) : fillH(T.amountFor, { u: it.unit })) + '</span>' +
       '<input class="in" name="amount" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="9" value="' + esc(amt) + '" aria-describedby="' + eid + '"' + fk(key + '-a') + '>' +
-      (us.length > 1 ? '</label><select class="in pr-usel" name="unit" aria-label="' + esc(T.unitPick) + '"' + fk(key + '-u') + '>' + us.map(function (u) { return '<option' + (u === lu ? ' selected' : '') + '>' + esc(u) + '</option>'; }).join('') + '</select>'
+      (us.length > 1 ? '</label>' + unitPick('unit', us, lu, key + '-u', T.unitPick)
         : '<span class="pr-unit" aria-hidden="true">' + esc(it.unit) + '</span></label>') +
       '<input class="in pr-lnote" name="note" maxlength="' + P.max.note + '" placeholder="' + esc(T.notePh) + '" aria-label="' + esc(T.notePh) + '" value="' + esc(lg ? lg.note : '') + '"' + fk(key + '-n') + '></div>';
     h += '<div class="pr-lrow">';
@@ -1028,9 +1041,10 @@
     for (i = 0; i < rows.length; i++) {
       k = rows[i]; v = el['a-' + k.id] ? String(el['a-' + k.id].value).replace(/^\s+|\s+$/g, '') : '';
       if (!v) continue;
-      r = M.pracLogCheck({ date: el.date.value, amount: v, note: out.length ? '' : el.note.value }, C.TODAY, P.max);
-      if (!r.ok) { setErr(form, P.err[r.err], r.err === 'amount' ? 'a-' + k.id : r.err === 'note' ? 'note' : el.date.type === 'hidden' ? '' : 'date'); return; }
+      r = M.pracLogCheck({ date: el.date.value, amount: v, note: out.length ? '' : el.note.value, unit: el['u-' + k.id] ? el['u-' + k.id].value : '' }, C.TODAY, P.max);
+      if (!r.ok) { setErr(form, P.err[r.err], r.err === 'amount' ? 'a-' + k.id : r.err === 'note' ? 'note' : r.err === 'unit' ? 'u-' + k.id : el.date.type === 'hidden' ? '' : 'date'); return; }
       out.push({ id: f.nids[k.id] || (f.nids[k.id] = M.pracId('pl-')), itemId: k.id, date: r.log.date, amount: r.log.amount, note: r.log.note, at: Date.now() + out.length });
+      if (r.log.unit && r.log.unit !== k.unit) out[out.length - 1].unit = r.log.unit;
     }
     if (!out.length) { setErr(form, P.err.fam, 'a-' + rows[0].id); return; }
     var chain = Promise.resolve();
@@ -1171,6 +1185,10 @@
         form = b.closest('form'); x = b.getAttribute('data-v');
         if (!form || !form.elements.what) return;
         form.elements.what.value = form.elements.what.value === x ? '' : x; syncWhat(form); return;
+      // 記一筆：選這次的單位
+      case 'lunit':
+        x = b.closest('[data-ug]'); if (!x) return;
+        x.querySelector('input[type=hidden]').value = b.getAttribute('data-v'); syncUps(x); return;
       case 'picadd':
         if (!st.lf || !C.photoReady()) return;
         if ((st.lf.pics || []).length >= D.insp.maxPhotos) { C.toast(fill(D.insp.full, { n: D.insp.maxPhotos })); return; }
@@ -1341,7 +1359,7 @@
     go('box', box, renderBox); go('quick', quick, renderQuick); go('zone', zone, renderZone);
     restore(s);
     // 重畫後輸入框的字是還原回來的，記過的選項要跟著它亮
-    roots().forEach(function (r) { each(r.querySelectorAll('form[data-form=log]'), function (f) { if (f.elements.what) syncWhat(f); }); });
+    roots().forEach(function (r) { each(r.querySelectorAll('form[data-form=log]'), function (f) { if (f.elements.what) syncWhat(f); }); each(r.querySelectorAll('[data-ug]'), syncUps); });
   }
   function onFocusOut(e) {
     var root = e.currentTarget;

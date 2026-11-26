@@ -124,7 +124,10 @@
 .pr-uxrow{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center}
 .pr-uxin{flex:0 1 9em;min-width:6em;min-height:40px;padding:6px 12px}
 .pr-uxrow .lnk{margin-left:auto}
-.pr-usel{flex:none;width:auto;max-width:8em;min-height:44px;padding:6px 10px;font-weight:700}
+.pr-ups{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pr-ups .chip{font-size:14px;font-weight:700;padding:8px 14px;min-height:40px;background:var(--bg)}
+.pr-ups .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pr-famr .pr-ups{flex:1 1 100%;justify-content:flex-end;padding-bottom:4px}
 .pr-qpre{display:grid;gap:6px;margin-top:6px;padding-top:14px;border-top:1px solid var(--line)}
 .pr-qpre b{font-size:14px;color:var(--dark);letter-spacing:.04em}
 .pr-qpre .chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -235,7 +238,7 @@
 .pr-warn{font-size:14px;font-weight:500;color:var(--dark);background:var(--yellow-soft);border-radius:var(--r-sm);padding:10px 14px;max-width:62ch}
 .pr-danger{color:var(--orange-dark)}
 
-@media(max-width:860px){.pr-amt .in,.pr-date .in,.pr-lnote,.pr-f .in{font-size:16px}.pr-amt .in{font-size:22px}}
+@media(max-width:860px){.pr-amt .in,.pr-date .in,.pr-lnote,.pr-f .in{font-size:16px}.pr-amt .in{font-size:22px}.pr-uxin,.pr-whatin{font-size:16px}}
 @media(max-width:640px){
   .pr-grid{grid-template-columns:1fr}
   .pr-card{padding:18px 18px 14px;flex-direction:row;align-items:center;flex-wrap:wrap}
