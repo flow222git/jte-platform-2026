@@ -704,6 +704,12 @@
     if (kind && kind.ask) return kind.ask;
     return used ? String(any || '') : '';
   }
+  // 「寫一段」空白框裡的那一行提示：本人改的優先（'-' 是不要提示），沒改就照預設，沒有預設就不提示。
+  function pracHint(own, kind) {
+    own = trimS(own);
+    if (own === '-') return '';
+    return own || String((kind && kind.hint) || '');
+  }
   function pracWhat(v) { return trimS(v).replace(/\s+/g, ' '); }
   // 雲端的紀錄只有 note 一欄可以放字（規則不用改）：「哪一個」放第一行，那一句放第二行；讀回來再拆開。
   function pracNotePack(what, note) {
@@ -938,7 +944,7 @@
     pracFmt: pracFmt, pracAmount: pracAmount, pracItemCheck: pracItemCheck, pracLogCheck: pracLogCheck, pracNoteCheck: pracNoteCheck, pracClean: pracClean,
     pracLast: pracLast, pracMonth: pracMonth, pracTotals: pracTotals, pracWeeks: pracWeeks, pracMonths: pracMonths, pracDayLogs: pracDayLogs,
     pracRemoveItem: pracRemoveItem, pracUnmark: pracUnmark, pracInsp: pracInsp, pracMode: pracMode, pracId: pracId, dataRows: dataRows, dailyKey: dailyKey, mergeDaily: mergeDaily, foldState: foldState, itemCounts: itemCounts, pracIcon: pracIcon,
-    pracKind: pracKind, pracAsk: pracAsk, pracWhat: pracWhat, pracNotePack: pracNotePack, pracNoteUnpack: pracNoteUnpack, pracWhats: pracWhats, pracByWhat: pracByWhat, pracPhotoJoin: pracPhotoJoin,
+    pracKind: pracKind, pracAsk: pracAsk, pracHint: pracHint, pracWhat: pracWhat, pracNotePack: pracNotePack, pracNoteUnpack: pracNoteUnpack, pracWhats: pracWhats, pracByWhat: pracByWhat, pracPhotoJoin: pracPhotoJoin,
     pracParent: pracParent, pracKids: pracKids, pracFamily: pracFamily, pracTitleOf: pracTitleOf, pracWriteCheck: pracWriteCheck, pracRollup: pracRollup, pracGuessIcon: pracGuessIcon, pracTools: pracTools, pracInsights: pracInsights,
     actImg: actImg, questText: questText, questAdd: questAdd, questNotes: questNotes, questTags: questTags, questTagSet: questTagSet };
 })(window);
