@@ -338,7 +338,7 @@ check('區塊收放：沒動過照預設，動過照本人；預設收起的是�
   eq(M.foldState(null,F.closed,'rul'),true);eq(M.foldState({},F.closed,'mir'),true);eq(M.foldState({},F.closed,'rec'),false);eq(M.foldState({rul:false},F.closed,'rul'),false);eq(M.foldState({rec:true},F.closed,'rec'),true);eq(M.foldState({rec:'x'},F.closed,'rec'),false);eq(M.foldState({},null,'data'),false);
   eq(F.closed.join(),'open,mir,rul,bri');['sum','rec','org','mir'].forEach(k=>ok(F.sum[k],k));ok(F.keys.indexOf('data')<0,'我的資料改從頁首的登入鈕打開');ok(F.open&&F.close&&F.all);
   eq(F.keys.length,14);ok(F.keys.indexOf('wrk')<0&&F.keys.indexOf('out')<0&&F.keys.indexOf('cur')<0,'練習剩兩塊、探索的好奇併進問題');F.closed.forEach(k=>ok(F.keys.indexOf(k)>-1,k));ok(F.closed.indexOf('tools')<0,'所有工具預設不收');ok(F.closed.indexOf('prac')<0,'我的練習預設不收');ok(F.closed.indexOf('open')>-1,'2026-11-25 起「還開著的」預設收成一行，今天只留練習與隨手記');});
-check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,13);ok(P.err.what&&P.err.ask);ok(P.t.title);});
+check('資料檔：prac 文案',()=>{const P=D.prac;['max','units','examples','colors','err'].forEach(k=>ok(P[k],k));eq(Object.keys(P.err).length,14);ok(P.err.what&&P.err.ask&&P.err.hint);ok(P.t.title);});
 check('我的練習：畫面模組與文案不寫進步、退步、加油、連續；模組裡沒有中文句子',()=>{
   const x=new XMLHttpRequest();x.open('GET','me-practice.js',false);x.send();ok(x.status===200&&x.responseText.length>1000,'讀得到 me-practice.js');
   const src=x.responseText,bad=/進步|退步|加油|連續/;ok(!bad.test(src),'me-practice.js');
@@ -426,7 +426,7 @@ check('空間名稱：練習、探索、總覽、小練息們、陪伴；記錄�
 
 check('起頭的例子裡有閱讀，單位是頁，配得到圖示',()=>{const x=D.prac.examples.filter(e=>e.name==='閱讀')[0];ok(x);eq(x.unit,'頁');ok(D.prac.units.indexOf('頁')>-1);ok(M.pracGuessIcon('閱讀',D.prac.icons));});
 
-check('各種練習的預設：資料齊全，單位和欄位名稱都在上限內',()=>{const P=D.prac;ok(P.kinds.length>=6);P.kinds.forEach(k=>{ok(k.n&&k.unit&&k.ask,k.n);ok(k.unit.length<=P.max.unit,k.n);ok(k.ask.length<=P.max.ask,k.n);ok(Array.isArray(k.ks)&&k.ks.length,k.n);if(k.icon)ok(P.icons.some(x=>x.k===k.icon),k.n+' icon');ok(M.pracItemCheck({name:k.n,unit:k.unit},P.max).ok,k.n)});
+check('各種練習的預設：資料齊全，單位和欄位名稱都在上限內',()=>{const P=D.prac;ok(P.kinds.length>=6);P.kinds.forEach(k=>{ok(k.n&&k.unit&&k.ask,k.n);ok(k.unit.length<=P.max.unit,k.n);ok(k.ask.length<=P.max.ask,k.n);ok(Array.isArray(k.ks)&&k.ks.length,k.n);if(k.icon)ok(P.icons.some(x=>x.k===k.icon),k.n+' icon');ok(k.hint&&k.hint.length<=P.max.hint,k.n+' hint');ok(M.pracItemCheck({name:k.n,unit:k.unit},P.max).ok,k.n)});
   ['閱讀','看展覽','插花','做菜','品茶','調精油'].forEach(n=>ok(P.kinds.some(k=>k.n===n),n));P.ones.forEach(u=>ok(u.length<=P.max.unit,u));ok(P.ones.indexOf('場')>-1&&P.ones.indexOf('頁')<0);
   const ex=P.examples.filter(e=>e.name==='看展覽')[0];ok(ex);eq(ex.unit,'場');ok(P.t.whatAny.length<=P.max.ask);['whatPick','askLabel','askPh','askNote','byWhat','bwRow','picFail','picNote','logOnly','qpreTitle','qpreNote','qpreAdded'].forEach(k=>ok(P.t[k],k));
   (window.JTE_FIRST_DATA?JTE_FIRST_DATA.q2.extra:[]).forEach(e=>ok(M.pracItemCheck({name:e.name,unit:e.unit},P.max).ok,e.name));});
@@ -448,6 +448,9 @@ check('pracPhotoJoin：記一筆時放的照片併回同項目、同一天的那
   j=M.pracPhotoJoin(L,[{id:'m2',itemId:'r',key:'2026-11-05',text:'',photos:ph}]);eq(j.used.m2,'b','沒有字的併到那天最後一筆');
   j=M.pracPhotoJoin(L,[{id:'m3',itemId:'r',key:'2026-11-05',text:'別本書',photos:ph},{id:'m4',itemId:'r',key:'2026-11-09',text:'',photos:ph},{id:'m5',itemId:'x',key:'2026-11-06',text:'',photos:ph},{id:'m6',itemId:'r',key:'2026-11-06',text:'只有字',photos:[]},{id:'m7',key:'2026-11-06',text:'',photos:ph}]);
   eq(Object.keys(j.used).length,0);eq(Object.keys(j.byLog).length,0);j=M.pracPhotoJoin(L,[{id:'m8',itemId:'r',key:'2026-11-06',text:'',photos:ph},{id:'m9',itemId:'r',key:'2026-11-06',text:'',photos:ph}]);eq(j.byLog.c.length,2);eq(M.pracPhotoJoin(null,null).used.x,undefined);});
+
+check('pracHint：寫一段的提示，自己改的優先、減號是不要、沒改照預設、沒有預設就不提示',()=>{const k={hint:'沖法、香氣'};eq(M.pracHint('',k),'沖法、香氣');eq(M.pracHint(' 今天喝了什麼 ',k),'今天喝了什麼');eq(M.pracHint('-',k),'');eq(M.pracHint('',null),'');eq(M.pracHint('',{}),'');eq(M.pracHint('自己的',null),'自己的');
+  ['writeMaybe','hintLabel','hintPh','hintNote'].forEach(x=>ok(D.prac.t[x],x));ok(D.prac.t.writeMaybe.indexOf('{h}')>-1);});
 
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}

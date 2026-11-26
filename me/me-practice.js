@@ -98,12 +98,16 @@
     if (!it || !it.id || (!parentId(it) && kidsOf(it.id).length)) return '';
     return M.pracAsk(askOwn(it), kindOf(it), st.data.logs.some(function (l) { return l.itemId === it.id && l.what; }), T.whatAny);
   }
-  function setAsk(id, v) {
+  // 本人對某個項目的調整（多問哪一欄、寫一段的提示）存在這台裝置：prefs.pracAsk、prefs.pracHint
+  function setOwn(key, id, v) {
     if (!C.O.prefs || typeof C.O.prefs !== 'object') C.O.prefs = {};
-    if (!C.O.prefs.pracAsk || typeof C.O.prefs.pracAsk !== 'object') C.O.prefs.pracAsk = {};
-    if (v) C.O.prefs.pracAsk[id] = v; else delete C.O.prefs.pracAsk[id];
+    if (!C.O.prefs[key] || typeof C.O.prefs[key] !== 'object') C.O.prefs[key] = {};
+    if (v) C.O.prefs[key][id] = v; else delete C.O.prefs[key][id];
     C.save();
   }
+  function setAsk(id, v) { setOwn('pracAsk', id, v); }
+  // 「寫一段」那塊空白裡淡淡的一行提示
+  function hintOf(it) { var p = C.O.prefs && C.O.prefs.pracHint; return it && it.id ? M.pracHint(p && typeof p === 'object' && typeof p[it.id] === 'string' ? p[it.id] : '', kindOf(it)) : ''; }
   // 新增項目時可以直接點的：起頭的例子，加上各種練習的預設（已經有的項目不再列）
   function presets() {
     var out = P.examples.slice();
@@ -417,6 +421,7 @@
     if (mode === 'edit') h += '<label class="pr-f"><span>' + esc(T.goal) + '</span><input class="in" name="goal" maxlength="' + P.max.goal + '" autocomplete="off" placeholder="' + esc(T.goalPh) + '" value="' + esc(v.goal || '') + '"' + fk(key + '-goal') + '></label>';
     var tops = items().filter(function (x) { return !parentId(x) && x.id !== v.id && (!x.archived || x.id === v.parent); }), hasKids = mode === 'edit' && M.pracKids(items(), v.id).length > 0, par = mode === 'edit' ? parentId(v) : (v.parent || '');
     if (mode === 'edit' && !hasKids) h += '<label class="pr-f"><span>' + esc(T.askLabel) + '</span><input class="in" name="ask" maxlength="' + P.max.ask + '" autocomplete="off" placeholder="' + esc(T.askPh) + '" value="' + esc(askOf(v)) + '"' + fk(key + '-ask') + '></label><p class="note pr-fnote">' + esc(T.askNote) + '</p>';
+    if (mode === 'edit') h += '<label class="pr-f"><span>' + esc(T.hintLabel) + '</span><input class="in" name="hint" maxlength="' + P.max.hint + '" autocomplete="off" placeholder="' + esc(T.hintPh) + '" value="' + esc(hintOf(v)) + '"' + fk(key + '-hint') + '></label><p class="note pr-fnote">' + esc(T.hintNote) + '</p>';
     if (mode === 'edit' && tops.length && !hasKids) h += '<label class="pr-f"><span>' + esc(T.parent) + '</span><select class="in" name="parent"' + fk(key + '-par') + '><option value="">' + esc(T.parentNone) + '</option>' +
       tops.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === par ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
     h += '<div class="pr-f"><span id="' + key + '-ul">' + esc(T.unit) + '</span><div class="pr-units"><div class="chips" role="group" aria-labelledby="' + key + '-ul">' +
@@ -854,7 +859,8 @@
     if (!w) h += '<label class="note" for="pr-write">' + fillH(T.writeLabel, { n: it.name }) + '</label>';
     if (!w && ids.length > 1) h += '<label class="pr-win"><span class="note">' + esc(T.writeIn) + '</span><select class="in" name="item"' + fk(key + '-i') + '>' +
       ids.map(function (id) { var x = itemById(id); return '<option value="' + esc(id) + '">' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
-    h += '<textarea class="pr-ta pr-grow" ' + (w ? '' : 'id="pr-write" ') + 'name="body" maxlength="' + P.max.body + '"' + (w ? ' aria-label="' + esc(T.writeEdit) + '"' : '') + fk(key) + '>' + esc(w ? (w.title ? w.title + '\n' : '') + w.body : '') + '</textarea>' +
+    var hint = w ? '' : hintOf(it);
+    h += '<textarea class="pr-ta pr-grow" ' + (w ? '' : 'id="pr-write" ') + 'name="body" maxlength="' + P.max.body + '"' + (hint ? ' placeholder="' + esc(fill(T.writeMaybe, { h: hint })) + '"' : '') + (w ? ' aria-label="' + esc(T.writeEdit) + '"' : '') + fk(key) + '>' + esc(w ? (w.title ? w.title + '\n' : '') + w.body : '') + '</textarea>' +
       '<p class="pr-err" role="alert"></p><div class="row"><button class="btn fill" type="submit">' + esc(w ? T.save : T.writeKeep) + '</button>' +
       (w ? '<button class="btn" type="button" data-pa="wclose">' + esc(T.writeCancel) + '</button>' : '<button class="btn" type="button" data-pa="photo">' + esc(T.inspPhoto) + '</button>') + '</div></form>';
     return h;
@@ -998,6 +1004,8 @@
     if (!r.ok) { setErr(form, P.err[r.err], r.err); return; }
     var askV = el.ask ? M.pracWhat(el.ask.value) : null;
     if (askV !== null && askV.length > P.max.ask) { setErr(form, P.err.ask, 'ask'); return; }
+    var hintV = el.hint ? M.pracWhat(el.hint.value) : null;
+    if (hintV !== null && hintV.length > P.max.hint) { setErr(form, P.err.hint, 'hint'); return; }
     var it, selfId = mode === 'new' ? '' : st.item, pr = itemById(r.item.parent);
     // 只能放在「大項目」底下；自己底下已經有小項目的，不能再放到別人底下
     if (!pr || pr.id === selfId || parentId(pr) || (selfId && M.pracKids(items(), selfId).length)) r.item.parent = '';
@@ -1005,11 +1013,12 @@
     if (mode === 'new') it = { id: (st.itf && st.itf.id) || M.pracId('pi-'), name: r.item.name, unit: r.item.unit, color: pr ? safeColor(pr.color) : P.colors[topLevel(items()).length % P.colors.length],
       icon: iconFor(r.item.name), goal: '', parent: r.item.parent, archived: false, createdAt: Date.now() };
     else { it = copy(itemById(st.item)); it.name = r.item.name; it.unit = r.item.unit; it.color = pr ? safeColor(pr.color) : col ? safeColor(r.item.color) : safeColor(it.color); it.icon = r.item.icon; it.goal = r.item.goal; it.parent = r.item.parent; if (r.item.tools) it.tools = r.item.tools; else delete it.tools; }
-    var askWas = mode === 'edit' ? askOf(itemById(st.item)) : '';
+    var askWas = mode === 'edit' ? askOf(itemById(st.item)) : '', hintWas = mode === 'edit' ? hintOf(itemById(st.item)) : '';
     run(form, store.putItem(it), function () {
       upsert(st.data.items, it);
       // 多問的那一欄有改才記：和預設一樣就不另外存，清空就是關掉
       if (askV !== null && askV !== askWas) { var kd = kindOf(it); setAsk(it.id, askV ? (kd && kd.ask === askV ? '' : askV) : '-'); }
+      if (hintV !== null && hintV !== hintWas) { var kh = kindOf(it); setOwn('pracHint', it.id, hintV ? (kh && kh.hint === hintV ? '' : hintV) : (kh && kh.hint ? '-' : '')); }
       if (mode === 'new') { st.itf = null; st.focus = st.item ? 'kid-' + it.id : 'cl-' + it.id; C.toast(fill(T.added, { n: it.name })); }
       else C.toast(T.saved);
       render(true); C.refresh();

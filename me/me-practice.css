@@ -78,6 +78,7 @@
 .pr-pics img{width:72px;height:72px}
 .pr-pics .lnk{font-size:12.5px;min-height:28px}
 .pr-fnote{margin-top:-6px}
+.pr-ta::placeholder{color:var(--ink-3);opacity:.75}
 .pr-date{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .pr-date .in{padding:6px 10px;min-height:40px}
 .pr-lbtn{display:inline-flex;gap:14px;align-items:center;margin-left:auto}
