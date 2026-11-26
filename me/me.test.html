@@ -452,6 +452,17 @@ check('pracPhotoJoin：記一筆時放的照片併回同項目、同一天的那
 check('pracHint：寫一段的提示，自己改的優先、減號是不要、沒改照預設、沒有預設就不提示',()=>{const k={hint:'沖法、香氣'};eq(M.pracHint('',k),'沖法、香氣');eq(M.pracHint(' 今天喝了什麼 ',k),'今天喝了什麼');eq(M.pracHint('-',k),'');eq(M.pracHint('',null),'');eq(M.pracHint('',{}),'');eq(M.pracHint('自己的',null),'自己的');
   ['writeMaybe','hintLabel','hintPh','hintNote'].forEach(x=>ok(D.prac.t[x],x));ok(D.prac.t.writeMaybe.indexOf('{h}')>-1);});
 
+check('一個項目不只一種單位：每一筆的單位放雲端時接在第一行後面，讀回來一樣；舊格式照舊',()=>{eq(M.pracNotePack('小王子','狐狸','分鐘'),'小王子\t分鐘\n狐狸');eq(M.pracNotePack('','一句','遍'),'\t遍\n一句');eq(M.pracNotePack('','一句',''),'一句');eq(M.pracNotePack('小王子','狐狸'),'小王子\n狐狸');
+  [['小王子','狐狸','分鐘'],['','一句','遍'],['莊子','',''],['','',''],['','只有一句',''],['莊子','','章']].forEach(x=>{const u=M.pracNoteUnpack(M.pracNotePack(x[0],x[1],x[2]));eq(u.what,x[0]);eq(u.note,x[1]);eq(u.unit,x[2])});
+  const o=M.pracNoteUnpack('小王子\n狐狸');eq(o.what,'小王子');eq(o.unit,'');eq(o.note,'狐狸');eq(M.pracNoteUnpack('以前的一句').unit,'');});
+check('pracLogCheck：這一筆的單位有上限，和哪一個、那一句合起來不超過 note 的上限',()=>{const T='2026-11-18',L=D.prac.max;let r=M.pracLogCheck({date:T,amount:2,unit:' 遍 '},T,L);ok(r.ok);eq(r.log.unit,'遍');eq(M.pracLogCheck({date:T,amount:2},T,L).log.unit,'');eq(M.pracLogCheck({date:T,amount:2,unit:'字'.repeat(11)},T,L).err,'unit');
+  ok(M.pracLogCheck({date:T,amount:1,note:'字'.repeat(497),unit:'遍'},T,L).ok);eq(M.pracLogCheck({date:T,amount:1,note:'字'.repeat(498),unit:'遍'},T,L).err,'note');r=M.pracLogCheck({date:T,amount:1,note:'字'.repeat(495),what:'書',unit:'分鐘'},T,L);ok(r.ok);ok(M.pracNotePack(r.log.what,r.log.note,r.log.unit).length<=L.note);});
+check('pracUnits：主要單位在前、另外加的其次、紀錄裡出現過的也算，不重複',()=>{const L=[{id:'1',itemId:'a',unit:'章'},{id:'2',itemId:'a'},{id:'3',itemId:'b',unit:'公里'},{id:'4',itemId:'a',unit:'遍'}];eq(M.pracUnits('分鐘',['遍',' 小時 ','分鐘',''],L,'a').join(),'分鐘,遍,小時,章');eq(M.pracUnits('頁',null,null,'a').join(),'頁');eq(M.pracUnits('頁',[],L,'none').join(),'頁');});
+check('pracRollup／pracInsights：照每一筆自己的單位分開算，單位不只一種就不算平均',()=>{const I=[{id:'a',unit:'分鐘'}],L=[{id:'1',itemId:'a',date:'2026-11-01',amount:30},{id:'2',itemId:'a',date:'2026-11-02',amount:2,unit:'遍'},{id:'3',itemId:'a',date:'2026-11-03',amount:20},{id:'4',itemId:'a',date:'2026-11-03',amount:1,unit:'遍'}];
+  const r=M.pracRollup(L,I,['a']);eq(r.n,4);eq(r.units.length,2);eq(r.units.filter(u=>u.unit==='分鐘')[0].sum,50);eq(r.units.filter(u=>u.unit==='遍')[0].sum,3);eq(M.pracRollup(L.slice(0,1),I,['a']).units.length,1);
+  eq(M.pracInsights(L,I,['a'],'2026-11-19').avg,null);const one=M.pracInsights(L.filter(l=>l.unit==='遍'),I,['a'],'2026-11-19');eq(one.avg.unit,'遍');eq(one.avg.v,1.5);
+  ['uxAdd','uxAlso','uxTitle','uxNote','uxOwn','uxOwnAdd','uxDone','uxUsed','uxFull','uxSame','unitPick','amountAny','chartCapMix','monthMix','todayMix'].forEach(k=>ok(D.prac.t[k],k));ok(D.prac.max.units>=1);});
+
 log('---');log('DONE pass='+pass+' fail='+fail);document.title='RESULT pass='+pass+' fail='+fail;window.__done=true;
 try{ fetch('/__result',{method:'POST',body:lines.join('\n')}); }catch(e){}
 });

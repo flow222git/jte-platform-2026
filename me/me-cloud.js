@@ -154,14 +154,15 @@
       if (OPTIONAL[f[i]] && !obj[f[i]]) continue; // 選填的欄位：沒有就不寫這一欄
       out[f[i]] = obj[f[i]] !== undefined ? obj[f[i]] : DEFAULTS[f[i]];
     }
-    // 紀錄的「哪一個」（書名、展名…）不另開欄位：和那一句合在 note 裡（第一行是哪一個），規則不用改。
-    if (kind === 'logs') out.note = g.JteMe.pracNotePack(obj.what, out.note);
+    // 紀錄的「哪一個」（書名、展名…）和這一筆用的單位不另開欄位：和那一句合在 note 裡（見 pracNotePack），規則不用改。
+    if (kind === 'logs') out.note = g.JteMe.pracNotePack(obj.what, out.note, obj.unit);
     return out;
   }
   function unpackLog(x) {
     var u = g.JteMe.pracNoteUnpack(x.note);
     x.note = u.note;
     if (u.what) x.what = u.what;
+    if (u.unit) x.unit = u.unit;
     return x;
   }
   function pracLoad() {
